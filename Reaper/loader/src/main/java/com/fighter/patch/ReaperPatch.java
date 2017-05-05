@@ -66,11 +66,11 @@ public class ReaperPatch {
     }
 
     public String getName() {
-        return isValid() ? mFile.getName() : "";
+        return isValid() ? mFile.getName() : null;
     }
 
     public String getAbsolutePath() {
-        return isValid() ? mFile.getAbsolutePath() : "";
+        return isValid() ? mFile.getAbsolutePath() : null;
     }
 
     public ClassLoader getPatchLoader() {

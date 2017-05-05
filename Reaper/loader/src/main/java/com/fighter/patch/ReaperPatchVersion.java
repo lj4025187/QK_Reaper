@@ -32,7 +32,7 @@ public class ReaperPatchVersion {
             Method valueMethod = bumpVersionClass.getDeclaredMethod("value");
             if (valueMethod == null)
                 return;
-            String value = (String) valueMethod.invoke(null, null);
+            String value = (String) valueMethod.invoke(null);
             if (value == null)
                 return;
             mVersionStr = value;
