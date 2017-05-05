@@ -13,17 +13,46 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
 
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+/**
+ * publish dex as reaper.dex
+ */
+task publishReaperDex {
+    doLast {
+        def dexDir = file('./build/intermediates/transforms/dex/release')
+        def targetDexDir = file('../bin/')
+        if (!targetDexDir.exists()) {
+            targetDexDir.mkdirs()
+        }
+        dexDir.eachFileRecurse { f ->
+            if (f.getName() == 'classes.dex') {
+                def targetDexFile = new File(targetDexDir, 'reaper.dex')
+                targetDexFile.delete();
+                f.withInputStream { targetDexFile << it }
+            }
+        }
+    }
+}
+
+afterEvaluate {
+    assembleRelease {
+        doLast {
+            publishReaperDex.execute()
+        }
+    }
+}
+
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    testCompile 'junit:junit:4.12'
+    compile(name:'proguard', ext:'aar')
 }

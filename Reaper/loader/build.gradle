@@ -15,17 +15,49 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
 
+task publishSDKJar(type:Jar) {
+    archiveName 'reaper.jar'
+
+    from('./build/intermediates/classes/release/com/fighter/') {
+        include('loader/*.class')
+        include('helper/*.class')
+        include('config/*.class')
+        include('patch/*.class')
+    }
+
+    into 'com/fighter/'
+
+    destinationDir file('../bin')
+
+    exclude 'R.class'
+    exclude {
+        it.name.startsWith('R$')
+    }
+
+}
+
+afterEvaluate {
+    assembleRelease {
+        doLast {
+            publishSDKJar.execute()
+        }
+    }
+}
+
+
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    testCompile 'junit:junit:4.12'
+    compile(name:'proguard', ext:'aar')
 }
