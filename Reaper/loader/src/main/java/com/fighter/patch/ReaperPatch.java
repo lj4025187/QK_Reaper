@@ -42,8 +42,8 @@ public class ReaperPatch {
         } else if (ReaperPatchHelper.isReaperFile(file)) {
             mFile = file;
             mType = TYPE_REAPER;
-            mLoader = new ReaperClassLoader(mFile.getAbsolutePath(), PATCH_OPT_DIR, PATCH_LIB_DIR,
-                    ClassLoader.getSystemClassLoader());
+            mLoader = ReaperPatchCryptTool.createReaperClassLoader(mFile.getAbsolutePath(),
+                    PATCH_OPT_DIR, PATCH_LIB_DIR, ClassLoader.getSystemClassLoader());
         } else {
             mFile = null;
             mType = TYPE_UNKNOWN;

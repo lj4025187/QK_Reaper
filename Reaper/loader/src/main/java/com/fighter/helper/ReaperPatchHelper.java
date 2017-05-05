@@ -25,6 +25,11 @@ public class ReaperPatchHelper {
         return false;
     }
 
+    /**
+     * Must ends with .rr, it's a reaper format
+     * @param file
+     * @return
+     */
     public static boolean isReaperFile(File file) {
         if (file == null)
             return false;
