@@ -55,4 +55,9 @@ public class ReaperPatchManagerTest {
         assertNotNull(patches.get(0).getPatchLoader());
     }
 
+    @Test
+    public void useUnpackPatchesWithSuccess() throws Exception {
+
+    }
+
 }

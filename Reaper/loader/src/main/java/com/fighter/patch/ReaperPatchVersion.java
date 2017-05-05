@@ -17,6 +17,9 @@ public class ReaperPatchVersion {
     private static final String BUMP_VERSION_CLASS = "com.fighter.reaper.BumpVersion";
     private static final String BAD_VERSION = "xx.xx.xx";
 
+    /**
+     * Version fields
+     */
     public int release = 0;
     public int second = 0;
     public int revision = 0;
@@ -24,6 +27,12 @@ public class ReaperPatchVersion {
 
     private String mVersionStr = null;
 
+    /**
+     * Constructor
+     * Must get the version from patch loader in here
+     *
+     * @param loader
+     */
     ReaperPatchVersion(ClassLoader loader) {
         try {
             Class bumpVersionClass = loader.loadClass(BUMP_VERSION_CLASS);
@@ -46,7 +55,7 @@ public class ReaperPatchVersion {
             e.printStackTrace();
         }
 
-        // process version
+        // process version parse
         if (!isValid())
             return;
         String []versions = mVersionStr.split(".");
@@ -62,6 +71,11 @@ public class ReaperPatchVersion {
         }
     }
 
+    /**
+     * Check the version string is validate or not
+     *
+     * @return
+     */
     public boolean isValid() {
         return mVersionStr != null && !mVersionStr.equals(BAD_VERSION)
                 && mVersionStr.split(".").length == 3;

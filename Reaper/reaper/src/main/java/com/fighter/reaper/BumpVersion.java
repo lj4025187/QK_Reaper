@@ -26,4 +26,8 @@ public class BumpVersion {
             v += SUFFIX;
         return v;
     }
+
+    public static boolean isValid() {
+        return RELEASE > 0 && SECOND >= 0 && REVISION >= 0;
+    }
 }

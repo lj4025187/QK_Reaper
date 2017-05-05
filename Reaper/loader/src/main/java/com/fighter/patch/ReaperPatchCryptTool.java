@@ -6,6 +6,10 @@ import android.os.SystemClock;
  * Created by wxthon on 5/5/17.
  */
 
+
+/**
+ * This is a private tool that just supports for `ReaperPatch`
+ */
 public class ReaperPatchCryptTool {
 
     public static ClassLoader createReaperClassLoader(String rrPath, String optimizedDirectory,
@@ -16,10 +20,10 @@ public class ReaperPatchCryptTool {
     }
 
     public static boolean decryptTo(String rrPath, String dexPath) {
-        return true;
+        return ReaperPatchCryptTool.decryptTo(rrPath, dexPath);
     }
 
     public static boolean encryptTo(String dexPath, String rrPath) {
-        return true;
+        return ReaperPatchCryptTool.encryptTo(dexPath, rrPath);
     }
 }
