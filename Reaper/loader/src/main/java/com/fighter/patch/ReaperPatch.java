@@ -16,10 +16,10 @@ import dalvik.system.PathClassLoader;
 public class ReaperPatch {
 
     // Patch Types
-    public static final int TYPE_UNKNOWN = 0x01;
-    public static final int TYPE_DEX = 0x01;
-    public static final int TYPE_APK = 0x02;
-    public static final int TYPE_REAPER = 0x03;
+    public static final int TYPE_UNKNOWN    = 0x01;
+    public static final int TYPE_DEX        = 0x01;
+    public static final int TYPE_APK        = 0x02;
+    public static final int TYPE_REAPER     = 0x03;
 
     private final String PATCH_DIR = "patch";
     private final String PATCH_OPT_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + PATCH_DIR + "/opt";
@@ -28,6 +28,7 @@ public class ReaperPatch {
     private File mFile;
     private ClassLoader mLoader;
     private int mType;
+    private ReaperPatchVersion mVersion;
 
     public ReaperPatch(File file) {
         if (ReaperPatchHelper.isDexFile(file)) {
@@ -49,10 +50,12 @@ public class ReaperPatch {
             mType = TYPE_UNKNOWN;
             mLoader = null;
         }
+        if (mLoader != null)
+            mVersion = new ReaperPatchVersion(mLoader);
     }
 
     public boolean isValid() {
-        return mFile != null && mLoader != null;
+        return mFile != null && mLoader != null && mVersion.isValid();
     }
 
     public String getName() {
@@ -64,8 +67,10 @@ public class ReaperPatch {
     }
 
     public ClassLoader getPatchLoader() {
-        if (!isValid())
-            return null;
         return mLoader;
+    }
+
+    public ReaperPatchVersion getVersion() {
+        return mVersion;
     }
 }
