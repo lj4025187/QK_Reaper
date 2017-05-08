@@ -14,6 +14,8 @@ import com.fighter.patch.ReaperPatch;
 import com.fighter.patch.ReaperPatchVersion;
 import com.fighter.utils.Slog;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -190,7 +192,27 @@ public class ReaperInit {
         }
 
         //revision equals
-        //todo : should compare by suffix ?
+        //perhaps support other suffix ?
+        String alpha = "-alpha";
+        String beta = "-beta";
+        String stable = "-stable";
+        if (TextUtils.isEmpty(first.suffix)
+                || TextUtils.isEmpty(second.suffix)) {
+            return 0;
+        }
+        boolean fAlpha = TextUtils.equals(first.suffix, alpha);
+        boolean fBeta = TextUtils.equals(first.suffix, beta);
+        boolean fStable = TextUtils.equals(first.suffix, stable);
+        boolean sAlpha = TextUtils.equals(second.suffix, alpha);
+        boolean sBeta = TextUtils.equals(second.suffix, beta);
+        boolean sStable = TextUtils.equals(second.suffix, stable);
+        if ((fStable && (sBeta || sAlpha)) ||
+                (fBeta && sAlpha)) {
+            return -1;
+        } else if ((sStable && (fBeta || fAlpha)) ||
+                (sBeta && fAlpha)) {
+            return 1;
+        }
 
         return 0;
     }
