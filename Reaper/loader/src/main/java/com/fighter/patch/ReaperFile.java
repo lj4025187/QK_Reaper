@@ -2,17 +2,25 @@ package com.fighter.patch;
 
 import android.content.res.AssetFileDescriptor;
 import android.support.annotation.NonNull;
+import android.system.ErrnoException;
+import android.system.Os;
+import android.system.StructStat;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Created by wxthon on 5/8/17.
  */
 
+/**
+ * Reaper file support .apk and .rr only
+ *
+ */
 public class ReaperFile {
 
     private File mFile = null;
@@ -94,5 +102,50 @@ public class ReaperFile {
      */
     public File getRawFile() {
         return mFile;
+    }
+
+    public StructStat getStat() {
+        StructStat stat = null;
+        try {
+            if (hasFD()) {
+                stat = Os.fstat(mAfd.getFileDescriptor());
+            } else if(mFile != null) {
+                stat = Os.stat(mFile.getAbsolutePath());
+            }
+        } catch (ErrnoException e) {
+            e.printStackTrace();
+        } finally {
+            return stat;
+        }
+    }
+
+    public long getSize() {
+        StructStat stat = getStat();
+        return stat != null ? stat.st_size : -1;
+    }
+
+    public ByteBuffer readFully() {
+        FileInputStream fis = openFileInputStream();
+        if (fis == null)
+            return null;
+        ByteBuffer buffer = null;
+        try {
+            StructStat stat = Os.fstat(fis.getFD());
+            buffer = ByteBuffer.allocate((int) stat.st_size);
+            fis.read(buffer.array(), 0, buffer.capacity());
+        } catch (ErrnoException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return buffer;
+        }
     }
 }
