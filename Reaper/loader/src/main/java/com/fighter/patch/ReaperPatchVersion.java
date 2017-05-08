@@ -1,5 +1,7 @@
 package com.fighter.patch;
 
+import com.fighter.utils.Slog;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -58,7 +60,7 @@ public class ReaperPatchVersion {
         // process version parse
         if (!isValid())
             return;
-        String []versions = mVersionStr.split(".");
+        String []versions = mVersionStr.split("\\.");
         release = Integer.valueOf(versions[0]);
         second = Integer.valueOf(versions[1]);
         if (versions[2].contains("-")) {
@@ -78,7 +80,7 @@ public class ReaperPatchVersion {
      */
     public boolean isValid() {
         return mVersionStr != null && !mVersionStr.equals(BAD_VERSION)
-                && mVersionStr.split(".").length == 3;
+                && mVersionStr.split("\\.").length == 3;
     }
 
 }

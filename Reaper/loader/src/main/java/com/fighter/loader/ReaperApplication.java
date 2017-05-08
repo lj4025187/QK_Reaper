@@ -7,4 +7,13 @@ import android.app.Application;
  */
 
 public class ReaperApplication extends Application {
+
+    protected ReaperApi mReaperApi;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        mReaperApi = ReaperInit.init(this);
+    }
 }
