@@ -13,9 +13,9 @@ import java.util.List;
  * example:
  *
  * String[] paths = new String[] {"base.dex", "base.apk", "base.rr" };
- * List<File> files = new ArrayList<>();
+ * List<ReaperFile> files = new ArrayList<>();
  * for (String path: paths) {
- *     files.add(new File(path));
+ *     files.add(new ReaperFile(path));
  * }
  * List<ReaperPath> patches = ReaperPatchManager.getInstance().unpackPatches(files);
  * ...
@@ -65,11 +65,11 @@ public class ReaperPatchManager {
      * @param files
      * @return
      */
-    public List<ReaperPatch> unpackPatches(List<File> files) {
+    public List<ReaperPatch> unpackPatches(List<ReaperFile> files) {
         List<ReaperPatch> patches = null;
         if (!files.isEmpty()) {
             patches = new ArrayList<>();
-            for (File file : files) {
+            for (ReaperFile file : files) {
                 patches.add(new ReaperPatch(file));
             }
         }

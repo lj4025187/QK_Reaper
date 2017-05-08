@@ -1,10 +1,17 @@
 package com.fighter.patch;
 
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.os.Environment;
 
 import com.fighter.helper.ReaperPatchHelper;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.nio.channels.FileChannel;
+import java.util.logging.FileHandler;
 
 import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
@@ -24,9 +31,8 @@ public class ReaperPatch {
      * Patch Types
      */
     public static final int TYPE_UNKNOWN    = 0x00;
-    public static final int TYPE_DEX        = 0x01;
-    public static final int TYPE_APK        = 0x02;
-    public static final int TYPE_REAPER     = 0x03;
+    public static final int TYPE_APK        = 0x01;
+    public static final int TYPE_REAPER     = 0x02;
 
     /**
      * Private final members
@@ -38,7 +44,7 @@ public class ReaperPatch {
     /**
      * Private members
      */
-    private File mFile;
+    private ReaperFile mFile;
     private ClassLoader mLoader;
     private int mType;
     private ReaperPatchVersion mVersion;
@@ -49,13 +55,9 @@ public class ReaperPatch {
      *
      * @param file
      */
-    public ReaperPatch(File file) {
-        if (ReaperPatchHelper.isDexFile(file)) {
-            mFile = file;
-            mType = TYPE_DEX;
-            mLoader = new DexClassLoader(mFile.getAbsolutePath(), PATCH_OPT_DIR, PATCH_LIB_DIR,
-                    ClassLoader.getSystemClassLoader());
-        } else if (ReaperPatchHelper.isApkFile(file)) {
+    public ReaperPatch(ReaperFile file) {
+
+        if (ReaperPatchHelper.isApkFile(file)) {
             mFile = file;
             mType = TYPE_APK;
             mLoader = new PathClassLoader(mFile.getAbsolutePath(), ClassLoader.getSystemClassLoader());

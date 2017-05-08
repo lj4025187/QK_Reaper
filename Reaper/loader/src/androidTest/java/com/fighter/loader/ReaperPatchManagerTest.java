@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.fighter.patch.ReaperFile;
 import com.fighter.patch.ReaperPatch;
 import com.fighter.patch.ReaperPatchManager;
 
@@ -39,8 +40,8 @@ public class ReaperPatchManagerTest {
         assertFalse(infos.isEmpty());
 
         ApplicationInfo info = infos.get(0);
-        List<File> files = new ArrayList<>();
-        files.add(new File(info.sourceDir));
+        List<ReaperFile> files = new ArrayList<>();
+        files.add(new ReaperFile(info.sourceDir));
         List<ReaperPatch> patches = ReaperPatchManager.getInstance().unpackPatches(files);
         assertFalse(patches.isEmpty());
 

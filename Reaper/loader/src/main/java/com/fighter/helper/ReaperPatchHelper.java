@@ -1,5 +1,7 @@
 package com.fighter.helper;
 
+import com.fighter.patch.ReaperFile;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -8,6 +10,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Created by wxthon on 5/5/17.
@@ -35,10 +39,20 @@ public class ReaperPatchHelper {
      * @param file
      * @return
      */
-    public static boolean isApkFile(File file) {
+    public static boolean isApkFile(ReaperFile file) {
         if (file == null)
             return false;
         if (file.getName().endsWith(".apk")) {
+            if (file.hasFD())
+                return false;
+            else {
+                try {
+                    new ZipFile(file.getRawFile());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
             return true;
         }
         return false;
@@ -50,7 +64,7 @@ public class ReaperPatchHelper {
      * @param file
      * @return
      */
-    public static boolean isReaperFile(File file) {
+    public static boolean isReaperFile(ReaperFile file) {
         if (file == null)
             return false;
         if (file.getName().endsWith(".rr")) {
