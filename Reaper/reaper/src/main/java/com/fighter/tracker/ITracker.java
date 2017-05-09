@@ -1,4 +1,4 @@
-package com.qiku.tracker;
+package com.fighter.tracker;
 
 /**
  * Created by lichen on 17-5-8.

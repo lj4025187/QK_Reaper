@@ -1,4 +1,4 @@
-package com.qiku.tracker;
+package com.fighter.tracker;
 
 /**
  * Defined the base tacker event param

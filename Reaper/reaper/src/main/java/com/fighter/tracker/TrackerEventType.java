@@ -1,4 +1,4 @@
-package com.qiku.tracker;
+package com.fighter.tracker;
 
 /**
  * Define Tracker event type

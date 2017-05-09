@@ -1,4 +1,4 @@
-package com.qiku.tracker;
+package com.fighter.tracker;
 
 /**
  * Created by lichen on 17-5-8.
@@ -8,7 +8,7 @@ public class Tracker {
 
     private static Tracker sTracker = new Tracker();
 
-    public static Tracker getsTracker() {
+    public static Tracker getTracker() {
         return sTracker;
     }
 
