@@ -1,6 +1,10 @@
 package com.fighter.loader;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.AssetManager;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -9,9 +13,13 @@ import com.fighter.utils.Slog;
 
 import junit.framework.Assert;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
@@ -24,6 +32,39 @@ public class ReaperInitTest {
 
     public static final String TAG = ReaperInitTest.class.getSimpleName();
 
+    @Before
+    public void preTest() {
+        Slog.e(TAG, "preTest ... ");
+//        Context context = InstrumentationRegistry.getContext();
+//        AssetManager assetManager = context.getAssets();
+//        File file = new File("/mnt/sdcard/reaper.apk");
+//        try {
+//            InputStream is = assetManager.open("ads/reaper.apk");
+//            Assert.assertNotNull(is);
+//            FileOutputStream fos = new FileOutputStream(file);
+//            byte[] buffer = new byte[1024];
+//            int length = 0;
+//            while ((length = is.read(buffer)) > 0) {
+//                fos.write(buffer, 0, length);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        Intent intent = new Intent(Intent.ACTION_VIEW);
+//        intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        context.startActivity(intent);
+    }
+
+    public void afterTest() {
+        Slog.e(TAG, "afterTest ... ");
+//        Context context = InstrumentationRegistry.getContext();
+//        String packageName = "com.fighter.reaper";
+//        Uri uri = Uri.parse("package:" + packageName);
+//        Intent intent = new Intent(Intent.ACTION_DELETE, uri);
+//        context.startActivity(intent);
+    }
+
     @Test
     public void testInit() throws Exception {
 
@@ -31,8 +72,8 @@ public class ReaperInitTest {
         ReaperApi reaperApi = ReaperInit.init(context);
 
         Slog.i(TAG, "reaperApi : " + reaperApi);
-        Assert.assertNotNull(reaperApi);
-        Slog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
+        //Assert.assertNotNull(reaperApi);
+        //Slog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
     }
 
     @Test

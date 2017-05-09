@@ -83,4 +83,10 @@ public class ReaperPatchVersion {
                 && mVersionStr.split("\\.").length == 3;
     }
 
+    @Override
+    public String toString() {
+        return "ReaperPatchVersion{" +
+                "mVersionStr='" + mVersionStr + '\'' +
+                '}';
+    }
 }

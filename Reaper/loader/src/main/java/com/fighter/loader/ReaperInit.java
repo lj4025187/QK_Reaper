@@ -14,8 +14,6 @@ import com.fighter.patch.ReaperPatch;
 import com.fighter.patch.ReaperPatchVersion;
 import com.fighter.utils.Slog;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -78,15 +76,79 @@ public class ReaperInit {
      * @param context
      */
     public static ReaperApi init(Context context) {
-        ReaperPatch suitableRP = getPatchForHighestVersion(context);
-        if (suitableRP == null || !suitableRP.isValid()) {
+        ReaperPatch reaperPatch = getPatchForHighestVersion(context);
+        ReaperApi api = makeReaperApiFromPatch(reaperPatch);
+        if (api == null) {
+            if (DEBUG_REAPER_PATCH)
+                Slog.e(TAG, "init : makeApi error !");
+            return null;
+        }
+
+        if (reaperPatch == null)
+            return null;
+        queryHigherReaperInServer(reaperPatch.getVersion());
+
+        return api;
+    }
+
+    /**
+     * Query higher than local in server. If have , download it .
+     * @param currentVersion
+     */
+    private static void queryHigherReaperInServer(final ReaperPatchVersion currentVersion) {
+        if (currentVersion == null) {
+            Slog.e(TAG, "queryHigherReaperInServer : currentVersion == null.");
+            return;
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ReaperServerDesc rsd = doQueryHigherReaperInServer();
+                if (rsd == null || !rsd.isValid())
+                    return;
+
+                //comparing to judge really higher or not .
+                int retVal = comparePatchVersion(currentVersion, rsd.version);
+                if (retVal != 1) {
+                    if (DEBUG_REAPER_PATCH) {
+                        Slog.e(TAG, "we download a bad version ! rsd.version : " + rsd.version);
+                    }
+                    return;
+                }
+
+                downloadHigherReaper(rsd);
+            }
+        }).start();
+    }
+
+    private static ReaperServerDesc doQueryHigherReaperInServer() {
+        //TODO: query from server.
+        return new ReaperServerDesc();
+    }
+
+    private static void downloadHigherReaper(ReaperServerDesc rsd) {
+        if (rsd == null || !rsd.isValid()) {
+            return;
+        }
+
+        //TODO: download from server.
+    }
+
+    /**
+     * If we get a right ReaperPatch, we will make instance of ReaperApi.
+     * @param patch
+     * @return
+     */
+    private static ReaperApi makeReaperApiFromPatch(ReaperPatch patch) {
+        if (patch == null || !patch.isValid()) {
             if (DEBUG_REAPER_PATCH) {
                 Slog.e(TAG, "init : selectSuitablePatch error !");
             }
             return null;
         }
 
-        ClassLoader loader = suitableRP.getPatchLoader();
+        ClassLoader loader = patch.getPatchLoader();
         if (loader == null) {
             if (DEBUG_REAPER_PATCH) {
                 Slog.e(TAG, "init : classLoader == null !");
@@ -267,8 +329,9 @@ public class ReaperInit {
      * @return
      */
     private static ReaperPatch loadReaperPatchByFD(Context context, @NonNull String nameWithPrefix) {
-        int prefixIndex = nameWithPrefix.indexOf(ASSETS_PREFIX);
-        String name = nameWithPrefix.substring(prefixIndex + 1, nameWithPrefix.length());
+        if (nameWithPrefix == null || !nameWithPrefix.startsWith(ASSETS_PREFIX))
+            return null;
+        String name = nameWithPrefix.substring(ASSETS_PREFIX.length(), nameWithPrefix.length());
         AssetManager am = context.getAssets();
         AssetFileDescriptor afd;
         try {
@@ -283,4 +346,14 @@ public class ReaperInit {
         return null;
     }
 
+
+    static class ReaperServerDesc {
+        public String url;
+        public ReaperPatchVersion version;
+
+        public boolean isValid() {
+            return url != null && version != null
+                    && version.isValid();
+        }
+    }
 }
