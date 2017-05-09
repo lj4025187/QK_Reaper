@@ -1,1 +1,1 @@
-include ':reaper', ':loader'
+include ':fighter', ':loader', ':okhttp', ':fastjson'

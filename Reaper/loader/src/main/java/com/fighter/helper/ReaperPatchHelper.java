@@ -59,7 +59,7 @@ public class ReaperPatchHelper {
     }
 
     /**
-     * Must ends with .rr, it's a reaper format
+     * Must ends with .rr, it's a fighter format
      *
      * @param file
      * @return
