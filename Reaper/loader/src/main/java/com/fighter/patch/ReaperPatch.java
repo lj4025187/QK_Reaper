@@ -22,7 +22,7 @@ import dalvik.system.PathClassLoader;
 
 /**
  * Reaper patch object
- * You can find reaper core class by this patch through ReaperClassLoader
+ * You can find fighter core class by this patch through ReaperClassLoader
  * This patch can decrypt .rr file
  */
 public class ReaperPatch {

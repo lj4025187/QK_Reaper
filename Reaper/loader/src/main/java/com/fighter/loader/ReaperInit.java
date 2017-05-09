@@ -60,7 +60,7 @@ public class ReaperInit {
     private static final String CLASS_REAPER_API = "com.fighter.api.ReaperApi";
 
     private static final String REAPER = "reaper.apk";
-    private static final String REAPER_SYSTEM = "com.fighter.reaper";
+    private static final String REAPER_SYSTEM = "com.fighter.fighter";
     private static final String REAPER_DIR_SDCARD =
             Environment.getExternalStorageDirectory().toString() +
             File.separator + ".reapers" + File.separator;

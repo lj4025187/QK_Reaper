@@ -4,7 +4,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
-        applicationId "com.fighter.reaper"
+        applicationId "com.fighter.fighter"
         minSdkVersion 23
         targetSdkVersion 25
         versionCode 1
@@ -26,7 +26,7 @@ repositories {
 }
 
 /**
- * publish dex as reaper.dex
+ * publish dex as fighter.dex
  */
 task publishReaperDex {
     doLast {
@@ -37,7 +37,7 @@ task publishReaperDex {
         }
         dexDir.eachFileRecurse { f ->
             if (f.getName() == 'classes.dex') {
-                def targetDexFile = new File(targetDexDir, 'reaper.dex')
+                def targetDexFile = new File(targetDexDir, 'fighter.dex')
                 targetDexFile.delete();
                 f.withInputStream { targetDexFile << it }
             }

@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.fighter.reaper.okhttp.test", appContext.getPackageName());
+        assertEquals("com.fighter.fighter.okhttp.test", appContext.getPackageName());
     }
 }

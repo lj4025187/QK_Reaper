@@ -87,7 +87,7 @@ public class ReaperFile {
     }
 
     /**
-     * Check whether this reaper file represents a FileDescriptor
+     * Check whether this fighter file represents a FileDescriptor
      *
      * @return
      */
@@ -96,7 +96,7 @@ public class ReaperFile {
     }
 
     /**
-     * Get the raw file of this reaper file
+     * Get the raw file of this fighter file
      *
      * @return
      */
