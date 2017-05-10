@@ -16,7 +16,7 @@ import java.lang.reflect.Method;
  */
 public class ReaperPatchVersion {
 
-    private static final String BUMP_VERSION_CLASS = "com.fighter.fighter.BumpVersion";
+    private static final String BUMP_VERSION_CLASS = "com.fighter.reaper.BumpVersion";
     private static final String BAD_VERSION = "xx.xx.xx";
 
     /**

@@ -25,7 +25,7 @@ import java.util.List;
  */
 
 /**
- * A manager to unpack patches which fighter supports
+ * A manager to unpack patches which reaper supports
  */
 public class ReaperPatchManager {
 

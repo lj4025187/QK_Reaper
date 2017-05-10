@@ -1,4 +1,4 @@
-package com.fighter.reaper.okhttp;
+package com.figher.reaper.fastjson;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.fighter.reaper.okhttp.test", appContext.getPackageName());
+        assertEquals("com.figher.reaper.fastjson.test", appContext.getPackageName());
     }
 }

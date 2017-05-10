@@ -25,7 +25,7 @@ android {
 }
 
 task publishSDKJar(type:Jar) {
-    archiveName 'fighter.jar'
+    archiveName 'reaper.jar'
 
     from('./build/intermediates/classes/release/com/fighter/') {
         include('loader/*.class')
