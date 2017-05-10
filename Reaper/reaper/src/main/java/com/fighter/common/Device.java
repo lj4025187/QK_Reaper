@@ -404,9 +404,17 @@ public final class Device {
      * @return IMEI1值
      */
     public static String getM1(Context context) {
-        TelephonyManager tm =
-                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        return tm != null ? tm.getDeviceId() : null;
+        String m1 = null;
+        try {
+            TelephonyManager tm =
+                    (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (tm != null) {
+                m1 = tm.getDeviceId();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return m1;
     }
 
     // TODO 获取M2
