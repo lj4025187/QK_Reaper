@@ -214,7 +214,7 @@ public class ReaperInit {
         }
 
         List<ReaperPatch> patches =
-                ReaperPatchManager.getInstance().unpackPatches(reaperFiles);
+                ReaperPatchManager.getInstance().unpackPatches(reaperFiles, context.getApplicationContext().getClassLoader());
         if (patches == null || patches.size() <= 0) {
             if (DEBUG_REAPER_PATCH) {
                 Slog.e(TAG, "getPatchForHighestVersion, cant unpack patches.");

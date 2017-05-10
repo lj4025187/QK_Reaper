@@ -70,7 +70,7 @@ public class ReaperPatchManager {
         List<ReaperPatch> patches = null;
         Constructor c = null;
         try {
-            Class ReaperPatchClass = Class.forName("com.fighter.loader.ReaperPatch");
+            Class ReaperPatchClass = Class.forName("com.fighter.patch.ReaperPatch");
             c = ReaperPatchClass.getDeclaredConstructor(ReaperFile.class, ClassLoader.class);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
