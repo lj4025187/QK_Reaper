@@ -2,6 +2,9 @@ package com.fighter.loader;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Environment;
@@ -19,6 +22,7 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -31,6 +35,12 @@ import java.lang.reflect.Method;
 public class ReaperInitTest {
 
     public static final String TAG = ReaperInitTest.class.getSimpleName();
+    public static final String PKG_NAME = "com.fighter.reaper";
+    private static final String REAPER = "reaper.rr";
+    private static final String REAPER_DIR_SDCARD =
+            Environment.getExternalStorageDirectory().toString() +
+                    File.separator + ".reapers" + File.separator;
+    private static final String REAPER_DIR_DOWNLOAD = REAPER_DIR_SDCARD + "download" + File.separator + REAPER;
 
     @Before
     public void preTest() {
@@ -66,14 +76,44 @@ public class ReaperInitTest {
     }
 
     @Test
-    public void testInit() throws Exception {
-
+    public void testInit() {
         Context context = InstrumentationRegistry.getContext();
-        ReaperApi reaperApi = ReaperInit.init(context);
+        AssetManager assetManager = context.getAssets();
+        boolean hasRR = false;
+        boolean hasInstalled = false;
+        boolean hasDownloaded = false;
 
+        try {
+            AssetFileDescriptor afd = assetManager.openFd("ads/reaper.rr");
+            hasRR = afd != null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            hasRR = false;
+        }
+
+        PackageManager pm = context.getPackageManager();
+        try {
+            ApplicationInfo ai = pm.getApplicationInfo(PKG_NAME, PackageManager.GET_META_DATA);
+            hasInstalled = ai != null;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            hasInstalled = false;
+        }
+
+        File file = new File(REAPER_DIR_DOWNLOAD);
+        if (file.exists()) {
+            hasDownloaded = true;
+        }
+
+        if (!hasRR && !hasInstalled && !hasDownloaded) {
+            Slog.e(TAG, "Cant find any REAPER !");
+            return;
+        }
+
+        ReaperApi reaperApi = ReaperInit.init(context);
         Slog.i(TAG, "reaperApi : " + reaperApi);
-        //Assert.assertNotNull(reaperApi);
-        //Slog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
+        Assert.assertNotNull(reaperApi);
+        Slog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
     }
 
     @Test

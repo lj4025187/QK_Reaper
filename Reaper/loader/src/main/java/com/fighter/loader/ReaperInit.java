@@ -11,6 +11,7 @@ import android.text.TextUtils;
 
 import com.fighter.patch.ReaperFile;
 import com.fighter.patch.ReaperPatch;
+import com.fighter.patch.ReaperPatchManager;
 import com.fighter.patch.ReaperPatchVersion;
 import com.fighter.utils.Slog;
 
@@ -63,12 +64,12 @@ public class ReaperInit {
             Environment.getExternalStorageDirectory().toString() +
             File.separator + ".reapers" + File.separator;
     private static final String ASSETS_PREFIX = "file:///assets/";
-    private static final String REAPER_DIR_ASSETS = ASSETS_PREFIX + "ads/" + REAPER;
-    private static final String REAPER_DIR_DOWNLOAD = REAPER_DIR_SDCARD + "download" + File.separator + REAPER;
+    private static final String REAPER_PATH_ASSETS = ASSETS_PREFIX + "ads/" + REAPER;
+    private static final String REAPER_PATH_DOWNLOAD = REAPER_DIR_SDCARD + "download" + File.separator + REAPER;
     private static final String[] ALL_REAPERS = {
             REAPER_SYSTEM,
-            REAPER_DIR_ASSETS,
-            REAPER_DIR_DOWNLOAD
+            REAPER_PATH_ASSETS,
+            REAPER_PATH_DOWNLOAD
     };
 
     /**
@@ -190,25 +191,34 @@ public class ReaperInit {
      * @return
      */
     private static ReaperPatch getPatchForHighestVersion(Context context) {
-        List<ReaperPatch> patches = new ArrayList<>(3);
+        List<ReaperFile> reaperFiles = new ArrayList<>(3);
         for (String reaper : ALL_REAPERS) {
-            ReaperPatch patch = null;
+            ReaperFile patch = null;
             if (TextUtils.isEmpty(reaper))
                 continue;
             if (TextUtils.equals(reaper, REAPER_SYSTEM)) {
-                patch = loadSystemReaperPatch(context);
+                patch = loadSystemReaperFile(context);
             } else if (reaper.startsWith(ASSETS_PREFIX)) {
-                patch = loadReaperPatchByFD(context, reaper);
+                patch = loadReaperFileByFD(context, reaper);
             } else {
-                patch = loadReaperPatchByPath(reaper);
+                patch = loadReaperFileByPath(reaper);
             }
             if (patch == null)
                 continue;
-            patches.add(patch);
+            reaperFiles.add(patch);
         }
 
-        if (patches.size() <= 0) {
-            Slog.e(TAG, "getPatchForHighestVersion, cant find patches.");
+        if (reaperFiles.size() <= 0) {
+            Slog.e(TAG, "getPatchForHighestVersion, cant find ReaperFile .");
+            return null;
+        }
+
+        List<ReaperPatch> patches =
+                ReaperPatchManager.getInstance().unpackPatches(reaperFiles);
+        if (patches == null || patches.size() <= 0) {
+            if (DEBUG_REAPER_PATCH) {
+                Slog.e(TAG, "getPatchForHighestVersion, cant unpack patches.");
+            }
             return null;
         }
 
@@ -284,7 +294,7 @@ public class ReaperInit {
      * @param context
      * @return
      */
-    private static ReaperPatch loadSystemReaperPatch(Context context) {
+    private static ReaperFile loadSystemReaperFile(Context context) {
         PackageManager pm = context.getPackageManager();
         try {
             PackageInfo packageInfo =
@@ -295,9 +305,8 @@ public class ReaperInit {
 
             String apkPath = packageInfo.applicationInfo.sourceDir;
             ReaperFile reaperFile = new ReaperFile(apkPath);
-            ReaperPatch reaperPatch = new ReaperPatch(reaperFile);
-            Slog.e(TAG, "loadSystemReaperPatch:reaperPatch.isValid() : " + reaperPatch.isValid());
-            return reaperPatch.isValid() ? reaperPatch : null;
+            Slog.e(TAG, "loadSystemReaperFile : " + reaperFile.getName());
+            return reaperFile;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -310,16 +319,15 @@ public class ReaperInit {
      * @param path
      * @return
      */
-    private static ReaperPatch loadReaperPatchByPath(@NonNull String path) {
+    private static ReaperFile loadReaperFileByPath(@NonNull String path) {
         if (TextUtils.isEmpty(path))
             return null;
         ReaperFile reaperFile = new ReaperFile(path);
         File rawFile = reaperFile.getRawFile();
         if (rawFile == null || !rawFile.exists())
             return null;
-        ReaperPatch reaperPatch = new ReaperPatch(reaperFile);
-        Slog.e(TAG, "loadReaperPatchByPath:reaperPatch.isValid() : " + reaperPatch.isValid());
-        return reaperPatch.isValid() ? reaperPatch : null;
+        Slog.e(TAG, "loadReaperFileByPath : " + reaperFile.getName());
+        return reaperFile;
     }
 
     /**
@@ -328,7 +336,7 @@ public class ReaperInit {
      * @param nameWithPrefix
      * @return
      */
-    private static ReaperPatch loadReaperPatchByFD(Context context, @NonNull String nameWithPrefix) {
+    private static ReaperFile loadReaperFileByFD(Context context, @NonNull String nameWithPrefix) {
         if (nameWithPrefix == null || !nameWithPrefix.startsWith(ASSETS_PREFIX))
             return null;
         String name = nameWithPrefix.substring(ASSETS_PREFIX.length(), nameWithPrefix.length());
@@ -337,9 +345,8 @@ public class ReaperInit {
         try {
             afd = am.openFd(name);
             ReaperFile reaperFile = new ReaperFile(afd);
-            ReaperPatch reaperPatch = new ReaperPatch(reaperFile);
-            Slog.e(TAG, "loadReaperPatchByFD:reaperPatch.isValid() : " + reaperPatch.isValid());
-            return reaperPatch.isValid() ? reaperPatch : null;
+            Slog.e(TAG, "loadReaperFileByFD: " + reaperFile.getName());
+            return reaperFile;
         } catch (IOException e) {
             e.printStackTrace();
         }
