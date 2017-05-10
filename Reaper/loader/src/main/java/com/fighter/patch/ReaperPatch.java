@@ -119,4 +119,13 @@ public class ReaperPatch {
     public ReaperPatchVersion getVersion() {
         return mVersion;
     }
+
+    /**
+     * Get the reaper file of this patch, it's a pair
+     *
+     * @return
+     */
+    public ReaperFile getReaperFile() {
+        return mFile;
+    }
 }

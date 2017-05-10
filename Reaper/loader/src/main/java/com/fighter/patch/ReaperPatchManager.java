@@ -31,6 +31,7 @@ import java.util.List;
 public class ReaperPatchManager {
 
     private static ReaperPatchManager sManager = null;
+    private static final String REAPER_PATCH_CLASS = "com.fighter.patch.ReaperPatch";
 
     /**
      * Get ReaperPatchManager instance, it's singleton
@@ -70,7 +71,7 @@ public class ReaperPatchManager {
         List<ReaperPatch> patches = null;
         Constructor c = null;
         try {
-            Class ReaperPatchClass = Class.forName("com.fighter.patch.ReaperPatch");
+            Class ReaperPatchClass = Class.forName(REAPER_PATCH_CLASS);
             c = ReaperPatchClass.getDeclaredConstructor(ReaperFile.class, ClassLoader.class);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
