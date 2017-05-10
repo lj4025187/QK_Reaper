@@ -62,6 +62,9 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     testCompile 'junit:junit:4.12'
     compile(name:'proguard', ext:'aar')
-    compile 'com.squareup.okhttp3:okhttp:3.7.0'
-    compile 'com.alibaba:fastjson:1.2.31'
+
+    // fastjson
+    compile 'com.alibaba:fastjson:1.1.52.android'
+    // okhttp3
+    compile 'com.squareup.okhttp3:okhttp:3.4.2'
 }
