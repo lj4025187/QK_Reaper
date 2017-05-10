@@ -1,7 +1,6 @@
 package com.fighter.utils;
 
 import android.os.Environment;
-import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.BufferedWriter;
@@ -13,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class Slog {
+public class LoaderLog {
 
     public static final String TAG = "Reaper";
     private static final String LOCAL_DIR = Environment.getExternalStorageDirectory() + "/Reaper";
@@ -92,7 +91,7 @@ public class Slog {
     private static void writeLocalLog(String type, String msg) {
         String currentDate = getCurrentDate();
 
-        File file = new File(LOCAL_LOG_DIR + File.separator + currentDate + "_log.txt");
+        File file = new File(LOCAL_LOG_DIR + File.separator + "LoaderLog-" + currentDate + ".txt");
         if(!file.exists()) {
             if(createLocalLogFile(file.toString())) {
                 writeLocalLog(file, type, msg);

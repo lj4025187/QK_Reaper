@@ -1,6 +1,6 @@
 package com.fighter.loader;
 
-import com.fighter.utils.Slog;
+import com.fighter.utils.LoaderLog;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,7 +17,7 @@ public class ReaperApi {
 
     public ReaperApi(Object instance) {
         mInstance = instance;
-        Slog.e(TAG, "mInstance : " + instance);
+        LoaderLog.e(TAG, "mInstance : " + instance);
     }
 
     public Object requestSplashAds(String name, int time) {

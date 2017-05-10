@@ -1,18 +1,16 @@
 package com.fighter.loader;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.net.Uri;
 import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.fighter.patch.ReaperPatchVersion;
-import com.fighter.utils.Slog;
+import com.fighter.utils.LoaderLog;
 
 import junit.framework.Assert;
 
@@ -21,9 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
@@ -44,7 +40,7 @@ public class ReaperInitTest {
 
     @Before
     public void preTest() {
-        Slog.e(TAG, "preTest ... ");
+        LoaderLog.e(TAG, "preTest ... ");
 //        Context context = InstrumentationRegistry.getContext();
 //        AssetManager assetManager = context.getAssets();
 //        File file = new File("/mnt/sdcard/reaper.apk");
@@ -67,7 +63,7 @@ public class ReaperInitTest {
     }
 
     public void afterTest() {
-        Slog.e(TAG, "afterTest ... ");
+        LoaderLog.e(TAG, "afterTest ... ");
 //        Context context = InstrumentationRegistry.getContext();
 //        String packageName = "com.fighter.reaper";
 //        Uri uri = Uri.parse("package:" + packageName);
@@ -106,14 +102,14 @@ public class ReaperInitTest {
         }
 
         if (!hasRR && !hasInstalled && !hasDownloaded) {
-            Slog.e(TAG, "Cant find any REAPER !");
+            LoaderLog.e(TAG, "Cant find any REAPER !");
             return;
         }
 
         ReaperApi reaperApi = ReaperInit.init(context);
-        Slog.i(TAG, "reaperApi : " + reaperApi);
+        LoaderLog.i(TAG, "reaperApi : " + reaperApi);
         Assert.assertNotNull(reaperApi);
-        Slog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
+        LoaderLog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
     }
 
     @Test
@@ -141,6 +137,6 @@ public class ReaperInitTest {
         Object o = compareMethod.invoke(null, first, second);
         Assert.assertNotNull(o);
         Assert.assertTrue(o instanceof Integer);
-        Slog.i(TAG, "comparePatchVersion : " + o);
+        LoaderLog.i(TAG, "comparePatchVersion : " + o);
     }
 }

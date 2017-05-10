@@ -13,7 +13,7 @@ import com.fighter.patch.ReaperFile;
 import com.fighter.patch.ReaperPatch;
 import com.fighter.patch.ReaperPatchManager;
 import com.fighter.patch.ReaperPatchVersion;
-import com.fighter.utils.Slog;
+import com.fighter.utils.LoaderLog;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,7 +81,7 @@ public class ReaperInit {
         ReaperApi api = makeReaperApiFromPatch(reaperPatch);
         if (api == null) {
             if (DEBUG_REAPER_PATCH)
-                Slog.e(TAG, "init : makeApi error !");
+                LoaderLog.e(TAG, "init : makeApi error !");
             return null;
         }
 
@@ -98,7 +98,7 @@ public class ReaperInit {
      */
     private static void queryHigherReaperInServer(final ReaperPatchVersion currentVersion) {
         if (currentVersion == null) {
-            Slog.e(TAG, "queryHigherReaperInServer : currentVersion == null.");
+            LoaderLog.e(TAG, "queryHigherReaperInServer : currentVersion == null.");
             return;
         }
 
@@ -113,7 +113,7 @@ public class ReaperInit {
                 int retVal = comparePatchVersion(currentVersion, rsd.version);
                 if (retVal != 1) {
                     if (DEBUG_REAPER_PATCH) {
-                        Slog.e(TAG, "we download a bad version ! rsd.version : " + rsd.version);
+                        LoaderLog.e(TAG, "we download a bad version ! rsd.version : " + rsd.version);
                     }
                     return;
                 }
@@ -144,7 +144,7 @@ public class ReaperInit {
     private static ReaperApi makeReaperApiFromPatch(ReaperPatch patch) {
         if (patch == null || !patch.isValid()) {
             if (DEBUG_REAPER_PATCH) {
-                Slog.e(TAG, "init : selectSuitablePatch error !");
+                LoaderLog.e(TAG, "init : selectSuitablePatch error !");
             }
             return null;
         }
@@ -152,7 +152,7 @@ public class ReaperInit {
         ClassLoader loader = patch.getPatchLoader();
         if (loader == null) {
             if (DEBUG_REAPER_PATCH) {
-                Slog.e(TAG, "init : classLoader == null !");
+                LoaderLog.e(TAG, "init : classLoader == null !");
             }
             return null;
         }
@@ -160,14 +160,14 @@ public class ReaperInit {
             Class claxx = loader.loadClass(CLASS_REAPER_API);
             if (claxx == null) {
                 if (DEBUG_REAPER_PATCH) {
-                    Slog.e(TAG, "init : cant find class " + CLASS_REAPER_API);
+                    LoaderLog.e(TAG, "init : cant find class " + CLASS_REAPER_API);
                 }
                 return null;
             }
             Object obj = claxx.newInstance();
             if (obj == null) {
                 if (DEBUG_REAPER_PATCH) {
-                    Slog.e(TAG, "init : " + CLASS_REAPER_API + " newInstance error !");
+                    LoaderLog.e(TAG, "init : " + CLASS_REAPER_API + " newInstance error !");
                 }
                 return null;
             }
@@ -209,7 +209,7 @@ public class ReaperInit {
         }
 
         if (reaperFiles.size() <= 0) {
-            Slog.e(TAG, "getPatchForHighestVersion, cant find ReaperFile .");
+            LoaderLog.e(TAG, "getPatchForHighestVersion, cant find ReaperFile .");
             return null;
         }
 
@@ -217,7 +217,7 @@ public class ReaperInit {
                 ReaperPatchManager.getInstance().unpackPatches(reaperFiles, context.getApplicationContext().getClassLoader());
         if (patches == null || patches.size() <= 0) {
             if (DEBUG_REAPER_PATCH) {
-                Slog.e(TAG, "getPatchForHighestVersion, cant unpack patches.");
+                LoaderLog.e(TAG, "getPatchForHighestVersion, cant unpack patches.");
             }
             return null;
         }
@@ -305,7 +305,7 @@ public class ReaperInit {
 
             String apkPath = packageInfo.applicationInfo.sourceDir;
             ReaperFile reaperFile = new ReaperFile(apkPath);
-            Slog.e(TAG, "loadSystemReaperFile : " + reaperFile.getName());
+            LoaderLog.e(TAG, "loadSystemReaperFile : " + reaperFile.getName());
             return reaperFile;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
@@ -326,7 +326,7 @@ public class ReaperInit {
         File rawFile = reaperFile.getRawFile();
         if (rawFile == null || !rawFile.exists())
             return null;
-        Slog.e(TAG, "loadReaperFileByPath : " + reaperFile.getName());
+        LoaderLog.e(TAG, "loadReaperFileByPath : " + reaperFile.getName());
         return reaperFile;
     }
 
@@ -345,7 +345,7 @@ public class ReaperInit {
         try {
             afd = am.openFd(name);
             ReaperFile reaperFile = new ReaperFile(afd);
-            Slog.e(TAG, "loadReaperFileByFD: " + reaperFile.getName());
+            LoaderLog.e(TAG, "loadReaperFileByFD: " + reaperFile.getName());
             return reaperFile;
         } catch (IOException e) {
             e.printStackTrace();
