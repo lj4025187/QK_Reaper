@@ -55,7 +55,7 @@ public class ReaperPatch {
      *
      * @param file
      */
-    public ReaperPatch(ReaperFile file) {
+    private ReaperPatch(ReaperFile file, ClassLoader appClassLoader) {
 
         if (ReaperPatchHelper.isApkFile(file)) {
             mFile = file;
@@ -65,7 +65,7 @@ public class ReaperPatch {
             mFile = file;
             mType = TYPE_REAPER;
             mLoader = ReaperPatchCryptTool.createReaperClassLoader(mFile, PATCH_OPT_DIR, PATCH_LIB_DIR,
-                    ClassLoader.getSystemClassLoader());
+                    appClassLoader);
         } else {
             mFile = null;
             mType = TYPE_UNKNOWN;

@@ -3,6 +3,7 @@ package com.fighter.patch;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -13,6 +14,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
@@ -78,12 +80,18 @@ public class AESBlockCipher implements IReaperBlockCipher {
         return new SecretKeySpec(key.data, ALGORITHM);
     }
 
+    private IvParameterSpec toCFBIV(Key key) {
+        return new IvParameterSpec(key.data);
+    }
+
     @Override
     public void initKey(Key key) {
         try {
-            currentEncryptCipher().init(Cipher.ENCRYPT_MODE, toCFBKey(key));
-            currentDecryptCipher().init(Cipher.DECRYPT_MODE, toCFBKey(key));
+            currentEncryptCipher().init(Cipher.ENCRYPT_MODE, toCFBKey(key), toCFBIV(key));
+            currentDecryptCipher().init(Cipher.DECRYPT_MODE, toCFBKey(key), toCFBIV(key));
         } catch (InvalidKeyException e) {
+            Log.e(TAG, "init key error: ", e);
+        } catch (InvalidAlgorithmParameterException e) {
             Log.e(TAG, "init key error: ", e);
         }
     }
