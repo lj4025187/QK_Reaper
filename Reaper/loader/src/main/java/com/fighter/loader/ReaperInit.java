@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -77,8 +78,9 @@ public class ReaperInit {
      * @param context
      */
     public static ReaperApi init(Context context) {
+        context = context.getApplicationContext();
         ReaperPatch reaperPatch = getPatchForHighestVersion(context);
-        ReaperApi api = makeReaperApiFromPatch(reaperPatch);
+        ReaperApi api = makeReaperApiFromPatch(context, reaperPatch);
         if (api == null) {
             if (DEBUG_REAPER_PATCH)
                 LoaderLog.e(TAG, "init : makeApi error !");
@@ -141,7 +143,7 @@ public class ReaperInit {
      * @param patch
      * @return
      */
-    private static ReaperApi makeReaperApiFromPatch(ReaperPatch patch) {
+    private static ReaperApi makeReaperApiFromPatch(Context context, ReaperPatch patch) {
         if (patch == null || !patch.isValid()) {
             if (DEBUG_REAPER_PATCH) {
                 LoaderLog.e(TAG, "init : selectSuitablePatch error !");
@@ -171,7 +173,9 @@ public class ReaperInit {
                 }
                 return null;
             }
-            return new ReaperApi(obj);
+            ReaperPatchVersion pv = patch.getVersion();
+            String version = pv.release + pv.second + pv.revision + pv.suffix;
+            return new ReaperApi(obj, version);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
@@ -214,13 +218,28 @@ public class ReaperInit {
         }
 
         List<ReaperPatch> patches =
-                ReaperPatchManager.getInstance().unpackPatches(reaperFiles, context.getApplicationContext().getClassLoader());
+                ReaperPatchManager.getInstance()
+                        .unpackPatches(reaperFiles, context.getApplicationContext().getClassLoader());
         if (patches == null || patches.size() <= 0) {
             if (DEBUG_REAPER_PATCH) {
                 LoaderLog.e(TAG, "getPatchForHighestVersion, cant unpack patches.");
             }
             return null;
         }
+        List<ReaperPatch> comparePatches = new ArrayList<>();
+        comparePatches.addAll(patches);
+
+        Iterator<ReaperPatch> it = patches.iterator();
+        while (it.hasNext()) {
+            ReaperPatch patch = it.next();
+            if (patch == null)
+                continue;
+            if (!patch.isValid()) {
+                it.remove();
+            }
+        }
+        if (patches.size() <= 0)
+            return null;
 
         Comparator<ReaperPatch> comparator = new Comparator<ReaperPatch>() {
             @Override
@@ -230,8 +249,80 @@ public class ReaperInit {
             }
         };
         Collections.sort(patches, comparator);
+        ReaperPatch targetPatch = patches.get(0);
 
-        return patches.get(0);
+        deleteLowerVersionIfNeeded(comparePatches, targetPatch);
+
+        return targetPatch;
+    }
+
+    /**
+     * If we are using higher version of downloaded patches,
+     * consider to delete lower version of downloaded patches.
+     * @param allPatches all patches we have queried.
+     * @param targetPatch patch we are using.
+     */
+    private static void
+        deleteLowerVersionIfNeeded(List<ReaperPatch> allPatches, ReaperPatch targetPatch) {
+        if (allPatches == null || allPatches.size() <= 0
+                || targetPatch == null) {
+            return;
+        }
+
+        //ensure that we are using Reaper from downloaded.
+        ReaperFile targetRF = targetPatch.getReaperFile();
+        if (targetRF == null)
+            return;
+        File targetFile = targetRF.getRawFile();
+        if (targetFile == null)
+            return;
+        String targetPath = targetFile.getAbsolutePath();
+        if (!targetPath.startsWith(REAPER_DIR_SDCARD)) {
+            return;
+        }
+
+        List<ReaperFile> filterFiles = new ArrayList<>();
+        for (ReaperPatch patch : allPatches) {
+            ReaperFile rf = patch.getReaperFile();
+            if (rf == null || rf.getRawFile() == null)
+                continue;
+            if (downloadedPatchEquals(patch, targetPatch))
+                continue;
+            File file = rf.getRawFile();
+            String path = file.getAbsolutePath();
+            if (!path.startsWith(REAPER_DIR_SDCARD))
+                continue;
+            filterFiles.add(rf);
+        }
+
+        if (filterFiles.size() > 0)
+            return;
+        for (ReaperFile rf : filterFiles) {
+            rf.getRawFile().delete();
+        }
+    }
+
+    /**
+     * Compare two downloaded ReaperPatchs .
+     * @param first
+     * @param second
+     * @return true if first == second.
+     */
+    private static boolean downloadedPatchEquals(ReaperPatch first, ReaperPatch second) {
+        if (first == null || second == null)
+            return false;
+        ReaperFile firstRF = first.getReaperFile();
+        ReaperFile secondRF = second.getReaperFile();
+        if (firstRF != null && secondRF != null) {
+            File firstRawFile = firstRF.getRawFile();
+            File secondRawFile = secondRF.getRawFile();
+            if (firstRawFile != null && secondRawFile != null) {
+                return TextUtils.equals(firstRawFile.getAbsolutePath(),
+                        secondRawFile.getAbsolutePath());
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -336,7 +427,7 @@ public class ReaperInit {
      * @param nameWithPrefix
      * @return
      */
-    private static ReaperFile loadReaperFileByFD(Context context, @NonNull String nameWithPrefix) {
+    private static ReaperFile loadReaperFileByFD(Context context, String nameWithPrefix) {
         if (nameWithPrefix == null || !nameWithPrefix.startsWith(ASSETS_PREFIX))
             return null;
         String name = nameWithPrefix.substring(ASSETS_PREFIX.length(), nameWithPrefix.length());
