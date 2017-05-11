@@ -17,8 +17,12 @@ import android.view.Surface;
 import android.view.WindowManager;
 
 import java.net.NetworkInterface;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Utils to get local message of current device
@@ -63,6 +67,16 @@ public final class Device {
     public static String getBuildBrand() {
         return Build.BRAND;
     }
+
+    /**
+     * 获取{@code Build.MANUFACTURER}
+     *
+     * @return {@code Build.MANUFACTURER}
+     */
+    public static String getBuildManufacturer() {
+        return Build.MANUFACTURER;
+    }
+
 
     /**
      * 获取{@code Build.RELEASE}
@@ -457,5 +471,26 @@ public final class Device {
     // ----------------------------------------------------
     // 其它信息
     // ----------------------------------------------------
+
+    /**
+     * 获取本地时间
+     *
+     * @return
+     */
+    public static String getCurrentLocalTime() {
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddhhmmss");
+        return formatter.format(date);
+    }
+
+    /**
+     * 获取地区信息
+     *
+     * @return
+     */
+    public static String getArea() {
+        TimeZone timeZone = TimeZone.getDefault();
+        return timeZone.getID();
+    }
 
 }
