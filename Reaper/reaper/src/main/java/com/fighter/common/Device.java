@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.SimpleFormatter;
 
@@ -468,6 +469,24 @@ public final class Device {
         }
     }
 
+    /**
+     * 获取Mcc
+     *
+     * @param context
+     * @return
+     */
+    public static String getMcc(Context context) {
+        String operator , mcc = null;
+        TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (tm != null) {
+            operator = tm.getSimOperator();
+            if (operator != null && operator.length() != 0) {
+                mcc = operator.substring(0, 3);
+            }
+        }
+        return mcc;
+    }
+
     // ----------------------------------------------------
     // 其它信息
     // ----------------------------------------------------
@@ -493,4 +512,16 @@ public final class Device {
         return timeZone.getID();
     }
 
+    /**
+     * 获取系统语言
+     *
+     * @return
+     */
+    public static String getLocalLanguage() {
+        return Locale.getDefault().getLanguage();
+    }
+
+    public static String getDeviceChannel() {
+        return "";
+    }
 }

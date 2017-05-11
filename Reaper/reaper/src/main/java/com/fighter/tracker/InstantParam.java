@@ -3,6 +3,7 @@ package com.fighter.tracker;
 import android.content.Context;
 
 import com.fighter.common.Device;
+import com.fighter.reaper.BumpVersion;
 
 import java.util.HashMap;
 
@@ -14,32 +15,36 @@ import java.util.HashMap;
 
 final class InstantParam {
 
-    //TODO: sdk version not define
     /** ad sdk version */
     private String ad_sdk_v;
 
     /** phone network type */
     public String net_type;
 
+    /** phone mcc */
+    public String mcc;
+
     /** event time */
     public String c_time;
 
-    /** area */
-    public String area;
-
-    private InstantParam(String net_type, String c_time, String area, String ad_sdk_v) {
+    private InstantParam(String net_type, String mcc, String c_time, String ad_sdk_v) {
         this.ad_sdk_v = ad_sdk_v;
+        this.mcc = mcc;
         this.net_type = net_type;
         this.c_time = c_time;
-        this.area = area;
+
     }
 
-    public static HashMap<String, String> append(Context context, HashMap<String, String> map) {
+    static HashMap<String, String> append(Context context, HashMap<String, String> map) {
         if (map == null)
             return null;
-        map.put("net_type", Device.getNetworkType(context).name());
+        map.put("ad_sdk_v", BumpVersion.value());
+        String net_type = Device.getNetworkType(context).name();
+        int index = net_type.lastIndexOf("_");
+        net_type = net_type.substring(index + 1).toLowerCase();
+        map.put("net_type", net_type);
+        map.put("mcc", Device.getMcc(context));
         map.put("c_time", Device.getCurrentLocalTime());
-        map.put("area", Device.getArea());
         return map;
     }
 }

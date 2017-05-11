@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.fighter.common.Device;
+import com.qihoo.sdk.report.QHStatAgent;
 
 import java.util.HashMap;
 
@@ -28,11 +29,14 @@ public class Tracker implements ITracker {
     public void init(Context context) {
         mContext = context;
         DeviceParam.init(context);
+        //TODO : init QDAS
+
     }
 
     @Override
     public void onEvent(Context context, String event_id, HashMap map) {
-        Log.d(TAG, "Hash map = " + map);
+        Log.d(TAG, "event_id = " + event_id + ";Hash map = " + map);
+        // TODO : onEvent QDAS
     }
 
     @Override

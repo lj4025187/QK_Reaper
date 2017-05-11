@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.fighter.tracker.AdParam;
 import com.fighter.tracker.EventActionParam;
-import com.fighter.tracker.EventCacheDisplayParam;
 import com.fighter.tracker.EventClickParam;
 import com.fighter.tracker.EventDisPlayParam;
 import com.fighter.tracker.Tracker;
@@ -43,13 +42,11 @@ public class TrackerTest {
         macField.setAccessible(true);
         String mac = (String) macField.get(null);
         Log.d(TAG, "device param:mac = " + mac);
-        Assert.assertNotNull(mac);
 
         Field m1Field = clz.getDeclaredField("m1");
         m1Field.setAccessible(true);
         String m1 = (String) m1Field.get(null);
         Log.d(TAG, "device param:m1 = " + m1);
-        Assert.assertNotNull(m1);
 
         Field brandField = clz.getDeclaredField("brand");
         brandField.setAccessible(true);
@@ -81,16 +78,16 @@ public class TrackerTest {
         tTracker = Tracker.getTracker();
         mContext = InstrumentationRegistry.getTargetContext();
         AdParam param = new AdParam();
-        param.ad_num = String.valueOf(1);
-        param.ad_posid = String.valueOf(10);
+        param.ad_num = 1;
+        param.ad_posid = 10000;
         param.ad_source = "gtk";
         param.ad_type = "banner";
         param.app_pkg = "com.fighter.test";
         tTracker.onEvent(mContext, "ad_display", param);
 
         EventDisPlayParam param1 = new EventDisPlayParam();
-        param1.ad_num = String.valueOf(1);
-        param1.ad_posid = String.valueOf(10);
+        param1.ad_num = 1;
+        param1.ad_posid = 10001;
         param1.ad_source = "gtk";
         param1.ad_type = "banner";
         param1.app_pkg = "com.fighter.test";
@@ -98,31 +95,21 @@ public class TrackerTest {
         tTracker.onEvent(mContext, TrackerEventType.AD_DISPLAY_EVENT, param1);
 
         EventClickParam param2 = new EventClickParam();
-        param2.ad_num = String.valueOf(1);
-        param2.ad_posid = String.valueOf(10);
+        param2.ad_num = 1;
+        param2.ad_posid = 10002;
         param2.ad_source = "gtk";
         param2.ad_type = "banner";
         param2.app_pkg = "com.fighter.test";
-        param2.click_pos = "100,100";
-        tTracker.onEvent(mContext, TrackerEventType.AD_CLICK_EVENT, param1);
+        param2.click_pos = "(100,100)";
+        tTracker.onEvent(mContext, TrackerEventType.AD_CLICK_EVENT, param2);
 
         EventActionParam param3 = new EventActionParam();
-        param3.ad_num = String.valueOf(1);
-        param3.ad_posid = String.valueOf(10);
+        param3.ad_num = 1;
+        param3.ad_posid = 10003;
         param3.ad_source = "gtk";
         param3.ad_type = "banner";
         param3.app_pkg = "com.fighter.test";
-        param3.act_type = TrackerEventType.ACTION_TYPE_BEGIN;
+        param3.act_type = TrackerEventType.AD_ACTION_TYPE_BEGIN;
         tTracker.onEvent(mContext, TrackerEventType.AD_ACTION_EVENT, param3);
-
-        EventCacheDisplayParam param4 = new EventCacheDisplayParam();
-        param4.ad_num = String.valueOf(1);
-        param4.ad_posid = String.valueOf(10);
-        param4.ad_source = "gtk";
-        param4.ad_type = "banner";
-        param4.app_pkg = "com.fighter.test";
-        param4.cache_times = "";
-        tTracker.onEvent(mContext, TrackerEventType.AD_CACHE_DISPLAY_EVENT, param4);
-
     }
 }

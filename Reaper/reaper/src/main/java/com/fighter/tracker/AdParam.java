@@ -12,7 +12,7 @@ public class AdParam {
     public String app_pkg;
 
     /** ad position id */
-    public String ad_posid;
+    public int ad_posid;
 
     /** ad source */
     public String ad_source;
@@ -21,7 +21,7 @@ public class AdParam {
     public String ad_type;
 
     /** ad number */
-    public String ad_num;
+    public int ad_num;
 
     /** the reserved word */
     public String reserved1;
@@ -29,13 +29,13 @@ public class AdParam {
     /** the reserved word */
     public String reserved2;
 
-    public HashMap<String, String> generateMap() {
+    HashMap<String, String> generateMap() {
         HashMap<String, String> map = new HashMap<>();
         map.put("app_pkg", app_pkg);
-        map.put("ad_posid", ad_posid);
+        map.put("ad_posid", String.valueOf(ad_posid));
         map.put("ad_source", ad_source);
         map.put("ad_type", ad_type);
-        map.put("ad_num", ad_num);
+        map.put("ad_num", String.valueOf(ad_num));
         map.put("reserved1", reserved1);
         map.put("reserved2", reserved2);
         return map;
