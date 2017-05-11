@@ -39,16 +39,16 @@ public class ReaperApi {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Slog.e(TAG, "checkHigherVersion, before lock . mChecking : " + mChecking);
+                LoaderLog.e(TAG, "checkHigherVersion, before lock . mChecking : " + mChecking);
                 mLock.lock();
-                Slog.e(TAG, "checkHigherVersion, we have locked here, and waiting for other Thread exec over.");
+                LoaderLog.e(TAG, "checkHigherVersion, we have locked here, and waiting for other Thread exec over.");
                 if (mChecking) {
                     try {
                         mDownloadCondition.await();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    Slog.e(TAG, "checkHigherVersion, if we are signal by condition, mCheckSuccess : " + mCheckSuccess);
+                    LoaderLog.e(TAG, "checkHigherVersion, if we are signal by condition, mCheckSuccess : " + mCheckSuccess);
                 }
 
                 mChecking = true;
@@ -73,7 +73,7 @@ public class ReaperApi {
                 mChecking = false;
                 mDownloadCondition.signal();
                 mLock.unlock();
-                Slog.e(TAG, "checkHigherVersion, unLock and check over.");
+                LoaderLog.e(TAG, "checkHigherVersion, unLock and check over.");
             }
         }).start();
     }
