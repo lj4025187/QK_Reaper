@@ -286,12 +286,24 @@ public final class Device {
     // ----------------------------------------------------
 
     public enum NetworkType {
-        NETWORK_WIFI,
-        NETWORK_4G,
-        NETWORK_3G,
-        NETWORK_2G,
-        NETWORK_UNKNOWN,
-        NETWORK_NO
+        NETWORK_WIFI("wifi"),
+        NETWORK_4G("4g"),
+        NETWORK_3G("3g"),
+        NETWORK_2G("2g"),
+        NETWORK_UNKNOWN("unknown"),
+        NETWORK_NO("no");
+
+        // every enum should has a string name
+        // it is used to json
+        private String name;
+
+        NetworkType(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 
     private static final int NETWORK_TYPE_GSM = 16;
@@ -366,6 +378,18 @@ public final class Device {
         }
         return netType;
     }
+
+    /**
+     * 获取当前活络类型
+     *
+     * @param context
+     * @return string network type
+     */
+    public static String getNetworkTypeString(Context context) {
+        NetworkType type = getNetworkType(context);
+        return type.getName();
+    }
+
 
     /**
      * 获取活动网络信息

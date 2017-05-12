@@ -1,5 +1,6 @@
 package com.fighter.reaper;
 
+import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
@@ -45,5 +46,14 @@ public class DeviceTest {
     public void useGetDeviceChannel() throws Exception {
         String test = Device.getDeviceChannel();
         Log.d(TAG, "channel = " + test);
+    }
+
+    @Test
+    public void useNetworkString() throws Exception {
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        String netTypeString = Device.getNetworkTypeString(context);
+        Log.d(TAG, "NetworkTypeString = " + netTypeString);
+        Assert.assertNotNull(netTypeString);
     }
 }
