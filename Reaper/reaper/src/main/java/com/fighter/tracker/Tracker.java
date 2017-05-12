@@ -29,14 +29,13 @@ public class Tracker implements ITracker {
     public void init(Context context) {
         mContext = context;
         DeviceParam.init(context);
-        //TODO : init QDAS
-
+        TrackerStatAgent.init(context);
     }
 
     @Override
     public void onEvent(Context context, String event_id, HashMap map) {
         Log.d(TAG, "event_id = " + event_id + ";Hash map = " + map);
-        // TODO : onEvent QDAS
+        TrackerStatAgent.onEvent(context, event_id, map);
     }
 
     @Override
