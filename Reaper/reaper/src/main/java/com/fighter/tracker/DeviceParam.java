@@ -40,9 +40,6 @@ final class DeviceParam {
     /** Phone language */
     private static String language;
 
-    /** phone mcc */
-    private static String mcc;
-
     private DeviceParam() {
     }
 
@@ -65,7 +62,6 @@ final class DeviceParam {
                 String.valueOf(Device.getScreenHeight(context));
         channel = Device.getDeviceChannel();
         language = Device.getLocalLanguage();
-        mcc = Device.getMcc(context);
     }
 
     static HashMap<String, String> generateMap() {
@@ -78,7 +74,6 @@ final class DeviceParam {
         map.put("screen", screen);
         map.put("channel", channel);
         map.put("language", language);
-        map.put("mcc", mcc);
         return map;
     }
 }

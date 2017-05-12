@@ -40,4 +40,10 @@ public class DeviceTest {
         Log.d(TAG, "language = " + test);
         Assert.assertNotNull(test);
     }
+
+    @Test
+    public void useGetDeviceChannel() throws Exception {
+        String test = Device.getDeviceChannel();
+        Log.d(TAG, "channel = " + test);
+    }
 }

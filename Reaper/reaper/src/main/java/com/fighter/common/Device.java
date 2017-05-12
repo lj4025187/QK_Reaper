@@ -521,7 +521,17 @@ public final class Device {
         return Locale.getDefault().getLanguage();
     }
 
+    /**
+     * 获取设备渠道号
+     *
+     * @return
+     */
     public static String getDeviceChannel() {
-        return "";
+        ShellUtils.CommandResult result = ShellUtils.execCmd(
+                "getprop ro.vendor.channel.number", false);
+        if (result.result ==  0) {
+            return result.successMsg;
+        }
+        return null;
     }
 }
