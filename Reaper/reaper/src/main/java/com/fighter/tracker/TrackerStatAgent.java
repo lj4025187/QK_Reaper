@@ -30,6 +30,7 @@ public class TrackerStatAgent {
     private final static boolean CATCH_ERR = false;
 
     private static Context sContext;
+    private static boolean sDebugMode;
 
     /**
      * @param application
@@ -52,6 +53,7 @@ public class TrackerStatAgent {
             return;
         }
         sContext = context;
+        sDebugMode = QHConfig.isDebugMode(context);
         //设置SDK类的产品AppKey，请在init之前设置，以免生成文件名时取不到appkey。
         QHConfig.setAppkey(context, REAPER_AGENT_KEY);
         //设置SDK类的产品版本号。SDK类的产品必须使用（因为如果不设置的话，自动获取到的版本会是app的版本号）
@@ -66,6 +68,8 @@ public class TrackerStatAgent {
         QHStatAgent.setChannel(context, "");
         if (CATCH_ERR)
             QHStatAgent.onError(context);
+        if (sDebugMode)
+            QHStatAgent.setLoggingEnabled(sDebugMode);
     }
 
     /**
@@ -117,56 +121,54 @@ public class TrackerStatAgent {
         if (!SWITCH_OPEN)
             return;
         ReaperLog.i(TAG, "onEvent");
-        QHStatAgent.onEvent(sContext, eventId);
+        onEvent(sContext, eventId);
     }
 
     /**
      * @param context
-     * @param eventId 事件编号 {@link TrackerEventType}
+     * @param eventId
      */
     public static void onEvent(Context context, String eventId) {
         if (!SWITCH_OPEN)
             return;
         ReaperLog.i(TAG, "onEvent");
-        QHStatAgent.onEvent(context == null ? sContext : context, eventId);
+        onEvent(context == null ? sContext : context, eventId, null);
     }
 
     /**
      * @param context
-     * @param eventId 事件编号 {@link TrackerEventType}
+     * @param eventId
      * @param times   该事件执行次数
      */
     public static void onEvent(Context context, String eventId, int times) {
         if (!SWITCH_OPEN)
             return;
-        QHStatAgent.onEvent(context, eventId, times);
+        onEvent(context == null ? sContext : context, eventId, null, times);
     }
 
     /**
      * @param context
-     * @param eventId 事件编号 {@link TrackerEventType}
+     * @param eventId
      * @param hashMap 扩展的自定义属性
      */
     public static void onEvent(Context context, String eventId, HashMap hashMap) {
-        if (!SWITCH_OPEN || hashMap == null || hashMap.size() <= 0)
+        if (!SWITCH_OPEN)
             return;
         ReaperLog.i(TAG, "onEvent three params contains HashMap");
-        QHStatAgent.onEvent(context == null ? sContext : context, eventId, hashMap);
+        onEvent(context == null ? sContext : context, eventId, hashMap, 1);
     }
 
     /**
      * @param context
-     * @param eventId 事件编号 {@link TrackerEventType}
+     * @param eventId
      * @param hashMap 扩展的自定义属性
      * @param acc     事件次数
-     * @param level   数据分级上传的级别。1为最低；5为默认值；9为实时
-     * @param plan    采样方案：共提供A和B两种方案，可分别使用云控配置采样率
      */
-    public static void onEvent(Context context, String eventId, HashMap hashMap, int acc, DataUploadLevel level, SamplingPlan plan) {
-        if (!SWITCH_OPEN || hashMap == null || hashMap.size() <= 0)
+    public static void onEvent(Context context, String eventId, HashMap hashMap, int acc) {
+        if (!SWITCH_OPEN)
             return;
         ReaperLog.i(TAG, "onEvent six params contains HashMap");
-        QHStatAgent.onEvent(context == null ? sContext : context, eventId, hashMap, acc, level, plan);
+        QHStatAgent.onEvent(context == null ? sContext : context, eventId, hashMap, acc, DataUploadLevel.L9, SamplingPlan.B);
     }
 
     /**
@@ -180,7 +182,7 @@ public class TrackerStatAgent {
         if (!SWITCH_OPEN)
             return;
         ReaperLog.i(TAG, "onStatusEvent");
-        QHStatAgent.onStatusEvent(context == null ? sContext : context, eventId, status);
+        onEvent(context == null ? sContext : context, eventId, status);
     }
 
     /**
