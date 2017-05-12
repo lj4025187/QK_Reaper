@@ -23,6 +23,11 @@ public class AdRequest {
      */
     private int mAdType;
     /**
+     * 广告位请求的广告数量<br></br>
+     * <b>注意：</b>返回数量不一定就是设置的数量
+     */
+    private int mAdCount;
+    /**
      * 广告宽
      * 若为比例请填写到extras
      */
@@ -67,6 +72,10 @@ public class AdRequest {
         return mAdType;
     }
 
+    public int getAdCount() {
+        return mAdCount;
+    }
+
     public int getAdWidth() {
         return mAdWidth;
     }
@@ -89,6 +98,7 @@ public class AdRequest {
                 "mAppId='" + mAppId + '\'' +
                 ", mAdPositionId='" + mAdPositionId + '\'' +
                 ", mAdType=" + mAdType +
+                ", mAdCount=" + mAdCount +
                 ", mAdWidth=" + mAdWidth +
                 ", mAdHeight=" + mAdHeight +
                 ", mAdKeyWords=" + mAdKeyWords +
@@ -101,6 +111,7 @@ public class AdRequest {
         private String mAppId;
         private String mAdPositionId;
         private int mAdType;
+        private int mAdCount;
         private int mAdWidth;
         private int mAdHeight;
         private List<String> mAdKeyWords;
@@ -141,6 +152,17 @@ public class AdRequest {
          */
         public Builder adType(int type) {
             mAdType = type;
+            return this;
+        }
+
+        /**
+         * 设置请求广告位的广告数量
+         *
+         * @param adCount 广告数量
+         * @return 广告创建器
+         */
+        public Builder adCount(int adCount) {
+            mAdCount = adCount;
             return this;
         }
 
@@ -202,6 +224,7 @@ public class AdRequest {
             adRequest.mAppId = mAppId;
             adRequest.mAdPositionId = mAdPositionId;
             adRequest.mAdType = mAdType;
+            adRequest.mAdCount = mAdCount;
             adRequest.mAdWidth = mAdWidth;
             adRequest.mAdHeight = mAdHeight;
             adRequest.mAdKeyWords = mAdKeyWords;

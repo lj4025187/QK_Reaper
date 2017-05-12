@@ -33,26 +33,8 @@ import okhttp3.internal.Version;
  * 说明
  * </th>
  * <th>
- * 备注
+ * 是否必填
  * </th>
- * </tr>
- * <tr>
- * <td>{@code EXTRA_AD_TYPE}</td>
- * <td>{@code int}</td>
- * <td>腾讯广点通的广告类型</td>
- * <td><b>必填</b></td>
- * </tr>
- * <tr>
- * <td>{@code EXTRA_AD_COUNT}</td>
- * <td>{@code int}</td>
- * <td>本次请求的广告数量<br></br>经测试发现仅能返回一条广告</td>
- * <td><b>必填</b></td>
- * </tr>
- * <tr>
- * <td>{@code EXTRA_REMOTE_IP}</td>
- * <td>{@code String}</td>
- * <td>公网IPV4地址</td>
- * <td><b>必填</b></td>
  * </tr>
  * <tr>
  * <td>{@code EXTRA_LAT}</td>
@@ -78,18 +60,6 @@ import okhttp3.internal.Version;
  * </p>
  */
 public class TencentSDKWrapper implements ISDKWrapper {
-    /**
-     * 腾讯广点通的广告类型
-     */
-    public static final String EXTRA_AD_TYPE = "postype";
-    /**
-     * 本次请求的广告数量 必填
-     */
-    public static final String EXTRA_AD_COUNT = "count";
-    /**
-     * 公网IP 必填
-     */
-    public static final String EXTRA_REMOTE_IP = "remoteip";
     /**
      * 经度
      */
@@ -118,22 +88,34 @@ public class TencentSDKWrapper implements ISDKWrapper {
     private static final String TENCENT_AD_API_VER = "2.1";
 
     /**
+     * 广告类型对应表。<br></br>
      * 腾讯广点通原生广告，不填宽高
      */
-    private static final int AD_TYPE_NATIVE = 8;
+    private static final Map<Integer, Integer> TYPE_REF_MAP = new ArrayMap<>();
+
+    // 1:banner 2:插屏 3:应用墙 4:开屏 5:feed 8:原生
+    static {
+        TYPE_REF_MAP.put(AdType.TYPE_BANNER, 1);
+        TYPE_REF_MAP.put(AdType.TYPE_PLUG_IN, 2);
+        TYPE_REF_MAP.put(AdType.TYPE_APP_WALL, 3);
+        TYPE_REF_MAP.put(AdType.TYPE_FULL_SCREEN, 4);
+        TYPE_REF_MAP.put(AdType.TYPE_FEED, 5);
+        TYPE_REF_MAP.put(AdType.TYPE_NATIVE, 8);
+    }
 
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
 
     // ----------------------------------------------------
 
-    public TencentSDKWrapper(Context context) {
-        mContext = context;
-    }
-
     @Override
     public String getSdkVersion() {
         return TENCENT_AD_API_VER;
+    }
+
+    @Override
+    public void init(Context appContext, Map<String, Object> extras) {
+        mContext = appContext;
     }
 
     @Override
@@ -152,23 +134,20 @@ public class TencentSDKWrapper implements ISDKWrapper {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return adResponse == null ? new AdResponse.Builder().httpResponseCode(0).create() :
+        return adResponse == null ?
+                new AdResponse.Builder().errMsg("Request has no response.").create() :
                 adResponse;
     }
 
     @Override
-    public void trackEvent(int adEvent, AdResponse adResponse, Map<String, Object> eventParams) {
+    public void onEvent(int adEvent, AdResponse adResponse, Map<String, Object> eventParams) {
 
     }
 
     // ----------------------------------------------------
 
     private HttpUrl spliceRequestAdUrl(AdRequest adRequest) {
-        int adCounts = 1;
-        if (adRequest.getAdExtras() != null &&
-                adRequest.getAdExtras().containsKey(EXTRA_AD_COUNT)) {
-            adCounts = (int) adRequest.getAdExtras().get(EXTRA_AD_COUNT);
-        }
+        int adCounts = adRequest.getAdCount();
 
         HttpUrl.Builder builder = new HttpUrl.Builder()
                 .scheme(URL_REQUEST_AD_SCHEME)
@@ -185,15 +164,17 @@ public class TencentSDKWrapper implements ISDKWrapper {
                 .addQueryParameter("ext",
                         spliceAdRequestExt(adRequest));         // 广告请求扩展内容,内容为 json 串
 
-        if (adRequest.getAdExtras() != null) {
-            Map<String, Object> extras = adRequest.getAdExtras();
-            if (extras.containsKey(EXTRA_AD_TYPE) &&
-                    (int) (extras.get(EXTRA_AD_TYPE)) != AD_TYPE_NATIVE) {
-                builder.addQueryParameter("posw", String.valueOf(
-                        adRequest.getAdWidth()))                // 广告位宽
-                        .addQueryParameter("posh", String.valueOf(
-                                adRequest.getAdHeight()));      // 广告位高
-            }
+        int localAdType = 0;
+        if (TYPE_REF_MAP.containsKey(adRequest.getAdType())) {
+            localAdType = TYPE_REF_MAP.get(adRequest.getAdType());
+        }
+
+        // 原生广告不填写宽高
+        if (localAdType != TYPE_REF_MAP.get(AdType.TYPE_NATIVE)) {
+            builder.addQueryParameter("posw", String.valueOf(
+                    adRequest.getAdWidth()))                // 广告位宽
+                    .addQueryParameter("posh", String.valueOf(
+                            adRequest.getAdHeight()));      // 广告位高
         }
 
         return builder.build();
@@ -250,10 +231,12 @@ public class TencentSDKWrapper implements ISDKWrapper {
         jsonReq.put("muid", strMuid);         // 移动终端标识
         jsonReq.put("c_device", Device.getBuildModel());               // 设备品牌和型号
         jsonReq.put("c_pkgname", mContext.getPackageName()); // app 包名
-        int type = 8;
 
-        jsonReq.put("postype", type);   // 广告位类型
-        // 1:banner 2:插屏 3:应用墙 4:开屏 5:feed 8:原生
+        int localAdType = 0;
+        if (TYPE_REF_MAP.containsKey(adRequest.getAdType())) {
+            localAdType = TYPE_REF_MAP.get(adRequest.getAdType());
+        }
+        jsonReq.put("postype", localAdType);   // 广告位类型
 
         Device.NetworkType networkType = Device.getNetworkType(mContext);
         int iNetType = 0;
@@ -305,9 +288,7 @@ public class TencentSDKWrapper implements ISDKWrapper {
         }
         jsonReq.put("inline_full_screen", false); // 这个字段仅用于请求插屏大规格广告，请求其他类型广告时不填
         jsonReq.put("c_ori", Device.isPortrait(mContext) ? 0 : 90); // 设备横竖屏 0 90 180 270
-        if (extras.containsKey(EXTRA_REMOTE_IP)) {
-            jsonReq.put("remoteip", extras.get(EXTRA_REMOTE_IP));  // 用户设备的公网 IPv4 地址
-        }
+        // 公网IP无法获取，不填写
         // 经纬度及时间戳
         if (extras.containsKey(EXTRA_LAT)) {
             jsonReq.put("lat", extras.get(EXTRA_LAT));
@@ -324,7 +305,7 @@ public class TencentSDKWrapper implements ISDKWrapper {
         if (!TextUtils.isEmpty(userAgent)) {
             jsonReq.put("useragent", userAgent);
         }
-        jsonReq.put("referer", "");     // 终端用户 HTTP 请求头中的 referer字段 (直接请求，没有来源页)
+        // 终端用户 HTTP 请求头中的 referer字段 (直接请求，没有来源页 不填写)
         jsonReq.put("c_osver", Device.getBuildRelease());   // os 版本
         jsonReq.put("screen_density", String.valueOf(Device.getScreenDensity())); // 屏幕密度
         jsonReq.put("imei", strImeiMd5);    // 设备 imei 的md5sum 摘要,摘要小写
@@ -347,7 +328,8 @@ public class TencentSDKWrapper implements ISDKWrapper {
 
     private AdResponse convertResponse(Response response) {
         AdResponse.Builder builder = new AdResponse.Builder();
-        builder.httpResponseCode(response.code());
+        JSONObject errJson = new JSONObject();
+        errJson.put("httpResponseCode", response.code());
         if (response.isSuccessful()) {
             try {
                 builder.oriResponse(response.body().string());
@@ -355,6 +337,8 @@ public class TencentSDKWrapper implements ISDKWrapper {
                 e.printStackTrace();
             }
         }
+
+        builder.errMsg(errJson.toJSONString());
         return builder.create();
     }
 }

@@ -1,12 +1,9 @@
 package com.fighter.wrapper;
 
 import java.util.List;
+import java.util.Map;
 
 public class AdResponse {
-    /**
-     * Http返回码
-     */
-    private int mHttpResponseCode;
     /**
      * 广告请求是否成功
      */
@@ -20,10 +17,6 @@ public class AdResponse {
      */
     private String mAdPositionId;
     /**
-     * 请求时的参数信息
-     */
-    private AdRequest mAdRequest;
-    /**
      * 原始响应字符串
      */
     private String mOriResponse;
@@ -31,6 +24,10 @@ public class AdResponse {
      * 返回的广告
      */
     private List<AdInfo> mAdInfos;
+    /**
+     * 额外的广告响应信息，用于SDK返回结果差异化和后续扩展
+     */
+    private Map<String, Object> mExtras;
 
     // ----------------------------------------------------
 
@@ -40,9 +37,6 @@ public class AdResponse {
 
     // ----------------------------------------------------
 
-    public int getHttpResponseCode() {
-        return mHttpResponseCode;
-    }
 
     public boolean isSucceed() {
         return mIsSucceed;
@@ -52,12 +46,8 @@ public class AdResponse {
         return mErrMsg;
     }
 
-    public String getmAdPositionId() {
+    public String getAdPositionId() {
         return mAdPositionId;
-    }
-
-    public AdRequest getAdRequest() {
-        return mAdRequest;
     }
 
     public String getOriResponse() {
@@ -68,37 +58,34 @@ public class AdResponse {
         return mAdInfos;
     }
 
+    public Map<String, Object> getExtras() {
+        return mExtras;
+    }
+
     @Override
     public String toString() {
         return "AdResponse{" +
-                "mHttpResponseCode=" + mHttpResponseCode +
-                ", mIsSucceed=" + mIsSucceed +
+                "mIsSucceed=" + mIsSucceed +
                 ", mErrMsg='" + mErrMsg + '\'' +
                 ", mAdPositionId='" + mAdPositionId + '\'' +
-                ", mAdRequest=" + mAdRequest +
                 ", mOriResponse='" + mOriResponse + '\'' +
                 ", mAdInfos=" + mAdInfos +
+                ", mExtras=" + mExtras +
                 '}';
     }
 
     // ----------------------------------------------------
 
     static class Builder {
-        private int mHttpResponseCode;
         private boolean mIsSucceed;
         private String mErrMsg;
         private String mAdPositionAd;
-        private AdRequest mAdRequest;
         private String mOriResponse;
         private List<AdInfo> mAdInfos;
+        private Map<String, Object> mExtras;
 
         Builder() {
 
-        }
-
-        Builder httpResponseCode(int httpResponseCode) {
-            mHttpResponseCode = httpResponseCode;
-            return this;
         }
 
         Builder isSucceed(boolean isSucceed) {
@@ -116,11 +103,6 @@ public class AdResponse {
             return this;
         }
 
-        Builder adRequest(AdRequest adRequest) {
-            mAdRequest = adRequest;
-            return this;
-        }
-
         Builder oriResponse(String oriResponse) {
             mOriResponse = oriResponse;
             return this;
@@ -131,15 +113,19 @@ public class AdResponse {
             return this;
         }
 
+        Builder adExtras(Map<String, Object> extras) {
+            mExtras = extras;
+            return this;
+        }
+
         AdResponse create() {
             AdResponse adResponse = new AdResponse();
-            adResponse.mHttpResponseCode = mHttpResponseCode;
             adResponse.mIsSucceed = mIsSucceed;
             adResponse.mErrMsg = mErrMsg;
             adResponse.mAdPositionId = mAdPositionAd;
-            adResponse.mAdRequest = mAdRequest;
             adResponse.mOriResponse = mOriResponse;
             adResponse.mAdInfos = mAdInfos;
+            adResponse.mExtras = mExtras;
             return adResponse;
         }
     }

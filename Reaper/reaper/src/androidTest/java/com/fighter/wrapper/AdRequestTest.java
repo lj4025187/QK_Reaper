@@ -18,6 +18,7 @@ public class AdRequestTest {
         String appId = "appid";
         String posId = "posId";
         int adType = AdType.TYPE_NATIVE;
+        int adCount = 10;
         ArrayList<String> keyWords = new ArrayList<>();
         String keyWord1 = "key1";
         keyWords.add(keyWord1);
@@ -30,6 +31,7 @@ public class AdRequestTest {
         builder.appId(appId)
                 .adPositionId(posId)
                 .adType(adType)
+                .adCount(adCount)
                 .adKeyWords(keyWords)
                 .adWidth(width)
                 .adHeight(height)
@@ -39,6 +41,7 @@ public class AdRequestTest {
         assertTrue(adRequest.getAppId().equals(appId));
         assertTrue(adRequest.getAdPositionId().equals(posId));
         assertTrue(adRequest.getAdType() == adType);
+        assertTrue(adRequest.getAdCount() == adCount);
         assertTrue(adRequest.getAdKeyWords().get(0).equals(keyWord1));
         assertTrue(adRequest.getAdWidth() == width);
         assertTrue(adRequest.getAdHeight() == height);
