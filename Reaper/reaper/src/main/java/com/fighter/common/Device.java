@@ -12,9 +12,12 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.WindowManager;
+
+import com.fighter.common.utils.EncryptUtils;
 
 import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
@@ -125,6 +128,26 @@ public final class Device {
             return macAddress;
         }
         return null;
+    }
+
+    /**
+     * 获取特定格式的mac地址字符串
+     * 具体格式为：
+     *     获取用户手机wifi网卡号设备的MAC，
+     *     去除分隔符":"后转为大写,并取md5sum摘要值, 摘要小写
+     *     例如：“900150983cd24fb0d6963f7d28e17f72”
+     *
+     * @param context
+     * @return
+     */
+    public static String getFormatMac(Context context) {
+        String mac = getMac(context);
+        if (TextUtils.isEmpty(mac)) {
+            return null;
+        }
+
+        String formatMac = mac.replaceAll(":", "").toUpperCase();
+        return EncryptUtils.encryptMD5ToString(formatMac).toLowerCase();
     }
 
     /**

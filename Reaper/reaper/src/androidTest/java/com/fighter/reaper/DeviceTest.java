@@ -56,4 +56,14 @@ public class DeviceTest {
         Log.d(TAG, "NetworkTypeString = " + netTypeString);
         Assert.assertNotNull(netTypeString);
     }
+
+    @Test
+    public void useformatMac() throws Exception {
+        Context context = InstrumentationRegistry.getTargetContext();
+        String formatMac = Device.getFormatMac(context);
+
+        // just log it
+        Log.d(TAG, "FormatMac : " + formatMac);
+    }
+
 }
