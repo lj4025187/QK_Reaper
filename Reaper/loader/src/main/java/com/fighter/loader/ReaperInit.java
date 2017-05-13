@@ -58,6 +58,7 @@ public class ReaperInit {
     private static final boolean DEBUG_REAPER_PATCH = true;
 
     private static final String CLASS_REAPER_API = "com.fighter.api.ReaperApi";
+    private static final String CLASS_REAPER_DOWNLOAD = "com.fighter.download.ReaperDownload";
 
     private static final String REAPER = "reaper.apk";
     private static final String REAPER_SYSTEM = "com.fighter.reaper";
@@ -80,6 +81,11 @@ public class ReaperInit {
     public static ReaperApi init(Context context) {
         context = context.getApplicationContext();
         ReaperPatch reaperPatch = getPatchForHighestVersion(context);
+        if (reaperPatch == null) {
+            if (DEBUG_REAPER_PATCH)
+                LoaderLog.e(TAG, "init : cant find any patches!");
+            return null;
+        }
         ReaperApi api = makeReaperApiFromPatch(context, reaperPatch);
         if (api == null) {
             if (DEBUG_REAPER_PATCH)
@@ -87,55 +93,42 @@ public class ReaperInit {
             return null;
         }
 
-        if (reaperPatch == null)
-            return null;
-        queryHigherReaperInServer(reaperPatch.getVersion());
+        LoaderLog.e(TAG, "abs path : " + reaperPatch.getAbsolutePath());
+
+        queryHigherReaperInServer(reaperPatch);
 
         return api;
     }
 
     /**
      * Query higher than local in server. If have , download it .
-     * @param currentVersion
+     * @param patch
      */
-    private static void queryHigherReaperInServer(final ReaperPatchVersion currentVersion) {
-        if (currentVersion == null) {
-            LoaderLog.e(TAG, "queryHigherReaperInServer : currentVersion == null.");
+    private static void queryHigherReaperInServer(final ReaperPatch patch) {
+        if (patch == null)
+            return;
+        ReaperPatchVersion currentVersion = patch.getVersion();
+        if (currentVersion == null || TextUtils.isEmpty(currentVersion.getVersionStr())) {
+            LoaderLog.e(TAG, "queryHigherReaperInServer : currentVersion is bad!.");
             return;
         }
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ReaperServerDesc rsd = doQueryHigherReaperInServer();
-                if (rsd == null || !rsd.isValid())
-                    return;
+        ReaperVersionManager reaperManager = ReaperVersionManager
+                .getInstance(currentVersion.getVersionStr());
 
-                //comparing to judge really higher or not .
-                int retVal = comparePatchVersion(currentVersion, rsd.version);
-                if (retVal != 1) {
-                    if (DEBUG_REAPER_PATCH) {
-                        LoaderLog.e(TAG, "we download a bad version ! rsd.version : " + rsd.version);
-                    }
-                    return;
-                }
-
-                downloadHigherReaper(rsd);
+        ClassLoader loader = patch.getPatchLoader();
+        try {
+            Class claxx = loader.loadClass(CLASS_REAPER_DOWNLOAD);
+            if (claxx == null) {
+                LoaderLog.e(TAG, "ReaperDownload class is null !");
+                return;
             }
-        }).start();
-    }
-
-    private static ReaperServerDesc doQueryHigherReaperInServer() {
-        //TODO: query from server.
-        return new ReaperServerDesc();
-    }
-
-    private static void downloadHigherReaper(ReaperServerDesc rsd) {
-        if (rsd == null || !rsd.isValid()) {
-            return;
+            reaperManager.setReaperDownloadClass(claxx);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
-        //TODO: download from server.
+        reaperManager.queryHigherReaper(patch.getAbsolutePath());
     }
 
     /**
@@ -442,16 +435,5 @@ public class ReaperInit {
             e.printStackTrace();
         }
         return null;
-    }
-
-
-    static class ReaperServerDesc {
-        public String url;
-        public ReaperPatchVersion version;
-
-        public boolean isValid() {
-            return url != null && version != null
-                    && version.isValid();
-        }
     }
 }
