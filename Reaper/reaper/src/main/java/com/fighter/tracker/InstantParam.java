@@ -39,9 +39,7 @@ final class InstantParam {
         if (map == null)
             return null;
         map.put("ad_sdk_v", BumpVersion.value());
-        String net_type = Device.getNetworkType(context).name();
-        int index = net_type.lastIndexOf("_");
-        net_type = net_type.substring(index + 1).toLowerCase();
+        String net_type = Device.getNetworkType(context).getName();
         map.put("net_type", net_type);
         map.put("mcc", Device.getMcc(context));
         map.put("c_time", Device.getCurrentLocalTime());

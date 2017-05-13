@@ -1,10 +1,8 @@
 package com.fighter.tracker;
 
 import android.content.Context;
-import android.util.Log;
 
-import com.fighter.common.Device;
-import com.qihoo.sdk.report.QHStatAgent;
+import com.fighter.common.utils.ReaperLog;
 
 import java.util.HashMap;
 
@@ -13,8 +11,6 @@ import java.util.HashMap;
  */
 public class Tracker implements ITracker {
     private static final String TAG = Tracker.class.getSimpleName();
-
-    private Context mContext;
 
     private static Tracker sTracker = new Tracker();
 
@@ -27,14 +23,13 @@ public class Tracker implements ITracker {
 
     @Override
     public void init(Context context) {
-        mContext = context;
         DeviceParam.init(context);
         TrackerStatAgent.init(context);
     }
 
     @Override
     public void onEvent(Context context, String event_id, HashMap map) {
-        Log.d(TAG, "event_id = " + event_id + ";Hash map = " + map);
+        ReaperLog.i(TAG, "event_id = " + event_id + ";Hash map = " + map);
         TrackerStatAgent.onEvent(context, event_id, map);
     }
 

@@ -6,6 +6,7 @@ import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
 import com.fighter.common.Device;
+import com.fighter.common.utils.ReaperLog;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,42 +19,41 @@ public class DeviceTest {
     @Test
     public void useGetTime() throws Exception {
         String test = Device.getCurrentLocalTime();
-        Log.d(TAG, "current time = " + test);
+        ReaperLog.i(TAG, "current time = " + test);
         Assert.assertNotNull(test);
     }
 
     @Test
     public void useGetArea() throws Exception {
         String test = Device.getArea();
-        Log.d(TAG, "Area = " + test);
+        ReaperLog.i(TAG, "Area = " + test);
         Assert.assertNotNull(test);
     }
 
     @Test
     public void useGetMcc() throws Exception {
         String test = Device.getMcc(InstrumentationRegistry.getTargetContext());
-        Log.d(TAG, "mcc = " + test);
+        ReaperLog.i(TAG, "mcc = " + test);
     }
 
     @Test
     public void useGetLanguage() throws Exception {
         String test = Device.getLocalLanguage();
-        Log.d(TAG, "language = " + test);
+        ReaperLog.i(TAG, "language = " + test);
         Assert.assertNotNull(test);
     }
 
     @Test
     public void useGetDeviceChannel() throws Exception {
         String test = Device.getDeviceChannel();
-        Log.d(TAG, "channel = " + test);
+        ReaperLog.i(TAG, "channel = " + test);
     }
 
     @Test
     public void useNetworkString() throws Exception {
-
         Context context = InstrumentationRegistry.getTargetContext();
         String netTypeString = Device.getNetworkTypeString(context);
-        Log.d(TAG, "NetworkTypeString = " + netTypeString);
+        ReaperLog.i(TAG, "NetworkTypeString = " + netTypeString);
         Assert.assertNotNull(netTypeString);
     }
 
