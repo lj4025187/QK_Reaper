@@ -5,11 +5,17 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+import com.fighter.config.ReaperAdSense;
+import com.fighter.config.ReaperAdvPos;
+import com.fighter.config.ReaperConfigDB;
 import com.fighter.config.ReaperConfigRequestBody;
 import com.fighter.config.ReaperConfigUtils;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.List;
 
 /**
  * Test reaper config
@@ -72,8 +78,18 @@ public class ReaperConfigTest {
                     "\"max_adv_num\": \"10\"," +
                     "\"adv_size_type\": \"pixel\"," +
                     "\"adv_real_size\": \"200*100\"" +
-                    "}" +
-
+                    "}," +
+                    "{" +
+                    "\"ads_name\": \"guangdiantong\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"1\"," +
+                    "\"ads_appid\": \"100001\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"10001\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"200*100\"" +
+                    "}," +
                     "]" +
                     "}" +
                     "]" +
@@ -112,5 +128,20 @@ public class ReaperConfigTest {
     public void testParseResponseBody () throws Exception {
         // just log it
         ReaperConfigUtils.parseResponseBody(RESPONSE);
+    }
+
+    @Test
+    public void testDatabase() throws Exception {
+        Context context = InstrumentationRegistry.getTargetContext();
+
+        List<ReaperAdvPos> posList = ReaperConfigUtils.parseResponseBody(RESPONSE);
+        ReaperConfigDB db = ReaperConfigDB.getInstance(context);
+        db.saveReaperAdvPos(posList);
+
+        ReaperAdvPos pos = db.queryAdvPos("1");
+        Assert.assertEquals(pos.adv_type, "banner");
+
+        ReaperAdSense sense = db.queryAdSense("2");
+        Assert.assertEquals(sense.priority, "1");
     }
 }

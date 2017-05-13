@@ -2,6 +2,8 @@ package com.fighter.config;
 
 import android.content.Context;
 
+import com.fighter.reaper.BumpVersion;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -32,14 +34,15 @@ public class ReaperConfigFetcher {
      * @param appKey
      * @return
      */
-    public static boolean fetchWithRetry(Context context, String pkg, String salt, String appKey) {
-        boolean result = fetch(context, pkg, salt, appKey);
+    public static boolean fetchWithRetry(Context context, String pkg,
+                                         String salt, String appKey, String appId) {
+        boolean result = fetch(context, pkg, salt, appKey, appId);
         if (result) {
             return true;
         }
         // retry
         for (int i = 0; i < ReaperConfig.RETRY_TIMES; i++) {
-            result = fetch(context, pkg, salt, appKey);
+            result = fetch(context, pkg, salt, appKey, appId);
             if (result) {
                 return true;
             }
@@ -58,14 +61,18 @@ public class ReaperConfigFetcher {
      * @param appKey
      * @return
      */
-    public static boolean fetch(Context context, String pkg, String salt, String appKey) {
+    public static boolean fetch(Context context, String pkg,
+                                String salt, String appKey, String appId) {
+        String url = ReaperConfig.URL_HTTPS +
+                "?" + ReaperConfig.KEY_URL_PARAM_SDK_VERSION + "=" + BumpVersion.value() +
+                "&" + ReaperConfig.KEY_URL_PARAM_ID + "=" + appId;
         String requestBodyStr =
                 ReaperConfigUtils.getConfigRequestBody(context, pkg, salt, appKey);
         OkHttpClient okHttpClient = new OkHttpClient();
         RequestBody requestBody =
                 RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), requestBodyStr);
         Request request = new Request.Builder()
-                .url(ReaperConfig.URL_HTTPS)
+                .url(url)
                 .post(requestBody)
                 .build();
         try (Response response = okHttpClient.newCall(request).execute()) {
@@ -80,7 +87,8 @@ public class ReaperConfigFetcher {
                 return false;
             }
             String text = body.string();
-            return onFetchComplete(context, text);
+            onFetchComplete(context, text);
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -95,9 +103,9 @@ public class ReaperConfigFetcher {
      * @param responseBody
      * @return
      */
-    private static boolean onFetchComplete(Context context, String responseBody) {
+    private static void onFetchComplete(Context context, String responseBody) {
         List<ReaperAdvPos> posList = ReaperConfigUtils.parseResponseBody(responseBody);
-        return ReaperConfigUtils.saveConfigToDB(context, posList);
+        ReaperConfigUtils.saveConfigToDB(context, posList);
     }
 
 }

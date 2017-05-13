@@ -59,11 +59,16 @@ public final class ReaperConfig {
     /**
      * Response body param values
      */
-    public static final String VALUE_RES_RESULT_OK    = "ok";
-    public static final String VALUE_RES_RESULT_ERROR = "error";
+    public static final String VALUE_RESULT_OK    = "ok";
+    public static final String VALUE_RESULT_ERROR = "error";
 
     /**
      * If get config from server fail, retry it
      */
     public static final int RETRY_TIMES = 3;
+
+    public static final String VALUE_ADV_EXPOSURE_FIRST = "first";
+    public static final String VALUE_ADV_EXPOSURE_LOOP = "loop";
+    public static final String VALUE_ADV_EXPOSURE_WEIGHT = "weight";
+
 }

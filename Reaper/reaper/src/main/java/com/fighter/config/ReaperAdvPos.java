@@ -1,5 +1,7 @@
 package com.fighter.config;
 
+import android.content.ContentValues;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,14 +15,14 @@ public class ReaperAdvPos {
 
     /**
      * Do not modify the filed names
-     * It is used map to json
+     * It is used map to json and database
      */
     public String pos_id;
     public String adv_type;
     public String adv_exposure;
 
 
-    private List adsenseList;
+    private List mAdsenseList;
 
     /**
      * This is called when parse json
@@ -33,11 +35,15 @@ public class ReaperAdvPos {
         if (adSense == null) {
             return;
         }
-        if (adsenseList == null) {
-            adsenseList = new ArrayList();
+        if (mAdsenseList == null) {
+            mAdsenseList = new ArrayList();
         }
         adSense.setPosId(pos_id);
-        adsenseList.add(adSense);
+        mAdsenseList.add(adSense);
+    }
+
+    public List<ReaperAdSense> getAdSenseList() {
+        return mAdsenseList;
     }
 
     @Override
@@ -49,11 +55,11 @@ public class ReaperAdvPos {
                 '}';
     }
 
-    public static ReaperAdvPos fromJson (String json) {
-        return new ReaperAdvPos();
-    }
-
-    public String toJson () {
-        return "";
+    public ContentValues toContentValues() {
+        ContentValues cv = new ContentValues();
+        cv.put(ReaperConfigDBHelper.POS_COLUMN_POS_ID, pos_id);
+        cv.put(ReaperConfigDBHelper.POS_COLUMN_ADV_TYPE, adv_type);
+        cv.put(ReaperConfigDBHelper.POS_COLUMN_ADV_EXPOSURE, adv_exposure);
+        return cv;
     }
 }

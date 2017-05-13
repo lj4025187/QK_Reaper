@@ -1,5 +1,18 @@
 package com.fighter.config;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.fighter.common.utils.ReaperLog;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static com.fighter.config.ReaperConfigDBHelper.*;
+
 /**
  * This is the config database to save
  * configs request from server
@@ -8,4 +21,164 @@ package com.fighter.config;
  */
 public class ReaperConfigDB {
 
+    private static final String TAG = "ReaperConfigDB";
+
+    private static ReaperConfigDB sInstance;
+
+    private ReaperConfigDB (Context context) {
+        mDBHelper = ReaperConfigDBHelper.getInstance(context);
+    }
+
+    public synchronized static ReaperConfigDB getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new ReaperConfigDB(context);
+        }
+        return sInstance;
+    }
+
+    private ReaperConfigDBHelper mDBHelper;
+    private ReentrantReadWriteLock mRWLock = new ReentrantReadWriteLock();
+
+    public void saveReaperAdvPos(List<ReaperAdvPos> posList) {
+        mRWLock.writeLock().lock();
+        try {
+            saveReaperAdvPosInner(posList);
+        } finally {
+            mRWLock.writeLock().unlock();
+        }
+    }
+
+    public ReaperAdvPos queryAdvPos(String posId) {
+        mRWLock.readLock().lock();
+        try {
+            return queryAdvPosInner(posId);
+        } finally {
+            mRWLock.readLock().unlock();
+        }
+    }
+
+    public ReaperAdSense queryAdSense(String posId) {
+        mRWLock.readLock().lock();
+        try {
+            return queryAdSenseInner(posId);
+        } finally {
+            mRWLock.readLock().unlock();
+        }
+    }
+
+    private ReaperAdSense queryAdSenseInner(String posId) {
+        // query adv exposure first
+        ReaperAdvPos pos = queryAdvPosInner(posId);
+        if (pos == null) {
+            return null;
+        }
+
+        SQLiteDatabase db = mDBHelper.getReadableDatabase();
+        if (db == null) {
+            return null;
+        }
+
+        String[] columns = new String[] {
+                SENSE_COLUMN_ADS_NAME,
+                SENSE_COLUMN_EXPIRE_TIME,
+                SENSE_COLUMN_PRIORITY,
+                SENSE_COLUMN_ADS_APPID,
+                SENSE_COLUMN_ADS_KEY,
+                SENSE_COLUMN_ADS_POSID,
+                SENSE_COLUMN_MAX_ADV_NUM,
+                SENSE_COLUMN_ADV_SIZE_TYPE,
+                SENSE_COLUMN_ADB_REAL_SIZE };
+        String selection = SENSE_COLUMN_POS_ID + "=?";
+        String[] selectionArgs = new String[] {posId};
+
+        Cursor cursor = db.query(TABLE_SENSE, columns, selection, selectionArgs, null, null, null);
+        if (cursor == null) {
+            return null;
+        }
+        List<ReaperAdSense> senseList = new ArrayList<>();
+        try {
+            while (cursor.moveToNext()) {
+                ReaperAdSense sense = new ReaperAdSense();
+                sense.setPosId(posId);
+                sense.ads_name = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_NAME));
+                sense.expire_time = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_EXPIRE_TIME));
+                sense.priority = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_PRIORITY));
+                sense.ads_appid = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_APPID));
+                sense.ads_key = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_KEY));
+                sense.ads_posid = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_POSID));
+                sense.max_adv_num = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_MAX_ADV_NUM));
+                sense.adv_size_type = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADV_SIZE_TYPE));
+                sense.adv_real_size = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADB_REAL_SIZE));
+                senseList.add(sense);
+            }
+        } finally {
+            cursor.close();
+            db.close();
+        }
+
+        if (ReaperConfig.VALUE_ADV_EXPOSURE_FIRST.equals(pos.adv_exposure)) {
+            ReaperLog.i(TAG, "queryAdSenseInner . before sort : " + senseList);
+            Collections.sort(senseList);
+            ReaperLog.i(TAG, "queryAdSenseInner . after  sort : " + senseList);
+            return senseList.get(0);
+
+        } else {
+            //TODO : support other exposure policies
+        }
+
+        return null;
+    }
+
+    private ReaperAdvPos queryAdvPosInner(String posId) {
+        SQLiteDatabase db = mDBHelper.getReadableDatabase();
+        if (db == null) {
+            return null;
+        }
+        String[] columns = new String[] {POS_COLUMN_ADV_TYPE, POS_COLUMN_ADV_EXPOSURE};
+        String selection = POS_COLUMN_POS_ID + "=?";
+        String[] selectionArgs = new String[] {posId};
+        Cursor cursor = db.query(TABLE_POS, columns, selection, selectionArgs, null, null, null);
+        try {
+            if (cursor != null && cursor.moveToFirst()) {
+                ReaperAdvPos pos = new ReaperAdvPos();
+                pos.adv_type = cursor.getString(cursor.getColumnIndex(POS_COLUMN_ADV_TYPE));
+                pos.adv_exposure = cursor.getString(cursor.getColumnIndex(POS_COLUMN_ADV_EXPOSURE));
+                pos.pos_id = posId;
+                return pos;
+            }
+        } finally {
+            cursor.close();
+            db.close();
+        }
+        return null;
+    }
+
+    private void saveReaperAdvPosInner(List<ReaperAdvPos> posList) {
+        if (posList == null || posList.size() == 0) {
+            return;
+        }
+        SQLiteDatabase db = mDBHelper.getWritableDatabase();
+        if (db == null) {
+            ReaperLog.e(TAG, "saveReaperAdvPos, can not get writable database");
+            return;
+        }
+        // clear all data before save
+        db.execSQL("delete from " + TABLE_POS);
+        db.execSQL("delete from " + TABLE_SENSE);
+
+        try {
+            for (ReaperAdvPos pos : posList) {
+                if (pos == null)  continue;
+                db.insert(TABLE_POS, null, pos.toContentValues());
+                List<ReaperAdSense> senseList = pos.getAdSenseList();
+                if (senseList == null || senseList.size() == 0) continue;
+                for (ReaperAdSense sense : senseList) {
+                    if (sense == null) continue;
+                    db.insert(TABLE_SENSE, null, sense.toContentValues());
+                }
+            }
+        } finally {
+            db.close();
+        }
+    }
 }

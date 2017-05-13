@@ -61,7 +61,7 @@ public final class ReaperConfigUtils {
 
         JSONObject responseObj = JSON.parseObject(responseBody);
         String result = responseObj.getString(ReaperConfig.KEY_RES_RESULT);
-        if ("ok".equals(result)) {
+        if (ReaperConfig.VALUE_RESULT_OK.equals(result)) {
             ReaperLog.i(TAG, "parseResponseBody ok");
 
             String nextTime = responseObj.getString(ReaperConfig.KEY_RES_NEXT_TIME);
@@ -74,27 +74,28 @@ public final class ReaperConfigUtils {
                 JSONObject posObj = posArray.getJSONObject(i);
                 ReaperAdvPos pos = posObj.toJavaObject(ReaperAdvPos.class);
                 ReaperLog.i(TAG, "parse ReaperAdvPos : " + pos);
-                JSONArray adsenseArray = posObj.getJSONArray(ReaperConfig.KEY_RES_ADSENSES);
-                int adsenseSize = adsenseArray.size();
-                ReaperLog.i(TAG, "    parse adsense size : " + adsenseSize);
-                for (int j = 0; j < adsenseSize; j++) {
-                    JSONObject adsenseObj = adsenseArray.getJSONObject(j);
-                    ReaperAdSense adSense = adsenseObj.toJavaObject(ReaperAdSense.class);
-                    ReaperLog.i(TAG, "    parse adsense  : " + adSense);
+                JSONArray senseArray = posObj.getJSONArray(ReaperConfig.KEY_RES_ADSENSES);
+                int senseSize = senseArray.size();
+                ReaperLog.i(TAG, "    parse sense size : " + senseSize);
+                for (int j = 0; j < senseSize; j++) {
+                    JSONObject senseObj = senseArray.getJSONObject(j);
+                    ReaperAdSense adSense = senseObj.toJavaObject(ReaperAdSense.class);
+                    ReaperLog.i(TAG, "    parse sense  : " + adSense);
                     pos.addAdSense(adSense);
                 }
                 posList.add(pos);
             }
             return posList;
-        } else if ("error".equals(result)) {
+        } else if (ReaperConfig.VALUE_RESULT_ERROR.equals(result)) {
             String reason = responseObj.getString(ReaperConfig.KEY_RES_REASON);
             ReaperLog.i(TAG, "parseResponseBody . get config error : " + reason);
         }
         return null;
     }
 
-    public static boolean saveConfigToDB(Context context, List<ReaperAdvPos> posList) {
-        return false;
+    public static void saveConfigToDB(Context context, List<ReaperAdvPos> posList) {
+        ReaperConfigDB db = ReaperConfigDB.getInstance(context);
+        db.saveReaperAdvPos(posList);
     }
 
 }
