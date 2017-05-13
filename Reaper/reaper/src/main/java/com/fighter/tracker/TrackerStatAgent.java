@@ -5,11 +5,14 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.reaper.BuildConfig;
+import com.fighter.reaper.BumpVersion;
 import com.qihoo.sdk.report.QHConfig;
 import com.qihoo.sdk.report.QHStatAgent;
 import com.qihoo.sdk.report.QHStatAgent.ExtraTagIndex;
 import com.qihoo.sdk.report.QHStatAgent.DataUploadLevel;
 import com.qihoo.sdk.report.QHStatAgent.SamplingPlan;
+import com.qihoo.sdk.report.ReportServerAddress;
 
 import java.util.HashMap;
 
@@ -23,14 +26,12 @@ public class TrackerStatAgent {
 
     private final static String TAG = TrackerStatAgent.class.getSimpleName();
     private final static String REAPER_AGENT_KEY = "dd458505749b2941217ddd59394240e8";
-    private final static String REAPER_VERSION_NAME = "reaper1.0";
     //switch for QHStatAgent function
     private final static Boolean SWITCH_OPEN = true;
     //switch for error exception upload
-    private final static boolean CATCH_ERR = false;
+    private final static boolean CATCH_ERR = true;
 
     private static Context sContext;
-    private static boolean sDebugMode;
 
     /**
      * @param application
@@ -53,11 +54,10 @@ public class TrackerStatAgent {
             return;
         }
         sContext = context;
-        sDebugMode = QHConfig.isDebugMode(context);
         //设置SDK类的产品AppKey，请在init之前设置，以免生成文件名时取不到appkey。
         QHConfig.setAppkey(context, REAPER_AGENT_KEY);
         //设置SDK类的产品版本号。SDK类的产品必须使用（因为如果不设置的话，自动获取到的版本会是app的版本号）
-        QHConfig.setVersionName(REAPER_VERSION_NAME);
+        QHConfig.setVersionName(BumpVersion.value());
         //设置保存的文件名使用AppKey，SDK类的产品必须使用。
         QHConfig.setFileNameUseAppkey(true);
         //设置打点服务器
@@ -66,10 +66,8 @@ public class TrackerStatAgent {
         QHStatAgent.init(context);
         //设置分发渠道，如手机助手；或者可以填写你们分给App的Id之类的，用以区分这些数据是由谁带来的
         QHStatAgent.setChannel(context, "");
-        if (CATCH_ERR)
-            QHStatAgent.onError(context);
-        if (sDebugMode)
-            QHStatAgent.setLoggingEnabled(sDebugMode);
+        QHStatAgent.onError(context);
+        QHStatAgent.setLoggingEnabled(BuildConfig.DEBUG);
     }
 
     /**
