@@ -17,6 +17,8 @@ import com.fighter.utils.LoaderLog;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -93,11 +95,47 @@ public class ReaperInit {
             return null;
         }
 
-        LoaderLog.e(TAG, "abs path : " + reaperPatch.getAbsolutePath());
-
+        initReaper(reaperPatch);
         queryHigherReaperInServer(reaperPatch);
 
         return api;
+    }
+
+    private static void initReaper(ReaperPatch reaperPatch) {
+        ClassLoader classLoader = reaperPatch.getPatchLoader();
+        if (classLoader == null) {
+            LoaderLog.e(TAG, "initReaper, classLoader == null");
+            return;
+        }
+
+        try {
+            Class claxx = classLoader.loadClass("com.fighter.download.ReaperNetwork");
+            if (claxx == null) {
+                LoaderLog.e(TAG, "initReaper, cant load ReaperDownload !");
+                return;
+            }
+
+            Field sdkAbsPath = claxx.getDeclaredField("SDK_ABSPATH");
+            if (sdkAbsPath == null) {
+                LoaderLog.e(TAG, "cant find SDK_ABSPATH");
+                return;
+            }
+            sdkAbsPath.setAccessible(true);
+            sdkAbsPath.set(null, reaperPatch.getAbsolutePath());
+
+            Method initForNetworkMethod = claxx.getDeclaredMethod("initForNetwork");
+            if (initForNetworkMethod == null) {
+                LoaderLog.e(TAG, "initForNetworkMethod == null");
+                return;
+            }
+            initForNetworkMethod.setAccessible(true);
+            initForNetworkMethod.invoke(null, null);
+
+            LoaderLog.e(TAG, "initReaper success !");
+        } catch (Exception e) {
+            e.printStackTrace();
+            LoaderLog.e(TAG, "initReaper, err : " + e.getMessage());
+        }
     }
 
     /**
@@ -128,7 +166,7 @@ public class ReaperInit {
             e.printStackTrace();
         }
 
-        reaperManager.queryHigherReaper(patch.getAbsolutePath());
+        reaperManager.queryHigherReaper();
     }
 
     /**

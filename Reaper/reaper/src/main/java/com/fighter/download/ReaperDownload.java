@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import com.fighter.common.utils.ReaperLog;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +25,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -46,6 +48,10 @@ public class ReaperDownload {
     private static final int COMPARE_EQUALS = 0;
     private static final int COMPARE_FAILED = -10;
 
+    private static final String URL_REAPER_HIGHER_VERSION = "https://kyfw.12306.cn/otn/";
+    private static final String URL_REAPER_DOWNLOAD =
+            "https://kyfw.12306.cn/otn/czxx/init";
+
     /**
      * Check higher version
      * @return
@@ -53,11 +59,11 @@ public class ReaperDownload {
      * 0 = check success and dont have higher version
      * -1 = check failed
      */
-    public static int doQuery(String version, String sdkAbsPath) {
+    public static int doQuery(String version) {
         if (TextUtils.isEmpty(version) || !isValidVersion(version))
             return REAPER_VERSION_CHECK_FAILED;
 
-        String serverVersion = queryVersion(sdkAbsPath);
+        String serverVersion = queryVersion();
         if (!isValidVersion(serverVersion)) {
             if (DEBUG_DOWNLOAD) {
                 ReaperLog.e(TAG, "query a bad version. : " + serverVersion);
@@ -72,102 +78,69 @@ public class ReaperDownload {
                 return REAPER_VERSION_CHECK_FAILED;
             }
             return REAPER_VERSION_CHECK_SAME_VERSION;
-        }
-
-        //server has a higher version
-        boolean success = downloadHigherVersionReaper();
-        if (success) {
+        } else {
             return REAPER_VERSION_CHECK_NEW_VERSION;
         }
-
-        return REAPER_VERSION_CHECK_FAILED;
     }
 
-    private static String queryVersion(String sdkAbsPath) {
-        String url = "https://kyfw.12306.cn/otn/";
-        AssetManager assetManager= null;
-        try {
-            assetManager = AssetManager.class.newInstance();
-            Method addPathMethod = AssetManager.class.getDeclaredMethod("addAssetPath", String.class);
-            if (addPathMethod == null)
-                return null;
-            addPathMethod.setAccessible(true);
-            addPathMethod.invoke(assetManager, sdkAbsPath);
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        if (assetManager == null) {
-            ReaperLog.e(TAG, "assetManager : " + assetManager);
+    private static String queryVersion() {
+        if (ReaperNetwork.sHttpsUtil == null) {
+            if (DEBUG_DOWNLOAD)
+                ReaperLog.e(TAG, "queryVersion, HttpsUtil == null !");
             return null;
         }
-
-        HttpsUtil httpsUtil = new HttpsUtil(assetManager);
         try {
-            httpsUtil.run();
+            Response response = ReaperNetwork.sHttpsUtil.requestSync(URL_REAPER_HIGHER_VERSION);
+            if (response == null)
+                return null;
+            Headers responseHeaders = response.headers();
+            for (int i = 0; i < responseHeaders.size(); i++) {
+                ReaperLog.e(TAG, responseHeaders.name(i) + ": " + responseHeaders.value(i));
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-        InputStream is = null;
-        try {
-            is = assetManager.open("srca.cer");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (is == null)
-            return null;
-        OkHttpClient client = setCertificates(is);
-        if (is != null) {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        ReaperLog.e(TAG, "client : " + client);
-        if (client == null)
-            return null;
 
-        /*Request.Builder builder = new Request.Builder();
-        Request request = builder.url(url).build();
-        try {
-            Response response = client.newCall(request).execute();
-            if (response == null || !response.isSuccessful()) {
-                ReaperLog.e(TAG, "bad response .");
-                return null;
-            }
-            ResponseBody responseBody= response.body();
-            if (responseBody == null) {
-                ReaperLog.e(TAG, "responseBody == null");
-                return null;
-            }
-            ReaperLog.e(TAG, "body : " + responseBody.string());
-//            InputStream is = responseBody.byteStream();
-//            if (is == null) {
-//                ReaperLog.e(TAG, "body byteStream == null.");
-//                return null;
-//            }
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            ReaperLog.e(TAG, "queryVersion : " + e.getMessage());
-        }*/
-        return "1.0.0";
+        return "1.0.1";
     }
 
     private static boolean downloadHigherVersionReaper() {
+        if (ReaperNetwork.sHttpsUtil == null) {
+            if (DEBUG_DOWNLOAD)
+                ReaperLog.e(TAG, "downloadReaper, HttpsUtil == null !");
+            return false;
+        }
+        Response response = ReaperNetwork.sHttpsUtil.requestSync(URL_REAPER_DOWNLOAD);
+        if (response == null || !response.isSuccessful()) {
+            if (DEBUG_DOWNLOAD)
+                ReaperLog.e(TAG, "downloadReaper, response == null or unsuccessful !");
+            return false;
+        }
+        ResponseBody body = response.body();
+        if (body == null) {
+            if (DEBUG_DOWNLOAD)
+                ReaperLog.e(TAG, "downloadReaper, body == null !");
+            return false;
+        }
+        InputStream is = body.byteStream();
+        if (is == null) {
+            if (DEBUG_DOWNLOAD)
+                ReaperLog.e(TAG, "downloadReaper, is == null !");
+            return false;
+        }
+
+        //test start
+        String bodyString = null;
         try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
+            bodyString = body.string();
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+        return bodyString != null;
+        //test end
+
+        //return false;
     }
 
     /**
@@ -298,64 +271,4 @@ public class ReaperDownload {
         }
         return sb.toString();
     }
-
-    private static OkHttpClient setCertificates(InputStream... certificates) {
-        try {
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keyStore.load(null);
-            int index = 0;
-            for (InputStream certificate : certificates) {
-                String certificateAlias = Integer.toString(index++);
-                keyStore.setCertificateEntry(certificateAlias, certificateFactory.generateCertificate(certificate));
-
-                try {
-                    if (certificate != null)
-                        certificate.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-
-            TrustManagerFactory trustManagerFactory =
-                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-
-            trustManagerFactory.init(keyStore);
-            sslContext.init
-                    (
-                            null,
-                            trustManagerFactory.getTrustManagers(),
-                            new SecureRandom()
-                    );
-            X509TrustManager trustManager = new X509TrustManager() {
-                @Override
-                public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
-                }
-
-                @Override
-                public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
-                }
-
-                @Override
-                public X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[0];
-                }
-            };
-            OkHttpClient client = new OkHttpClient.Builder()
-                    .sslSocketFactory(sslContext.getSocketFactory(), trustManager)
-                    .build();
-            return client;
-        } catch (Exception e) {
-            e.printStackTrace();
-            ReaperLog.e(TAG, "cert err : " + e.getMessage());
-        }
-        return null;
-    }
-
-
-
 }

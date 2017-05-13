@@ -1,7 +1,8 @@
 package com.fighter.download;
 
-import android.content.Context;
 import android.content.res.AssetManager;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.fighter.common.utils.ReaperLog;
 
@@ -34,74 +35,34 @@ import okhttp3.Response;
 
 public final class HttpsUtil {
     private static final java.lang.String TAG = HttpsUtil.class.getSimpleName();
-    private OkHttpClient client;
+    private static final boolean DEBUG_HTTPS = true;
 
+    private OkHttpClient mHttpsClient;
 
-    /**
-     * 初始化HTTPS,添加信任证书
-     * @param assetManager
-     */
-    public HttpsUtil(AssetManager assetManager) {
+    HttpsUtil(AssetManager assetManager) {
         X509TrustManager trustManager;
         SSLSocketFactory sslSocketFactory;
         final InputStream inputStream;
         try {
             inputStream = assetManager.open("srca.cer"); // 得到证书的输入流
-            try {
+            trustManager = trustManagerForCertificates(inputStream);//以流的方式读入证书
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{trustManager}, null);
+            sslSocketFactory = sslContext.getSocketFactory();
 
-                trustManager = trustManagerForCertificates(inputStream);//以流的方式读入证书
-                SSLContext sslContext = SSLContext.getInstance("TLS");
-                sslContext.init(null, new TrustManager[]{trustManager}, null);
-                sslSocketFactory = sslContext.getSocketFactory();
-
-            } catch (GeneralSecurityException e) {
-                throw new RuntimeException(e);
-            }
-
-            client = new OkHttpClient.Builder()
+            mHttpsClient = new OkHttpClient.Builder()
                     .sslSocketFactory(sslSocketFactory, trustManager)
                     .build();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            ReaperLog.e(TAG, "error : " + e.getMessage());
         }
     }
 
-    /**
-     * 测试代码
-     * @throws Exception
-     */
-    public void run() throws Exception {
-        Request request = new Request.Builder()
-                .url("https://kyfw.12306.cn/otn/")
-                .build();
-
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-
-                if (!response.isSuccessful())
-                    throw new IOException("Unexpected code " + response);
-
-                Headers responseHeaders = response.headers();
-                for (int i = 0; i < responseHeaders.size(); i++) {
-                    ReaperLog.e(TAG, responseHeaders.name(i) + ": " + responseHeaders.value(i));
-                }
-
-                ReaperLog.e(TAG, response.body().string());
-            }
-        });
+    public OkHttpClient getHttpsClient() {
+        return mHttpsClient;
     }
 
-
-    /**
-     * 以流的方式添加信任证书
-     */
     /**
      * Returns a trust manager that trusts {@code certificates} and none other. HTTPS services whose
      * certificates have not been signed by these certificates will fail with a {@code
@@ -156,6 +117,41 @@ public final class HttpsUtil {
                     + Arrays.toString(trustManagers));
         }
         return (X509TrustManager) trustManagers[0];
+    }
+
+    /**
+     * 同步请求
+     * @param url
+     * @return
+     */
+    public Response requestSync(@NonNull String url) {
+        if (TextUtils.isEmpty(url) || mHttpsClient == null) {
+            ReaperLog.e(TAG, "requestSync error, check url !");
+            return null;
+        }
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        try {
+            return mHttpsClient.newCall(request).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+            if (DEBUG_HTTPS)
+                ReaperLog.e(TAG, "requestSync : " + e.getMessage());
+        }
+        return null;
+    }
+
+    public void requestAsync(@NonNull String url, Callback callback) {
+        if (TextUtils.isEmpty(url) || mHttpsClient == null
+                || callback == null) {
+            ReaperLog.e(TAG, "requestAsync error , check url or callback !");
+            return;
+        }
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        mHttpsClient.newCall(request).enqueue(callback);
     }
 
 }

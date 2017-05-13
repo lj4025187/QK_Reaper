@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ReaperVersionManager {
     private static final String TAG = ReaperVersionManager.class.getSimpleName();
+    private static final boolean DEBUG_VERSION = true;
 
     private static String mVersion;
     private static boolean mCheckSuccess;
@@ -44,9 +45,7 @@ public class ReaperVersionManager {
         mReaperDownloadClass = claxx;
     }
 
-    public void queryHigherReaper(final String sdkAbsPath) {
-        if (TextUtils.isEmpty(sdkAbsPath))
-            return;
+    public void queryHigherReaper() {
         synchronized (ReaperVersionManager.class) {
             if (mCheckSuccess) {
                 return;
@@ -63,26 +62,53 @@ public class ReaperVersionManager {
                 if (mCheckSuccess) {
                     return;
                 }
-                int checkResult = doQuery(sdkAbsPath);
+                int checkResult = doQuery();
                 //do check.
                 if (checkResult == 1) {
-                    if (downloadHigherReaper()) {
-                        mCheckSuccess = true;
-                    } else {
-                        mCheckSuccess = false;
-                    }
-                } else if (checkResult == 0) {
-                    mCheckSuccess = true;
+                    mCheckSuccess = downloadHigherReaper();
                 } else {
-                    mCheckSuccess = false;
+                    mCheckSuccess = checkResult == 0;
                 }
+
                 mLock.unlock();
-                LoaderLog.e(TAG, "checkHigherVersion, unLock and check over.");
+                LoaderLog.e(TAG, "checkHigherVersion, unLock and check over. mCheckSuccess : " + mCheckSuccess);
             }
         }).start();
     }
 
     private boolean downloadHigherReaper() {
+        if (mReaperDownloadClass == null) {
+            if (DEBUG_VERSION)
+                LoaderLog.e(TAG, "downloadReaper, mReaperDownloadClass == null .");
+            return false;
+        }
+
+        try {
+
+            Method[] methods = mReaperDownloadClass.getDeclaredMethods();
+
+            Method downloadMethod =
+                    mReaperDownloadClass.getDeclaredMethod("downloadHigherVersionReaper");
+            if (downloadMethod == null) {
+                if (DEBUG_VERSION)
+                    LoaderLog.e(TAG, "cant find downloadMethod !");
+                return false;
+            }
+            downloadMethod.setAccessible(true);
+            Object o = downloadMethod.invoke(null);
+            if (o == null || !(o instanceof Boolean)) {
+                if (DEBUG_VERSION) {
+                    LoaderLog.e(TAG, "downloadMethod invoke return an err result !");
+                }
+                return false;
+            }
+            return (boolean) o;
+         } catch (Exception e) {
+            e.printStackTrace();
+            if (DEBUG_VERSION) {
+                LoaderLog.e(TAG, "error : " + e.getMessage());
+            }
+        }
         return false;
     }
 
@@ -93,20 +119,20 @@ public class ReaperVersionManager {
      * 0 = check success and dont have higher version
      * -1 = check failed
      */
-    private int doQuery(String sdkAbsPath) {
+    private int doQuery() {
         if (mReaperDownloadClass == null) {
             LoaderLog.e(TAG, "doQuery, cant find ReaperDownload Class!");
             return -1;
         }
 
         try {
-            Method doQueryMethod = mReaperDownloadClass.getDeclaredMethod("doQuery", String.class, String.class);
+            Method doQueryMethod = mReaperDownloadClass.getDeclaredMethod("doQuery", String.class);
             if (doQueryMethod == null) {
                 LoaderLog.e(TAG, "doQuery, doQueryMethod == null !");
                 return -1;
             }
             doQueryMethod.setAccessible(true);
-            Object retVal = doQueryMethod.invoke(null, mVersion, sdkAbsPath);
+            Object retVal = doQueryMethod.invoke(null, mVersion);
             if (retVal == null || !(retVal instanceof Integer)) {
                 LoaderLog.e(TAG, "doQuery, invoke method error !");
                 return -1;
