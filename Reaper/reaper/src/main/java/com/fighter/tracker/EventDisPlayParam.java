@@ -9,13 +9,17 @@ import java.util.HashMap;
 
 public class EventDisPlayParam extends AdParam {
 
-    /** before display event pull failed ad sources*/
-    public String ad_fail_srcs;
+    /** display event success or fail*/
+    public String result;
+
+    /** display failed reason */
+    public String reason;
 
     @Override
     public HashMap<String, String> generateMap() {
         HashMap<String, String> map = super.generateMap();
-        map.put("ad_fail_srcs", ad_fail_srcs);
+        map.put("result", result);
+        map.put("reason", reason);
         return map;
     }
 }

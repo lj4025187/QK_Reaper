@@ -5,10 +5,10 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.fighter.common.utils.ReaperLog;
-import com.fighter.tracker.AdParam;
 import com.fighter.tracker.EventActionParam;
 import com.fighter.tracker.EventClickParam;
 import com.fighter.tracker.EventDisPlayParam;
+import com.fighter.tracker.EventDownLoadFail;
 import com.fighter.tracker.Tracker;
 import com.fighter.tracker.TrackerEventType;
 
@@ -74,21 +74,14 @@ public class TrackerTest {
         ReaperLog.i(TAG, "device param:language = " + language);
         Assert.assertNotNull(language);
 
-        AdParam param = new AdParam();
-        param.ad_num = 1;
-        param.ad_posid = 10000;
-        param.ad_source = "gtk";
-        param.ad_type = "banner";
-        param.app_pkg = "com.fighter.test";
-        tTracker.onEvent(context, "ad_display", param);
-
         EventDisPlayParam param1 = new EventDisPlayParam();
         param1.ad_num = 1;
         param1.ad_posid = 10001;
         param1.ad_source = "gtk";
         param1.ad_type = "banner";
         param1.app_pkg = "com.fighter.test";
-        param1.ad_fail_srcs = "gdt";
+        param1.result = "ok";
+        param1.reason = "";
         tTracker.onEvent(context, TrackerEventType.AD_DISPLAY_EVENT, param1);
 
         EventClickParam param2 = new EventClickParam();
@@ -108,5 +101,14 @@ public class TrackerTest {
         param3.app_pkg = "com.fighter.test";
         param3.act_type = TrackerEventType.AD_ACTION_TYPE_BEGIN;
         tTracker.onEvent(context, TrackerEventType.AD_ACTION_EVENT, param3);
+
+        EventDownLoadFail param4 = new EventDownLoadFail();
+        param4.ad_num = 1;
+        param4.ad_posid = 10004;
+        param4.ad_source = "gtk";
+        param4.ad_type = "banner";
+        param4.app_pkg = "com.fighter.test";
+        param4.reason = "network_timeout";
+        tTracker.onEvent(context, TrackerEventType.AD_DOWNLOAD_FAILED_EVENT, param4);
     }
 }
