@@ -3,6 +3,7 @@ package com.fighter.common;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
@@ -11,7 +12,10 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
+import android.telephony.CellLocation;
 import android.telephony.TelephonyManager;
+import android.telephony.cdma.CdmaCellLocation;
+import android.telephony.gsm.GsmCellLocation;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.Surface;
@@ -26,7 +30,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.logging.SimpleFormatter;
 
 /**
  * Utils to get local message of current device
@@ -48,6 +51,17 @@ public final class Device {
             e.printStackTrace();
         }
         return applicationInfo;
+    }
+
+    public static PackageInfo getPackageInfo(Context context, String pkgName, int flags) {
+        PackageInfo pkgInfo = null;
+        PackageManager pm = context.getPackageManager();
+        try {
+            pkgInfo = pm.getPackageInfo(pkgName, flags);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return pkgInfo;
     }
 
     // ----------------------------------------------------
@@ -81,6 +95,14 @@ public final class Device {
         return Build.MANUFACTURER;
     }
 
+    /**
+     * 获取{@code Build.PRODUCT}
+     *
+     * @return {@code Build.PRODUCT}
+     */
+    public static String getBuildProduct() {
+        return Build.PRODUCT;
+    }
 
     /**
      * 获取{@code Build.RELEASE}
@@ -133,9 +155,9 @@ public final class Device {
     /**
      * 获取特定格式的mac地址字符串
      * 具体格式为：
-     *     获取用户手机wifi网卡号设备的MAC，
-     *     去除分隔符":"后转为大写,并取md5sum摘要值, 摘要小写
-     *     例如：“900150983cd24fb0d6963f7d28e17f72”
+     * 获取用户手机wifi网卡号设备的MAC，
+     * 去除分隔符":"后转为大写,并取md5sum摘要值, 摘要小写
+     * 例如：“900150983cd24fb0d6963f7d28e17f72”
      *
      * @param context
      * @return
@@ -523,7 +545,7 @@ public final class Device {
      * @return
      */
     public static String getMcc(Context context) {
-        String operator , mcc = null;
+        String operator, mcc = null;
         TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         if (tm != null) {
             operator = tm.getSimOperator();
@@ -533,6 +555,85 @@ public final class Device {
         }
         return mcc;
     }
+
+    /**
+     * 获取operator(mccmnc)
+     *
+     * @param context
+     * @return
+     */
+    public static String getSimOperator(Context context) {
+        TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (tm != null) {
+            return tm.getSimOperator();
+        }
+        return "";
+    }
+
+    /**
+     * 获取基站编号
+     *
+     * @param context 应用上下文
+     * @return 编号。-1表示unknown
+     */
+    public static int getCellId(Context context) {
+        TelephonyManager telephonyManager =
+                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        try {
+            CellLocation cellLocation = telephonyManager.getCellLocation();
+            int phoneType = telephonyManager.getPhoneType();
+            if (phoneType == 2) {
+                if (cellLocation instanceof GsmCellLocation) {
+                    GsmCellLocation gsmCellLocation = (GsmCellLocation) cellLocation;
+                    return gsmCellLocation.getCid();
+                } else if (cellLocation instanceof CdmaCellLocation) {
+                    CdmaCellLocation cdmaCellLocation = (CdmaCellLocation) cellLocation;
+                    return cdmaCellLocation.getBaseStationId();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public static int getLac(Context context) {
+        TelephonyManager telephonyManager =
+                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        try {
+            CellLocation cellLocation = telephonyManager.getCellLocation();
+            int phoneType = telephonyManager.getPhoneType();
+            if (phoneType == 2) {
+                if (cellLocation instanceof GsmCellLocation) {
+                    GsmCellLocation gsmCellLocation = (GsmCellLocation) cellLocation;
+                    return gsmCellLocation.getLac();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    /**
+     * 获取IMSI码
+     * <p>需添加权限 {@code <uses-permission android:name="android.permission.READ_PHONE_STATE"/>}</p>
+     *
+     * @return IMSI码
+     */
+    public static String getIMSI(Context context) {
+        TelephonyManager tm =
+                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (tm != null) {
+            try {
+                return tm.getSubscriberId();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
 
     // ----------------------------------------------------
     // 其它信息
@@ -576,7 +677,7 @@ public final class Device {
     public static String getDeviceChannel() {
         ShellUtils.CommandResult result = ShellUtils.execCmd(
                 "getprop ro.vendor.channel.number", false);
-        if (result.result ==  0) {
+        if (result.result == 0) {
             return result.successMsg;
         }
         return null;
