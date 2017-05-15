@@ -14,6 +14,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.Settings;
 import android.telephony.CellLocation;
 import android.telephony.TelephonyManager;
@@ -26,6 +27,11 @@ import android.view.WindowManager;
 
 import com.fighter.common.utils.EncryptUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -173,6 +179,155 @@ public final class Device {
 
         String formatMac = mac.replaceAll(":", "").toUpperCase();
         return EncryptUtils.encryptMD5ToString(formatMac).toLowerCase();
+    }
+
+    /**
+     * get wifi mac address stable need permission "android.permission.CHANGE_WIFI_STATE"
+     *
+     * @param context the context
+     * @return wifi mac address
+     */
+    public static String getMacStable(Context context) {
+        String macAddress = getMac(context);
+        final WifiManager wifiManager;
+        if (macAddress == null) {
+            macAddress = getCacheMac(context);
+            if (macAddress != null) {
+                return macAddress;
+            }
+            wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wifiManager != null) {
+                if (!wifiManager.isWifiEnabled())
+                    wifiManager.setWifiEnabled(true);
+
+                int tryCount = 0;
+                do {
+                    macAddress = getMac(context);
+                    tryCount ++;
+                    try {
+                        Thread.sleep(200 + tryCount * 100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } while (macAddress == null);
+
+                if (wifiManager.isWifiEnabled())
+                    wifiManager.setWifiEnabled(false);
+            }
+        }
+        storeWifiMac(context, macAddress);
+        return macAddress;
+    }
+
+    /**
+     * store wifi mac address address in sdcard
+     *
+     * @param macAddress
+     * @return
+     */
+    private static void storeWifiMac(Context context, String macAddress) {
+        File sdcardFile = Environment.getExternalStorageDirectory();
+        File cacheFile = context.getCacheDir();
+        String fileName = EncryptUtils.encryptMD5ToString("mac_address");
+        File macFile = new File(sdcardFile, "." + fileName);
+        File cacheMacFile = new File(cacheFile, "." + fileName);
+        FileOutputStream outputStream = null;
+        if (!macFile.exists()) {
+            try {
+                outputStream = new FileOutputStream(macFile);
+                outputStream.write(macAddress.getBytes());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (outputStream != null) {
+                        outputStream.flush();
+                        outputStream.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (!cacheMacFile.exists()) {
+            try {
+                outputStream = new FileOutputStream(cacheMacFile);
+                outputStream.write(macAddress.getBytes());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (outputStream != null) {
+                        outputStream.flush();
+                        outputStream.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * get cache wifi mac address
+     * @return wifi mac address
+     */
+    public static String getCacheMac(Context context) {
+        File sdcardFile = Environment.getExternalStorageDirectory();
+        File dataFile = context.getCacheDir();
+        String fileName = EncryptUtils.encryptMD5ToString("mac_address");
+        File macFile = new File(sdcardFile, "." + fileName);
+        File dataMacFile = new File(dataFile, "." + fileName);
+        byte[] data = new byte[17];
+        String sdcardRootMac = null;
+        String dataMac = null;
+        if (dataMacFile.exists()) {
+            FileInputStream inputStream = null;
+            try {
+                inputStream = new FileInputStream(macFile);
+                inputStream.read(data);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            dataMac = new String(data);
+        }
+        if (macFile.exists()) {
+            FileInputStream inputStream = null;
+            try {
+                inputStream = new FileInputStream(macFile);
+                inputStream.read(data);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            sdcardRootMac = new String(data);
+        }
+        if (dataMac != null)
+            return dataMac.equals(sdcardRootMac)? sdcardRootMac : null;
+        return null;
     }
 
     /**

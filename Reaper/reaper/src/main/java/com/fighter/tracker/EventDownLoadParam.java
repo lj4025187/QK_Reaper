@@ -8,7 +8,7 @@ import java.util.HashMap;
  * Created by lichen on 17-5-13.
  */
 
-public class EventDownLoadFail extends AdParam {
+public class EventDownLoadParam extends AdParam {
     /** ad download failed reason */
     public String reason;
 
@@ -17,5 +17,12 @@ public class EventDownLoadFail extends AdParam {
         HashMap<String, String> map = super.generateMap();
         map.put("reason", reason);
         return map;
+    }
+
+    @Override
+    public String toString() {
+        return "EventDownLoadParam{" +
+                "reason='" + reason + '\'' + ", "
+                 + super.toString() + '}';
     }
 }

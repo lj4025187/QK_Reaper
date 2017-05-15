@@ -8,7 +8,7 @@ import com.fighter.common.utils.ReaperLog;
 import com.fighter.tracker.EventActionParam;
 import com.fighter.tracker.EventClickParam;
 import com.fighter.tracker.EventDisPlayParam;
-import com.fighter.tracker.EventDownLoadFail;
+import com.fighter.tracker.EventDownLoadParam;
 import com.fighter.tracker.Tracker;
 import com.fighter.tracker.TrackerEventType;
 
@@ -32,7 +32,7 @@ public class TrackerTest {
         macField.setAccessible(true);
         String mac = (String) macField.get(null);
         ReaperLog.i(TAG, "device param:mac = " + mac);
-
+        Assert.assertNotNull(mac);
         Field m1Field = clz.getDeclaredField("m1");
         m1Field.setAccessible(true);
         String m1 = (String) m1Field.get(null);
@@ -82,6 +82,7 @@ public class TrackerTest {
         param1.app_pkg = "com.fighter.test";
         param1.result = "ok";
         param1.reason = "";
+        ReaperLog.i(TAG, "EventDisPlayParam = " + param1);
         tTracker.trackDisplayEvent(context, param1);
 
         EventClickParam param2 = new EventClickParam();
@@ -91,6 +92,7 @@ public class TrackerTest {
         param2.ad_type = "banner";
         param2.app_pkg = "com.fighter.test";
         param2.click_pos = "(100,100)";
+        ReaperLog.i(TAG, "EventClickParam = " + param2);
         tTracker.trackClickEvent(context, param2);
 
         EventActionParam param3 = new EventActionParam();
@@ -100,15 +102,17 @@ public class TrackerTest {
         param3.ad_type = "banner";
         param3.app_pkg = "com.fighter.test";
         param3.act_type = TrackerEventType.AD_ACTION_TYPE_BEGIN;
+        ReaperLog.i(TAG, "EventActionParam = " + param3);
         tTracker.trackActionEvent(context, param3);
 
-        EventDownLoadFail param4 = new EventDownLoadFail();
+        EventDownLoadParam param4 = new EventDownLoadParam();
         param4.ad_num = 1;
         param4.ad_posid = 10004;
         param4.ad_source = "gtk";
         param4.ad_type = "banner";
         param4.app_pkg = "com.fighter.test";
         param4.reason = "network_timeout";
+        ReaperLog.i(TAG, "EventDownLoadParam = " + param4);
         tTracker.trackDownloadEvent(context, param4);
     }
 }

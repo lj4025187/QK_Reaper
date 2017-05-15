@@ -58,7 +58,7 @@ final class CommonParam {
     }
 
     static void init(Context context) {
-        String mac_str = Device.getMac(context);
+        String mac_str = Device.getMacStable(context);
         if (mac_str != null) {
             mac_str = mac_str.replace(":", "");
             mac_str = mac_str.toUpperCase();

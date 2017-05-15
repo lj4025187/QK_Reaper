@@ -40,4 +40,17 @@ public class AdParam {
         map.put("reserved2", reserved2 == null? "" : reserved2);
         return map;
     }
+
+    @Override
+    public String toString() {
+        return "AdParam{" +
+                "app_pkg='" + app_pkg + '\'' +
+                ", ad_posid=" + ad_posid +
+                ", ad_source='" + ad_source + '\'' +
+                ", ad_type='" + ad_type + '\'' +
+                ", ad_num=" + ad_num +
+                ", reserved1='" + reserved1 + '\'' +
+                ", reserved2='" + reserved2 + '\'' +
+                '}';
+    }
 }

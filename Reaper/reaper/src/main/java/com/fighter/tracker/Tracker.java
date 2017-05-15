@@ -31,7 +31,6 @@ public class Tracker {
     }
 
     private void onEvent(Context context, String event_id, HashMap map) {
-        ReaperLog.i(TAG, "event_id = " + event_id + ";Hash map = " + map);
         TrackerStatAgent.onEvent(context, event_id, map);
     }
 
@@ -85,7 +84,7 @@ public class Tracker {
      * @param context the context
      * @param param the download event param
      */
-    public void trackDownloadEvent(Context context, EventDownLoadFail param) {
+    public void trackDownloadEvent(Context context, EventDownLoadParam param) {
         onEvent(context, TrackerEventType.AD_DOWNLOAD_FAILED_EVENT, param);
     }
 }

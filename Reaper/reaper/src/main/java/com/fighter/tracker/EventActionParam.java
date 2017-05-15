@@ -18,4 +18,11 @@ public class EventActionParam extends AdParam {
         map.put("act_type", act_type);
         return map;
     }
+
+    @Override
+    public String toString() {
+        return "EventActionParam{" +
+                "act_type='" + act_type + '\'' + ", " + super.toString() +
+                '}';
+    }
 }

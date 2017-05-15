@@ -23,4 +23,12 @@ public class EventDisPlayParam extends AdParam {
         map.put("reason", reason == null ? "" : reason);
         return map;
     }
+
+    @Override
+    public String toString() {
+        return "EventDisPlayParam{" +
+                "result='" + result + '\'' +
+                ", reason='" + reason + '\'' +
+                ", " + super.toString() + '}';
+    }
 }

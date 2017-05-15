@@ -18,4 +18,11 @@ public class EventClickParam extends AdParam {
         map.put("click_pos", click_pos == null? "" : click_pos);
         return map;
     }
+
+    @Override
+    public String toString() {
+        return "EventClickParam{" +
+                "click_pos='" + click_pos + '\'' + ", " +
+                 super.toString() + '}';
+    }
 }
