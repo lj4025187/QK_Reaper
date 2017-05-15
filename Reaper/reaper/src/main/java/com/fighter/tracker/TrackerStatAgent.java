@@ -16,6 +16,8 @@ import com.qihoo.sdk.report.ReportServerAddress;
 
 import java.util.HashMap;
 
+import static com.qihoo.sdk.report.AbTestTag.D;
+
 /**
  * This Util is the connection with QHStatAgent.jar
  * <p>
@@ -26,6 +28,7 @@ public class TrackerStatAgent {
 
     private final static String TAG = TrackerStatAgent.class.getSimpleName();
     private final static String REAPER_AGENT_KEY = "dd458505749b2941217ddd59394240e8";
+    private final static String DEBUG_REAPER_AGENT_KEY = "a86c450b76fb8c371afead6410d55534";
     //switch for QHStatAgent function
     private final static Boolean SWITCH_OPEN = true;
     //switch for error exception upload
@@ -55,7 +58,7 @@ public class TrackerStatAgent {
         }
         sContext = context;
         //设置SDK类的产品AppKey，请在init之前设置，以免生成文件名时取不到appkey。
-        QHConfig.setAppkey(context, REAPER_AGENT_KEY);
+        QHConfig.setAppkey(context, BuildConfig.DEBUG ? DEBUG_REAPER_AGENT_KEY : REAPER_AGENT_KEY);
         //设置SDK类的产品版本号。SDK类的产品必须使用（因为如果不设置的话，自动获取到的版本会是app的版本号）
         QHConfig.setVersionName(BumpVersion.value());
         //设置保存的文件名使用AppKey，SDK类的产品必须使用。
