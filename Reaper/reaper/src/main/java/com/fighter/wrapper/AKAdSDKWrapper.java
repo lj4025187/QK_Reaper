@@ -36,6 +36,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
 
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
+        mContext = appContext;
         AKAD.initSdk(appContext, true, true);
     }
 
