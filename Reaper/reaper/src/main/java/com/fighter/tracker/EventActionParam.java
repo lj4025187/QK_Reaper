@@ -11,7 +11,7 @@ public class EventActionParam extends AdParam {
     public String act_type;
 
     @Override
-    public HashMap<String, String> generateMap() {
+    HashMap<String, String> generateMap() {
         HashMap<String, String> map = super.generateMap();
         map.put("act_type", act_type);
         return map;

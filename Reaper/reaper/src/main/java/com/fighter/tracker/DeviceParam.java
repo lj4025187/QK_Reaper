@@ -47,6 +47,7 @@ final class DeviceParam {
         String mac_str = Device.getMac(context);
         if (mac_str != null) {
             mac_str = mac_str.replace(":", "");
+            mac_str = mac_str.toUpperCase();
             String mac_sum = EncryptUtils.encryptMD5ToString(mac_str);
             mac = mac_sum.toLowerCase();
         }

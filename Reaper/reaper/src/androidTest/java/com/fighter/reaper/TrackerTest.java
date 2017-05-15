@@ -82,7 +82,7 @@ public class TrackerTest {
         param1.app_pkg = "com.fighter.test";
         param1.result = "ok";
         param1.reason = "";
-        tTracker.onEvent(context, TrackerEventType.AD_DISPLAY_EVENT, param1);
+        tTracker.trackDisplayEvent(context, param1);
 
         EventClickParam param2 = new EventClickParam();
         param2.ad_num = 1;
@@ -91,7 +91,7 @@ public class TrackerTest {
         param2.ad_type = "banner";
         param2.app_pkg = "com.fighter.test";
         param2.click_pos = "(100,100)";
-        tTracker.onEvent(context, TrackerEventType.AD_CLICK_EVENT, param2);
+        tTracker.trackClickEvent(context, param2);
 
         EventActionParam param3 = new EventActionParam();
         param3.ad_num = 1;
@@ -100,7 +100,7 @@ public class TrackerTest {
         param3.ad_type = "banner";
         param3.app_pkg = "com.fighter.test";
         param3.act_type = TrackerEventType.AD_ACTION_TYPE_BEGIN;
-        tTracker.onEvent(context, TrackerEventType.AD_ACTION_EVENT, param3);
+        tTracker.trackActionEvent(context, param3);
 
         EventDownLoadFail param4 = new EventDownLoadFail();
         param4.ad_num = 1;
@@ -109,6 +109,6 @@ public class TrackerTest {
         param4.ad_type = "banner";
         param4.app_pkg = "com.fighter.test";
         param4.reason = "network_timeout";
-        tTracker.onEvent(context, TrackerEventType.AD_DOWNLOAD_FAILED_EVENT, param4);
+        tTracker.trackDownloadEvent(context, param4);
     }
 }

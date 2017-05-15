@@ -16,7 +16,7 @@ public class EventDisPlayParam extends AdParam {
     public String reason;
 
     @Override
-    public HashMap<String, String> generateMap() {
+    HashMap<String, String> generateMap() {
         HashMap<String, String> map = super.generateMap();
         map.put("result", result);
         map.put("reason", reason);

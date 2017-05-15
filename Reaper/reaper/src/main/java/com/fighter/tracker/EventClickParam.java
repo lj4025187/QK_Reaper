@@ -11,7 +11,7 @@ public class EventClickParam extends AdParam {
     public String click_pos;
 
     @Override
-    public HashMap<String, String> generateMap() {
+    HashMap<String, String> generateMap() {
         HashMap<String, String> map = super.generateMap();
         map.put("click_pos", click_pos);
         return map;

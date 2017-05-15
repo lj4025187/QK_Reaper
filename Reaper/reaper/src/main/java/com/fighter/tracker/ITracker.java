@@ -1,6 +1,7 @@
 package com.fighter.tracker;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import java.util.HashMap;
 
@@ -16,18 +17,34 @@ public interface ITracker {
     void init(Context context);
 
     /**
-     * tracker report event
-     * @param context the caller app context
-     * @param event_id the event id
-     * @param map the report message
+     * tracker display event.
+     *
+     * @param context the context
+     * @param param the display event param
      */
-    void onEvent(Context context, String event_id, HashMap map);
+    void trackDisplayEvent(@NonNull Context context, @NonNull EventDisPlayParam param);
 
     /**
-     * tracker report event
-     * @param context the caller app context
-     * @param event_id the event id
-     * @param param the report message param object
+     * track click event.
+     *
+     * @param context the context
+     * @param param the click event param
      */
-    void onEvent(Context context, String event_id, AdParam param);
+    void trackClickEvent(@NonNull Context context,@NonNull EventClickParam param);
+
+    /**
+     * tracker action event
+     *
+     * @param context the context
+     * @param param the action event param
+     */
+    void trackActionEvent(@NonNull Context context, @NonNull EventActionParam param);
+
+    /**
+     * tracker download fail event
+     *
+     * @param context the context
+     * @param param the download event param
+     */
+    void trackDownloadEvent(@NonNull Context context, @NonNull EventDownLoadFail param);
 }
