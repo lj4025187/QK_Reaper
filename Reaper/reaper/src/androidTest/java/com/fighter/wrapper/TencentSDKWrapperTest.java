@@ -8,6 +8,8 @@ import android.util.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.CountDownLatch;
+
 @RunWith(AndroidJUnit4.class)
 public class TencentSDKWrapperTest {
     private static final String TAG = TencentSDKWrapperTest.class.getSimpleName();
@@ -30,7 +32,20 @@ public class TencentSDKWrapperTest {
         Context context = InstrumentationRegistry.getContext();
         ISDKWrapper sdkWrapper = new TencentSDKWrapper();
         sdkWrapper.init(context, null);
-        AdResponse adResponse = sdkWrapper.requestAd(adRequest);
-        Log.d(TAG, "response " + adResponse);
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        sdkWrapper.requestAd(adRequest, new AdResponseListener() {
+            @Override
+            public void onAdResponse(AdResponse adResponse) {
+                Log.d(TAG, "response " + adResponse);
+                signal.countDown();
+            }
+        });
+
+        try {
+            signal.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

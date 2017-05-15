@@ -7,8 +7,10 @@ import android.util.ArrayMap;
 import com.alibaba.fastjson.JSONObject;
 import com.fighter.common.Device;
 import com.fighter.common.utils.EncryptUtils;
+import com.fighter.common.utils.ThreadPoolUtils;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 
 import okhttp3.HttpUrl;
@@ -105,6 +107,7 @@ public class TencentSDKWrapper implements ISDKWrapper {
 
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
+    private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
 
     // ----------------------------------------------------
 
@@ -119,7 +122,26 @@ public class TencentSDKWrapper implements ISDKWrapper {
     }
 
     @Override
-    public AdResponse requestAd(AdRequest adRequest) {
+    public void requestAd(AdRequest adRequest, AdResponseListener adResponseListener) {
+        if (adRequest == null) {
+            throw new NullPointerException("AdRequest is null");
+        }
+
+        if (adResponseListener == null) {
+            throw new NullPointerException("AdResponse is null");
+        }
+
+        mThreadPoolUtils.execute(new AdRequestRunnable(adRequest, adResponseListener));
+    }
+
+    @Override
+    public void onEvent(int adEvent, AdResponse adResponse, Map<String, Object> eventParams) {
+
+    }
+
+    // ----------------------------------------------------
+
+    private AdResponse requestAdSync(AdRequest adRequest) {
         Request request = new Request.Builder()
                 .addHeader("content-type", "application/json;charset:utf-8")
                 .url(spliceRequestAdUrl(adRequest))
@@ -138,13 +160,6 @@ public class TencentSDKWrapper implements ISDKWrapper {
                 new AdResponse.Builder().errMsg("Request has no response.").create() :
                 adResponse;
     }
-
-    @Override
-    public void onEvent(int adEvent, AdResponse adResponse, Map<String, Object> eventParams) {
-
-    }
-
-    // ----------------------------------------------------
 
     private HttpUrl spliceRequestAdUrl(AdRequest adRequest) {
         int adCounts = adRequest.getAdCount();
@@ -340,5 +355,25 @@ public class TencentSDKWrapper implements ISDKWrapper {
 
         builder.errMsg(errJson.toJSONString());
         return builder.create();
+    }
+
+    // ----------------------------------------------------
+    private class AdRequestRunnable implements Runnable {
+        private AdRequest mAdRequest;
+        private WeakReference<AdResponseListener> mRef;
+
+        AdRequestRunnable(AdRequest adRequest, AdResponseListener adResponseListener) {
+            mAdRequest = adRequest;
+            mRef = new WeakReference<>(adResponseListener);
+        }
+
+        @Override
+        public void run() {
+            AdResponse adResponse = requestAdSync(mAdRequest);
+            AdResponseListener adResponseListener = mRef.get();
+            if (adResponseListener != null) {
+                adResponseListener.onAdResponse(adResponse);
+            }
+        }
     }
 }

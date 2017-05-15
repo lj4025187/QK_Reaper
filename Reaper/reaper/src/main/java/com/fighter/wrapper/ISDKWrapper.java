@@ -24,12 +24,12 @@ public interface ISDKWrapper {
 
     /**
      * 请求广告。
-     * 方法将阻塞直到广告返回或请求超时。
+     * 方法将异步请求广告。
      *
-     * @param adRequest 请求参数
-     * @return 成功时返回请求的广告，失败返回空
+     * @param adRequest          请求参数
+     * @param adResponseListener 请求广告回调接口
      */
-    public AdResponse requestAd(AdRequest adRequest);
+    public void requestAd(AdRequest adRequest, AdResponseListener adResponseListener);
 
     /**
      * 上报对应的广告跟踪事件。
