@@ -3,6 +3,8 @@ package com.fighter.tracker;
 import java.util.HashMap;
 
 /**
+ * tracker event action param
+ *
  * Created by lichen on 17-5-9.
  */
 

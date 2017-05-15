@@ -27,7 +27,7 @@ public class TrackerTest {
         Context context = InstrumentationRegistry.getTargetContext();
         Tracker tTracker = Tracker.getTracker();
         tTracker.init(context);
-        Class <?> clz = Class.forName("com.fighter.tracker.DeviceParam");
+        Class <?> clz = Class.forName("com.fighter.tracker.CommonParam");
         Field macField = clz.getDeclaredField("mac");
         macField.setAccessible(true);
         String mac = (String) macField.get(null);
@@ -68,7 +68,7 @@ public class TrackerTest {
         ReaperLog.i(TAG, "device param:channel = " + channel);
         Assert.assertNotNull(channel);
 
-        Field languageField = clz.getDeclaredField("language");
+        Field languageField = clz.getDeclaredField("lang");
         languageField.setAccessible(true);
         String language = (String) languageField.get(null);
         ReaperLog.i(TAG, "device param:language = " + language);

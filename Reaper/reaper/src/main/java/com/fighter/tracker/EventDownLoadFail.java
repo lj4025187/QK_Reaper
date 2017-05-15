@@ -3,6 +3,8 @@ package com.fighter.tracker;
 import java.util.HashMap;
 
 /**
+ * tracker download event param
+ *
  * Created by lichen on 17-5-13.
  */
 

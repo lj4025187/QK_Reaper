@@ -36,8 +36,8 @@ public class AdParam {
         map.put("ad_source", ad_source);
         map.put("ad_type", ad_type);
         map.put("ad_num", String.valueOf(ad_num));
-        map.put("reserved1", reserved1);
-        map.put("reserved2", reserved2);
+        map.put("reserved1", reserved1 == null? "" : reserved1);
+        map.put("reserved2", reserved2 == null? "" : reserved2);
         return map;
     }
 }

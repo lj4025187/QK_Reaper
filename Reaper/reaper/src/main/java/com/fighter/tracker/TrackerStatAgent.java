@@ -24,7 +24,7 @@ import static com.qihoo.sdk.report.AbTestTag.D;
  * Created by LiuJia on 2017/5/11.
  */
 
-public class TrackerStatAgent {
+final class TrackerStatAgent {
 
     private final static String TAG = TrackerStatAgent.class.getSimpleName();
     private final static String REAPER_AGENT_KEY = "dd458505749b2941217ddd59394240e8";
