@@ -1,11 +1,14 @@
 package com.fighter.common;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.hardware.SensorManager;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -597,6 +600,12 @@ public final class Device {
         return -1;
     }
 
+    /**
+     * 获取位置区域码。目前仅支持移动和联通
+     *
+     * @param context 应用上下文
+     * @return 位置区域码
+     */
     public static int getLac(Context context) {
         TelephonyManager telephonyManager =
                 (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -613,6 +622,27 @@ public final class Device {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    /**
+     * 获取手机通信类型，GSM CMDA SIP。
+     *
+     * @param context 应用上下文
+     * @return 手机通信类型。
+     * @see TelephonyManager#PHONE_TYPE_NONE
+     * @see TelephonyManager#PHONE_TYPE_GSM
+     * @see TelephonyManager#PHONE_TYPE_CDMA
+     * @see TelephonyManager#PHONE_TYPE_SIP
+     */
+    public static int getPhoneType(Context context) {
+        TelephonyManager telephonyManager =
+                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        try {
+            return telephonyManager.getPhoneType();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return TelephonyManager.PHONE_TYPE_NONE;
     }
 
     /**
@@ -634,6 +664,53 @@ public final class Device {
         return null;
     }
 
+    // ----------------------------------------------------
+    // 蓝牙 GPS 传感器
+    // ----------------------------------------------------
+
+    /**
+     * 是否支持蓝牙
+     *
+     * @return true 支持蓝牙 false 不支持蓝牙
+     */
+    public static boolean hasBluetooth() {
+        return BluetoothAdapter.getDefaultAdapter() != null;
+    }
+
+    /**
+     * 是否支持GPS定位
+     *
+     * @param context 应用上下文
+     * @return true 支持 false 不支持
+     */
+    public static boolean hasGPS(Context context) {
+        LocationManager mgr =
+                (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        if (mgr == null) {
+            return false;
+        }
+        List<String> providers = mgr.getAllProviders();
+        if (providers == null) {
+            return false;
+        }
+        return providers.contains(LocationManager.GPS_PROVIDER);
+    }
+
+    /**
+     * 判断是否支持某类型传感器
+     *
+     * @param context    应用上下文
+     * @param sensorType 传感器类型。{@link android.hardware.Sensor}
+     * @return true 支持 false 不支持
+     */
+    public static boolean hasSensor(Context context, int sensorType) {
+        SensorManager sensorManager =
+                (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager == null) {
+            return false;
+        }
+        return sensorManager.getDefaultSensor(sensorType) != null;
+    }
 
     // ----------------------------------------------------
     // 其它信息

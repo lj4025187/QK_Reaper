@@ -45,4 +45,34 @@ public class AKAdSDKWrapperTest {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void testRequestVideoAd() {
+        AdRequest adRequest = new AdRequest.Builder()
+                .appId("1104241296")
+                .adPositionId("5060504124524896")
+                .adType(AdType.TYPE_NATIVE_VIDEO)
+                .adCount(1)
+                .create();
+        Log.d(TAG, "request " + adRequest);
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        ISDKWrapper sdkWrapper = new AKAdSDKWrapper();
+        sdkWrapper.init(context, null);
+
+        final CountDownLatch signal = new CountDownLatch(1);
+        sdkWrapper.requestAd(adRequest, new AdResponseListener() {
+            @Override
+            public void onAdResponse(AdResponse adResponse) {
+                Log.d(TAG, "response " + adResponse);
+                signal.countDown();
+            }
+        });
+
+        try {
+            signal.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

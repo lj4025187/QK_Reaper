@@ -26,7 +26,7 @@ public class MixAdxSDKWrapperTest {
                 .create();
         Log.d(TAG, "request " + adRequest);
 
-        Context context = InstrumentationRegistry.getContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         ISDKWrapper sdkWrapper = new MixAdxSDKWrapper();
         sdkWrapper.init(context, null);
 

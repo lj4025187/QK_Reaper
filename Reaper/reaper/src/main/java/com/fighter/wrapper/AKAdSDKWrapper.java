@@ -8,6 +8,8 @@ import com.ak.android.engine.nav.NativeAd;
 import com.ak.android.engine.nav.NativeAdLoaderListener;
 import com.ak.android.engine.navbase.AdSpace;
 import com.ak.android.engine.navbase.NativeAdLoader;
+import com.ak.android.engine.navvideo.NativeVideoAd;
+import com.ak.android.engine.navvideo.NativeVideoAdLoaderListener;
 import com.ak.android.shell.AKAD;
 import com.alibaba.fastjson.JSONObject;
 
@@ -36,7 +38,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
 
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
-        mContext = appContext;
+        mContext = appContext.getApplicationContext();
         AKAD.initSdk(appContext, true, true);
     }
 
@@ -67,6 +69,10 @@ public class AKAdSDKWrapper implements ISDKWrapper {
             switch (mAdRequest.getAdType()) {
                 case AdType.TYPE_NATIVE: {
                     requestNativeAd();
+                    break;
+                }
+                case AdType.TYPE_NATIVE_VIDEO: {
+                    requestNativeVideoAd();
                     break;
                 }
             }
@@ -143,6 +149,149 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                                     adInfo.setImgUrl(akAdImgUrl);
                                     adInfo.setTitle(akAdTitle);
                                     adInfo.setDesc(akAdDesc);
+                                    adInfos.add(adInfo);
+                                }
+                                if (adInfos.size() > 0) {
+                                    builder.isSucceed(true);
+                                    builder.adInfos(adInfos);
+                                } else {
+                                    errJson.put("akAdErrCode", 0);
+                                    errJson.put("akAdErrMsg", "no ads");
+                                }
+                            } else {
+                                errJson.put("akAdErrCode", 0);
+                                errJson.put("akAdErrMsg", "no ads");
+                            }
+                            builder.errMsg(errJson.toJSONString());
+
+                            AdResponseListener listener = mRef.get();
+                            if (listener == null) {
+                                return;
+                            }
+
+                            listener.onAdResponse(builder.create());
+                        }
+
+                        @Override
+                        public void onAdLoadFailed(int errCode, String errMsg) {
+                            JSONObject errJson = new JSONObject();
+                            errJson.put("httpResponseCode", 0);
+                            errJson.put("akAdErrCode", errCode);
+                            errJson.put("akAdErrMsg", errMsg);
+
+                            AdResponse adResponse = new AdResponse.Builder()
+                                    .adPositionId(mAdRequest.getAdPositionId())
+                                    .errMsg(errJson.toJSONString())
+                                    .create();
+
+                            AdResponseListener listener = mRef.get();
+                            if (listener == null) {
+                                return;
+                            }
+
+                            listener.onAdResponse(adResponse);
+                        }
+                    }, adSpace);
+
+            if (adLoader != null) {
+                List<String> keyWords = mAdRequest.getAdKeyWords();
+                if (keyWords != null && keyWords.size() > 0) {
+                    HashSet<String> akAdKeyWords = new HashSet<>();
+                    akAdKeyWords.addAll(keyWords);
+                    adLoader.setKeyWords(akAdKeyWords);
+                }
+                adLoader.loadAds();
+            } else {
+                JSONObject errJson = new JSONObject();
+                errJson.put("httpResponseCode", 0);
+                errJson.put("akAdErrCode", 0);
+                errJson.put("akAdErrMsg", "can not create AKAD loader");
+                AdResponse adResponse = new AdResponse.Builder()
+                        .errMsg(errJson.toString())
+                        .create();
+
+                AdResponseListener listener = mRef.get();
+                if (listener != null) {
+                    listener.onAdResponse(adResponse);
+                }
+            }
+        }
+
+        private void requestNativeVideoAd() {
+            AdSpace adSpace = new AdSpace(mAdRequest.getAdPositionId());
+            adSpace.setAdNum(mAdRequest.getAdCount());
+            if (mAdRequest.getAdWidth() > 0 &&
+                    mAdRequest.getAdHeight() > 0) {
+                adSpace.addAdSize(mAdRequest.getAdWidth(), mAdRequest.getAdHeight());
+            }
+
+            NativeAdLoader adLoader =
+                    AKAD.getNativeVideoAdLoader(mContext, new NativeVideoAdLoaderListener() {
+                        @Override
+                        public void onAdLoadSuccess(ArrayList<NativeVideoAd> ads) {
+                            JSONObject errJson = new JSONObject();
+                            errJson.put("httpResponseCode", 200);
+
+                            AdResponse.Builder builder = new AdResponse.Builder();
+                            builder.adPositionId(mAdRequest.getAdPositionId());
+                            if (ads != null && ads.size() > 0) {
+                                Map<String, Object> adExtras = new ArrayMap<>();
+                                adExtras.put("oriResponseAds", ads);
+                                builder.adExtras(adExtras);
+
+                                List<AdInfo> adInfos = new ArrayList<>(ads.size());
+                                for (NativeVideoAd ad : ads) {
+                                    JSONObject akAdJson = JSONObject.parseObject(ad.getContent().toString());
+                                    if (akAdJson == null) {
+                                        continue;
+                                    }
+                                    String akAdTitle = akAdJson.getString("title");
+                                    String akAdDesc = akAdJson.getString("desc");
+                                    String akAdImgUrl = akAdJson.getString("contentimg");
+                                    String akVideoUrl = akAdJson.getString("video");
+
+                                    AdInfo adInfo = new AdInfo();
+                                    if (ad.hasVideo()) {
+                                        adInfo.setContentType(AdInfo.ContentType.VIDEO);
+                                    } else if (!TextUtils.isEmpty(akAdImgUrl)) {
+                                        if (TextUtils.isEmpty(akAdTitle) &&
+                                                TextUtils.isEmpty(akAdDesc)) {
+                                            adInfo.setContentType(AdInfo.ContentType.PICTURE);
+                                        } else {
+                                            adInfo.setContentType(AdInfo.ContentType.PICTURE_WITH_TEXT);
+                                        }
+                                    } else {
+                                        adInfo.setContentType(AdInfo.ContentType.TEXT);
+                                    }
+                                    if (ad.getActionType() == 1) {
+                                        adInfo.setActionType(AdInfo.ActionType.APP_DOWNLOAD);
+
+                                        JSONObject akAppJson = JSONObject.parseObject(ad.getAPPInfo().toString());
+                                        if (akAppJson == null) {
+                                            continue;
+                                        }
+                                        String akAppLogo = akAdJson.getString("logo");
+                                        String akAppKey = akAppJson.getString("key");
+                                        String akAppPkgName = akAppJson.getString("app_pkg");
+                                        String akAppName = akAppJson.getString("app_name");
+                                        if (TextUtils.isEmpty(akAppKey) ||
+                                                TextUtils.isEmpty(akAppPkgName)) {
+                                            continue;
+                                        } else {
+                                            adInfo.setAppIconUrl(akAppLogo);
+                                            adInfo.setAppName(akAppName);
+                                            adInfo.setAppPackageName(akAppPkgName);
+                                            Map<String, Object> adInfoExtras = new ArrayMap<>();
+                                            adInfoExtras.put("akAdAppKey", akAppKey);
+                                            adInfo.setExtras(adInfoExtras);
+                                        }
+                                    } else {
+                                        adInfo.setActionType(AdInfo.ActionType.BROWSER);
+                                    }
+                                    adInfo.setImgUrl(akAdImgUrl);
+                                    adInfo.setTitle(akAdTitle);
+                                    adInfo.setDesc(akAdDesc);
+                                    adInfo.setVideoUrl(akVideoUrl);
                                     adInfos.add(adInfo);
                                 }
                                 if (adInfos.size() > 0) {

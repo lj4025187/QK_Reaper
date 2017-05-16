@@ -25,4 +25,8 @@ public class AdType {
      * 原生
      */
     public static final int TYPE_NATIVE = 8;
+    /**
+     * 视频
+     */
+    public static final int TYPE_NATIVE_VIDEO = 9;
 }

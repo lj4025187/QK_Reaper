@@ -4,10 +4,13 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.text.TextUtils;
 import android.util.ArrayMap;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fighter.common.Device;
+import com.fighter.common.utils.EmptyUtils;
 import com.fighter.common.utils.ThreadPoolUtils;
 
 import java.io.IOException;
@@ -22,6 +25,32 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MixAdxSDKWrapper implements ISDKWrapper {
+    /**
+     * 媒体标识
+     */
+    public static final String EXTRA_MED = "med";
+    /**
+     * 投放编号
+     */
+    public static final String EXTRA_TID = "tid";
+    /**
+     * 最大广告投放条数
+     */
+    public static final String EXTRA_MAXC = "maxc";
+    /**
+     * 最大广告时长
+     */
+    public static final String EXTRA_MAXL = "maxl";
+    /**
+     * 经度
+     */
+    public static final String EXTRA_LON = "lon";
+    /**
+     * 纬度
+     */
+    public static final String EXTRA_LAT = "lat";
+
+    // ----------------------------------------------------
 
     private static final String URL_REQUEST_AD_SCHEME = "http";
     private static final String URL_REQUEST_AD_HOST = "delivery.maihehd.com";
@@ -54,7 +83,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
 
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
-        mContext = appContext;
+        mContext = appContext.getApplicationContext();
     }
 
     @Override
@@ -78,10 +107,10 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
     // ----------------------------------------------------
 
     private AdResponse requestAdSync(AdRequest adRequest) {
-        if (!TYPE_REF_MAP.containsKey(adRequest.getAdType())) {
+        String errMsg = checkParams(adRequest);
+        if (!TextUtils.isEmpty(errMsg)) {
             return new AdResponse.Builder()
-                    .errMsg("MixAdx can not deal ad type with " + adRequest.getAdType())
-                    .create();
+                    .errMsg(errMsg).create();
         }
 
         Request request = new Request.Builder()
@@ -104,6 +133,22 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
                 adResponse;
     }
 
+    private String checkParams(AdRequest adRequest) {
+        // 是否有对应支持的广告类型
+        if (!TYPE_REF_MAP.containsKey(adRequest.getAdType())) {
+            return "Can not find match mix adx ad type with ad type " +
+                    adRequest.getAdType();
+        }
+        if (EmptyUtils.isEmpty(adRequest.getAppId())) {
+            return "MixAdx app id is null";
+        }
+        if (EmptyUtils.isEmpty(adRequest.getAdPositionId())) {
+            return "MixAdx ad position id is null";
+        }
+
+        return null;
+    }
+
     private HttpUrl spliceRequestAdUrl() {
         HttpUrl.Builder builder = new HttpUrl.Builder()
                 .scheme(URL_REQUEST_AD_SCHEME)
@@ -114,14 +159,33 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
     }
 
     private RequestBody spliceRequestAdBody(AdRequest adRequest) {
+        Map<String, Object> extras = adRequest.getAdExtras();
+        if (extras == null) {
+            extras = new ArrayMap<>();
+        }
+
         JSONObject json = new JSONObject();
-        json.put("pos", adRequest.getAdPositionId());
-        json.put("posw", String.valueOf(adRequest.getAdWidth()));
-        json.put("posh", String.valueOf(adRequest.getAdHeight()));
-        json.put("postp", String.valueOf(TYPE_REF_MAP.get(adRequest.getAdType())));
+        json.put("pos", adRequest.getAdPositionId());               // 广告位ID
+        json.put("posw", String.valueOf(adRequest.getAdWidth()));   // 广告位宽
+        json.put("posh", String.valueOf(adRequest.getAdHeight()));  // 广告位高
+        json.put("postp", String.valueOf(
+                TYPE_REF_MAP.get(adRequest.getAdType())));          // 广告位类型
+
+        if (extras.containsKey(EXTRA_MED)) {
+            json.put("med", extras.get(EXTRA_MED));                 // 媒体标识
+        }
+        if (extras.containsKey(EXTRA_TID)) {
+            json.put("tid", extras.get(EXTRA_TID));                 // 投放编号
+        }
+        if (extras.containsKey(EXTRA_MAXC)) {
+            json.put("maxc", extras.get(EXTRA_MAXC));               // 最大广告投放条数
+        }
+        if (extras.containsKey(EXTRA_MAXL)) {
+            json.put("maxl", extras.get(EXTRA_MAXL));               // 最大广告时长 秒
+        }
         if (adRequest.getAdKeyWords() != null
                 && adRequest.getAdKeyWords().size() > 0) {
-            json.put("kw", adRequest.getAdKeyWords().get(0));
+            json.put("kw", adRequest.getAdKeyWords().get(0));       // 关键词
         }
 
         JSONObject ipddJson = new JSONObject();
@@ -135,23 +199,24 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
                 Device.getPackageInfo(mContext, mContext.getPackageName(),
                         PackageManager.GET_ACTIVITIES);
         if (packageInfo != null) {
-            ipddJson.put("app_version", packageInfo.versionName);
+            ipddJson.put("app_version", packageInfo.versionName);   // app 完整版本名
         }
         ApplicationInfo appInfo =
                 Device.getApplicationInfo(mContext, PackageManager.GET_ACTIVITIES);
         if (appInfo != null) {
-            ipddJson.put("app_name", appInfo.name);
+            ipddJson.put("app_name", appInfo.name);     // app 名称
         }
-        ipddJson.put("imei", Device.getM1(mContext));
-        ipddJson.put("androidid", Device.getAndroidID(mContext));
-        ipddJson.put("mac", Device.getMac(mContext));
-        ipddJson.put("cell_id", String.valueOf(Device.getCellId(mContext)));
-        ipddJson.put("is_mobile_device", true);
+        ipddJson.put("imei", Device.getM1(mContext));   // imei
+        ipddJson.put("androidid", Device.getAndroidID(mContext));   // android id
+        ipddJson.put("mac", Device.getMac(mContext));   // mac
+        ipddJson.put("cell_id", String.valueOf(Device.getCellId(mContext)));    // 基站编号
+        ipddJson.put("is_mobile_device", true);         // 是否是移动设备
         ipddJson.put("have_wifi",
-                Device.getNetworkType(mContext) == Device.NetworkType.NETWORK_WIFI);
+                Device.getNetworkType(mContext) ==
+                        Device.NetworkType.NETWORK_WIFI);    // 是否是WIFI网络
         ipddJson.put("sr", Device.getScreenWidth(mContext) + "x" +
-                Device.getScreenHeight(mContext));
-        ipddJson.put("lac", String.valueOf(Device.getLac(mContext)));
+                Device.getScreenHeight(mContext));      // 分辨率 宽x高
+        ipddJson.put("lac", String.valueOf(Device.getLac(mContext)));   // 位置区域码
         int connectionType = 0;
         switch (Device.getNetworkType(mContext)) {
             case NETWORK_2G: {
@@ -171,7 +236,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
                 break;
             }
         }
-        ipddJson.put("connection_type", String.valueOf(connectionType));
+        ipddJson.put("connection_type", String.valueOf(connectionType));    // 网络类型
         int operatorType = 0;
         switch (Device.getSimOperatorByMnc(mContext)) {
             case SIM_OPERATOR_CHINA_MOBILE: {
@@ -187,15 +252,28 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
                 break;
             }
         }
-        ipddJson.put("operator_type", String.valueOf(operatorType));
-        ipddJson.put("device_name", Device.getBuildManufacturer() + " " + Device.getBuildModel());
-        ipddJson.put("model", Device.getBuildModel());
-        ipddJson.put("manufacturer", Device.getBuildManufacturer());
-        ipddJson.put("producer", Device.getBuildProduct());
-        ipddJson.put("mccmnc", Device.getSimOperator(mContext));
-        ipddJson.put("imsi", Device.getIMSI(mContext));
-        ipddJson.put("lang", Device.getLocalLanguage());
-        ipddJson.put("os_version", Device.getBuildRelease());
+        ipddJson.put("operator_type", String.valueOf(operatorType));    // 运营商
+        ipddJson.put("have_bt", Device.hasBluetooth());                 // 是否有蓝牙
+        ipddJson.put("phone_type", Device.getPhoneType(mContext));      // 手机类型
+        ipddJson.put("have_gps", Device.hasGPS(mContext));              // 是否有GPS
+        ipddJson.put("device_name", Device.getBuildManufacturer() +
+                " " + Device.getBuildModel());                          // 硬件制造+版本
+        ipddJson.put("model", Device.getBuildModel());                  // 手机机型
+        ipddJson.put("manufacturer", Device.getBuildManufacturer());    // 手机厂商
+        ipddJson.put("producer", Device.getBuildProduct());             // 手机制造商
+        ipddJson.put("mccmnc", Device.getSimOperator(mContext));        // mcc mnc
+        if (extras.containsKey(EXTRA_LON)) {
+            ipddJson.put("lon", String.valueOf(extras.get(EXTRA_LON))); // 经度
+        }
+        if (extras.containsKey(EXTRA_LAT)) {
+            ipddJson.put("lat", String.valueOf(extras.get(EXTRA_LAT))); // 纬度
+        }
+        ipddJson.put("imsi", Device.getIMSI(mContext));                 // imsi
+        ipddJson.put("lang", Device.getLocalLanguage());                // 当前系统语言
+        ipddJson.put("have_gravity",
+                Device.hasSensor(mContext, Sensor.TYPE_GRAVITY));       // 是否支持重力感应
+        ipddJson.put("os_version", Device.getBuildRelease());           // 操作系统版本
+        // 是否越狱 屏幕色彩深度 无法获取，不上传
 
         json.put("ipdd", ipddJson.toJSONString());
 

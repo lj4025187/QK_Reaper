@@ -4,13 +4,17 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fighter.common.Device;
+import com.fighter.common.utils.EmptyUtils;
 import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ThreadPoolUtils;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import okhttp3.HttpUrl;
@@ -65,11 +69,11 @@ public class TencentSDKWrapper implements ISDKWrapper {
     /**
      * 经度
      */
-    public static final String EXTRA_LAT = "lat";
-    /**
-     * 维度
-     */
     public static final String EXTRA_LNG = "lng";
+    /**
+     * 纬度
+     */
+    public static final String EXTRA_LAT = "lat";
     /**
      * 获取经纬度时的时间戳，ms
      */
@@ -118,7 +122,7 @@ public class TencentSDKWrapper implements ISDKWrapper {
 
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
-        mContext = appContext;
+        mContext = appContext.getApplicationContext();
     }
 
     @Override
@@ -142,6 +146,12 @@ public class TencentSDKWrapper implements ISDKWrapper {
     // ----------------------------------------------------
 
     private AdResponse requestAdSync(AdRequest adRequest) {
+        String errMsg = checkParams(adRequest);
+        if (!TextUtils.isEmpty(errMsg)) {
+            return new AdResponse.Builder()
+                    .errMsg(errMsg).create();
+        }
+
         Request request = new Request.Builder()
                 .addHeader("content-type", "application/json;charset:utf-8")
                 .url(spliceRequestAdUrl(adRequest))
@@ -151,7 +161,7 @@ public class TencentSDKWrapper implements ISDKWrapper {
         try {
             Response response = mClient.newCall(request).execute();
             if (response != null) {
-                adResponse = convertResponse(response);
+                adResponse = convertResponse(adRequest, response);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -159,6 +169,22 @@ public class TencentSDKWrapper implements ISDKWrapper {
         return adResponse == null ?
                 new AdResponse.Builder().errMsg("Request has no response.").create() :
                 adResponse;
+    }
+
+    private String checkParams(AdRequest adRequest) {
+        // 是否有对应支持的广告类型
+        if (!TYPE_REF_MAP.containsKey(adRequest.getAdType())) {
+            return "Can not find match tencent ad type with ad type " +
+                    adRequest.getAdType();
+        }
+        if (EmptyUtils.isEmpty(adRequest.getAppId())) {
+            return "Tencent app id is null";
+        }
+        if (EmptyUtils.isEmpty(adRequest.getAdPositionId())) {
+            return "Tencent ad position id is null";
+        }
+
+        return null;
     }
 
     private HttpUrl spliceRequestAdUrl(AdRequest adRequest) {
@@ -341,15 +367,102 @@ public class TencentSDKWrapper implements ISDKWrapper {
         return jsonExt.toString();
     }
 
-    private AdResponse convertResponse(Response response) {
+    private AdResponse convertResponse(AdRequest adRequest, Response response) {
         AdResponse.Builder builder = new AdResponse.Builder();
+        builder.adPositionId(adRequest.getAdPositionId());
         JSONObject errJson = new JSONObject();
         errJson.put("httpResponseCode", response.code());
         if (response.isSuccessful()) {
+            String oriResponse = null;
             try {
-                builder.oriResponse(response.body().string());
+                oriResponse = response.body().string();
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+
+            builder.oriResponse(oriResponse);
+
+            JSONObject resJson = JSONObject.parseObject(oriResponse);
+            JSONObject dataJson = null;
+            JSONObject adPosJson = null;
+            JSONArray adListJson = null;
+            if (resJson != null) {
+                int retCode = resJson.getIntValue("ret");
+                int rptCode = resJson.getIntValue("rpt");
+                String msg = resJson.getString("msg");
+                errJson.put("tencentRetCode", retCode);
+                errJson.put("tencentRptCode", rptCode);
+                errJson.put("tencentMsg", msg);
+
+                dataJson = resJson.getJSONObject("data");
+            }
+            if (dataJson != null) {
+                adPosJson = dataJson.getJSONObject(adRequest.getAdPositionId());
+            }
+            if (adPosJson != null) {
+                int dataRetCode = adPosJson.getIntValue("ret");
+                String dataMsg = adPosJson.getString("msg");
+                errJson.put("tencentDataRetCode", dataRetCode);
+                errJson.put("tencentDataMsg", dataMsg);
+
+                if (dataRetCode == 0) {
+                    adListJson = adPosJson.getJSONArray("list");
+                }
+            }
+
+            List<AdInfo> adInfos = null;
+            if (adListJson != null && adListJson.size() > 0) {
+                int size = adListJson.size();
+                adInfos = new ArrayList<>(size);
+                for (int i = 0; i < size; i++) {
+                    JSONObject adInfoJson = adListJson.getJSONObject(i);
+                    if (adInfoJson == null) {
+                        continue;
+                    }
+                    AdInfo adInfo = new AdInfo();
+
+                    AdInfo.ContentType contentType = AdInfo.ContentType.PICTURE;
+                    int tCrtType = adInfoJson.getIntValue("crt_type");
+                    switch (tCrtType) {
+                        case 1: {
+                            contentType = AdInfo.ContentType.TEXT;
+                            break;
+                        }
+                        case 2: {
+                            contentType = AdInfo.ContentType.PICTURE;
+                            break;
+                        }
+                        case 3:
+                        case 7: {
+                            contentType = AdInfo.ContentType.PICTURE_WITH_TEXT;
+                            break;
+                        }
+                    }
+                    adInfo.setContentType(contentType);
+
+                    AdInfo.ActionType actionType = AdInfo.ActionType.BROWSER;
+                    int tBtnRender = adInfoJson.getIntValue("btn_render");
+                    if (tBtnRender == 2) {
+                        actionType = AdInfo.ActionType.APP_DOWNLOAD;
+                    }
+                    adInfo.setActionType(actionType);
+
+                    adInfo.setImgUrl(adInfoJson.getString("img"));
+                    adInfo.setTitle(adInfoJson.getString("txt"));
+                    adInfo.setDesc(adInfoJson.getString("desc"));
+
+                    JSONObject adExtJson = adInfoJson.getJSONObject("ext");
+                    if (adExtJson != null) {
+                        adInfo.setAppIconUrl(adExtJson.getString("iconurl"));
+                        adInfo.setAppName(adExtJson.getString("appname"));
+                    }
+
+                    adInfos.add(adInfo);
+                }
+                if (adInfos.size() > 0) {
+                    builder.isSucceed(true);
+                    builder.adInfos(adInfos);
+                }
             }
         }
 

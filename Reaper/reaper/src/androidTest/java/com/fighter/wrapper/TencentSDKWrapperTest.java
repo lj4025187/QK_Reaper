@@ -29,7 +29,7 @@ public class TencentSDKWrapperTest {
                 .create();
         Log.d(TAG, "request " + adRequest);
 
-        Context context = InstrumentationRegistry.getContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         ISDKWrapper sdkWrapper = new TencentSDKWrapper();
         sdkWrapper.init(context, null);
 
