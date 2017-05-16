@@ -32,6 +32,7 @@ task publishSDKJar(type:Jar) {
         include('helper/*.class')
         include('config/*.class')
         include('patch/*.class')
+        include('utils/*.class')
     }
 
     into 'com/fighter/'
