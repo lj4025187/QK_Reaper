@@ -60,7 +60,7 @@ public class ReaperInit {
     private static final boolean DEBUG_REAPER_PATCH = true;
 
     private static final String CLASS_REAPER_API = "com.fighter.api.ReaperApi";
-    private static final String CLASS_REAPER_DOWNLOAD = "com.fighter.download.ReaperDownload";
+    private static final String CLASS_REAPER_DOWNLOAD = "com.fighter.download.ReaperNetwork";
 
     private static final String REAPER = "reaper.apk";
     private static final String REAPER_SYSTEM = "com.fighter.reaper";
@@ -95,7 +95,7 @@ public class ReaperInit {
             return null;
         }
 
-        //initReaper(reaperPatch);
+        initReaper(context, reaperPatch);
         queryHigherReaperInServer(reaperPatch);
 
         return api;
@@ -103,28 +103,34 @@ public class ReaperInit {
 
 
     /**
-     *
+     * @param context
      * @param reaperPatch
      */
-    @Deprecated
-    private static void initReaper(ReaperPatch reaperPatch) {
+    private static void initReaper(Context context, ReaperPatch reaperPatch) {
         ClassLoader classLoader = reaperPatch.getPatchLoader();
         if (classLoader == null) {
             LoaderLog.e(TAG, "initReaper, classLoader == null");
             return;
         }
 
+        //1.get class
+        Class claxx = null;
         try {
-            Class claxx = classLoader.loadClass("com.fighter.download.ReaperNetwork");
-            if (claxx == null) {
-                LoaderLog.e(TAG, "initReaper, cant load ReaperDownload !");
-                return;
-            }
+            claxx = classLoader.loadClass("com.fighter.download.ReaperEnv");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (claxx == null) {
+            LoaderLog.e(TAG, "initReaper, cant load ReaperNetwork !");
+            return;
+        }
 
-            Field sdkAbsPath = claxx.getDeclaredField("SDK_ABSPATH");
+        //2.set sdk path
+        try {
+            Field sdkAbsPath = claxx.getDeclaredField("sSdkPath");
             if (sdkAbsPath == null) {
-                LoaderLog.e(TAG, "cant find SDK_ABSPATH");
-                return;
+                LoaderLog.e(TAG, "cant find sSdkPath");
+                throw new RuntimeException("cant find sSdkPath");
             }
             sdkAbsPath.setAccessible(true);
             sdkAbsPath.set(null, reaperPatch.getAbsolutePath());
@@ -132,7 +138,7 @@ public class ReaperInit {
             Method initForNetworkMethod = claxx.getDeclaredMethod("initForNetwork");
             if (initForNetworkMethod == null) {
                 LoaderLog.e(TAG, "initForNetworkMethod == null");
-                return;
+                throw new RuntimeException("cant find initForNetwork");
             }
             initForNetworkMethod.setAccessible(true);
             initForNetworkMethod.invoke(null, null);
@@ -141,6 +147,18 @@ public class ReaperInit {
         } catch (Exception e) {
             e.printStackTrace();
             LoaderLog.e(TAG, "initReaper, err : " + e.getMessage());
+        }
+
+        //3.set context obj
+        try {
+            Field sContext = claxx.getDeclaredField("sContext");
+            if (sContext == null) {
+                throw new RuntimeException("cant find sContext");
+            }
+            sContext.setAccessible(true);
+            sContext.set(null, context);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -164,10 +182,10 @@ public class ReaperInit {
         try {
             Class claxx = loader.loadClass(CLASS_REAPER_DOWNLOAD);
             if (claxx == null) {
-                LoaderLog.e(TAG, "ReaperDownload class is null !");
+                LoaderLog.e(TAG, "ReaperNetwork class is null !");
                 return;
             }
-            reaperManager.setReaperDownloadClass(claxx);
+            reaperManager.setReaperNetworkClass(claxx);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

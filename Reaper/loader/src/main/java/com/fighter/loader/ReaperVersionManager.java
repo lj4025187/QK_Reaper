@@ -41,7 +41,7 @@ public class ReaperVersionManager {
         mLock = new ReentrantLock();
     }
 
-    public void setReaperDownloadClass(Class claxx) {
+    public void setReaperNetworkClass(Class claxx) {
         mReaperDownloadClass = claxx;
     }
 
@@ -84,9 +84,6 @@ public class ReaperVersionManager {
         }
 
         try {
-
-            Method[] methods = mReaperDownloadClass.getDeclaredMethods();
-
             Method downloadMethod =
                     mReaperDownloadClass.getDeclaredMethod("downloadHigherVersionReaper");
             if (downloadMethod == null) {

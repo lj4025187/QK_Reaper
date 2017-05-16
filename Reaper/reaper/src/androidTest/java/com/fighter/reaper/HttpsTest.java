@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -122,13 +124,24 @@ public class HttpsTest {
             @Override
             public void run() {
                 try {
-                    AppConf appConf = new AppConf("{'baseUrl':'https://api.os.qiku.com','resourceUrl':'version'}");
-                    appConf.getAppConfAsync("Reaper", "1.0.0", "version", "0", null, new RestClientResponseCallback() {
-                        @Override
-                        public void resHandler(JSONObject jsonObject) {
-                            ReaperLog.e(TAG, "json : " + jsonObject);
-                        }
-                    });
+//                    AppConf appConf = new AppConf("{'baseUrl':'https://api.os.qiku.com','resourceUrl':'Reaper/version'}");
+//                    appConf.getAppConfAsync("Reaper", "1.0.0", "Reaper/version", "0", null, new RestClientResponseCallback() {
+//                        @Override
+//                        public void resHandler(JSONObject jsonObject) {
+//                            ReaperLog.e(TAG, "json : " + jsonObject);
+//                        }
+//                    });
+
+                    AppConf ac = new AppConf("{'baseUrl':'https://api.os.qiku.com','resourceUrl':'api/list'}");
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    params.put("app", "Reaper"); // 设置app
+                    params.put("version", "1.0.0"); // 设置version
+                    params.put("api", "version"); // 设置api
+                    params.put("time", "1494922168");
+
+                    JSONObject result = ac.getAppConfSyncCustom(params);
+                    ReaperLog.e(TAG, "json : " + result);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                     ReaperLog.e(TAG, "err : " + e.getMessage());
