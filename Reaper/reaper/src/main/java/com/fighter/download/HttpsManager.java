@@ -1,6 +1,5 @@
 package com.fighter.download;
 
-import android.content.res.AssetManager;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -22,9 +21,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -33,19 +30,21 @@ import okhttp3.Response;
  * Created by Matti on 2017/5/12.
  */
 
-public final class HttpsUtil {
-    private static final java.lang.String TAG = HttpsUtil.class.getSimpleName();
+public final class HttpsManager {
+    private static final java.lang.String TAG = HttpsManager.class.getSimpleName();
     private static final boolean DEBUG_HTTPS = true;
 
     private OkHttpClient mHttpsClient;
 
-    HttpsUtil(AssetManager assetManager) {
+
+    public HttpsManager(String cert) {
         X509TrustManager trustManager;
         SSLSocketFactory sslSocketFactory;
         final InputStream inputStream;
         try {
-            inputStream = assetManager.open("srca.cer"); // 得到证书的输入流
-            trustManager = trustManagerForCertificates(inputStream);//以流的方式读入证书
+            //inputStream = assetManager.open("srca.cer");
+            inputStream= new okio.Buffer().writeUtf8(cert).inputStream();
+            trustManager = trustManagerForCertificates(inputStream);
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{trustManager}, null);
             sslSocketFactory = sslContext.getSocketFactory();

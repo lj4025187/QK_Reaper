@@ -4,6 +4,7 @@ import android.content.res.AssetManager;
 import android.text.TextUtils;
 
 import com.fighter.common.utils.ReaperLog;
+import com.qiku.proguard.annotations.NoProguard;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -12,13 +13,16 @@ import java.lang.reflect.Method;
  * Created by huayang on 17-5-13.
  */
 
+@Deprecated
+@NoProguard
 public class ReaperNetwork {
     private static final String TAG = ReaperNetwork.class.getSimpleName();
 
     private static String SDK_ABSPATH;
     public static AssetManager sAssetManager;
-    public static HttpsUtil sHttpsUtil;
+    public static HttpsManager sHttpsManager;
 
+    @NoProguard
     public static void initForNetwork() {
         if (TextUtils.isEmpty(SDK_ABSPATH)) {
             ReaperLog.e(TAG, "SDK_ABSPATH == null !");
@@ -48,8 +52,8 @@ public class ReaperNetwork {
         }
         sAssetManager = assetManager;
 
-        if (sHttpsUtil == null) {
-            sHttpsUtil = new HttpsUtil(sAssetManager);
+        if (sHttpsManager == null) {
+            sHttpsManager = new HttpsManager("");
         }
     }
 

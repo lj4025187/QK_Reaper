@@ -48,9 +48,7 @@ public class ReaperDownload {
     private static final int COMPARE_EQUALS = 0;
     private static final int COMPARE_FAILED = -10;
 
-    private static final String URL_REAPER_HIGHER_VERSION = "https://kyfw.12306.cn/otn/";
-    private static final String URL_REAPER_DOWNLOAD =
-            "https://kyfw.12306.cn/otn/czxx/init";
+    private static final String URL_REAPER_DOWNLOAD = "";
 
     /**
      * Check higher version
@@ -84,63 +82,64 @@ public class ReaperDownload {
     }
 
     private static String queryVersion() {
-        if (ReaperNetwork.sHttpsUtil == null) {
-            if (DEBUG_DOWNLOAD)
-                ReaperLog.e(TAG, "queryVersion, HttpsUtil == null !");
-            return null;
-        }
-        try {
-            Response response = ReaperNetwork.sHttpsUtil.requestSync(URL_REAPER_HIGHER_VERSION);
-            if (response == null)
-                return null;
-            Headers responseHeaders = response.headers();
-            for (int i = 0; i < responseHeaders.size(); i++) {
-                ReaperLog.e(TAG, responseHeaders.name(i) + ": " + responseHeaders.value(i));
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        if (ReaperNetwork.sHttpsUtil == null) {
+//            if (DEBUG_DOWNLOAD)
+//                ReaperLog.e(TAG, "queryVersion, HttpsUtil == null !");
+//            return null;
+//        }
+//        try {
+//            Response response = ReaperNetwork.sHttpsUtil.requestSync(URL_REAPER_HIGHER_VERSION);
+//            if (response == null)
+//                return null;
+//            Headers responseHeaders = response.headers();
+//            for (int i = 0; i < responseHeaders.size(); i++) {
+//                ReaperLog.e(TAG, responseHeaders.name(i) + ": " + responseHeaders.value(i));
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         return "1.0.1";
     }
 
     private static boolean downloadHigherVersionReaper() {
-        if (ReaperNetwork.sHttpsUtil == null) {
-            if (DEBUG_DOWNLOAD)
-                ReaperLog.e(TAG, "downloadReaper, HttpsUtil == null !");
-            return false;
-        }
-        Response response = ReaperNetwork.sHttpsUtil.requestSync(URL_REAPER_DOWNLOAD);
-        if (response == null || !response.isSuccessful()) {
-            if (DEBUG_DOWNLOAD)
-                ReaperLog.e(TAG, "downloadReaper, response == null or unsuccessful !");
-            return false;
-        }
-        ResponseBody body = response.body();
-        if (body == null) {
-            if (DEBUG_DOWNLOAD)
-                ReaperLog.e(TAG, "downloadReaper, body == null !");
-            return false;
-        }
-        InputStream is = body.byteStream();
-        if (is == null) {
-            if (DEBUG_DOWNLOAD)
-                ReaperLog.e(TAG, "downloadReaper, is == null !");
-            return false;
-        }
-
-        //test start
-        String bodyString = null;
-        try {
-            bodyString = body.string();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bodyString != null;
+//        if (ReaperNetwork.sHttpsUtil == null) {
+//            if (DEBUG_DOWNLOAD)
+//                ReaperLog.e(TAG, "downloadReaper, HttpsUtil == null !");
+//            return false;
+//        }
+//        Response response = ReaperNetwork.sHttpsUtil.requestSync(URL_REAPER_DOWNLOAD);
+//        if (response == null || !response.isSuccessful()) {
+//            if (DEBUG_DOWNLOAD)
+//                ReaperLog.e(TAG, "downloadReaper, response == null or unsuccessful !");
+//            return false;
+//        }
+//        ResponseBody body = response.body();
+//        if (body == null) {
+//            if (DEBUG_DOWNLOAD)
+//                ReaperLog.e(TAG, "downloadReaper, body == null !");
+//            return false;
+//        }
+//        InputStream is = body.byteStream();
+//        if (is == null) {
+//            if (DEBUG_DOWNLOAD)
+//                ReaperLog.e(TAG, "downloadReaper, is == null !");
+//            return false;
+//        }
+//
+//        //test start
+//        String bodyString = null;
+//        try {
+//            bodyString = body.string();
+//            ReaperLog.e(TAG, "bodyString : " + bodyString);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return bodyString != null;
         //test end
 
-        //return false;
+        return false;
     }
 
     /**

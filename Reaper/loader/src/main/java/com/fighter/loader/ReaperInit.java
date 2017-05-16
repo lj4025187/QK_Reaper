@@ -95,12 +95,18 @@ public class ReaperInit {
             return null;
         }
 
-        initReaper(reaperPatch);
+        //initReaper(reaperPatch);
         queryHigherReaperInServer(reaperPatch);
 
         return api;
     }
 
+
+    /**
+     *
+     * @param reaperPatch
+     */
+    @Deprecated
     private static void initReaper(ReaperPatch reaperPatch) {
         ClassLoader classLoader = reaperPatch.getPatchLoader();
         if (classLoader == null) {
