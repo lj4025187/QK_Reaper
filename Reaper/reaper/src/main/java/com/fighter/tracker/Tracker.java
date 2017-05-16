@@ -1,12 +1,13 @@
 package com.fighter.tracker;
 
 import android.content.Context;
-
-import com.fighter.common.utils.ReaperLog;
+import android.support.annotation.NonNull;
 
 import java.util.HashMap;
 
 /**
+ * the class track the reaper event and report to qdas.
+ *
  * Created by lichen on 17-5-8.
  */
 public class Tracker {
@@ -25,7 +26,7 @@ public class Tracker {
      *  init tracker
      *  @param context the sdk context
      * */
-    public void init(Context context) {
+    public void init(@NonNull Context context) {
         CommonParam.init(context);
         TrackerStatAgent.init(context);
     }
@@ -38,7 +39,7 @@ public class Tracker {
         if (context == null)
             return;
         HashMap<String, String> map = CommonParam.generateMap();
-        if (map != null && param != null) {
+        if (!map.isEmpty() && param != null) {
 
             HashMap<String, String> adMap = param.generateMap();
 
@@ -54,7 +55,7 @@ public class Tracker {
      * @param context the context
      * @param param the display event param
      */
-    public void trackDisplayEvent(Context context, EventDisPlayParam param) {
+    public void trackDisplayEvent(@NonNull Context context, @NonNull EventDisPlayParam param) {
         onEvent(context, TrackerEventType.AD_DISPLAY_EVENT, param);
     }
 
@@ -64,7 +65,7 @@ public class Tracker {
      * @param context the context
      * @param param the click event param
      */
-    public void trackClickEvent(Context context, EventClickParam param) {
+    public void trackClickEvent(@NonNull Context context, @NonNull EventClickParam param) {
         onEvent(context, TrackerEventType.AD_CLICK_EVENT, param);
     }
 
@@ -74,7 +75,7 @@ public class Tracker {
      * @param context the context
      * @param param the action event param
      */
-    public void trackActionEvent(Context context, EventActionParam param) {
+    public void trackActionEvent(@NonNull Context context, @NonNull EventActionParam param) {
         onEvent(context, TrackerEventType.AD_ACTION_EVENT, param);
     }
 
@@ -84,7 +85,7 @@ public class Tracker {
      * @param context the context
      * @param param the download event param
      */
-    public void trackDownloadEvent(Context context, EventDownLoadParam param) {
+    public void trackDownloadEvent(@NonNull Context context, @NonNull EventDownLoadParam param) {
         onEvent(context, TrackerEventType.AD_DOWNLOAD_FAILED_EVENT, param);
     }
 }

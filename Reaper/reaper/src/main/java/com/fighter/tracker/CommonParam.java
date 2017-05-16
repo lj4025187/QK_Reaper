@@ -58,13 +58,9 @@ final class CommonParam {
     }
 
     static void init(Context context) {
-        String mac_str = Device.getMacStable(context);
-        if (mac_str != null) {
-            mac_str = mac_str.replace(":", "");
-            mac_str = mac_str.toUpperCase();
-            String mac_sum = EncryptUtils.encryptMD5ToString(mac_str);
-            mac = mac_sum.toLowerCase();
-        }
+        if (context == null)
+            return;
+        mac = Device.getFormatMac(context);
         String m1_str = Device.getM1(context);
         if (m1_str != null) {
             String m1_sum = EncryptUtils.encryptMD5ToString(m1_str);
@@ -73,8 +69,8 @@ final class CommonParam {
         brand = Device.getBuildBrand();
         solution = Device.getBuildManufacturer();
         d_model = Device.getBuildModel();
-        screen = String.valueOf(Device.getScreenWidth(context)) + "*" +
-                String.valueOf(Device.getScreenHeight(context));
+        screen = Device.getScreenWidth(context) + "*" +
+                Device.getScreenHeight(context);
         channel = Device.getDeviceChannel();
         lang = Device.getLocalLanguage();
         mContext = context;
@@ -82,7 +78,7 @@ final class CommonParam {
 
     static HashMap<String, String> generateMap() {
         HashMap<String, String> map = new HashMap<>();
-        map.put("mac", mac);
+        map.put("mac", mac == null? "" : mac);
         map.put("m1", m1);
         map.put("brand", brand);
         map.put("solution", solution);
@@ -94,16 +90,17 @@ final class CommonParam {
         return map;
     }
 
-    private static HashMap<String, String> appendInstant(Context context, HashMap<String, String> map) {
-        if (map == null)
-            return null;
-        map.put("ad_sdk_v", BumpVersion.value());
-        String net_type = Device.getNetworkType(context).getName();
+    private static void appendInstant(Context context, HashMap<String, String> map) {
+        if (context == null || map == null)
+            return;
+        ad_sdk_v = BumpVersion.value();
+        map.put("ad_sdk_v", ad_sdk_v);
+        net_type = Device.getNetworkType(context).getName();
         map.put("net_type", net_type);
         mcc = Device.getMcc(context);
         map.put("mcc", mcc == null ? "" : mcc);
-        map.put("c_time", Device.getCurrentLocalTime());
-        return map;
+        c_time = Device.getCurrentLocalTime();
+        map.put("c_time", c_time);
     }
 
 }

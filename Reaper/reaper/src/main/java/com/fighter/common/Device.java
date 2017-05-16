@@ -172,7 +172,7 @@ public final class Device {
      * @return
      */
     public static String getFormatMac(Context context) {
-        String mac = getMac(context);
+        String mac = getMacStable(context);
         if (TextUtils.isEmpty(mac)) {
             return null;
         }
