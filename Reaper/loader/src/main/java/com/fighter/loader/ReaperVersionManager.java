@@ -65,7 +65,7 @@ public class ReaperVersionManager {
                 int checkResult = doQuery();
                 //do check.
                 if (checkResult == 1) {
-                    mCheckSuccess = downloadHigherReaper();
+                    mCheckSuccess = true;
                 } else {
                     mCheckSuccess = checkResult == 0;
                 }
@@ -74,39 +74,6 @@ public class ReaperVersionManager {
                 LoaderLog.e(TAG, "checkHigherVersion, unLock and check over. mCheckSuccess : " + mCheckSuccess);
             }
         }).start();
-    }
-
-    private boolean downloadHigherReaper() {
-        if (mReaperDownloadClass == null) {
-            if (DEBUG_VERSION)
-                LoaderLog.e(TAG, "downloadReaper, mReaperDownloadClass == null .");
-            return false;
-        }
-
-        try {
-            Method downloadMethod =
-                    mReaperDownloadClass.getDeclaredMethod("downloadHigherVersionReaper");
-            if (downloadMethod == null) {
-                if (DEBUG_VERSION)
-                    LoaderLog.e(TAG, "cant find downloadMethod !");
-                return false;
-            }
-            downloadMethod.setAccessible(true);
-            Object o = downloadMethod.invoke(null);
-            if (o == null || !(o instanceof Boolean)) {
-                if (DEBUG_VERSION) {
-                    LoaderLog.e(TAG, "downloadMethod invoke return an err result !");
-                }
-                return false;
-            }
-            return (boolean) o;
-         } catch (Exception e) {
-            e.printStackTrace();
-            if (DEBUG_VERSION) {
-                LoaderLog.e(TAG, "error : " + e.getMessage());
-            }
-        }
-        return false;
     }
 
     /**

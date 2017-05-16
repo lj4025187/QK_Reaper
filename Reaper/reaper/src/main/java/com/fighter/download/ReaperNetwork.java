@@ -2,6 +2,7 @@ package com.fighter.download;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -12,7 +13,20 @@ import com.qiku.serversdk.custom.AppConf;
 
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Created by huayang on 17-5-10.
@@ -20,6 +34,9 @@ import java.util.HashMap;
 
 public class ReaperNetwork {
     private static final String TAG = ReaperNetwork.class.getSimpleName();
+    private static final String SP_REAPER_NETWORK = "reaper_network";
+    private static final String KEY_TIME = "reaper_time";
+
     private static final boolean DEBUG_DOWNLOAD = true;
 
     private static final int REAPER_VERSION_CHECK_NEW_VERSION = 1;
@@ -32,7 +49,7 @@ public class ReaperNetwork {
     private static final int COMPARE_FAILED = -10;
 
     private static final String URL_REAPER_DOWNLOAD = "";
-    private static Context sContext;
+
 
     /**
      * Check higher version
@@ -45,15 +62,18 @@ public class ReaperNetwork {
         if (TextUtils.isEmpty(version) || !isValidVersion(version))
             return REAPER_VERSION_CHECK_FAILED;
 
-        String serverVersion = queryVersion();
-        if (!isValidVersion(serverVersion)) {
+        VersionPiece piece = queryVersion();
+        if (piece == null || TextUtils.isEmpty(piece.version)) {
+            return REAPER_VERSION_CHECK_FAILED;
+        }
+        if (!isValidVersion(piece.version)) {
             if (DEBUG_DOWNLOAD) {
-                ReaperLog.e(TAG, "query a bad version. : " + serverVersion);
+                ReaperLog.e(TAG, "query a bad version. : " + piece.version);
             }
             return REAPER_VERSION_CHECK_FAILED;
         }
 
-        int compared = compareVersion(version, serverVersion);
+        int compared = compareVersion(version, piece.version);
         ReaperLog.e(TAG, "compared : " + compared);
         if (compared != COMPARE_SERVER_HIGHER) {
             if (compared == COMPARE_FAILED) {
@@ -61,11 +81,81 @@ public class ReaperNetwork {
             }
             return REAPER_VERSION_CHECK_SAME_VERSION;
         } else {
-            return REAPER_VERSION_CHECK_NEW_VERSION;
+            boolean success = downloadHigherVersionReaper(piece);
+            if (success) {
+                SharedPreferences sp = ReaperEnv.sContext
+                        .getSharedPreferences(SP_REAPER_NETWORK, Context.MODE_PRIVATE);
+                sp.edit().putString(KEY_TIME, piece.time).apply();
+            }
+            return success ? REAPER_VERSION_CHECK_NEW_VERSION : REAPER_VERSION_CHECK_FAILED;
         }
     }
 
-    private static String queryVersion() {
+    /**
+     * @param piece
+     * @return true if download success
+     */
+    private static boolean
+        downloadHigherVersionReaper(@NonNull VersionPiece piece) {
+        if (DEBUG_DOWNLOAD) {
+            ReaperLog.e(TAG, "start download ... " + piece.url);
+        }
+        OkHttpClient client = new OkHttpClient.Builder().build();
+        Request request = new Request.Builder()
+                .url(piece.url)
+                .build();
+
+        InputStream is = null;
+        FileOutputStream fos = null;
+        try {
+            Response response = client.newCall(request).execute();
+            if (response == null) {
+                ReaperLog.e(TAG, "response == null");
+                return false;
+            }
+            ResponseBody body = response.body();
+            if (body == null) {
+                ReaperLog.e(TAG, "body == null");
+                return false;
+            }
+            is = body.byteStream();
+            if (is == null) {
+                ReaperLog.e(TAG, "is == null");
+                return false;
+            }
+            fos = new FileOutputStream(new File("/mnt/sdcard/aa.apk"));
+            byte[] buffer = new byte[1024];
+            int length = 0;
+            while ((length = is.read(buffer)) != -1) {
+                fos.write(buffer, 0, length);
+            }
+            fos.flush();
+            ReaperLog.e(TAG, "download success.");
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            ReaperLog.e(TAG, "download error : " + e.getMessage());
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static VersionPiece queryVersion() {
         try {
             AppConf ac = new AppConf("{'baseUrl':'https://api.os.qiku.com','resourceUrl':'api/list'}");
             HashMap<String, String> params = new HashMap<String, String>();
@@ -74,7 +164,7 @@ public class ReaperNetwork {
             params.put("api", "version"); // 设置api
             //params.put("time", "1494922168");
             SharedPreferences sp = ReaperEnv.sContext.getSharedPreferences("aa", Context.MODE_PRIVATE);
-            String versionTime = sp.getString("version_time", "0");
+            String versionTime = sp.getString(KEY_TIME, "0");
             params.put("time", versionTime);
             ReaperLog.e(TAG, "versionTime : " + versionTime);
             JSONObject result = ac.getAppConfSyncCustom(params);
@@ -86,65 +176,78 @@ public class ReaperNetwork {
             String jsonString = result.toString();
             com.alibaba.fastjson.JSONObject jsonObject = JSON.parseObject(jsonString);
             String ret = jsonObject.getString("result");
+            if (!TextUtils.equals(ret, "true")) {
+                if (DEBUG_DOWNLOAD) {
+                    ReaperLog.e(TAG, "dont have new version !");
+                }
+                return null;
+            }
+
             com.alibaba.fastjson.JSONObject obj = jsonObject.getJSONObject("list");
+            if (obj == null) {
+                if (DEBUG_DOWNLOAD) {
+                    ReaperLog.e(TAG, "dont have list data.");
+                }
+                return null;
+            }
             JSONArray data = obj.getJSONArray("data");
+            if (data == null) {
+                if (DEBUG_DOWNLOAD) {
+                    ReaperLog.e(TAG, "dont have data .");
+                }
+                return null;
+            }
+            String time = obj.getString("time");
+
+            List<VersionPiece> pieces = new ArrayList<>();
             for (int i = 0; i < data.size(); ++i) {
                 Object o = data.get(i);
                 if (!(o instanceof JSONArray)) {
                     continue;
                 }
                 JSONArray dataArray = ((JSONArray)o);
+                int id = (int) dataArray.get(0);
                 String version = (String) dataArray.get(1);
                 String url = (String) dataArray.get(2);
+                String desc = (String) dataArray.get(3);
+
+                VersionPiece piece = new VersionPiece();
+                piece.id = id;
+                piece.version = version;
+                piece.url = url;
+                piece.description = desc;
+                pieces.add(piece);
 
                 ReaperLog.e(TAG, "version : " + version + "; url : " + url);
             }
-            //ReaperLog.e(TAG, "json : " + ret + "---" + data);
 
+            VersionPiece piece = sortVersions(pieces);
+            piece.time = time;
+            ReaperLog.e(TAG, "sort version : " + piece);
+            return piece;
         } catch (Exception e) {
             e.printStackTrace();
             ReaperLog.e(TAG, "err : " + e.getMessage());
         }
-        return "1.0.1";
+        return null;
     }
 
-    private static boolean downloadHigherVersionReaper() {
-//        if (ReaperNetwork.sHttpsUtil == null) {
-//            if (DEBUG_DOWNLOAD)
-//                ReaperLog.e(TAG, "downloadReaper, HttpsUtil == null !");
-//            return false;
-//        }
-//        Response response = ReaperNetwork.sHttpsUtil.requestSync(URL_REAPER_DOWNLOAD);
-//        if (response == null || !response.isSuccessful()) {
-//            if (DEBUG_DOWNLOAD)
-//                ReaperLog.e(TAG, "downloadReaper, response == null or unsuccessful !");
-//            return false;
-//        }
-//        ResponseBody body = response.body();
-//        if (body == null) {
-//            if (DEBUG_DOWNLOAD)
-//                ReaperLog.e(TAG, "downloadReaper, body == null !");
-//            return false;
-//        }
-//        InputStream is = body.byteStream();
-//        if (is == null) {
-//            if (DEBUG_DOWNLOAD)
-//                ReaperLog.e(TAG, "downloadReaper, is == null !");
-//            return false;
-//        }
-//
-//        //test start
-//        String bodyString = null;
-//        try {
-//            bodyString = body.string();
-//            ReaperLog.e(TAG, "bodyString : " + bodyString);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return bodyString != null;
-        //test end
+    private static VersionPiece sortVersions(List<VersionPiece> pieces) {
+        if (pieces == null || pieces.size() <= 0)
+            return null;
+        Collections.sort(pieces, new Comparator<VersionPiece>() {
+            @Override
+            public int compare(VersionPiece left, VersionPiece right) {
+                return compareVersion(left.version, right.version);
+            }
+        });
 
-        return false;
+        if (DEBUG_DOWNLOAD)
+        for (VersionPiece piece : pieces) {
+            ReaperLog.e(TAG, "piece : " + piece);
+        }
+
+        return pieces.get(0);
     }
 
     /**
@@ -274,5 +377,21 @@ public class ReaperNetwork {
             sb.append(s).append(".");
         }
         return sb.toString();
+    }
+
+    static class VersionPiece {
+        public int id;
+        public String version;
+        public String url;
+        public String description;
+        public String time;
+
+        @Override
+        public String toString() {
+            return "VersionPiece{" +
+                    "version='" + version + '\'' +
+                    ", url='" + url + '\'' +
+                    '}';
+        }
     }
 }
