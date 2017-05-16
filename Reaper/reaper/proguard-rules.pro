@@ -28,3 +28,4 @@
 -dontwarn org.springframework.**
 -dontwarn com.alibaba.fastjson.**
 -dontwarn springfox.documentation.**
+-dontwarn com.qiku.serversdk.**
