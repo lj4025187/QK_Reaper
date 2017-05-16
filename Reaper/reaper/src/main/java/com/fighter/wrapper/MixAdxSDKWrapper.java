@@ -8,6 +8,7 @@ import android.hardware.Sensor;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fighter.common.Device;
 import com.fighter.common.utils.EmptyUtils;
@@ -15,6 +16,8 @@ import com.fighter.common.utils.ThreadPoolUtils;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import okhttp3.HttpUrl;
@@ -123,7 +126,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
         try {
             Response response = mClient.newCall(request).execute();
             if (response != null) {
-                adResponse = convertResponse(response);
+                adResponse = convertResponse(adRequest, response);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -281,15 +284,101 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
         return RequestBody.create(type, json.toJSONString());
     }
 
-    private AdResponse convertResponse(Response response) {
+    private AdResponse convertResponse(AdRequest adRequest, Response response) {
         AdResponse.Builder builder = new AdResponse.Builder();
+        builder.adPositionId(adRequest.getAdPositionId());
         JSONObject errJson = new JSONObject();
         errJson.put("httpResponseCode", response.code());
-        if (response.isSuccessful()) {
-            try {
-                builder.oriResponse(response.body().string());
-            } catch (IOException e) {
-                e.printStackTrace();
+        String oriResponse = null;
+        try {
+            oriResponse = response.body().string();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        builder.oriResponse(oriResponse);
+
+        JSONObject resJson = JSONObject.parseObject(oriResponse);
+        JSONObject adJson = null;
+        if (resJson != null) {
+            JSONArray adsJson = resJson.getJSONArray("ads");
+            if (adsJson != null) {
+                int size = adsJson.size();
+                for (int i = 0; i < size; i++) {
+                    JSONObject tmpAdJson = adsJson.getJSONObject(i);
+                    if (tmpAdJson != null &&
+                            adRequest.getAdPositionId().equals(tmpAdJson.getString("adId"))) {
+                        adJson = tmpAdJson;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (adJson != null) {
+            JSONArray creativesJson = adJson.getJSONArray("creatives");
+            if (creativesJson != null && creativesJson.size() > 0) {
+                int size = creativesJson.size();
+                List<AdInfo> adInfos = new ArrayList<>(size);
+                for (int i = 0; i < size; i++) {
+                    JSONObject creativeJson = creativesJson.getJSONObject(i);
+                    if (creativeJson == null) {
+                        continue;
+                    }
+                    JSONObject metaInfoJson = creativeJson.getJSONObject("metaInfo");
+                    if (metaInfoJson == null) {
+                        continue;
+                    }
+
+                    AdInfo adInfo = new AdInfo();
+
+                    AdInfo.ContentType contentType = AdInfo.ContentType.PICTURE;
+                    String creativeType = metaInfoJson.getString("creativeType");
+                    switch (creativeType) {
+                        case "TEXT": {
+                            contentType = AdInfo.ContentType.TEXT;
+                            break;
+                        }
+                        case "TEXT_ICON": {
+                            contentType = AdInfo.ContentType.TEXT;
+                            break;
+                        }
+                        case "IMAGE": {
+                            contentType = AdInfo.ContentType.PICTURE;
+                            break;
+                        }
+                        case "VIDEO": {
+                            contentType = AdInfo.ContentType.VIDEO;
+                            break;
+                        }
+                    }
+                    adInfo.setContentType(contentType);
+
+                    AdInfo.ActionType actionType = AdInfo.ActionType.BROWSER;
+                    String interactionType = metaInfoJson.getString("interactionType");
+                    if ("DOWNLOAD".equals(interactionType)) {
+                        actionType = AdInfo.ActionType.APP_DOWNLOAD;
+                    }
+                    adInfo.setActionType(actionType);
+
+                    adInfo.setImgUrl(metaInfoJson.getString("imageUrl"));
+                    adInfo.setVideoUrl(metaInfoJson.getString("videoUrl"));
+                    adInfo.setTitle(metaInfoJson.getString("title"));
+                    adInfo.setDesc(metaInfoJson.getString("description"));
+                    JSONArray iconUrlsJson = metaInfoJson.getJSONArray("iconUrls");
+                    if (iconUrlsJson != null && iconUrlsJson.size() > 0) {
+                        adInfo.setAppIconUrl(iconUrlsJson.getString(0));
+                    }
+                    adInfo.setAppName(metaInfoJson.getString("brandName"));
+                    adInfo.setAppPackageName(metaInfoJson.getString("appPackage"));
+
+                    adInfos.add(adInfo);
+                }
+
+                if (adInfos.size() > 0) {
+                    builder.isSucceed(true);
+                    builder.adInfos(adInfos);
+                }
             }
         }
 
