@@ -5,11 +5,16 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+import com.fighter.common.rc4.IRC4;
+import com.fighter.common.rc4.RC4Factory;
+import com.fighter.common.utils.ReaperLog;
 import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
+import com.fighter.config.ReaperConfig;
 import com.fighter.config.ReaperConfigDB;
+import com.fighter.config.ReaperConfigHttpHelper;
+import com.fighter.config.ReaperConfigManager;
 import com.fighter.config.ReaperConfigRequestBody;
-import com.fighter.config.ReaperConfigUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -102,6 +107,10 @@ public class ReaperConfigTest {
      */
     @Test
     public void testReaperConfigRequestBody() throws Exception {
+
+        ReaperLog.i(TAG, "##################### testReaperConfigRequestBody ####################");
+
+
         Context context = InstrumentationRegistry.getTargetContext();
 
         // test empty object to json
@@ -126,15 +135,30 @@ public class ReaperConfigTest {
 
     @Test
     public void testParseResponseBody () throws Exception {
+
+        ReaperLog.i(TAG, "##################### testParseResponseBody ####################");
+
+        Context context = InstrumentationRegistry.getTargetContext();
+        String key = ReaperConfig.TEST_SALT + ReaperConfig.TEST_APPKEY;
+        IRC4 rc4 = RC4Factory.create(key);
+        byte[] encrypt = rc4.encrypt(RESPONSE.getBytes());
         // just log it
-        ReaperConfigUtils.parseResponseBody(RESPONSE);
+        ReaperConfigHttpHelper.parseResponseBody(context, encrypt, key);
     }
 
     @Test
     public void testDatabase() throws Exception {
+
+        ReaperLog.i(TAG, "##################### testDatabase ####################");
+
         Context context = InstrumentationRegistry.getTargetContext();
 
-        List<ReaperAdvPos> posList = ReaperConfigUtils.parseResponseBody(RESPONSE);
+        String key = ReaperConfig.TEST_SALT + ReaperConfig.TEST_APPKEY;
+        IRC4 rc4 = RC4Factory.create(key);
+        byte[] encrypt = rc4.encrypt(RESPONSE.getBytes());
+        List<ReaperAdvPos> posList
+                = ReaperConfigHttpHelper.parseResponseBody(context, encrypt, key);
+
         ReaperConfigDB db = ReaperConfigDB.getInstance(context);
         db.saveReaperAdvPos(posList);
 
@@ -143,5 +167,19 @@ public class ReaperConfigTest {
 
         ReaperAdSense sense = db.queryAdSense("2");
         Assert.assertEquals(sense.priority, "1");
+    }
+
+    @Test
+    public void testFetchConfigFromServer() throws Exception {
+
+        ReaperLog.i(TAG, "##################### testFetchConfigFromServer ####################");
+
+        Context context = InstrumentationRegistry.getTargetContext();
+
+        ReaperConfigManager.fetchReaperConfigFromServer(
+                context, context.getPackageName(),
+                ReaperConfig.TEST_SALT,
+                ReaperConfig.TEST_APPKEY,
+                ReaperConfig.TEST_APPID);
     }
 }

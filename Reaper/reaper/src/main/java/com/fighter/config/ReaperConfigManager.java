@@ -1,40 +1,58 @@
 package com.fighter.config;
 
-import java.util.ArrayList;
-import java.util.List;
+import android.content.Context;
 
 /**
  * Manage the config
+ *
+ * It is a high level interface my be used by other module
  *
  * Created by zhangjg on 17-5-8.
  */
 
 public class ReaperConfigManager {
 
+
     /**
-     * Get current config
+     * Fetch config messages from server
+     * It is a sync http or https request
      *
-     * @return
+     * If fetch success, the config will be saved to database automatically
+     *
+     * @return true when fetch success or false when fetch fail
      */
-    public static ReaperConfig getCurrentConfig() {
-        return new ReaperConfig();
+    public static boolean fetchReaperConfigFromServer(Context context, String pkg,
+                                                      String salt, String appKey, String appId) {
+
+        // check should request or not
+        if (!ReaperConfigHttpHelper.shouldRequestAgain(context)) {
+            // use current config
+            return true;
+        }
+
+        return ReaperConfigFetcher.fetchWithRetry(context, pkg, salt, appKey, appId);
     }
 
     /**
-     * Sync config from server
+     * Get adv pos message by pos id
+     *
+     * @param context
+     * @param posId
+     * @return
      */
-    public static void syncConfig() {
-
+    public static ReaperAdvPos getReaperAdvPos(Context context, String posId) {
+        return ReaperConfigDB.getInstance(context).queryAdvPos(posId);
     }
 
     /**
-     * Get adv position of a package
+     * Get best ad sense
      *
-     * @param pkgName
+     * @param context
+     * @param posId
      * @return
      */
-    public static List<ReaperAdvPos> getAdvPos(String pkgName) {
-        return new ArrayList<>();
+    public static ReaperAdSense getReaperAdSens(Context context, String posId) {
+        return ReaperConfigDB.getInstance(context).queryAdSense(posId);
     }
 
 }

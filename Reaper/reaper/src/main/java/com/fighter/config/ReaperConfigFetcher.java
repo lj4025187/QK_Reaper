@@ -2,7 +2,7 @@ package com.fighter.config;
 
 import android.content.Context;
 
-import com.fighter.reaper.BumpVersion;
+import com.fighter.common.utils.ReaperLog;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,9 +23,13 @@ import okhttp3.ResponseBody;
  */
 public class ReaperConfigFetcher {
 
+    private static final String TAG = "ReaperConfigFetcher";
+
     /**
      * Fetch config data from config server.
+     * It is a sync request.
      *
+     * <p>
      * If fail, then retry it
      *
      * @param context
@@ -42,6 +46,7 @@ public class ReaperConfigFetcher {
         }
         // retry
         for (int i = 0; i < ReaperConfig.RETRY_TIMES; i++) {
+            ReaperLog.i(TAG, "fetch . ================= start retry =======================");
             result = fetch(context, pkg, salt, appKey, appId);
             if (result) {
                 return true;
@@ -54,6 +59,7 @@ public class ReaperConfigFetcher {
 
     /**
      * Fetch config data from config server
+     * It is a sync request
      *
      * @param context
      * @param pkg
@@ -63,31 +69,46 @@ public class ReaperConfigFetcher {
      */
     public static boolean fetch(Context context, String pkg,
                                 String salt, String appKey, String appId) {
-        String url = ReaperConfig.URL_HTTPS +
-                "?" + ReaperConfig.KEY_URL_PARAM_SDK_VERSION + "=" + BumpVersion.value() +
+
+        // TODO ： replace test url and test sdk version when publish
+        String url = ReaperConfig.TEST_URL_HTTPS +
+                "?" + ReaperConfig.KEY_URL_PARAM_SDK_VERSION + "=" + /*BumpVersion.value()*/ ReaperConfig.TEST_SDK_VERSION +
                 "&" + ReaperConfig.KEY_URL_PARAM_ID + "=" + appId;
-        String requestBodyStr =
-                ReaperConfigUtils.getConfigRequestBody(context, pkg, salt, appKey);
-        OkHttpClient okHttpClient = new OkHttpClient();
+
+        ReaperLog.i(TAG, "fetch . url is : " + url);
+        byte[] reqBodyData =
+                ReaperConfigHttpHelper.getConfigRequestBody(context, pkg, salt, appKey);
+
+        OkHttpClient okHttpClient = ReaperConfigHttpHelper.getHttpsClient();
+        if (okHttpClient == null) {
+            okHttpClient = ReaperConfigHttpHelper.getHttpClient();
+        }
+
+        if (okHttpClient == null) {
+            ReaperLog.i(TAG, "fetch error, http client init fail");
+            return false;
+        }
+
         RequestBody requestBody =
-                RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), requestBodyStr);
+                RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), reqBodyData);
         Request request = new Request.Builder()
                 .url(url)
                 .post(requestBody)
                 .build();
         try (Response response = okHttpClient.newCall(request).execute()) {
+            ReaperLog.i(TAG, "fetch . after execute. Response : " + response);
             if (response == null) {
                 return false;
             }
             if (response.code() != 200) {
                 return false;
             }
-            ResponseBody body = response.body();
-            if (body == null) {
+            ResponseBody resBody = response.body();
+            if (resBody == null) {
                 return false;
             }
-            String text = body.string();
-            onFetchComplete(context, text);
+            byte[] resBodyData = resBody.bytes();
+            onFetchComplete(context, resBodyData, salt + appKey);
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -97,15 +118,18 @@ public class ReaperConfigFetcher {
     }
 
     /**
-     * Save config data
+     * Save config data and current time
      *
      * @param context
      * @param responseBody
      * @return
      */
-    private static void onFetchComplete(Context context, String responseBody) {
-        List<ReaperAdvPos> posList = ReaperConfigUtils.parseResponseBody(responseBody);
-        ReaperConfigUtils.saveConfigToDB(context, posList);
+    private static void onFetchComplete(Context context, byte[] responseBody, String key) {
+        ReaperConfigHttpHelper.recordLastSuccessTime(context);
+        List<ReaperAdvPos> posList =
+                ReaperConfigHttpHelper.parseResponseBody(context, responseBody, key);
+        ReaperConfigDB.getInstance(context).saveReaperAdvPos(posList);
     }
 
 }
+

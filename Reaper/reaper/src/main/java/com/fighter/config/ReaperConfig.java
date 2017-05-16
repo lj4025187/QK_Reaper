@@ -15,6 +15,16 @@ public final class ReaperConfig {
     public static final String URL_HTTP  = "http://cn.adv.os.qiku.com/new_cfg";
 
     /**
+     * For test
+     */
+    public static final String TEST_URL_HTTP = "http://t.adv.os.qiku.com/new_cfg";
+    public static final String TEST_URL_HTTPS = "https://t.adv.os.qiku.com/new_cfg";
+    public static final String TEST_SDK_VERSION = "1.0";
+    public static final String TEST_APPKEY = "would_not_tell";
+    public static final String TEST_SALT = "abc";
+    public static final String TEST_APPID = "1000";
+
+    /**
      * Url param keys
      */
     public static final String KEY_URL_PARAM_SDK_VERSION = "sv";
