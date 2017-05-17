@@ -27,21 +27,25 @@ android {
 task publishSDKJar(type:Jar) {
     archiveName 'reaper.jar'
 
-    from('./build/intermediates/classes/release/com/fighter/') {
-        include('loader/*.class')
-        include('helper/*.class')
-        include('config/*.class')
-        include('patch/*.class')
-        include('utils/*.class')
+    manifest {
+        attributes 'Implementation-Title': 'Reaper Jar File',
+                'Implementation-Version': '1.0'/*,
+                'Main-Class': 'com.fighter.loader.Main'*/
     }
 
-    into 'com/fighter/'
+    from('./build/intermediates/classes/release/') {
+        include('com/fighter/loader/*.class')
+        include('com/fighter/helper/*.class')
+        include('com/fighter/config/*.class')
+        include('com/fighter/patch/*.class')
+        include('com/fighter/utils/*.class')
+    }
 
     destinationDir file('../bin')
 
     exclude 'R.class'
     exclude {
-        it.name.startsWith('R$')
+        it.name.startsWith('R$') || it.name == 'R.class'
     }
 
 }
