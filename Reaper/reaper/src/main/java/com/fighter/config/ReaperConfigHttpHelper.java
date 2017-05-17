@@ -15,16 +15,12 @@ import com.fighter.common.utils.ReaperLog;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
@@ -62,8 +58,8 @@ public final class ReaperConfigHttpHelper {
      */
     public static OkHttpClient getHttpsClient() {
         try {
-            // TODO : replace test cert when publish
-            X509TrustManager tm = trustManagerForCertificates(new String[] {TEST_CERT} /*CERTS*/);
+            String[] certs = ReaperConfig.TEST ? new String[] {TEST_CERT} : CERTS;
+            X509TrustManager tm = trustManagerForCertificates(certs);
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{tm}, null);
             SSLSocketFactory sf = sslContext.getSocketFactory();

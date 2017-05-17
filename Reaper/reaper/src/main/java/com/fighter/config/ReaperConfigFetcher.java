@@ -3,6 +3,8 @@ package com.fighter.config;
 import android.content.Context;
 
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.config.db.ReaperConfigDB;
+import com.fighter.reaper.BumpVersion;
 
 import java.io.IOException;
 import java.util.List;
@@ -70,9 +72,10 @@ public class ReaperConfigFetcher {
     public static boolean fetch(Context context, String pkg,
                                 String salt, String appKey, String appId) {
 
-        // TODO ： replace test url and test sdk version when publish
-        String url = ReaperConfig.TEST_URL_HTTPS +
-                "?" + ReaperConfig.KEY_URL_PARAM_SDK_VERSION + "=" + /*BumpVersion.value()*/ ReaperConfig.TEST_SDK_VERSION +
+        String baseUrl = ReaperConfig.TEST ? ReaperConfig.TEST_URL_HTTPS : ReaperConfig.URL_HTTPS;
+        String sdkVersion = ReaperConfig.TEST ? ReaperConfig.TEST_SDK_VERSION : BumpVersion.value();
+        String url = baseUrl +
+                "?" + ReaperConfig.KEY_URL_PARAM_SDK_VERSION + "=" + sdkVersion +
                 "&" + ReaperConfig.KEY_URL_PARAM_ID + "=" + appId;
 
         ReaperLog.i(TAG, "fetch . url is : " + url);

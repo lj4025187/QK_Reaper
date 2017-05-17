@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.fighter.config.db.ReaperConfigDBHelper;
+
 /**
  * 广告联盟配置信息
  *

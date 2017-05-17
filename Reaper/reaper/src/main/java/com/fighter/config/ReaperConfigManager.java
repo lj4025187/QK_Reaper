@@ -2,6 +2,8 @@ package com.fighter.config;
 
 import android.content.Context;
 
+import com.fighter.config.db.ReaperConfigDB;
+
 /**
  * Manage the config
  *

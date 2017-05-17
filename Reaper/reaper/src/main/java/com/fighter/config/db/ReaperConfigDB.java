@@ -1,17 +1,20 @@
-package com.fighter.config;
+package com.fighter.config.db;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.config.ReaperAdSense;
+import com.fighter.config.ReaperAdvPos;
+import com.fighter.config.ReaperConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static com.fighter.config.ReaperConfigDBHelper.*;
+import static com.fighter.config.db.ReaperConfigDBHelper.*;
 
 /**
  * This is the config database to save

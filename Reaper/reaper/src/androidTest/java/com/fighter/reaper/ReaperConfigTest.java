@@ -11,7 +11,7 @@ import com.fighter.common.utils.ReaperLog;
 import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfig;
-import com.fighter.config.ReaperConfigDB;
+import com.fighter.config.db.ReaperConfigDB;
 import com.fighter.config.ReaperConfigHttpHelper;
 import com.fighter.config.ReaperConfigManager;
 import com.fighter.config.ReaperConfigRequestBody;

@@ -1,6 +1,5 @@
-package com.fighter.config;
+package com.fighter.config.db;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -21,26 +20,26 @@ public class ReaperConfigDBHelper extends SQLiteOpenHelper {
     /**
      * Database reaper_adv_pos table structure
      */
-    static final String TABLE_POS = "reaper_adv_pos";
-    static final String POS_COLUMN_POS_ID = "pos_id";
-    static final String POS_COLUMN_ADV_TYPE = "adv_type";
-    static final String POS_COLUMN_ADV_EXPOSURE = "adv_exposure";
+    public static final String TABLE_POS = "reaper_adv_pos";
+    public static final String POS_COLUMN_POS_ID = "pos_id";
+    public static final String POS_COLUMN_ADV_TYPE = "adv_type";
+    public static final String POS_COLUMN_ADV_EXPOSURE = "adv_exposure";
 
 
     /**
      * Database reaper_adv_sense table structure
      */
-    static final String TABLE_SENSE = "reaper_adv_sense";
-    static final String SENSE_COLUMN_POS_ID = POS_COLUMN_POS_ID;
-    static final String SENSE_COLUMN_ADS_NAME = "ads_name";
-    static final String SENSE_COLUMN_EXPIRE_TIME = "expire_time";
-    static final String SENSE_COLUMN_PRIORITY = "priority";
-    static final String SENSE_COLUMN_ADS_APPID = "ads_appid";
-    static final String SENSE_COLUMN_ADS_KEY = "ads_key";
-    static final String SENSE_COLUMN_ADS_POSID = "ads_posid";
-    static final String SENSE_COLUMN_MAX_ADV_NUM = "max_adv_num";
-    static final String SENSE_COLUMN_ADV_SIZE_TYPE = "adv_size_type";
-    static final String SENSE_COLUMN_ADB_REAL_SIZE = "adv_real_size";
+    public static final String TABLE_SENSE = "reaper_adv_sense";
+    public static final String SENSE_COLUMN_POS_ID = POS_COLUMN_POS_ID;
+    public static final String SENSE_COLUMN_ADS_NAME = "ads_name";
+    public static final String SENSE_COLUMN_EXPIRE_TIME = "expire_time";
+    public static final String SENSE_COLUMN_PRIORITY = "priority";
+    public static final String SENSE_COLUMN_ADS_APPID = "ads_appid";
+    public static final String SENSE_COLUMN_ADS_KEY = "ads_key";
+    public static final String SENSE_COLUMN_ADS_POSID = "ads_posid";
+    public static final String SENSE_COLUMN_MAX_ADV_NUM = "max_adv_num";
+    public static final String SENSE_COLUMN_ADV_SIZE_TYPE = "adv_size_type";
+    public static final String SENSE_COLUMN_ADB_REAL_SIZE = "adv_real_size";
 
 
     private static final String CREATE_TABLE_POS = "CREATE TABLE " + TABLE_POS +

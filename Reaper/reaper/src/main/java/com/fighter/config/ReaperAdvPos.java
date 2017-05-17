@@ -2,6 +2,8 @@ package com.fighter.config;
 
 import android.content.ContentValues;
 
+import com.fighter.config.db.ReaperConfigDBHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 
