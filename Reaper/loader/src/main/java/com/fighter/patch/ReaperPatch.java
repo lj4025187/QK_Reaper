@@ -1,19 +1,9 @@
 package com.fighter.patch;
 
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
 import android.os.Environment;
 
 import com.fighter.helper.ReaperPatchHelper;
 
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.nio.channels.FileChannel;
-import java.util.logging.FileHandler;
-
-import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
 
 /**
@@ -64,7 +54,7 @@ public class ReaperPatch {
         } else if (ReaperPatchHelper.isReaperFile(file)) {
             mFile = file;
             mType = TYPE_REAPER;
-            mLoader = ReaperPatchCryptTool.createReaperClassLoader(mFile, PATCH_OPT_DIR, PATCH_LIB_DIR,
+            mLoader = ReaperPatchCryptAndroidTool.createReaperClassLoader(mFile, PATCH_OPT_DIR, PATCH_LIB_DIR,
                     appClassLoader);
         } else {
             mFile = null;

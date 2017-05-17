@@ -17,6 +17,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 repositories {
@@ -42,8 +46,10 @@ task publishReaperDex {
                 f.withInputStream { targetDexFile << it }
             }
         }
+        Runtime.getRuntime().exec("java -cp ./third_party/jars/bcprov-jdk15on-1.57.jar -jar ./bin/generator.jar ./bin/reaper.dex ./bin/reaper.rr 2>log.txt 1>&2")
     }
 }
+
 
 afterEvaluate {
     assembleRelease {

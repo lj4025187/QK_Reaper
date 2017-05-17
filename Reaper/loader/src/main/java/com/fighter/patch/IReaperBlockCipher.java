@@ -22,10 +22,10 @@ public interface IReaperBlockCipher {
 
     Key createKey();
 
-    void initKey(Key key);
+    void initKey(Key key) throws Exception;
 
-    int encrypt(ByteBuffer inbuffer, ByteBuffer outbuffer);
+    int encrypt(ByteBuffer inbuffer, ByteBuffer outbuffer) throws Exception;
 
-    int decrypt(ByteBuffer inbuffer, ByteBuffer outbuffer);
+    int decrypt(ByteBuffer inbuffer, ByteBuffer outbuffer) throws Exception;
 
 }

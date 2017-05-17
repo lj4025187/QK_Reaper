@@ -1,11 +1,8 @@
 package com.fighter.patch;
 
-import android.util.Log;
-
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
@@ -34,32 +31,32 @@ public class AESBlockCipher implements IReaperBlockCipher {
     private boolean mEncryptInited = false;
     private boolean mDecryptInited = false;
 
-    private Cipher currentEncryptCipher() {
+    private Cipher currentEncryptCipher() throws Exception {
         if (mEncryptInited)
             return sThreadEncryptCipher.get();
         Cipher cipher = null;
         try {
             cipher = Cipher.getInstance(ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
-            Log.d(TAG, "init encrypt cipher", e);
+            throw new Exception("init encrypt cipher", e);
         } catch (NoSuchPaddingException e) {
-            Log.d(TAG, "init encrypt cipher", e);
+            throw new Exception("init encrypt cipher", e);
         }
         sThreadEncryptCipher.set(cipher);
         mEncryptInited = true;
         return cipher;
     }
 
-    private Cipher currentDecryptCipher() {
+    private Cipher currentDecryptCipher() throws Exception {
         if (mDecryptInited)
             return sThreadDecryptCipher.get();
         Cipher cipher = null;
         try {
             cipher = Cipher.getInstance(ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
-            Log.d(TAG, "init decrypt cipher", e);
+            throw new Exception("init decrypt cipher", e);
         } catch (NoSuchPaddingException e) {
-            Log.d(TAG, "init decrypt cipher", e);
+            throw new Exception("init decrypt cipher", e);
         }
         sThreadDecryptCipher.set(cipher);
         mDecryptInited = true;
@@ -85,19 +82,21 @@ public class AESBlockCipher implements IReaperBlockCipher {
     }
 
     @Override
-    public void initKey(Key key) {
+    public void initKey(Key key) throws Exception {
         try {
             currentEncryptCipher().init(Cipher.ENCRYPT_MODE, toCFBKey(key), toCFBIV(key));
             currentDecryptCipher().init(Cipher.DECRYPT_MODE, toCFBKey(key), toCFBIV(key));
         } catch (InvalidKeyException e) {
-            Log.e(TAG, "init key error: ", e);
+            throw new Exception("init key error", e);
         } catch (InvalidAlgorithmParameterException e) {
-            Log.e(TAG, "init key error: ", e);
+            throw new Exception("init key error: ", e);
+        } catch (Exception e) {
+            throw e;
         }
     }
 
     @Override
-    public int encrypt(ByteBuffer inbuffer, ByteBuffer outbuffer) {
+    public int encrypt(ByteBuffer inbuffer, ByteBuffer outbuffer) throws Exception {
 
         assert inbuffer.arrayOffset() <= inbuffer.position();
         assert inbuffer.position() < inbuffer.capacity();
@@ -109,26 +108,23 @@ public class AESBlockCipher implements IReaperBlockCipher {
             inbuffer.limit(inbuffer.limit() + stolen);
         }
 
-        Log.d(TAG, "position:" + inbuffer.position() + ", limit: " + inbuffer.limit());
-
         outbuffer.clear();
-        Log.d(TAG, "output size:" + outbuffer.limit());
         int encryptedSize = 0;
         try {
             encryptedSize = currentEncryptCipher().doFinal(inbuffer, outbuffer);
         } catch (ShortBufferException e) {
-            Log.d(TAG, "encrypt error:", e);
+            throw new Exception("encrypt error:", e);
         } catch (IllegalBlockSizeException e) {
-            Log.d(TAG, "encrypt error:", e);
+            throw new Exception("encrypt error:", e);
         } catch (BadPaddingException e) {
-            Log.d(TAG, "encrypt error:", e);
+            throw new Exception("encrypt error:", e);
         } finally {
             return encryptedSize;
         }
     }
 
     @Override
-    public int decrypt(ByteBuffer inbuffer, ByteBuffer outbuffer) {
+    public int decrypt(ByteBuffer inbuffer, ByteBuffer outbuffer) throws Exception {
         assert inbuffer.arrayOffset() <= inbuffer.position();
         assert inbuffer.position() < inbuffer.capacity();
 
@@ -139,18 +135,16 @@ public class AESBlockCipher implements IReaperBlockCipher {
             inbuffer.limit(inbuffer.limit() + stolen);
         }
 
-        Log.d(TAG, "decrypt position:" + inbuffer.position() + ", limit: " + inbuffer.limit());
         outbuffer.clear();
-        Log.d(TAG, "decrypt output size:" + outbuffer.limit());
         int encryptedSize = 0;
         try {
             encryptedSize = currentEncryptCipher().doFinal(inbuffer, outbuffer);
         } catch (ShortBufferException e) {
-            Log.d(TAG, "decrypt error:", e);
+            throw new Exception("decrypt error:", e);
         } catch (IllegalBlockSizeException e) {
-            Log.d(TAG, "decrypt error:", e);
+            throw new Exception("decrypt error:", e);
         } catch (BadPaddingException e) {
-            Log.d(TAG, "decrypt error:", e);
+            throw new Exception("decrypt error:", e);
         } finally {
             return encryptedSize;
         }

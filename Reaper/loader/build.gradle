@@ -22,6 +22,10 @@ android {
 //    aaptOptions {
 //        noCompress "apk"
 //    }
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 task publishSDKJar(type:Jar) {
@@ -50,9 +54,35 @@ task publishSDKJar(type:Jar) {
 
 }
 
+task makeGeneratorJar(type:Jar) {
+    archiveName 'generator.jar'
+
+    manifest {
+        attributes 'Implementation-Title': 'Reaper Generator Jar File',
+                'Implementation-Version': '1.0',
+                'Main-Class': 'com.fighter.utils.ReaperPatchGenerator'
+    }
+
+    from('./build/intermediates/classes/release/') {
+        include('com/fighter/utils/ReaperPatchGenerator.class')
+        include('com/fighter/patch/ReaperPatchCryptTool.class')
+        include('com/fighter/patch/IReaperBlockCipher.class')
+        include('com/fighter/patch/IReaperBlockCipher$Key.class')
+        include('com/fighter/patch/AESBlockCipher.class')
+    }
+
+    destinationDir file('../bin')
+
+    exclude 'R.class'
+    exclude {
+        it.name.startsWith('R$') || it.name == 'R.class'
+    }
+}
+
 afterEvaluate {
     assembleRelease {
         doLast {
+            makeGeneratorJar.execute()
             publishSDKJar.execute()
         }
     }
@@ -74,4 +104,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     testCompile 'junit:junit:4.12'
     compile(name:'proguard', ext:'aar')
+
+    compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.57'
 }

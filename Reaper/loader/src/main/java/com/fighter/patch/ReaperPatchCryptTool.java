@@ -1,14 +1,11 @@
 package com.fighter.patch;
 
-import android.os.SystemClock;
-import android.util.Log;
-
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
 
 /**
  * Created by wxthon on 5/5/17.
@@ -20,24 +17,15 @@ import java.nio.LongBuffer;
  */
 public class ReaperPatchCryptTool {
 
-    private static final String TAG = ReaperPatchCryptTool.class.getSimpleName();
     private static IReaperBlockCipher sCipher = new AESBlockCipher();
 
-    public static ClassLoader createReaperClassLoader(ReaperFile file, String optimizedDirectory,
-                                                      String librarySearchPath, ClassLoader parent) {
-        String dexPath = optimizedDirectory + "/" + SystemClock.currentThreadTimeMillis() + ".dex";
-        ReaperPatchCryptTool.decryptTo(file, dexPath);
-        return new ReaperClassLoader(dexPath, optimizedDirectory, librarySearchPath, parent);
-    }
-
-    public static boolean decryptTo(ReaperFile file, String dexPath) {
+    public static boolean decryptTo(FileInputStream fis, String dexPath) throws Exception {
         ByteBuffer inputBuffer = sCipher.allocateBlockBuffer();
         ByteBuffer outputBuffer = sCipher.allocateBlockBuffer();
         IReaperBlockCipher.Key key = sCipher.createKey();
         fillKey(key);
         sCipher.initKey(key);
 
-        FileInputStream fis = file.openFileInputStream();
         if (fis == null)
             return false;
 
@@ -80,28 +68,26 @@ public class ReaperPatchCryptTool {
         return true;
     }
 
-    public static boolean encryptTo(ReaperFile file, String rrPath) {
+    public static boolean encryptTo(File file, String rrPath) throws Exception {
         ByteBuffer inputBuffer = sCipher.allocateBlockBuffer();
         ByteBuffer outputBuffer = sCipher.allocateBlockBuffer();
         IReaperBlockCipher.Key key = sCipher.createKey();
         fillKey(key);
         sCipher.initKey(key);
 
-        FileInputStream fis = file.openFileInputStream();
+        FileInputStream fis = new FileInputStream(file);
         if (fis == null)
             return false;
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(rrPath);
             int size;
-            new Header(file.getSize()).write(fos);
+            new Header(file.length()).write(fos);
             while ((size = fis.read(inputBuffer.array(), inputBuffer.arrayOffset(), inputBuffer.capacity())) > 0) {
-                Log.d(TAG, "read size: " + size);
                 inputBuffer.limit(size);
                 inputBuffer.position(0);
                 outputBuffer.clear();
                 size = sCipher.encrypt(inputBuffer, outputBuffer);
-                Log.d(TAG, "encrypted size: " + size);
                 fos.write(outputBuffer.array(), outputBuffer.arrayOffset(), size);
             }
         } catch (FileNotFoundException e) {
