@@ -17,11 +17,17 @@ public class ReaperVersionManager {
     private static final String TAG = ReaperVersionManager.class.getSimpleName();
     private static final boolean DEBUG_VERSION = true;
 
+    private static final int RETRY_TIME = 4;
+    private static final int REAPER_VERSION_CHECK_NEW_VERSION = 1;
+    private static final int REAPER_VERSION_CHECK_SAME_VERSION = 0;
+    private static final int REAPER_VERSION_CHECK_FAILED = -1;
+
     private static String mVersion;
     private static boolean mCheckSuccess;
     private static ReaperVersionManager sInstance;
     private ReentrantLock mLock;
     private Class mReaperDownloadClass;
+    private int mRetry;
 
     public static ReaperVersionManager getInstance(String version) {
         synchronized (ReaperVersionManager.class) {
@@ -45,6 +51,9 @@ public class ReaperVersionManager {
         mReaperDownloadClass = claxx;
     }
 
+    /**
+     * If query failed, we will try for {@link mRetry} times.
+     */
     public void queryHigherReaper() {
         synchronized (ReaperVersionManager.class) {
             if (mCheckSuccess) {
@@ -64,14 +73,24 @@ public class ReaperVersionManager {
                 }
                 int checkResult = doQuery();
                 //do check.
-                if (checkResult == 1) {
+                if (checkResult == REAPER_VERSION_CHECK_NEW_VERSION) {
                     mCheckSuccess = true;
                 } else {
-                    mCheckSuccess = checkResult == 0;
+                    mCheckSuccess = checkResult == REAPER_VERSION_CHECK_SAME_VERSION;
                 }
 
                 mLock.unlock();
-                LoaderLog.e(TAG, "checkHigherVersion, unLock and check over. mCheckSuccess : " + mCheckSuccess);
+
+                if (!mCheckSuccess && mRetry++ < RETRY_TIME) {
+                    try {
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    queryHigherReaper();
+                }
+                LoaderLog.e(TAG, "checkHigherVersion, unLock and check over. mCheckSuccess : "
+                        + mCheckSuccess + "; retry time : " + mRetry);
             }
         }).start();
     }

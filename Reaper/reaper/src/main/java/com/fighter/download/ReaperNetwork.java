@@ -33,11 +33,8 @@ import okhttp3.ResponseBody;
  */
 
 public class ReaperNetwork {
-    private static final String TAG = ReaperNetwork.class.getSimpleName();
-    private static final String SP_REAPER_NETWORK = "reaper_network";
-    private static final String KEY_TIME = "reaper_time";
-
     private static final boolean DEBUG_DOWNLOAD = true;
+    private static final String TAG = ReaperNetwork.class.getSimpleName();
 
     private static final int REAPER_VERSION_CHECK_NEW_VERSION = 1;
     private static final int REAPER_VERSION_CHECK_SAME_VERSION = 0;
@@ -48,7 +45,10 @@ public class ReaperNetwork {
     private static final int COMPARE_EQUALS = 0;
     private static final int COMPARE_FAILED = -10;
 
-    private static final String URL_REAPER_DOWNLOAD = "";
+    private static final int CHECK_HAS_NEW_VERSION = 10;
+    private static final int CHECK_NO_NEW_VERSION = -10;
+
+    private static final String RR_SUFFIX = ".apk";
 
 
     /**
@@ -63,9 +63,16 @@ public class ReaperNetwork {
             return REAPER_VERSION_CHECK_FAILED;
 
         VersionPiece piece = queryVersion();
-        if (piece == null || TextUtils.isEmpty(piece.version)) {
+        if (piece == null) {
             return REAPER_VERSION_CHECK_FAILED;
         }
+        if (piece.ok == CHECK_NO_NEW_VERSION) {
+            return REAPER_VERSION_CHECK_SAME_VERSION;
+        }
+        if (TextUtils.isEmpty(piece.version) || TextUtils.isEmpty(piece.url)) {
+            return REAPER_VERSION_CHECK_FAILED;
+        }
+
         if (!isValidVersion(piece.version)) {
             if (DEBUG_DOWNLOAD) {
                 ReaperLog.e(TAG, "query a bad version. : " + piece.version);
@@ -84,8 +91,8 @@ public class ReaperNetwork {
             boolean success = downloadHigherVersionReaper(piece);
             if (success) {
                 SharedPreferences sp = ReaperEnv.sContext
-                        .getSharedPreferences(SP_REAPER_NETWORK, Context.MODE_PRIVATE);
-                sp.edit().putString(KEY_TIME, piece.time).apply();
+                        .getSharedPreferences(ReaperNWConstants.SP_REAPER_NETWORK, Context.MODE_PRIVATE);
+                sp.edit().putString(ReaperNWConstants.KEY_TIME, piece.time).apply();
             }
             return success ? REAPER_VERSION_CHECK_NEW_VERSION : REAPER_VERSION_CHECK_FAILED;
         }
@@ -123,7 +130,14 @@ public class ReaperNetwork {
                 ReaperLog.e(TAG, "is == null");
                 return false;
             }
-            fos = new FileOutputStream(new File("/mnt/sdcard/aa.apk"));
+
+            File dir = new File(ReaperNWConstants.DOWNLOAD_DIR);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            String name = ReaperNWConstants.DOWNLOAD_DIR + File.separator + piece.version + RR_SUFFIX;
+            ReaperLog.e(TAG, "name : " + name);
+            fos = new FileOutputStream(new File(name));
             byte[] buffer = new byte[1024];
             int length = 0;
             while ((length = is.read(buffer)) != -1) {
@@ -157,14 +171,17 @@ public class ReaperNetwork {
 
     private static VersionPiece queryVersion() {
         try {
-            AppConf ac = new AppConf("{'baseUrl':'https://api.os.qiku.com','resourceUrl':'api/list'}");
+            AppConf ac = new AppConf(ReaperNWConstants.SERVER_SDK_CONF);
             HashMap<String, String> params = new HashMap<String, String>();
-            params.put("app", "Reaper"); // 设置app
-            params.put("version", "1.0.0"); // 设置version
-            params.put("api", "version"); // 设置api
-            //params.put("time", "1494922168");
-            SharedPreferences sp = ReaperEnv.sContext.getSharedPreferences("aa", Context.MODE_PRIVATE);
-            String versionTime = sp.getString(KEY_TIME, "0");
+            params.put("app", ReaperNWConstants.SERVER_SDK_APP); // 设置app
+            params.put("version", ReaperNWConstants.SERVER_SDK_VERSION); // 设置version
+            params.put("api", ReaperNWConstants.SERVER_SDK_API); // 设置api
+            SharedPreferences sp = ReaperEnv.sContext
+                    .getSharedPreferences(ReaperNWConstants.SP_REAPER_NETWORK, Context.MODE_PRIVATE);
+            String versionTime = sp.getString(ReaperNWConstants.KEY_TIME, "0");
+            //test start
+            //versionTime = "0";
+            //test end
             params.put("time", versionTime);
             ReaperLog.e(TAG, "versionTime : " + versionTime);
             JSONObject result = ac.getAppConfSyncCustom(params);
@@ -180,7 +197,9 @@ public class ReaperNetwork {
                 if (DEBUG_DOWNLOAD) {
                     ReaperLog.e(TAG, "dont have new version !");
                 }
-                return null;
+                VersionPiece piece = new VersionPiece();
+                piece.ok = CHECK_NO_NEW_VERSION;
+                return piece;
             }
 
             com.alibaba.fastjson.JSONObject obj = jsonObject.getJSONObject("list");
@@ -221,7 +240,15 @@ public class ReaperNetwork {
                 ReaperLog.e(TAG, "version : " + version + "; url : " + url);
             }
 
-            VersionPiece piece = sortVersions(pieces);
+            //test start
+            //ReaperLog.e(TAG, "before test download ........");
+            //for (VersionPiece piece : pieces) {
+            //    downloadHigherVersionReaper(piece);
+            //}
+            //ReaperLog.e(TAG, "test download ......... ");
+            //test end
+
+            VersionPiece piece = getHighestVersion(pieces);
             piece.time = time;
             ReaperLog.e(TAG, "sort version : " + piece);
             return piece;
@@ -232,7 +259,7 @@ public class ReaperNetwork {
         return null;
     }
 
-    private static VersionPiece sortVersions(List<VersionPiece> pieces) {
+    private static VersionPiece getHighestVersion(List<VersionPiece> pieces) {
         if (pieces == null || pieces.size() <= 0)
             return null;
         Collections.sort(pieces, new Comparator<VersionPiece>() {
@@ -385,6 +412,7 @@ public class ReaperNetwork {
         public String url;
         public String description;
         public String time;
+        public int ok;
 
         @Override
         public String toString() {
