@@ -18,9 +18,13 @@ import java.lang.reflect.Method;
 public class ReaperEnv {
     private static final String TAG = ReaperEnv.class.getSimpleName();
 
+    @NoProguard
     private static String sSdkPath;
+
     public static AssetManager sAssetManager;
     public static HttpsManager sHttpsManager;
+
+    @NoProguard
     public static Context sContext;
 
     @NoProguard

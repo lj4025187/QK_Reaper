@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.fighter.common.utils.ReaperLog;
+import com.qiku.proguard.annotations.NoProguard;
 import com.qiku.serversdk.custom.AppConf;
 
 
@@ -31,6 +32,7 @@ import okhttp3.ResponseBody;
  * Created by huayang on 17-5-10.
  */
 
+@NoProguard
 public class ReaperNetwork {
     private static final boolean DEBUG_DOWNLOAD = true;
     private static final boolean TEST = false;
@@ -58,6 +60,7 @@ public class ReaperNetwork {
      * 0 = check success and dont have higher version
      * -1 = check failed
      */
+    @NoProguard
     public static int doQuery(String version) {
         if (TextUtils.isEmpty(version) || !isValidVersion(version))
             return REAPER_VERSION_CHECK_FAILED;
@@ -410,6 +413,7 @@ public class ReaperNetwork {
         return sb.toString();
     }
 
+    @NoProguard
     static class VersionPiece {
         public int id;
         public String version;
