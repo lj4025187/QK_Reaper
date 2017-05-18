@@ -12,12 +12,19 @@ import com.ak.android.engine.navvideo.NativeVideoAd;
 import com.ak.android.engine.navvideo.NativeVideoAdLoaderListener;
 import com.ak.android.shell.AKAD;
 import com.alibaba.fastjson.JSONObject;
+import com.fighter.common.utils.ThreadPoolUtils;
+import com.fighter.wrapper.download.OkHttpDownloader;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 /**
  * 360 聚效广告SDK Wrapper
@@ -28,6 +35,10 @@ public class AKAdSDKWrapper implements ISDKWrapper {
     private static final String AK_AD_API_VER = "3.8.3031_0302";
 
     private Context mContext;
+    private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
+    private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
+    private OkHttpDownloader mOkHttpDownloader = new OkHttpDownloader(mClient);
+    private String mDownloadPath;
 
     // ----------------------------------------------------
 
@@ -39,6 +50,8 @@ public class AKAdSDKWrapper implements ISDKWrapper {
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
         mContext = appContext.getApplicationContext();
+        mDownloadPath = mContext.getCacheDir().getAbsolutePath()
+                + File.separator + "reaper_ad";
         AKAD.initSdk(appContext, true, true);
     }
 
@@ -90,86 +103,14 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     AKAD.getNativeAdLoader(mContext, new NativeAdLoaderListener() {
                         @Override
                         public void onAdLoadSuccess(ArrayList<NativeAd> ads) {
-                            JSONObject errJson = new JSONObject();
-                            errJson.put("httpResponseCode", 200);
-
-                            AdResponse.Builder builder = new AdResponse.Builder();
-                            builder.adPositionId(mAdRequest.getAdPositionId());
-                            if (ads != null && ads.size() > 0) {
-                                Map<String, Object> adExtras = new ArrayMap<>();
-                                adExtras.put("oriResponseAds", ads);
-                                builder.adExtras(adExtras);
-
-                                List<AdInfo> adInfos = new ArrayList<>(ads.size());
-                                for (NativeAd ad : ads) {
-                                    JSONObject akAdJson = JSONObject.parseObject(ad.getContent().toString());
-                                    if (akAdJson == null) {
-                                        continue;
-                                    }
-                                    String akAdTitle = akAdJson.getString("title");
-                                    String akAdDesc = akAdJson.getString("desc");
-                                    String akAdImgUrl = akAdJson.getString("contentimg");
-
-                                    AdInfo adInfo = new AdInfo();
-                                    if (TextUtils.isEmpty(akAdImgUrl)) {
-                                        adInfo.setContentType(AdInfo.ContentType.TEXT);
-                                    } else {
-                                        if (TextUtils.isEmpty(akAdTitle) &&
-                                                TextUtils.isEmpty(akAdDesc)) {
-                                            adInfo.setContentType(AdInfo.ContentType.PICTURE);
-                                        } else {
-                                            adInfo.setContentType(AdInfo.ContentType.PICTURE_WITH_TEXT);
-                                        }
-                                    }
-                                    if (ad.getActionType() == 1) {
-                                        adInfo.setActionType(AdInfo.ActionType.APP_DOWNLOAD);
-
-                                        JSONObject akAppJson = JSONObject.parseObject(ad.getAPPInfo().toString());
-                                        if (akAppJson == null) {
-                                            continue;
-                                        }
-                                        String akAppLogo = akAdJson.getString("logo");
-                                        String akAppKey = akAppJson.getString("key");
-                                        String akAppPkgName = akAppJson.getString("app_pkg");
-                                        String akAppName = akAppJson.getString("app_name");
-                                        if (TextUtils.isEmpty(akAppKey) ||
-                                                TextUtils.isEmpty(akAppPkgName)) {
-                                            continue;
-                                        } else {
-                                            adInfo.setAppIconUrl(akAppLogo);
-                                            adInfo.setAppName(akAppName);
-                                            adInfo.setAppPackageName(akAppPkgName);
-                                            Map<String, Object> adInfoExtras = new ArrayMap<>();
-                                            adInfoExtras.put("akAdAppKey", akAppKey);
-                                            adInfo.setExtras(adInfoExtras);
-                                        }
-                                    } else {
-                                        adInfo.setActionType(AdInfo.ActionType.BROWSER);
-                                    }
-                                    adInfo.setImgUrl(akAdImgUrl);
-                                    adInfo.setTitle(akAdTitle);
-                                    adInfo.setDesc(akAdDesc);
-                                    adInfos.add(adInfo);
-                                }
-                                if (adInfos.size() > 0) {
-                                    builder.isSucceed(true);
-                                    builder.adInfos(adInfos);
-                                } else {
-                                    errJson.put("akAdErrCode", 0);
-                                    errJson.put("akAdErrMsg", "no ads");
-                                }
-                            } else {
-                                errJson.put("akAdErrCode", 0);
-                                errJson.put("akAdErrMsg", "no ads");
-                            }
-                            builder.errMsg(errJson.toJSONString());
-
                             AdResponseListener listener = mRef.get();
-                            if (listener == null) {
-                                return;
+                            if (listener != null) {
+                                mThreadPoolUtils.execute(new AKAdNativeAdRunnable(
+                                        mAdRequest,
+                                        ads,
+                                        listener
+                                ));
                             }
-
-                            listener.onAdResponse(builder.create());
                         }
 
                         @Override
@@ -229,90 +170,14 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     AKAD.getNativeVideoAdLoader(mContext, new NativeVideoAdLoaderListener() {
                         @Override
                         public void onAdLoadSuccess(ArrayList<NativeVideoAd> ads) {
-                            JSONObject errJson = new JSONObject();
-                            errJson.put("httpResponseCode", 200);
-
-                            AdResponse.Builder builder = new AdResponse.Builder();
-                            builder.adPositionId(mAdRequest.getAdPositionId());
-                            if (ads != null && ads.size() > 0) {
-                                Map<String, Object> adExtras = new ArrayMap<>();
-                                adExtras.put("oriResponseAds", ads);
-                                builder.adExtras(adExtras);
-
-                                List<AdInfo> adInfos = new ArrayList<>(ads.size());
-                                for (NativeVideoAd ad : ads) {
-                                    JSONObject akAdJson = JSONObject.parseObject(ad.getContent().toString());
-                                    if (akAdJson == null) {
-                                        continue;
-                                    }
-                                    String akAdTitle = akAdJson.getString("title");
-                                    String akAdDesc = akAdJson.getString("desc");
-                                    String akAdImgUrl = akAdJson.getString("contentimg");
-                                    String akVideoUrl = akAdJson.getString("video");
-
-                                    AdInfo adInfo = new AdInfo();
-                                    if (ad.hasVideo()) {
-                                        adInfo.setContentType(AdInfo.ContentType.VIDEO);
-                                    } else if (!TextUtils.isEmpty(akAdImgUrl)) {
-                                        if (TextUtils.isEmpty(akAdTitle) &&
-                                                TextUtils.isEmpty(akAdDesc)) {
-                                            adInfo.setContentType(AdInfo.ContentType.PICTURE);
-                                        } else {
-                                            adInfo.setContentType(AdInfo.ContentType.PICTURE_WITH_TEXT);
-                                        }
-                                    } else {
-                                        adInfo.setContentType(AdInfo.ContentType.TEXT);
-                                    }
-                                    if (ad.getActionType() == 1) {
-                                        adInfo.setActionType(AdInfo.ActionType.APP_DOWNLOAD);
-
-                                        JSONObject akAppJson = JSONObject.parseObject(ad.getAPPInfo().toString());
-                                        if (akAppJson == null) {
-                                            continue;
-                                        }
-                                        String akAppLogo = akAdJson.getString("logo");
-                                        String akAppKey = akAppJson.getString("key");
-                                        String akAppPkgName = akAppJson.getString("app_pkg");
-                                        String akAppName = akAppJson.getString("app_name");
-                                        if (TextUtils.isEmpty(akAppKey) ||
-                                                TextUtils.isEmpty(akAppPkgName)) {
-                                            continue;
-                                        } else {
-                                            adInfo.setAppIconUrl(akAppLogo);
-                                            adInfo.setAppName(akAppName);
-                                            adInfo.setAppPackageName(akAppPkgName);
-                                            Map<String, Object> adInfoExtras = new ArrayMap<>();
-                                            adInfoExtras.put("akAdAppKey", akAppKey);
-                                            adInfo.setExtras(adInfoExtras);
-                                        }
-                                    } else {
-                                        adInfo.setActionType(AdInfo.ActionType.BROWSER);
-                                    }
-                                    adInfo.setImgUrl(akAdImgUrl);
-                                    adInfo.setTitle(akAdTitle);
-                                    adInfo.setDesc(akAdDesc);
-                                    adInfo.setVideoUrl(akVideoUrl);
-                                    adInfos.add(adInfo);
-                                }
-                                if (adInfos.size() > 0) {
-                                    builder.isSucceed(true);
-                                    builder.adInfos(adInfos);
-                                } else {
-                                    errJson.put("akAdErrCode", 0);
-                                    errJson.put("akAdErrMsg", "no ads");
-                                }
-                            } else {
-                                errJson.put("akAdErrCode", 0);
-                                errJson.put("akAdErrMsg", "no ads");
-                            }
-                            builder.errMsg(errJson.toJSONString());
-
                             AdResponseListener listener = mRef.get();
-                            if (listener == null) {
-                                return;
+                            if (listener != null) {
+                                mThreadPoolUtils.execute(new AKAdNativeVideoAdRunnable(
+                                        mAdRequest,
+                                        ads,
+                                        listener
+                                ));
                             }
-
-                            listener.onAdResponse(builder.create());
                         }
 
                         @Override
@@ -358,6 +223,235 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     listener.onAdResponse(adResponse);
                 }
             }
+        }
+    }
+
+    private class AKAdNativeAdRunnable implements Runnable {
+        private AdRequest mAdRequest;
+        private List<NativeAd> mAds;
+        private WeakReference<AdResponseListener> mRef;
+
+        public AKAdNativeAdRunnable(AdRequest adRequest,
+                                    List<NativeAd> ads,
+                                    AdResponseListener adResponseListener) {
+            mAdRequest = adRequest;
+            mAds = ads;
+            mRef = new WeakReference<>(adResponseListener);
+        }
+
+        @Override
+        public void run() {
+            JSONObject errJson = new JSONObject();
+            errJson.put("httpResponseCode", 200);
+
+            AdResponse.Builder builder = new AdResponse.Builder();
+            builder.adPositionId(mAdRequest.getAdPositionId());
+            if (mAds != null && mAds.size() > 0) {
+                Map<String, Object> adExtras = new ArrayMap<>();
+                adExtras.put("oriResponseAds", mAds);
+                builder.adExtras(adExtras);
+
+                List<AdInfo> adInfos = new ArrayList<>(mAds.size());
+                for (NativeAd ad : mAds) {
+                    JSONObject akAdJson = JSONObject.parseObject(ad.getContent().toString());
+                    if (akAdJson == null) {
+                        continue;
+                    }
+                    String akAdTitle = akAdJson.getString("title");
+                    String akAdDesc = akAdJson.getString("desc");
+                    String akAdImgUrl = akAdJson.getString("contentimg");
+
+                    AdInfo adInfo = new AdInfo();
+                    if (TextUtils.isEmpty(akAdImgUrl)) {
+                        adInfo.setContentType(AdInfo.ContentType.TEXT);
+                    } else {
+                        if (TextUtils.isEmpty(akAdTitle) &&
+                                TextUtils.isEmpty(akAdDesc)) {
+                            adInfo.setContentType(AdInfo.ContentType.PICTURE);
+                        } else {
+                            adInfo.setContentType(AdInfo.ContentType.PICTURE_WITH_TEXT);
+                        }
+                    }
+                    if (ad.getActionType() == 1) {
+                        adInfo.setActionType(AdInfo.ActionType.APP_DOWNLOAD);
+
+                        JSONObject akAppJson = JSONObject.parseObject(ad.getAPPInfo().toString());
+                        if (akAppJson == null) {
+                            continue;
+                        }
+                        String akAppLogo = akAdJson.getString("logo");
+                        String akAppKey = akAppJson.getString("key");
+                        String akAppPkgName = akAppJson.getString("app_pkg");
+                        String akAppName = akAppJson.getString("app_name");
+                        if (TextUtils.isEmpty(akAppKey) ||
+                                TextUtils.isEmpty(akAppPkgName)) {
+                            continue;
+                        } else {
+                            adInfo.setAppIconUrl(akAppLogo);
+                            adInfo.setAppName(akAppName);
+                            adInfo.setAppPackageName(akAppPkgName);
+                            Map<String, Object> adInfoExtras = new ArrayMap<>();
+                            adInfoExtras.put("akAdAppKey", akAppKey);
+                            adInfo.setExtras(adInfoExtras);
+                        }
+                    } else {
+                        adInfo.setActionType(AdInfo.ActionType.BROWSER);
+                    }
+                    adInfo.setImgUrl(akAdImgUrl);
+                    adInfo.setTitle(akAdTitle);
+                    adInfo.setDesc(akAdDesc);
+
+                    if (!TextUtils.isEmpty(adInfo.getImgUrl())) {
+                        File imgFile = mOkHttpDownloader.downloadSync(
+                                new Request.Builder().url(adInfo.getImgUrl()).build(),
+                                mDownloadPath,
+                                UUID.randomUUID().toString(),
+                                true
+                        );
+                        if (imgFile == null || !imgFile.exists()) {
+                            continue;
+                        }
+                        adInfo.setImgFile(imgFile);
+                    }
+
+                    adInfos.add(adInfo);
+                }
+                if (adInfos.size() > 0) {
+                    builder.isSucceed(true);
+                    builder.adInfos(adInfos);
+                } else {
+                    errJson.put("akAdErrCode", 0);
+                    errJson.put("akAdErrMsg", "no mAds");
+                }
+            } else {
+                errJson.put("akAdErrCode", 0);
+                errJson.put("akAdErrMsg", "no mAds");
+            }
+            builder.errMsg(errJson.toJSONString());
+
+            AdResponseListener listener = mRef.get();
+            if (listener == null) {
+                return;
+            }
+
+            listener.onAdResponse(builder.create());
+        }
+    }
+
+    private class AKAdNativeVideoAdRunnable implements Runnable {
+
+        private AdRequest mAdRequest;
+        private List<NativeVideoAd> mAds;
+        private WeakReference<AdResponseListener> mRef;
+
+        public AKAdNativeVideoAdRunnable(AdRequest adRequest,
+                                         List<NativeVideoAd> ads,
+                                         AdResponseListener adResponseListener) {
+            mAdRequest = adRequest;
+            mAds = ads;
+            mRef = new WeakReference<>(adResponseListener);
+        }
+
+        @Override
+        public void run() {
+            JSONObject errJson = new JSONObject();
+            errJson.put("httpResponseCode", 200);
+
+            AdResponse.Builder builder = new AdResponse.Builder();
+            builder.adPositionId(mAdRequest.getAdPositionId());
+            if (mAds != null && mAds.size() > 0) {
+                Map<String, Object> adExtras = new ArrayMap<>();
+                adExtras.put("oriResponseAds", mAds);
+                builder.adExtras(adExtras);
+
+                List<AdInfo> adInfos = new ArrayList<>(mAds.size());
+                for (NativeVideoAd ad : mAds) {
+                    JSONObject akAdJson = JSONObject.parseObject(ad.getContent().toString());
+                    if (akAdJson == null) {
+                        continue;
+                    }
+                    String akAdTitle = akAdJson.getString("title");
+                    String akAdDesc = akAdJson.getString("desc");
+                    String akAdImgUrl = akAdJson.getString("contentimg");
+                    String akVideoUrl = akAdJson.getString("video");
+
+                    AdInfo adInfo = new AdInfo();
+                    if (ad.hasVideo()) {
+                        adInfo.setContentType(AdInfo.ContentType.VIDEO);
+                    } else if (!TextUtils.isEmpty(akAdImgUrl)) {
+                        if (TextUtils.isEmpty(akAdTitle) &&
+                                TextUtils.isEmpty(akAdDesc)) {
+                            adInfo.setContentType(AdInfo.ContentType.PICTURE);
+                        } else {
+                            adInfo.setContentType(AdInfo.ContentType.PICTURE_WITH_TEXT);
+                        }
+                    } else {
+                        adInfo.setContentType(AdInfo.ContentType.TEXT);
+                    }
+                    if (ad.getActionType() == 1) {
+                        adInfo.setActionType(AdInfo.ActionType.APP_DOWNLOAD);
+
+                        JSONObject akAppJson = JSONObject.parseObject(ad.getAPPInfo().toString());
+                        if (akAppJson == null) {
+                            continue;
+                        }
+                        String akAppLogo = akAdJson.getString("logo");
+                        String akAppKey = akAppJson.getString("key");
+                        String akAppPkgName = akAppJson.getString("app_pkg");
+                        String akAppName = akAppJson.getString("app_name");
+                        if (TextUtils.isEmpty(akAppKey) ||
+                                TextUtils.isEmpty(akAppPkgName)) {
+                            continue;
+                        } else {
+                            adInfo.setAppIconUrl(akAppLogo);
+                            adInfo.setAppName(akAppName);
+                            adInfo.setAppPackageName(akAppPkgName);
+                            Map<String, Object> adInfoExtras = new ArrayMap<>();
+                            adInfoExtras.put("akAdAppKey", akAppKey);
+                            adInfo.setExtras(adInfoExtras);
+                        }
+                    } else {
+                        adInfo.setActionType(AdInfo.ActionType.BROWSER);
+                    }
+                    adInfo.setImgUrl(akAdImgUrl);
+                    adInfo.setTitle(akAdTitle);
+                    adInfo.setDesc(akAdDesc);
+                    adInfo.setVideoUrl(akVideoUrl);
+
+                    if (!TextUtils.isEmpty(adInfo.getImgUrl())) {
+                        File imgFile = mOkHttpDownloader.downloadSync(
+                                new Request.Builder().url(adInfo.getImgUrl()).build(),
+                                mDownloadPath,
+                                UUID.randomUUID().toString(),
+                                true
+                        );
+                        if (imgFile == null || !imgFile.exists()) {
+                            continue;
+                        }
+                        adInfo.setImgFile(imgFile);
+                    }
+
+                    adInfos.add(adInfo);
+                }
+                if (adInfos.size() > 0) {
+                    builder.isSucceed(true);
+                    builder.adInfos(adInfos);
+                } else {
+                    errJson.put("akAdErrCode", 0);
+                    errJson.put("akAdErrMsg", "no mAds");
+                }
+            } else {
+                errJson.put("akAdErrCode", 0);
+                errJson.put("akAdErrMsg", "no mAds");
+            }
+            builder.errMsg(errJson.toJSONString());
+
+            AdResponseListener listener = mRef.get();
+            if (listener == null) {
+                return;
+            }
+
+            listener.onAdResponse(builder.create());
         }
     }
 }
