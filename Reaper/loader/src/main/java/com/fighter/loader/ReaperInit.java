@@ -69,7 +69,7 @@ public class ReaperInit {
             File.separator + ".reapers" + File.separator + "download";
     private static final String ASSETS_PREFIX = "file:///assets/";
     private static final String REAPER_PATH_ASSETS = ASSETS_PREFIX + "ads/" + REAPER;
-    private static final String RR_SUFFIX = ".apk";
+    private static final String RR_SUFFIX = ".rr";
     private static final String[] ALL_REAPERS = {
             REAPER_SYSTEM,
             REAPER_PATH_ASSETS,

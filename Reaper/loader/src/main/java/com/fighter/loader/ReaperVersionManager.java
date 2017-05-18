@@ -52,7 +52,8 @@ public class ReaperVersionManager {
     }
 
     /**
-     * If query failed, we will try for {@link mRetry} times.
+     * If query failed, we will try for retry times
+     * @see #mRetry
      */
     public void queryHigherReaper() {
         synchronized (ReaperVersionManager.class) {

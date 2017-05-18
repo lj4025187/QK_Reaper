@@ -114,7 +114,7 @@ public class ReaperInitTest {
         //reaperApi.requestSplashAds("SplashAd", 1000);
         //LoaderLog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
         //LoaderLog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
-        SystemClock.sleep(50000);
+        SystemClock.sleep(5000);
     }
 
     @Test

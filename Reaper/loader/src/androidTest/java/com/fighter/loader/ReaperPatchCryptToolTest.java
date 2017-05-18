@@ -33,7 +33,7 @@ public class ReaperPatchCryptToolTest {
     private static final String TAG = ReaperPatchCryptToolTest.class.getSimpleName();
 
     @Test
-    public void useEncryptAndDecrypt() {
+    public void useEncryptAndDecrypt() throws Exception {
 
         Context context = InstrumentationRegistry.getTargetContext();
         String cacheDir = context.getCacheDir().getAbsolutePath();
@@ -66,11 +66,11 @@ public class ReaperPatchCryptToolTest {
         ReaperFile file = new ReaperFile(apkPath);
         Log.d(TAG, "apk size: " + file.getSize());
         ByteBuffer inputBuffer = file.readFully();
-        assertTrue(ReaperPatchCryptTool.encryptTo(file, rrPath));
+        assertTrue(ReaperPatchCryptTool.encryptTo(file.getRawFile(), rrPath));
 
         ReaperFile rrFile = new ReaperFile(rrPath);
         Log.d(TAG, "rr size: " + rrFile.getSize());
-        assertTrue(ReaperPatchCryptTool.decryptTo(rrFile, newapkPath));
+        assertTrue(ReaperPatchCryptTool.decryptTo(rrFile.openFileInputStream(), newapkPath));
 
         ReaperFile newapkFile = new ReaperFile(newapkPath);
         Log.d(TAG, "new apk size: " + newapkFile.getSize());

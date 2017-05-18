@@ -34,6 +34,7 @@ import okhttp3.ResponseBody;
 
 public class ReaperNetwork {
     private static final boolean DEBUG_DOWNLOAD = true;
+    private static final boolean TEST = false;
     private static final String TAG = ReaperNetwork.class.getSimpleName();
 
     private static final int REAPER_VERSION_CHECK_NEW_VERSION = 1;
@@ -48,7 +49,7 @@ public class ReaperNetwork {
     private static final int CHECK_HAS_NEW_VERSION = 10;
     private static final int CHECK_NO_NEW_VERSION = -10;
 
-    private static final String RR_SUFFIX = ".apk";
+    private static final String RR_SUFFIX = ".rr";
 
 
     /**
@@ -73,7 +74,7 @@ public class ReaperNetwork {
             return REAPER_VERSION_CHECK_FAILED;
         }
 
-        if (!isValidVersion(piece.version)) {
+        if (!isValidVersion(piece.version) || piece.ok != CHECK_HAS_NEW_VERSION) {
             if (DEBUG_DOWNLOAD) {
                 ReaperLog.e(TAG, "query a bad version. : " + piece.version);
             }
@@ -180,7 +181,9 @@ public class ReaperNetwork {
                     .getSharedPreferences(ReaperNWConstants.SP_REAPER_NETWORK, Context.MODE_PRIVATE);
             String versionTime = sp.getString(ReaperNWConstants.KEY_TIME, "0");
             //test start
-            //versionTime = "0";
+            if (TEST) {
+                versionTime = "0";
+            }
             //test end
             params.put("time", versionTime);
             ReaperLog.e(TAG, "versionTime : " + versionTime);
@@ -241,15 +244,18 @@ public class ReaperNetwork {
             }
 
             //test start
-            //ReaperLog.e(TAG, "before test download ........");
-            //for (VersionPiece piece : pieces) {
-            //    downloadHigherVersionReaper(piece);
-            //}
-            //ReaperLog.e(TAG, "test download ......... ");
+            if (TEST) {
+                ReaperLog.e(TAG, "before test download ........");
+                for (VersionPiece piece : pieces) {
+                    downloadHigherVersionReaper(piece);
+                }
+            }
+            ReaperLog.e(TAG, "test download ......... ");
             //test end
 
             VersionPiece piece = getHighestVersion(pieces);
             piece.time = time;
+            piece.ok = CHECK_HAS_NEW_VERSION;
             ReaperLog.e(TAG, "sort version : " + piece);
             return piece;
         } catch (Exception e) {

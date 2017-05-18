@@ -24,7 +24,7 @@ public class AESBlockCipherTest {
     private static final String TAG = AESBlockCipherTest.class.getSimpleName();
 
     @Test
-    public void useEncryptAndDecrypt() {
+    public void useEncryptAndDecrypt() throws Exception{
         IReaperBlockCipher cipher = new AESBlockCipher();
         IReaperBlockCipher.Key key = cipher.createKey();
         for (int i = 0; i < key.data.length; ++i)
