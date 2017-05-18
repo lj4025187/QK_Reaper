@@ -66,11 +66,19 @@ public class ReaperPatchCryptToolTest {
         ReaperFile file = new ReaperFile(apkPath);
         Log.d(TAG, "apk size: " + file.getSize());
         ByteBuffer inputBuffer = file.readFully();
-        assertTrue(ReaperPatchCryptTool.encryptTo(file.getRawFile(), rrPath));
+        try {
+            assertTrue(ReaperPatchCryptTool.encryptTo(file.getRawFile(), rrPath));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         ReaperFile rrFile = new ReaperFile(rrPath);
         Log.d(TAG, "rr size: " + rrFile.getSize());
-        assertTrue(ReaperPatchCryptTool.decryptTo(rrFile.openFileInputStream(), newapkPath));
+        try {
+            assertTrue(ReaperPatchCryptTool.decryptTo(rrFile.openFileInputStream(), newapkPath));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         ReaperFile newapkFile = new ReaperFile(newapkPath);
         Log.d(TAG, "new apk size: " + newapkFile.getSize());

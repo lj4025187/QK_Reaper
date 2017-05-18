@@ -37,7 +37,7 @@ public class ReaperPatchManagerTest {
         ApplicationInfo info = infos.get(0);
         List<ReaperFile> files = new ArrayList<>();
         files.add(new ReaperFile(info.sourceDir));
-        List<ReaperPatch> patches = ReaperPatchManager.getInstance().unpackPatches(files, appContext.getClassLoader());
+        List<ReaperPatch> patches = ReaperPatchManager.getInstance().unpackPatches(appContext, files, appContext.getClassLoader());
         assertFalse(patches.isEmpty());
 
         assertEquals(patches.size(), 1);

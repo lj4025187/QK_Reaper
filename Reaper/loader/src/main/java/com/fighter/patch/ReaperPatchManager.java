@@ -1,5 +1,7 @@
 package com.fighter.patch;
 
+import android.content.Context;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -67,12 +69,12 @@ public class ReaperPatchManager {
      * @param files
      * @return
      */
-    public List<ReaperPatch> unpackPatches(List<ReaperFile> files, ClassLoader appClassLoader) {
+    public List<ReaperPatch> unpackPatches(Context context, List<ReaperFile> files, ClassLoader appClassLoader) {
         List<ReaperPatch> patches = null;
         Constructor c = null;
         try {
             Class ReaperPatchClass = Class.forName(REAPER_PATCH_CLASS);
-            c = ReaperPatchClass.getDeclaredConstructor(ReaperFile.class, ClassLoader.class);
+            c = ReaperPatchClass.getDeclaredConstructor(Context.class, ReaperFile.class, ClassLoader.class);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
@@ -86,7 +88,7 @@ public class ReaperPatchManager {
             patches = new ArrayList<>();
             for (ReaperFile file : files) {
                 try {
-                    patches.add((ReaperPatch) c.newInstance(file, appClassLoader));
+                    patches.add((ReaperPatch) c.newInstance(context, file, appClassLoader));
                 } catch (InstantiationException e) {
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {

@@ -274,7 +274,7 @@ public class ReaperInit {
 
         List<ReaperPatch> patches =
                 ReaperPatchManager.getInstance()
-                        .unpackPatches(reaperFiles, context.getApplicationContext().getClassLoader());
+                        .unpackPatches(context, reaperFiles, context.getApplicationContext().getClassLoader());
         ReaperPatch sdReaperPatch = loadReaperFileByPath(REAPER_DIR_SDCARD);
         if (sdReaperPatch != null) {
             patches.add(sdReaperPatch);
@@ -470,7 +470,7 @@ public class ReaperInit {
         }
 
         List<ReaperPatch> patches = ReaperPatchManager.getInstance()
-                .unpackPatches(reaperFiles, sContext.getClassLoader());
+                .unpackPatches(sContext, reaperFiles, sContext.getClassLoader());
         if (patches == null || patches.size() <= 0) {
             return null;
         }

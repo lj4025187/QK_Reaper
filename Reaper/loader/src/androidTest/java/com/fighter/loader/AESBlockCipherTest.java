@@ -29,7 +29,11 @@ public class AESBlockCipherTest {
         IReaperBlockCipher.Key key = cipher.createKey();
         for (int i = 0; i < key.data.length; ++i)
             key.data[i] = (byte) (i << 1 * 5);
-        cipher.initKey(key);
+        try {
+            cipher.initKey(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         ByteBuffer inputBuffer = cipher.allocateBlockBuffer();
         ByteBuffer outputBuffer = cipher.allocateBlockBuffer();
@@ -41,7 +45,12 @@ public class AESBlockCipherTest {
 
         inputBuffer.limit(inputBuffer.position());
         inputBuffer.position(0);
-        int size = cipher.encrypt(inputBuffer, outputBuffer);
+        int size = 0;
+        try {
+            size = cipher.encrypt(inputBuffer, outputBuffer);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Log.d(TAG, "-- useEncryptAndDecrypt -- size: " + size + ", position: " + outputBuffer.position());
         assertEquals(size, outputBuffer.position());
 
@@ -55,7 +64,11 @@ public class AESBlockCipherTest {
 
         outputBuffer.position(0);
         outputBuffer.limit(size);
-        size = cipher.decrypt(outputBuffer, inputBuffer);
+        try {
+            size = cipher.decrypt(outputBuffer, inputBuffer);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         assertEquals(size, inputBuffer.position());
 
         StringBuilder sb2 = new StringBuilder();

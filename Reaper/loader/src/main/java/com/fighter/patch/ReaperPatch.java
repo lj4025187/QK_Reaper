@@ -1,5 +1,6 @@
 package com.fighter.patch;
 
+import android.content.Context;
 import android.os.Environment;
 
 import com.fighter.helper.ReaperPatchHelper;
@@ -25,13 +26,6 @@ public class ReaperPatch {
     public static final int TYPE_REAPER     = 0x02;
 
     /**
-     * Private final members
-     */
-    private final String PATCH_DIR = "patch";
-    private final String PATCH_OPT_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + PATCH_DIR + "/opt";
-    private final String PATCH_LIB_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + PATCH_DIR + "/libs";
-
-    /**
      * Private members
      */
     private ReaperFile mFile;
@@ -45,7 +39,7 @@ public class ReaperPatch {
      *
      * @param file
      */
-    private ReaperPatch(ReaperFile file, ClassLoader appClassLoader) {
+    private ReaperPatch(Context context, ReaperFile file, ClassLoader appClassLoader) {
 
         if (ReaperPatchHelper.isApkFile(file)) {
             mFile = file;
@@ -54,8 +48,7 @@ public class ReaperPatch {
         } else if (ReaperPatchHelper.isReaperFile(file)) {
             mFile = file;
             mType = TYPE_REAPER;
-            mLoader = ReaperPatchCryptAndroidTool.createReaperClassLoader(mFile, PATCH_OPT_DIR, PATCH_LIB_DIR,
-                    appClassLoader);
+            mLoader = ReaperPatchCryptAndroidTool.createReaperClassLoader(context, mFile, appClassLoader);
         } else {
             mFile = null;
             mType = TYPE_UNKNOWN;
