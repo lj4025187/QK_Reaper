@@ -58,6 +58,7 @@ public class ReaperInit {
 
     private static final String TAG = ReaperInit.class.getSimpleName();
     private static final boolean DEBUG_REAPER_PATCH = true;
+    private static boolean QUERY_SERVER = true;
 
     private static final String CLASS_REAPER_API = "com.fighter.api.ReaperApi";
     private static final String CLASS_REAPER_DOWNLOAD = "com.fighter.download.ReaperNetwork";
@@ -98,7 +99,9 @@ public class ReaperInit {
         }
 
         initReaper(context, reaperPatch);
-        queryHigherReaperInServer(reaperPatch);
+        if (QUERY_SERVER) {
+            queryHigherReaperInServer(reaperPatch);
+        }
 
         return api;
     }

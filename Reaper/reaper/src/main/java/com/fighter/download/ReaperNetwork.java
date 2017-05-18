@@ -5,12 +5,11 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.fighter.common.utils.ReaperLog;
 import com.qiku.serversdk.custom.AppConf;
 
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -193,9 +192,8 @@ public class ReaperNetwork {
                     ReaperLog.e(TAG, "getAppConfSyncCustom == null");
                 return null;
             }
-            String jsonString = result.toString();
-            com.alibaba.fastjson.JSONObject jsonObject = JSON.parseObject(jsonString);
-            String ret = jsonObject.getString("result");
+            String ret = result.getString("result");
+            ReaperLog.e(TAG, "request server : " + ret);
             if (!TextUtils.equals(ret, "true")) {
                 if (DEBUG_DOWNLOAD) {
                     ReaperLog.e(TAG, "dont have new version !");
@@ -205,7 +203,7 @@ public class ReaperNetwork {
                 return piece;
             }
 
-            com.alibaba.fastjson.JSONObject obj = jsonObject.getJSONObject("list");
+            JSONObject obj = result.getJSONObject("list");
             if (obj == null) {
                 if (DEBUG_DOWNLOAD) {
                     ReaperLog.e(TAG, "dont have list data.");
@@ -222,7 +220,7 @@ public class ReaperNetwork {
             String time = obj.getString("time");
 
             List<VersionPiece> pieces = new ArrayList<>();
-            for (int i = 0; i < data.size(); ++i) {
+            for (int i = 0; i < data.length(); ++i) {
                 Object o = data.get(i);
                 if (!(o instanceof JSONArray)) {
                     continue;

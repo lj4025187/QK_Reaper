@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 /**
@@ -33,7 +34,7 @@ public class ReaperInitTest {
 
     public static final String TAG = ReaperInitTest.class.getSimpleName();
     public static final String PKG_NAME = "com.fighter.reaper";
-    private static final String REAPER = "reaper.rr";
+    private static final String REAPER = "1.0.3.rr";
     private static final String REAPER_DIR_SDCARD =
             Environment.getExternalStorageDirectory().toString() +
                     File.separator + ".reapers" + File.separator;
@@ -107,14 +108,27 @@ public class ReaperInitTest {
             return;
         }
 
+        disableNetworkCheck();
+
         ReaperApi reaperApi = ReaperInit.init(context);
         LoaderLog.i(TAG, "reaperApi : " + reaperApi);
         Assert.assertNotNull(reaperApi);
-        reaperApi.requestSplashAds("SplashAd", 1000);
-        //reaperApi.requestSplashAds("SplashAd", 1000);
-        //LoaderLog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
-        //LoaderLog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
+        LoaderLog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
         SystemClock.sleep(5000);
+    }
+
+    private void disableNetworkCheck() {
+        try {
+            Field field = ReaperInit.class.getDeclaredField("QUERY_SERVER");
+            if (field == null)
+                return;
+            field.setAccessible(true);
+            field.set(null, false);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
