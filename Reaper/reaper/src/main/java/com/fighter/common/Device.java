@@ -51,9 +51,15 @@ public final class Device {
     // App 信息
     // ----------------------------------------------------
 
-    public static ApplicationInfo getApplicationInfo(Context context, int flags) {
-        ApplicationInfo applicationInfo = null;
+    public static String getApplicationName(Context context) {
         PackageManager pm = context.getPackageManager();
+        ApplicationInfo applicationInfo = getApplicationInfo(context, pm, PackageManager.GET_ACTIVITIES);
+        String appName = (String) pm.getApplicationLabel(applicationInfo);
+        return appName;
+    }
+
+    public static ApplicationInfo getApplicationInfo(Context context, PackageManager pm, int flags) {
+        ApplicationInfo applicationInfo = null;
         try {
             applicationInfo = pm.getApplicationInfo(context.getPackageName(), flags);
         } catch (PackageManager.NameNotFoundException e) {

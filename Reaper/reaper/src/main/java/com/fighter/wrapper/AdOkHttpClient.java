@@ -1,5 +1,7 @@
 package com.fighter.wrapper;
 
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.OkHttpClient;
 
 /**
@@ -8,7 +10,9 @@ import okhttp3.OkHttpClient;
 enum AdOkHttpClient {
     INSTANCE;
 
-    private OkHttpClient mClient = new OkHttpClient();
+    private OkHttpClient mClient = new OkHttpClient.Builder()
+            .connectTimeout(3000, TimeUnit.MILLISECONDS)
+            .build();
 
     public OkHttpClient getOkHttpClient() {
         return mClient;

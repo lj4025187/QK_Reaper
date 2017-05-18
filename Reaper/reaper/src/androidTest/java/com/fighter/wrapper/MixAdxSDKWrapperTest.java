@@ -17,12 +17,12 @@ public class MixAdxSDKWrapperTest {
     @Test
     public void testNativeAdRequest() {
         AdRequest adRequest = new AdRequest.Builder()
-                .appId("1104241296")
-                .adPositionId("TA201610171731100001")
+                .appId("0")
+                .adPositionId("128")
                 .adType(AdType.TYPE_BANNER)
                 .adCount(1)
-                .adWidth(640)
-                .adHeight(100)
+                .adWidth(600)
+                .adHeight(300)
                 .create();
         Log.d(TAG, "request " + adRequest);
 
