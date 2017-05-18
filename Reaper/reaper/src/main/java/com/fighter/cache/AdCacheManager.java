@@ -31,7 +31,7 @@ public class AdCacheManager {
     }
 
     private void initCacheEnvironment(Context context) {
-        File cacheDir = context.getExternalCacheDir();
+        File cacheDir = context.getCacheDir();
         File adCacheDir = new File(cacheDir, "ac");
         if (!adCacheDir.exists())
             adCacheDir.mkdir();
@@ -96,11 +96,13 @@ public class AdCacheManager {
         Object adInfo = null;
         if (cacheAdInfoPath != null) {
             adInfoFile = new File(cacheAdInfoPath);
-            FileInputStream fileInputStream = new FileInputStream(adInfoFile);
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            adInfo = objectInputStream.readObject();
-            objectInputStream.close();
-            fileInputStream.close();
+            if (adInfoFile.exists()) {
+                FileInputStream fileInputStream = new FileInputStream(adInfoFile);
+                ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+                adInfo = objectInputStream.readObject();
+                objectInputStream.close();
+                fileInputStream.close();
+            }
         }
         return adInfo;
     }
