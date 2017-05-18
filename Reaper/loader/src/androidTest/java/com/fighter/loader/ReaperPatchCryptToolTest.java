@@ -42,12 +42,12 @@ public class ReaperPatchCryptToolTest {
         String rrPath = cacheDir + "/a.apk_decrypted";
 
 
-        if (!new File(apkPath).exists()) {
+//        if (!new File(apkPath).exists()) {
             BufferedOutputStream bos = null;
             try {
                 Random random = new Random(SystemClock.currentThreadTimeMillis());
                 bos = new BufferedOutputStream(new FileOutputStream(new File(apkPath)));
-                for (int i = 0; i < 1090; ++i) {
+                for (int i = 0; i < 17; ++i) {
                     bos.write(random.nextInt());
                 }
             } catch (FileNotFoundException e) {
@@ -64,7 +64,7 @@ public class ReaperPatchCryptToolTest {
                     e.printStackTrace();
                 }
             }
-        }
+//        }
 
         ReaperFile file = new ReaperFile(apkPath);
         Log.d(TAG, "apk size: " + file.getSize());
@@ -87,5 +87,6 @@ public class ReaperPatchCryptToolTest {
         Log.d(TAG, "new apk size: " + newapkFile.getSize());
         ByteBuffer outputBuffer = newapkFile.readFully();
         assertEquals(inputBuffer.capacity(), outputBuffer.capacity());
+        assertEquals(new String(inputBuffer.array()), new String(outputBuffer.array()));
     }
 }

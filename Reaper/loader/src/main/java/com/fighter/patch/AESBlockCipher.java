@@ -106,12 +106,19 @@ public class AESBlockCipher implements IReaperBlockCipher {
             int stolen = KEY_SIZE - size % KEY_SIZE;
             Arrays.fill(inbuffer.array(), inbuffer.limit(), inbuffer.limit() + stolen, (byte) 0);
             inbuffer.limit(inbuffer.limit() + stolen);
+            size = inbuffer.limit() - inbuffer.position();
         }
 
         outbuffer.clear();
         int encryptedSize = 0;
         try {
-            encryptedSize = currentEncryptCipher().doFinal(inbuffer, outbuffer);
+            while (size > 0) {
+                encryptedSize += currentEncryptCipher().update(inbuffer.array(), inbuffer.position(), KEY_SIZE,
+                        outbuffer.array(), outbuffer.position());
+                size -= KEY_SIZE;
+                inbuffer.position(encryptedSize);
+                outbuffer.position(encryptedSize);
+            }
         } catch (ShortBufferException e) {
             throw new Exception("encrypt error:", e);
         } catch (IllegalBlockSizeException e) {
@@ -130,15 +137,19 @@ public class AESBlockCipher implements IReaperBlockCipher {
 
         int size = inbuffer.limit() - inbuffer.position();
         if (size % KEY_SIZE != 0) {
-            int stolen = KEY_SIZE - size % KEY_SIZE;
-            Arrays.fill(inbuffer.array(), inbuffer.limit(), inbuffer.limit() + stolen, (byte) 0);
-            inbuffer.limit(inbuffer.limit() + stolen);
+            throw new Exception("inBuffer size is wrong: " + size);
         }
 
         outbuffer.clear();
         int encryptedSize = 0;
         try {
-            encryptedSize = currentEncryptCipher().doFinal(inbuffer, outbuffer);
+            while (size > 0) {
+                encryptedSize += currentDecryptCipher().update(inbuffer.array(), inbuffer.position(), KEY_SIZE,
+                        outbuffer.array(), outbuffer.position());
+                size -= KEY_SIZE;
+                inbuffer.position(encryptedSize);
+                outbuffer.position(encryptedSize);
+            }
         } catch (ShortBufferException e) {
             throw new Exception("decrypt error:", e);
         } catch (IllegalBlockSizeException e) {

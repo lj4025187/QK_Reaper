@@ -22,9 +22,10 @@ import static org.junit.Assert.assertEquals;
 public class AESBlockCipherTest {
 
     private static final String TAG = AESBlockCipherTest.class.getSimpleName();
+    private static final String TEST_STR = "Hello World!!!!!OOOOOOOOOOOOOOOOOOOOXXXXX";
 
     @Test
-    public void useEncryptAndDecrypt() throws Exception{
+    public void useEncryptAndDecrypt() throws Exception {
         IReaperBlockCipher cipher = new AESBlockCipher();
         IReaperBlockCipher.Key key = cipher.createKey();
         for (int i = 0; i < key.data.length; ++i)
@@ -35,13 +36,20 @@ public class AESBlockCipherTest {
             e.printStackTrace();
         }
 
+        StringBuilder origSB = new StringBuilder();
+        for (int i = 0; i < TEST_STR.length(); ++i) {
+            origSB.append(Byte.toString(TEST_STR.getBytes()[i]));
+            origSB.append(" ");
+        }
+        Log.d(TAG, "-- origSB -->>[" + origSB.toString() + "]");
+
         ByteBuffer inputBuffer = cipher.allocateBlockBuffer();
         ByteBuffer outputBuffer = cipher.allocateBlockBuffer();
         assertEquals(inputBuffer.position(), 0);
         assertEquals(outputBuffer.position(), 0);
 
-        inputBuffer.put(new String("Hello World!!!!!").getBytes());
-        Log.d(TAG, "-- useEncryptAndDecrypt --[Hello World!!!!!], offset: " + inputBuffer.arrayOffset() + ", position: " + inputBuffer.position());
+        inputBuffer.put(new String(TEST_STR).getBytes());
+        Log.d(TAG, "-- useEncryptAndDecrypt --, offset: " + inputBuffer.arrayOffset() + ", position: " + inputBuffer.position());
 
         inputBuffer.limit(inputBuffer.position());
         inputBuffer.position(0);
@@ -64,6 +72,7 @@ public class AESBlockCipherTest {
 
         outputBuffer.position(0);
         outputBuffer.limit(size);
+        inputBuffer.clear();
         try {
             size = cipher.decrypt(outputBuffer, inputBuffer);
         } catch (Exception e) {
@@ -79,9 +88,9 @@ public class AESBlockCipherTest {
         }
         Log.d(TAG, "-- useEncryptAndDecrypt -->>[" + sb2.toString() + "]");
 
-        String text = new String(inputBuffer.array(), 0, size);
+        String text = new String(inputBuffer.array(), 0, TEST_STR.length());
         Log.d(TAG, "-- useEncryptAndDecrypt --[" + text + "]");
-        assertEquals(text, "Hello World!!!!!");
+        assertEquals(text, TEST_STR);
     }
 
 }

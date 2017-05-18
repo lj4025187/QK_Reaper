@@ -17,9 +17,8 @@ import java.nio.ByteBuffer;
  */
 public class ReaperPatchCryptTool {
 
-    private static IReaperBlockCipher sCipher = new AESBlockCipher();
-
     public static boolean decryptTo(FileInputStream fis, String dexPath) throws Exception {
+        IReaperBlockCipher sCipher = new AESBlockCipher();
         ByteBuffer inputBuffer = sCipher.allocateBlockBuffer();
         ByteBuffer outputBuffer = sCipher.allocateBlockBuffer();
         IReaperBlockCipher.Key key = sCipher.createKey();
@@ -74,6 +73,7 @@ public class ReaperPatchCryptTool {
     }
 
     public static boolean encryptTo(File file, String rrPath) throws Exception {
+        IReaperBlockCipher sCipher = new AESBlockCipher();
         ByteBuffer inputBuffer = sCipher.allocateBlockBuffer();
         ByteBuffer outputBuffer = sCipher.allocateBlockBuffer();
         IReaperBlockCipher.Key key = sCipher.createKey();
