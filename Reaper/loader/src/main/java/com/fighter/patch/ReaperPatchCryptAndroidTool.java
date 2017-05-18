@@ -12,7 +12,7 @@ import java.io.File;
 
 public class ReaperPatchCryptAndroidTool {
 
-    private static final String TAG = ReaperPatchCryptTool.class.getSimpleName();
+    private static final String TAG = ReaperPatchCryptAndroidTool.class.getSimpleName();
 
 
     /**
@@ -24,19 +24,19 @@ public class ReaperPatchCryptAndroidTool {
 
 
     public static ClassLoader createReaperClassLoader(Context context, ReaperFile file, ClassLoader parent) {
-        String optPath = Environment.getDataDirectory().getPath() + "/" + context.getPackageName()
+        String optPath = "/data/data/" + context.getPackageName()
                 + "/" + PATCH_OPT_DIR;
         File optFile = new File(optPath);
         if (!optFile.exists())
             optFile.mkdirs();
 
-        String libPath = Environment.getDataDirectory().getPath() + "/" + context.getPackageName()
+        String libPath = "/data/data/" + context.getPackageName()
                 + "/" + PATCH_LIB_DIR;
         File libFile = new File(libPath);
         if (!libFile.exists())
             libFile.mkdirs();
 
-        String dexPath = optPath + "/" + System.currentTimeMillis() + ".dex";
+        String dexPath = "/data/data/" + context.getPackageName() + "/" + PATCH_DIR + "/" + System.currentTimeMillis() + ".dex";
         try {
             decryptTo(file, dexPath);
         } catch (Exception e) {

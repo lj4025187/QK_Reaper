@@ -37,10 +37,11 @@ public class ReaperPatchManagerTest {
         ApplicationInfo info = infos.get(0);
         List<ReaperFile> files = new ArrayList<>();
         files.add(new ReaperFile(info.sourceDir));
+        files.add(new ReaperFile("/sdcard/reaper.rr"));
         List<ReaperPatch> patches = ReaperPatchManager.getInstance().unpackPatches(appContext, files, appContext.getClassLoader());
         assertFalse(patches.isEmpty());
 
-        assertEquals(patches.size(), 1);
+        assertEquals(patches.size(), 2);
 
         assertFalse(patches.get(0).isValid());
         assertFalse(patches.get(0).isValid());

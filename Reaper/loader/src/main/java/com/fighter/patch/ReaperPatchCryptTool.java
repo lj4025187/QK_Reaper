@@ -26,15 +26,20 @@ public class ReaperPatchCryptTool {
         fillKey(key);
         sCipher.initKey(key);
 
-        if (fis == null)
-            return false;
+        if (fis == null) {
+            throw new Exception("file input stream is null");
+        }
+
+        File dexFile = new File(dexPath);
+        if (!dexFile.exists())
+            dexFile.createNewFile();
 
         Header header = new Header();
         header.read(fis);
 
         FileOutputStream fos = null;
         try {
-            fos = new FileOutputStream(dexPath);
+            fos = new FileOutputStream(dexFile, false);
             int size;
             long total = 0;
             while ((size = fis.read(inputBuffer.array(), inputBuffer.arrayOffset(), inputBuffer.capacity())) > 0) {
@@ -48,9 +53,9 @@ public class ReaperPatchCryptTool {
                 total += size;
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            throw new Exception("decryptTo: ", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new Exception("decryptTo: ", e);
         } finally {
             try {
                 fis.close();
@@ -61,7 +66,7 @@ public class ReaperPatchCryptTool {
                 inputBuffer.clear();
                 outputBuffer.clear();
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new Exception("decryptTo: ", e);
             }
         }
 
@@ -76,8 +81,9 @@ public class ReaperPatchCryptTool {
         sCipher.initKey(key);
 
         FileInputStream fis = new FileInputStream(file);
-        if (fis == null)
-            return false;
+        if (fis == null) {
+            throw new Exception("file input stream is null");
+        }
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(rrPath);
@@ -91,9 +97,9 @@ public class ReaperPatchCryptTool {
                 fos.write(outputBuffer.array(), outputBuffer.arrayOffset(), size);
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            throw new Exception("decryptTo: ", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new Exception("decryptTo: ", e);
         } finally {
             try {
                 fis.close();
@@ -104,7 +110,7 @@ public class ReaperPatchCryptTool {
                 inputBuffer.clear();
                 outputBuffer.clear();
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new Exception("decryptTo: ", e);
             }
         }
 
