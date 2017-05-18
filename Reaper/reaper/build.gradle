@@ -29,6 +29,11 @@ repositories {
     }
 }
 
+task generateReaperPatch(type: Exec) {
+    workingDir '../'
+    commandLine "java", "-jar" , "./bin/generator.jar", "./bin/reaper.dex", "./bin/reaper.rr"
+}
+
 /**
  * publish dex as reaper.dex
  */
@@ -46,7 +51,6 @@ task publishReaperDex {
                 f.withInputStream { targetDexFile << it }
             }
         }
-        Runtime.getRuntime().exec("java -cp ./third_party/jars/bcprov-jdk15on-1.57.jar -jar ./bin/generator.jar ./bin/reaper.dex ./bin/reaper.rr 2>log.txt 1>&2")
     }
 }
 
@@ -55,6 +59,7 @@ afterEvaluate {
     assembleRelease {
         doLast {
             publishReaperDex.execute()
+            generateReaperPatch.execute()
         }
     }
 }

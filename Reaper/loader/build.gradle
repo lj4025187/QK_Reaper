@@ -60,12 +60,14 @@ task makeGeneratorJar(type:Jar) {
     manifest {
         attributes 'Implementation-Title': 'Reaper Generator Jar File',
                 'Implementation-Version': '1.0',
-                'Main-Class': 'com.fighter.utils.ReaperPatchGenerator'
+                'Main-Class': 'com.fighter.utils.ReaperPatchGenerator',
+                'Class-Path': '../third_party/jars/bcprov-jdk15on-1.57.jar'
     }
 
     from('./build/intermediates/classes/release/') {
         include('com/fighter/utils/ReaperPatchGenerator.class')
         include('com/fighter/patch/ReaperPatchCryptTool.class')
+        include('com/fighter/patch/ReaperPatchCryptTool$Header.class')
         include('com/fighter/patch/IReaperBlockCipher.class')
         include('com/fighter/patch/IReaperBlockCipher$Key.class')
         include('com/fighter/patch/AESBlockCipher.class')
