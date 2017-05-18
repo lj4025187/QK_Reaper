@@ -10,12 +10,15 @@ import com.fighter.common.Device;
 import com.fighter.common.utils.EmptyUtils;
 import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ThreadPoolUtils;
+import com.fighter.wrapper.download.OkHttpDownloader;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -112,6 +115,8 @@ public class TencentSDKWrapper implements ISDKWrapper {
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
     private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
+    private OkHttpDownloader mOkHttpDownloader = new OkHttpDownloader(mClient);
+    private String mDownloadPath;
 
     // ----------------------------------------------------
 
@@ -123,6 +128,8 @@ public class TencentSDKWrapper implements ISDKWrapper {
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
         mContext = appContext.getApplicationContext();
+        mDownloadPath = mContext.getCacheDir().getAbsolutePath()
+                + File.separator + "reaper_ad";
     }
 
     @Override
@@ -455,6 +462,19 @@ public class TencentSDKWrapper implements ISDKWrapper {
                     if (adExtJson != null) {
                         adInfo.setAppIconUrl(adExtJson.getString("iconurl"));
                         adInfo.setAppName(adExtJson.getString("appname"));
+                    }
+
+                    if (!TextUtils.isEmpty(adInfo.getImgUrl())) {
+                        File imgFile = mOkHttpDownloader.downloadSync(
+                                new Request.Builder().url(adInfo.getImgUrl()).build(),
+                                mDownloadPath,
+                                UUID.randomUUID().toString(),
+                                true
+                        );
+                        if (imgFile == null || !imgFile.exists()) {
+                            continue;
+                        }
+                        adInfo.setImgFile(imgFile);
                     }
 
                     adInfos.add(adInfo);

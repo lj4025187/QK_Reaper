@@ -15,7 +15,9 @@ import com.fighter.common.Device;
 import com.fighter.common.utils.EmptyUtils;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
+import com.fighter.wrapper.download.OkHttpDownloader;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -84,6 +87,8 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
     private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
+    private OkHttpDownloader mOkHttpDownloader = new OkHttpDownloader(mClient);
+    private String mDownloadPath;
 
     // ----------------------------------------------------
 
@@ -95,6 +100,8 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
         mContext = appContext.getApplicationContext();
+        mDownloadPath = mContext.getCacheDir().getAbsolutePath()
+                + File.separator + "reaper_ad";
     }
 
     @Override
@@ -194,7 +201,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
         return requestBody;
     }
 
-    private HashMap<String, String> generatePostParams(AdRequest adRequest){
+    private HashMap<String, String> generatePostParams(AdRequest adRequest) {
         Map<String, Object> extras = adRequest.getAdExtras();
         if (extras == null) {
             extras = new ArrayMap<>();
@@ -226,7 +233,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
         return params;
     }
 
-    private String generateIpddJson(AdRequest adRequest, Map<String, Object> extras){
+    private String generateIpddJson(AdRequest adRequest, Map<String, Object> extras) {
         JSONObject result = new JSONObject();
         result.put("device_type", "0");                                       // 设备类型 0-phone 1-pad 2-pc 3-tv
         result.put("os", "0");                                                // MMA标准，i系统标识参数
@@ -328,22 +335,14 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
         JSONObject resJson = null;
         try {
             resJson = JSONObject.parseObject(oriResponse);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         JSONObject adJson = null;
         if (resJson != null) {
             JSONArray adsJson = resJson.getJSONArray("ads");
-            if (adsJson != null) {
-                int size = adsJson.size();
-                for (int i = 0; i < size; i++) {
-                    JSONObject tmpAdJson = adsJson.getJSONObject(i);
-                    if (tmpAdJson != null &&
-                            adRequest.getAdPositionId().equals(tmpAdJson.getString("adId"))) {
-                        adJson = tmpAdJson;
-                        break;
-                    }
-                }
+            if (adsJson != null && adsJson.size() > 0) {
+                adJson = adsJson.getJSONObject(0);
             }
         }
 
@@ -403,6 +402,19 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
                     }
                     adInfo.setAppName(metaInfoJson.getString("brandName"));
                     adInfo.setAppPackageName(metaInfoJson.getString("appPackage"));
+
+                    if (!TextUtils.isEmpty(adInfo.getImgUrl())) {
+                        File imgFile = mOkHttpDownloader.downloadSync(
+                                new Request.Builder().url(adInfo.getImgUrl()).build(),
+                                mDownloadPath,
+                                UUID.randomUUID().toString(),
+                                true
+                        );
+                        if (imgFile == null || !imgFile.exists()) {
+                            continue;
+                        }
+                        adInfo.setImgFile(imgFile);
+                    }
 
                     adInfos.add(adInfo);
                 }

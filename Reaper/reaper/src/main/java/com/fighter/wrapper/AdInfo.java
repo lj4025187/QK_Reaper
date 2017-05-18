@@ -1,5 +1,6 @@
 package com.fighter.wrapper;
 
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -51,6 +52,10 @@ public class AdInfo {
      * 广告图片链接，纯文字广告类型时该字段为空
      */
     private String mImgUrl;
+    /**
+     * 广告图片文件
+     */
+    private File mImgFile;
     /**
      * 视频广告类型，视频内容链接
      */
@@ -106,6 +111,14 @@ public class AdInfo {
 
     public void setImgUrl(String imgUrl) {
         mImgUrl = imgUrl;
+    }
+
+    public File getImgFile() {
+        return mImgFile;
+    }
+
+    public void setImgFile(File imgFile) {
+        mImgFile = imgFile;
     }
 
     public String getVideoUrl() {
@@ -170,6 +183,7 @@ public class AdInfo {
                 "mContentType=" + mContentType +
                 ", mActionType=" + mActionType +
                 ", mImgUrl='" + mImgUrl + '\'' +
+                ", mImgFile=" + mImgFile +
                 ", mVideoUrl='" + mVideoUrl + '\'' +
                 ", mTitle='" + mTitle + '\'' +
                 ", mDesc='" + mDesc + '\'' +
