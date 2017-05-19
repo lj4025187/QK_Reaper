@@ -25,4 +25,8 @@ public class ReaperNWConstants {
     public static final String DOWNLOAD_DIR =
             Environment.getExternalStorageDirectory().toString() +
                     File.separator + ".reapers" + File.separator + "download";
+
+    public static final String DOWNLOAD_BOTH = "both";
+    public static final String DOWNLOAD_WIFI = "wifi";
+    public static final String DOWNLOAD_MOBILE = "mobile";
 }

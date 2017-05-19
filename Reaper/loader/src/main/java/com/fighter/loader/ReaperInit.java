@@ -463,6 +463,9 @@ public class ReaperInit {
         }
 
         File[] files = dir.listFiles();
+        if (files == null || files.length <= 0) {
+            return null;
+        }
         List<ReaperFile> reaperFiles = new ArrayList<>();
         for (File reaper : files) {
             if (!reaper.getName().endsWith(RR_SUFFIX)) {

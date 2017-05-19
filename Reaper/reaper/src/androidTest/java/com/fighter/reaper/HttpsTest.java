@@ -1,9 +1,11 @@
 package com.fighter.reaper;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.download.HttpsManager;
+import com.fighter.download.NetworkUtil;
 import com.qiku.serversdk.custom.AppConf;
 import com.qiku.serversdk.custom.RestClientResponseCallback;
 
@@ -151,4 +153,14 @@ public class HttpsTest {
 
     }
 
+    @Test
+    public void testNetworkState() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ReaperLog.e(TAG, "netWorkState : " + NetworkUtil.getNetWorkType(InstrumentationRegistry.getContext()));
+            }
+        }).start();
+
+    }
 }

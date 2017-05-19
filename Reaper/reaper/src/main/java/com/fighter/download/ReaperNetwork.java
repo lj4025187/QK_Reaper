@@ -96,17 +96,20 @@ public class ReaperNetwork {
             }
             return REAPER_VERSION_CHECK_NO_NEW_VERSION;
         } else {
-            int netType = NetworkUtil.getNetworkState(ReaperEnv.sContext);
+            int netType = NetworkUtil.getNetWorkType(ReaperEnv.sContext);
             boolean download = false;
-            if (netType == NetworkUtil.NETWORN_NONE)
+            if (netType == NetworkUtil.NETWORN_NONE) {
+                ReaperLog.e(TAG, "current dont have network to download rr !");
                 return REAPER_VERSION_CHECK_FAILED;
+            }
             if (netType == NetworkUtil.NETWORN_WIFI) {
-                if ((TextUtils.equals(piece.updateType, "both")
-                        || TextUtils.equals(piece.updateType, "wifi"))) {
+                if ((TextUtils.equals(piece.updateType, ReaperNWConstants.DOWNLOAD_BOTH)
+                        || TextUtils.equals(piece.updateType, ReaperNWConstants.DOWNLOAD_WIFI)
+                        || TextUtils.equals(piece.updateType, ReaperNWConstants.DOWNLOAD_MOBILE))) {
                     download = true;
                 }
             } else {
-                if (TextUtils.equals(piece.updateType, "mobile")) {
+                if (TextUtils.equals(piece.updateType, ReaperNWConstants.DOWNLOAD_MOBILE)) {
                     download = true;
                 }
             }
@@ -327,10 +330,8 @@ public class ReaperNetwork {
                 String url =  dataArray.getString(1);
                 String desc =  dataArray.getString(2);
                 String updateType = dataArray.getString(3);
-                int id = dataArray.getInt(4);
 
                 VersionPiece piece = new VersionPiece();
-                piece.id = id;
                 piece.version = version;
                 piece.url = url;
                 piece.description = desc;
