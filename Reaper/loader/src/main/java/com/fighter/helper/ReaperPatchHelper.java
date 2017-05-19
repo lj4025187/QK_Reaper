@@ -41,7 +41,7 @@ public class ReaperPatchHelper {
     public static boolean isApkFile(ReaperFile file) {
         if (file == null)
             return false;
-        if (file.getName().endsWith(".apk")) {
+        if (file.getRawFile() != null && file.getName().endsWith(".apk")) {
             if (file.hasFD())
                 return false;
             else {
@@ -66,7 +66,7 @@ public class ReaperPatchHelper {
     public static boolean isReaperFile(ReaperFile file) {
         if (file == null)
             return false;
-        if (file.getName().endsWith(".rr")) {
+        if ((file.getRawFile() != null && file.getName().endsWith(".rr")) || file.hasFD()) {
             return true;
         }
         return false;

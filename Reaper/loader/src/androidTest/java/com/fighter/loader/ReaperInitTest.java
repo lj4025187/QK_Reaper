@@ -112,9 +112,9 @@ public class ReaperInitTest {
 
         ReaperApi reaperApi = ReaperInit.init(context);
         LoaderLog.i(TAG, "reaperApi : " + reaperApi);
-        Assert.assertNotNull(reaperApi);
-        LoaderLog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
-        SystemClock.sleep(50000);
+//        Assert.assertNotNull(reaperApi);
+//        LoaderLog.i(TAG, "reaperApi : " + reaperApi.requestSplashAds("SplashAd", 1000));
+//        SystemClock.sleep(50000);
     }
 
     private void disableNetworkCheck() {

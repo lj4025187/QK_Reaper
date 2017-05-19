@@ -146,7 +146,7 @@ public class ReaperInit {
                 throw new RuntimeException("cant find initForNetwork");
             }
             initForNetworkMethod.setAccessible(true);
-            initForNetworkMethod.invoke(null, null);
+            initForNetworkMethod.invoke(null);
 
             LoaderLog.e(TAG, "initReaper success !");
         } catch (Exception e) {
@@ -511,9 +511,7 @@ public class ReaperInit {
         AssetFileDescriptor afd;
         try {
             afd = am.openFd(name);
-            ReaperFile reaperFile = new ReaperFile(afd);
-            LoaderLog.e(TAG, "loadReaperFileByFD: " + reaperFile.getName());
-            return reaperFile;
+            return new ReaperFile(afd);
         } catch (IOException e) {
             e.printStackTrace();
         }
