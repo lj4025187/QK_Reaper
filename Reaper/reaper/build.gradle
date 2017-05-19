@@ -31,7 +31,7 @@ repositories {
 
 task generateReaperPatch(type: Exec) {
     workingDir '../'
-    commandLine "java", "-jar" , "./bin/generator.jar", "./bin/reaper.dex", "./bin/reaper.rr"
+    commandLine "java", "-jar" , "./bin/generator.jar", "./bin/reaper.apk", "./bin/reaper.rr"
 }
 
 /**
@@ -39,14 +39,14 @@ task generateReaperPatch(type: Exec) {
  */
 task publishReaperDex {
     doLast {
-        def dexDir = file('./build/intermediates/transforms/dex/release')
+        def dexDir = file('./build/outputs/apk/')
         def targetDexDir = file('../bin/')
         if (!targetDexDir.exists()) {
             targetDexDir.mkdirs()
         }
         dexDir.eachFileRecurse { f ->
-            if (f.getName() == 'classes.dex') {
-                def targetDexFile = new File(targetDexDir, 'reaper.dex')
+            if (f.getName().startsWith('reaper-release')) {
+                def targetDexFile = new File(targetDexDir, 'reaper.apk')
                 targetDexFile.delete();
                 f.withInputStream { targetDexFile << it }
             }
