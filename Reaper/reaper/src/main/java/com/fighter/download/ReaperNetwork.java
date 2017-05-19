@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -39,7 +40,7 @@ public class ReaperNetwork {
     private static final String TAG = ReaperNetwork.class.getSimpleName();
 
     private static final int REAPER_VERSION_CHECK_NEW_VERSION = 1;
-    private static final int REAPER_VERSION_CHECK_SAME_VERSION = 0;
+    private static final int REAPER_VERSION_CHECK_NO_NEW_VERSION = 0;
     private static final int REAPER_VERSION_CHECK_FAILED = -1;
 
     private static final int COMPARE_SERVER_HIGHER = 1;
@@ -54,23 +55,27 @@ public class ReaperNetwork {
 
 
     /**
-     * Check higher version
+     * Check higher reaperVersion
      * @return
-     * 1 = check success and has higher version
-     * 0 = check success and dont have higher version
+     * 1 = check success and has higher reaperVersion
+     * 0 = check success and dont have higher reaperVersion
      * -1 = check failed
      */
     @NoProguard
-    public static int doQuery(String version) {
-        if (TextUtils.isEmpty(version) || !isValidVersion(version))
+    public static int doQuery(String sdkVersion, String reaperVersion) {
+        if (TextUtils.isEmpty(reaperVersion) || !isValidVersion(reaperVersion))
             return REAPER_VERSION_CHECK_FAILED;
 
-        VersionPiece piece = queryVersion();
+        VersionRelationShip ship = queryHighestCompatibleVersion(sdkVersion);
+        if (ship == null) {
+            return REAPER_VERSION_CHECK_FAILED;
+        }
+        VersionPiece piece = queryVersion(ship);
         if (piece == null) {
             return REAPER_VERSION_CHECK_FAILED;
         }
         if (piece.ok == CHECK_NO_NEW_VERSION) {
-            return REAPER_VERSION_CHECK_SAME_VERSION;
+            return REAPER_VERSION_CHECK_NO_NEW_VERSION;
         }
         if (TextUtils.isEmpty(piece.version) || TextUtils.isEmpty(piece.url)) {
             return REAPER_VERSION_CHECK_FAILED;
@@ -78,19 +83,39 @@ public class ReaperNetwork {
 
         if (!isValidVersion(piece.version) || piece.ok != CHECK_HAS_NEW_VERSION) {
             if (DEBUG_DOWNLOAD) {
-                ReaperLog.e(TAG, "query a bad version. : " + piece.version);
+                ReaperLog.e(TAG, "query a bad reaperVersion. : " + piece.version);
             }
             return REAPER_VERSION_CHECK_FAILED;
         }
 
-        int compared = compareVersion(version, piece.version);
+        int compared = compareVersion(reaperVersion, piece.version);
         ReaperLog.e(TAG, "compared : " + compared);
         if (compared != COMPARE_SERVER_HIGHER) {
             if (compared == COMPARE_FAILED) {
                 return REAPER_VERSION_CHECK_FAILED;
             }
-            return REAPER_VERSION_CHECK_SAME_VERSION;
+            return REAPER_VERSION_CHECK_NO_NEW_VERSION;
         } else {
+            int netType = NetworkUtil.getNetworkState(ReaperEnv.sContext);
+            boolean download = false;
+            if (netType == NetworkUtil.NETWORN_NONE)
+                return REAPER_VERSION_CHECK_FAILED;
+            if (netType == NetworkUtil.NETWORN_WIFI) {
+                if ((TextUtils.equals(piece.updateType, "both")
+                        || TextUtils.equals(piece.updateType, "wifi"))) {
+                    download = true;
+                }
+            } else {
+                if (TextUtils.equals(piece.updateType, "mobile")) {
+                    download = true;
+                }
+            }
+
+            if (!download) {
+                ReaperLog.e(TAG, "Network problems ! updateType : " + piece.updateType + "; network : " + netType);
+                return REAPER_VERSION_CHECK_FAILED;
+            }
+
             boolean success = downloadHigherVersionReaper(piece);
             if (success) {
                 SharedPreferences sp = ReaperEnv.sContext
@@ -99,6 +124,71 @@ public class ReaperNetwork {
             }
             return success ? REAPER_VERSION_CHECK_NEW_VERSION : REAPER_VERSION_CHECK_FAILED;
         }
+    }
+
+    private static VersionRelationShip
+        queryHighestCompatibleVersion(String currentSdkVersion) {
+        try {
+            AppConf ac = new AppConf(ReaperNWConstants.SERVER_SDK_CONF);
+            HashMap<String, String> params = new HashMap<String, String>();
+            params.put("app", ReaperNWConstants.SERVER_SDK_APP); // 设置app
+            params.put("version", ReaperNWConstants.SERVER_SDK_VERSION); // 设置version
+            params.put("api", ReaperNWConstants.SERVER_COMPATIBLE_API); // 设置api
+            params.put("sdk_version", currentSdkVersion);
+            JSONObject result = ac.getAppConfSyncCustom(params);
+            ReaperLog.e(TAG, "result : " + result);
+
+            if (result == null) {
+                if (DEBUG_DOWNLOAD)
+                    ReaperLog.e(TAG, "getAppConfSyncCustom == null");
+                return null;
+            }
+            String ret = result.getString("result");
+            ReaperLog.e(TAG, "request server : " + ret);
+            if (!TextUtils.equals(ret, "true")) {
+                return null;
+            }
+
+            JSONObject obj = result.getJSONObject("list");
+            if (obj == null) {
+                if (DEBUG_DOWNLOAD) {
+                    ReaperLog.e(TAG, "dont have list data.");
+                }
+                return null;
+            }
+            JSONArray data = obj.getJSONArray("data");
+            if (data == null) {
+                if (DEBUG_DOWNLOAD) {
+                    ReaperLog.e(TAG, "dont have data .");
+                }
+                return null;
+            }
+
+            List<VersionRelationShip> relationShips = new ArrayList<>();
+            for (int i = 0; i < data.length(); ++i) {
+                Object o = data.get(i);
+                if (!(o instanceof JSONArray)) {
+                    continue;
+                }
+                JSONArray array = (JSONArray) o;
+                VersionRelationShip ship = new VersionRelationShip();
+                ship.sdkVersion = array.getString(1);
+                ship.reaperVersion = array.getString(2);
+                ship.state = array.getString(3);
+                relationShips.add(ship);
+            }
+
+            VersionRelationShip highestRelationship =
+                    getHighestVersionRelationship(relationShips);
+            ReaperLog.e(TAG, "highest : " + highestRelationship);
+
+            return highestRelationship;
+        } catch (Exception e) {
+            e.printStackTrace();
+            ReaperLog.e(TAG, "queryHighestCompatibleVersion failed ! " + e.getMessage());
+        }
+
+        return null;
     }
 
     /**
@@ -172,13 +262,14 @@ public class ReaperNetwork {
         return false;
     }
 
-    private static VersionPiece queryVersion() {
+    private static VersionPiece queryVersion(VersionRelationShip ship) {
         try {
             AppConf ac = new AppConf(ReaperNWConstants.SERVER_SDK_CONF);
             HashMap<String, String> params = new HashMap<String, String>();
             params.put("app", ReaperNWConstants.SERVER_SDK_APP); // 设置app
             params.put("version", ReaperNWConstants.SERVER_SDK_VERSION); // 设置version
             params.put("api", ReaperNWConstants.SERVER_SDK_API); // 设置api
+            params.put("reaper_version", ship.reaperVersion);
             SharedPreferences sp = ReaperEnv.sContext
                     .getSharedPreferences(ReaperNWConstants.SP_REAPER_NETWORK, Context.MODE_PRIVATE);
             String versionTime = sp.getString(ReaperNWConstants.KEY_TIME, "0");
@@ -220,6 +311,7 @@ public class ReaperNetwork {
                 }
                 return null;
             }
+
             String time = obj.getString("time");
 
             List<VersionPiece> pieces = new ArrayList<>();
@@ -229,41 +321,68 @@ public class ReaperNetwork {
                     continue;
                 }
                 JSONArray dataArray = ((JSONArray)o);
-                int id = (int) dataArray.get(0);
-                String version = (String) dataArray.get(1);
-                String url = (String) dataArray.get(2);
-                String desc = (String) dataArray.get(3);
+                ReaperLog.e(TAG, "dataArray : " + dataArray);
+
+                String version =  dataArray.getString(0);
+                String url =  dataArray.getString(1);
+                String desc =  dataArray.getString(2);
+                String updateType = dataArray.getString(3);
+                int id = dataArray.getInt(4);
 
                 VersionPiece piece = new VersionPiece();
                 piece.id = id;
                 piece.version = version;
                 piece.url = url;
                 piece.description = desc;
+                piece.updateType = updateType;
                 pieces.add(piece);
 
                 ReaperLog.e(TAG, "version : " + version + "; url : " + url);
             }
 
-            //test start
-            if (TEST) {
-                ReaperLog.e(TAG, "before test download ........");
-                for (VersionPiece piece : pieces) {
-                    downloadHigherVersionReaper(piece);
-                }
+            VersionPiece piece = pieces.size() >= 1 ? pieces.get(0) : null;
+            if (piece != null) {
+                piece.time = time;
+                piece.ok = CHECK_HAS_NEW_VERSION;
             }
-            ReaperLog.e(TAG, "test download ......... ");
-            //test end
-
-            VersionPiece piece = getHighestVersion(pieces);
-            piece.time = time;
-            piece.ok = CHECK_HAS_NEW_VERSION;
-            ReaperLog.e(TAG, "sort version : " + piece);
+            ReaperLog.e(TAG, "final version : " + piece);
             return piece;
         } catch (Exception e) {
             e.printStackTrace();
             ReaperLog.e(TAG, "err : " + e.getMessage());
         }
         return null;
+    }
+
+    private static VersionRelationShip
+        getHighestVersionRelationship(List<VersionRelationShip> relationShips) {
+        if (relationShips == null || relationShips.size() <= 0)
+            return null;
+        for (VersionRelationShip ship : relationShips) {
+            ReaperLog.e(TAG, "before ship : " + ship);
+        }
+
+        Iterator<VersionRelationShip> it = relationShips.iterator();
+        while (it.hasNext()) {
+            VersionRelationShip ship = it.next();
+            if (TextUtils.equals("enable", ship.state)) {
+                continue;
+            }
+            it.remove();
+        }
+
+        Collections.sort(relationShips, new Comparator<VersionRelationShip>() {
+            @Override
+            public int compare(VersionRelationShip left, VersionRelationShip right) {
+                return compareVersion(left.reaperVersion, right.reaperVersion);
+            }
+        });
+
+        for (VersionRelationShip ship : relationShips) {
+            ReaperLog.e(TAG, "ship : " + ship);
+        }
+
+        return relationShips.get(0);
     }
 
     private static VersionPiece getHighestVersion(List<VersionPiece> pieces) {
@@ -420,6 +539,7 @@ public class ReaperNetwork {
         public String url;
         public String description;
         public String time;
+        public String updateType;
         public int ok;
 
         @Override
@@ -427,6 +547,23 @@ public class ReaperNetwork {
             return "VersionPiece{" +
                     "version='" + version + '\'' +
                     ", url='" + url + '\'' +
+                    ", updateType " + updateType + '\'' + 
+                    '}';
+        }
+    }
+
+    @NoProguard
+    static class VersionRelationShip {
+        public String sdkVersion;
+        public String reaperVersion;
+        public String state;
+
+        @Override
+        public String toString() {
+            return "VersionRelationShip{" +
+                    "sdkVersion='" + sdkVersion + '\'' +
+                    ", reaperVersion='" + reaperVersion + '\'' +
+                    ", state='" + state + '\'' +
                     '}';
         }
     }

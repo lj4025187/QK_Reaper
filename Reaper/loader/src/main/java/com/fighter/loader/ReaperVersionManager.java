@@ -1,6 +1,5 @@
 package com.fighter.loader;
 
-import android.content.Loader;
 import android.text.TextUtils;
 
 import com.fighter.utils.LoaderLog;
@@ -19,7 +18,7 @@ public class ReaperVersionManager {
 
     private static final int RETRY_TIME = 4;
     private static final int REAPER_VERSION_CHECK_NEW_VERSION = 1;
-    private static final int REAPER_VERSION_CHECK_SAME_VERSION = 0;
+    private static final int REAPER_VERSION_CHECK_NO_NEW_VERSION = 0;
     private static final int REAPER_VERSION_CHECK_FAILED = -1;
 
     private static String mVersion;
@@ -77,7 +76,7 @@ public class ReaperVersionManager {
                 if (checkResult == REAPER_VERSION_CHECK_NEW_VERSION) {
                     mCheckSuccess = true;
                 } else {
-                    mCheckSuccess = checkResult == REAPER_VERSION_CHECK_SAME_VERSION;
+                    mCheckSuccess = checkResult == REAPER_VERSION_CHECK_NO_NEW_VERSION;
                 }
 
                 mLock.unlock();
@@ -110,13 +109,14 @@ public class ReaperVersionManager {
         }
 
         try {
-            Method doQueryMethod = mReaperDownloadClass.getDeclaredMethod("doQuery", String.class);
+            Method doQueryMethod =
+                    mReaperDownloadClass.getDeclaredMethod("doQuery", String.class, String.class);
             if (doQueryMethod == null) {
                 LoaderLog.e(TAG, "doQuery, doQueryMethod == null !");
                 return -1;
             }
             doQueryMethod.setAccessible(true);
-            Object retVal = doQueryMethod.invoke(null, mVersion);
+            Object retVal = doQueryMethod.invoke(null, Version.VERSION, mVersion);
             if (retVal == null || !(retVal instanceof Integer)) {
                 LoaderLog.e(TAG, "doQuery, invoke method error !");
                 return -1;

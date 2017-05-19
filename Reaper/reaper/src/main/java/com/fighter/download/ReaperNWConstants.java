@@ -16,6 +16,7 @@ public class ReaperNWConstants {
     public static final String SERVER_SDK_VERSION = "1.0.0";
     public static final String SERVER_SDK_API = "version";
 
+    public static final String SERVER_COMPATIBLE_API = "compatible_version";
     //SP
     public static final String SP_REAPER_NETWORK = "reaper_network";
     public static final String KEY_TIME = "reaper_time";
