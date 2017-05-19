@@ -1,5 +1,6 @@
 package com.fighter.wrapper;
 
+import android.text.TextUtils;
 import android.util.ArrayMap;
 
 import java.util.List;
@@ -12,113 +13,109 @@ public class AdRequest {
     /**
      * 申请时广告商下发的App ID
      */
-    private String mAppId;
+    private static final String KEY_APP_ID = "appId";
     /**
      * 广告位对应的广告位ID
      */
-    private String mAdPositionId;
+    private static final String KEY_AD_POSITION_ID = "adPositionId";
     /**
      * 广告类型
      * {@link AdType}
      */
-    private int mAdType;
+    private static final String KEY_AD_TYPE = "adType";
     /**
      * 广告位请求的广告数量<br></br>
      * <b>注意：</b>返回数量不一定就是设置的数量
      */
-    private int mAdCount;
+    private static final String KEY_AD_COUNT = "adCount";
     /**
      * 广告宽
      * 若为比例请填写到extras
      */
-    private int mAdWidth;
+    private static final String KEY_AD_WIDTH = "adWidth";
     /**
      * 广告高
      * 若为比例请填写到extras
      */
-    private int mAdHeight;
+    private static final String KEY_AD_HEIGHT = "adHeight";
     // ----------------------------------------------------
     // 选填 extras中可能有必填项，请参考各个SDKWrapper
     // ----------------------------------------------------
     /**
      * 广告关键词，广告商可能根据关键词优化广告返回结果
      */
-    private List<String> mAdKeyWords;
-    /**
-     * 部分广告SDK需要的额外字段
-     * 具体可参考各个{@code SDKWrapper}介绍。
-     *
-     * @see TencentSDKWrapper
-     */
-    private Map<String, Object> mAdExtras;
+    private static final String KEY_AD_KEY_WORDS = "adKeyWords";
+
+    private Map<String, Object> mAdParams;
 
     // ----------------------------------------------------
 
     private AdRequest() {
-
+        mAdParams = new ArrayMap<>();
     }
 
     // ----------------------------------------------------
 
     public String getAppId() {
-        return mAppId;
+        return (String) mAdParams.get(KEY_APP_ID);
     }
 
     public String getAdPositionId() {
-        return mAdPositionId;
+        return (String) mAdParams.get(KEY_AD_POSITION_ID);
     }
 
     public int getAdType() {
-        return mAdType;
+        Object o = mAdParams.get(KEY_AD_TYPE);
+        return o == null ? AdType.TYPE_BANNER : (int) o;
     }
 
     public int getAdCount() {
-        return mAdCount;
+        Object o = mAdParams.get(KEY_AD_COUNT);
+        return o == null ? 0 : (int) o;
     }
 
     public int getAdWidth() {
-        return mAdWidth;
+        Object o = mAdParams.get(KEY_AD_WIDTH);
+        return o == null ? 0 : (int) o;
     }
 
     public int getAdHeight() {
-        return mAdHeight;
+        Object o = mAdParams.get(KEY_AD_HEIGHT);
+        return o == null ? 0 : (int) o;
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getAdKeyWords() {
-        return mAdKeyWords;
+        return (List<String>) mAdParams.get(KEY_AD_KEY_WORDS);
     }
 
-    public Map<String, Object> getAdExtras() {
-        return mAdExtras;
+    public Object getAdExtra(String key) {
+        return mAdParams.get(key);
+    }
+
+    public Map<String, Object> getAdAllParams() {
+        return mAdParams;
     }
 
     @Override
     public String toString() {
         return "AdRequest{" +
-                "mAppId='" + mAppId + '\'' +
-                ", mAdPositionId='" + mAdPositionId + '\'' +
-                ", mAdType=" + mAdType +
-                ", mAdCount=" + mAdCount +
-                ", mAdWidth=" + mAdWidth +
-                ", mAdHeight=" + mAdHeight +
-                ", mAdKeyWords=" + mAdKeyWords +
-                ", mAdExtras=" + mAdExtras +
+                "mAppId='" + getAppId() + '\'' +
+                ", mAdPositionId='" + getAdPositionId() + '\'' +
+                ", mAdType=" + getAdType() +
+                ", mAdCount=" + getAdCount() +
+                ", mAdWidth=" + getAdWidth() +
+                ", mAdHeight=" + getAdHeight() +
+                ", mAdKeyWords=" + getAdKeyWords() +
                 '}';
     }
 
     // ----------------------------------------------------
     public static class Builder {
-        private String mAppId;
-        private String mAdPositionId;
-        private int mAdType;
-        private int mAdCount;
-        private int mAdWidth;
-        private int mAdHeight;
-        private List<String> mAdKeyWords;
-        private Map<String, Object> mAdExtras;
+        private Map<String, Object> mAdParams;
 
         public Builder() {
-            mAdExtras = new ArrayMap<>();
+            mAdParams = new ArrayMap<>();
         }
 
         /**
@@ -129,7 +126,7 @@ public class AdRequest {
          * @return 广告创建器
          */
         public Builder appId(String appId) {
-            mAppId = appId;
+            putParam(KEY_APP_ID, appId);
             return this;
         }
 
@@ -140,7 +137,7 @@ public class AdRequest {
          * @return 广告创建器
          */
         public Builder adPositionId(String positionId) {
-            mAdPositionId = positionId;
+            putParam(KEY_AD_POSITION_ID, positionId);
             return this;
         }
 
@@ -151,7 +148,7 @@ public class AdRequest {
          * @return 广告创建器
          */
         public Builder adType(int type) {
-            mAdType = type;
+            putParam(KEY_AD_TYPE, type);
             return this;
         }
 
@@ -162,7 +159,7 @@ public class AdRequest {
          * @return 广告创建器
          */
         public Builder adCount(int adCount) {
-            mAdCount = adCount;
+            putParam(KEY_AD_COUNT, adCount);
             return this;
         }
 
@@ -173,7 +170,7 @@ public class AdRequest {
          * @return 广告创建器
          */
         public Builder adWidth(int width) {
-            mAdWidth = width;
+            putParam(KEY_AD_WIDTH, width);
             return this;
         }
 
@@ -184,7 +181,7 @@ public class AdRequest {
          * @return 广告创建器
          */
         public Builder adHeight(int height) {
-            mAdHeight = height;
+            putParam(KEY_AD_HEIGHT, height);
             return this;
         }
 
@@ -198,7 +195,7 @@ public class AdRequest {
          * @return 广告创建器
          */
         public Builder adKeyWords(List<String> keyWords) {
-            mAdKeyWords = keyWords;
+            putParam(KEY_AD_KEY_WORDS, keyWords);
             return this;
         }
 
@@ -210,7 +207,7 @@ public class AdRequest {
          * @return 广告创建器
          */
         public Builder adExtra(String key, Object value) {
-            mAdExtras.put(key, value);
+            putParam(key, value);
             return this;
         }
 
@@ -221,15 +218,14 @@ public class AdRequest {
          */
         public AdRequest create() {
             AdRequest adRequest = new AdRequest();
-            adRequest.mAppId = mAppId;
-            adRequest.mAdPositionId = mAdPositionId;
-            adRequest.mAdType = mAdType;
-            adRequest.mAdCount = mAdCount;
-            adRequest.mAdWidth = mAdWidth;
-            adRequest.mAdHeight = mAdHeight;
-            adRequest.mAdKeyWords = mAdKeyWords;
-            adRequest.mAdExtras = mAdExtras;
+            adRequest.mAdParams = mAdParams;
             return adRequest;
+        }
+
+        private void putParam(String key, Object value) {
+            if (!TextUtils.isEmpty(key) && value != null) {
+                mAdParams.put(key, value);
+            }
         }
     }
 }

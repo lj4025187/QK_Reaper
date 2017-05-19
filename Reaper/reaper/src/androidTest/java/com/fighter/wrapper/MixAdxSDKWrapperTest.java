@@ -5,6 +5,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,7 +28,7 @@ public class MixAdxSDKWrapperTest {
         Log.d(TAG, "request " + adRequest);
 
         Context context = InstrumentationRegistry.getTargetContext();
-        ISDKWrapper sdkWrapper = new MixAdxSDKWrapper();
+        final ISDKWrapper sdkWrapper = new MixAdxSDKWrapper();
         sdkWrapper.init(context, null);
 
         final CountDownLatch signal = new CountDownLatch(1);
@@ -35,6 +36,16 @@ public class MixAdxSDKWrapperTest {
             @Override
             public void onAdResponse(AdResponse adResponse) {
                 Log.d(TAG, "response " + adResponse);
+                if (adResponse != null &&
+                        adResponse.isSucceed() &&
+                        adResponse.canCache()) {
+                    ICacheConvert convert = (ICacheConvert) sdkWrapper;
+                    String responseJson = convert.convertToString(adResponse);
+                    Log.d(TAG, "response cache json " + responseJson);
+                    AdResponse cacheAdResponse = convert.convertFromString(responseJson);
+                    Log.d(TAG, "response cache obj " + cacheAdResponse);
+                    Assert.assertNotNull(cacheAdResponse);
+                }
                 signal.countDown();
             }
         });

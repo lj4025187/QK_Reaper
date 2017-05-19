@@ -1,5 +1,9 @@
 package com.fighter.wrapper;
 
+import android.text.TextUtils;
+import android.util.ArrayMap;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -7,126 +11,183 @@ public class AdResponse {
     /**
      * 广告请求是否成功
      */
-    private boolean mIsSucceed;
+    private static final String KEY_IS_SUCCEED = "isSucceed";
     /**
      * 广告请求出错信息，Json格式
      */
-    private String mErrMsg;
+    private static final String KEY_ERR_MSG = "errMsg";
     /**
-     * 广告位对应的广告位ID
+     * 广告在各个广告商平台注册的ID
      */
-    private String mAdPositionId;
+    private static final String KEY_APP_ID = "appId";
+    /**
+     * 广告位在广告商处的真实ID
+     */
+    private static final String KEY_AD_POSITION_ID = "adPositionId";
     /**
      * 原始响应字符串
      */
-    private String mOriResponse;
+    private static final String KEY_ORI_RESPONSE = "oriResponse";
     /**
      * 返回的广告
      */
-    private List<AdInfo> mAdInfos;
+    private static final String KEY_AD_INFOS = "adInfos";
     /**
-     * 额外的广告响应信息，用于SDK返回结果差异化和后续扩展
+     * 返回的广告 map形式
      */
-    private Map<String, Object> mExtras;
+    private static final String KEY_AD_INFOS_MAP = "adInfosMap";
+    /**
+     * 广告获取来源，各个SDK Wrapper
+     */
+    private static final String KEY_AD_FROM = "adFrom";
+    /**
+     * 是否支持缓存
+     */
+    private static final String KEY_CAN_CACHE = "canCache";
+
+    private Map<String, Object> mAdParams;
 
     // ----------------------------------------------------
 
     private AdResponse() {
-
+        mAdParams = new ArrayMap<>();
     }
 
     // ----------------------------------------------------
 
 
     public boolean isSucceed() {
-        return mIsSucceed;
+        Object o = mAdParams.get(KEY_IS_SUCCEED);
+        return o != null && (boolean) o;
     }
 
     public String getErrMsg() {
-        return mErrMsg;
+        return (String) mAdParams.get(KEY_ERR_MSG);
+    }
+
+    public String getAppId() {
+        return (String) mAdParams.get(KEY_APP_ID);
     }
 
     public String getAdPositionId() {
-        return mAdPositionId;
+        return (String) mAdParams.get(KEY_AD_POSITION_ID);
     }
 
     public String getOriResponse() {
-        return mOriResponse;
+        return (String) mAdParams.get(KEY_ORI_RESPONSE);
     }
 
+    @SuppressWarnings("unchecked")
     public List<AdInfo> getAdInfos() {
-        return mAdInfos;
+        return (List<AdInfo>) mAdParams.get(KEY_AD_INFOS);
     }
 
-    public Map<String, Object> getExtras() {
-        return mExtras;
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> getAdInfosMap() {
+        return (List<Map<String, Object>>) mAdParams.get(KEY_AD_INFOS_MAP);
+    }
+
+    public int getAdFrom() {
+        Object o = mAdParams.get(KEY_AD_FROM);
+        return o == null ? 0 : (int) o;
+    }
+
+    public boolean canCache() {
+        Object o = mAdParams.get(KEY_CAN_CACHE);
+        return o != null && (boolean) o;
+    }
+
+    public Object getAdExtra(String key) {
+        return mAdParams.get(key);
+    }
+
+    public Map<String, Object> getAdAllParams() {
+        return mAdParams;
     }
 
     @Override
     public String toString() {
         return "AdResponse{" +
-                "mIsSucceed=" + mIsSucceed +
-                ", mErrMsg='" + mErrMsg + '\'' +
-                ", mAdPositionId='" + mAdPositionId + '\'' +
-                ", mOriResponse='" + mOriResponse + '\'' +
-                ", mAdInfos=" + mAdInfos +
-                ", mExtras=" + mExtras +
+                "mIsSucceed=" + isSucceed() +
+                ", mErrMsg='" + getErrMsg() + '\'' +
+                ", mAppId='" + getAppId() + '\'' +
+                ", mAdPositionId='" + getAdPositionId() + '\'' +
+                ", mOriResponse='" + getOriResponse() + '\'' +
+                ", mAdInfos=" + getAdInfos() +
                 '}';
     }
 
     // ----------------------------------------------------
 
     static class Builder {
-        private boolean mIsSucceed;
-        private String mErrMsg;
-        private String mAdPositionAd;
-        private String mOriResponse;
-        private List<AdInfo> mAdInfos;
-        private Map<String, Object> mExtras;
+        private Map<String, Object> mAdParams;
 
         Builder() {
-
+            mAdParams = new ArrayMap<>();
         }
 
         Builder isSucceed(boolean isSucceed) {
-            mIsSucceed = isSucceed;
+            putParam(KEY_IS_SUCCEED, isSucceed);
             return this;
         }
 
         Builder errMsg(String errMsg) {
-            mErrMsg = errMsg;
+            putParam(KEY_ERR_MSG, errMsg);
             return this;
         }
 
-        Builder adPositionId(String positionId) {
-            mAdPositionAd = positionId;
+        Builder appId(String appId) {
+            putParam(KEY_APP_ID, appId);
+            return this;
+        }
+
+        Builder adPositionAd(String adPositionId) {
+            putParam(KEY_AD_POSITION_ID, adPositionId);
             return this;
         }
 
         Builder oriResponse(String oriResponse) {
-            mOriResponse = oriResponse;
+            putParam(KEY_ORI_RESPONSE, oriResponse);
             return this;
         }
 
         Builder adInfos(List<AdInfo> adInfos) {
-            mAdInfos = adInfos;
+            putParam(KEY_AD_INFOS, adInfos);
+            if (adInfos != null) {
+                List<Map<String, Object>> list = new ArrayList<>();
+                for (AdInfo adInfo : adInfos) {
+                    list.add(adInfo.getAdAllParams());
+                }
+                putParam(KEY_AD_INFOS_MAP, list);
+            }
             return this;
         }
 
-        Builder adExtras(Map<String, Object> extras) {
-            mExtras = extras;
+        Builder adFrom(int adFrom) {
+            putParam(KEY_AD_FROM, adFrom);
+            return this;
+        }
+
+        Builder canCache(boolean canCache) {
+            putParam(KEY_CAN_CACHE, canCache);
+            return this;
+        }
+
+        Builder adExtra(String key, Object value) {
+            putParam(key, value);
             return this;
         }
 
         AdResponse create() {
             AdResponse adResponse = new AdResponse();
-            adResponse.mIsSucceed = mIsSucceed;
-            adResponse.mErrMsg = mErrMsg;
-            adResponse.mAdPositionId = mAdPositionAd;
-            adResponse.mOriResponse = mOriResponse;
-            adResponse.mAdInfos = mAdInfos;
-            adResponse.mExtras = mExtras;
+            adResponse.mAdParams = mAdParams;
             return adResponse;
+        }
+
+        private void putParam(String key, Object value) {
+            if (!TextUtils.isEmpty(key) && value != null) {
+                mAdParams.put(key, value);
+            }
         }
     }
 }

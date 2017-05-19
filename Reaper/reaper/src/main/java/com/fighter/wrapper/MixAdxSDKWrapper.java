@@ -9,6 +9,7 @@ import android.hardware.Sensor;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fighter.common.Device;
@@ -35,7 +36,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MixAdxSDKWrapper implements ISDKWrapper {
+public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
 
     private static final String TAG = MixAdxSDKWrapper.class.getSimpleName();
 
@@ -122,6 +123,50 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
 
     }
 
+    @Override
+    public String convertToString(AdResponse adResponse) {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("appId", adResponse.getAppId());
+            jsonObject.put("adPositionId", adResponse.getAdPositionId());
+            jsonObject.put("oriResponse", JSON.parseObject(adResponse.getOriResponse()));
+
+            ArrayMap<String, String> fileMap = new ArrayMap<>();
+
+            for (AdInfo adInfo : adResponse.getAdInfos()) {
+                String imgUrl = adInfo.getImgUrl();
+                File f = adInfo.getImgFile();
+                if (!TextUtils.isEmpty(imgUrl) &&
+                        f != null) {
+                    fileMap.put(imgUrl, f.getAbsolutePath());
+                }
+            }
+            jsonObject.put("fileMap", fileMap);
+            return jsonObject.toJSONString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public AdResponse convertFromString(String cachedResponse) {
+        try {
+            JSONObject jsonObject = JSON.parseObject(cachedResponse);
+            String appId = jsonObject.getString("appId");
+            String adPositionAd = jsonObject.getString("adPositionId");
+            String oriResponse = jsonObject.getString("oriResponse");
+
+            Map<String, String> fileMap = jsonObject.getObject("fileMap", Map.class);
+
+            return convertResponse(appId, adPositionAd, oriResponse, fileMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     // ----------------------------------------------------
 
     private AdResponse requestAdSync(AdRequest adRequest) {
@@ -141,7 +186,15 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
         try {
             Response response = mClient.newCall(request).execute();
             if (response != null) {
-                adResponse = convertResponse(adRequest, response);
+                if (response.isSuccessful()) {
+                    adResponse = convertResponse(
+                            adRequest.getAppId(), adRequest.getAdPositionId(),
+                            response.body().string());
+                } else {
+                    JSONObject errJson = new JSONObject();
+                    errJson.put("httpResponseCode", response.code());
+                    return new AdResponse.Builder().errMsg(errJson.toJSONString()).create();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -202,9 +255,9 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
     }
 
     private HashMap<String, String> generatePostParams(AdRequest adRequest) {
-        Map<String, Object> extras = adRequest.getAdExtras();
-        if (extras == null) {
-            extras = new ArrayMap<>();
+        Map<String, Object> allParams = adRequest.getAdAllParams();
+        if (allParams == null) {
+            allParams = new ArrayMap<>();
         }
 
         HashMap<String, String> params = new HashMap<>();
@@ -213,23 +266,23 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
         params.put("posh", adRequest.getAdPositionId());                             // 广告位高
         params.put("postp", String.valueOf(TYPE_REF_MAP.get(adRequest.getAdType())));// 广告位类型
 
-        if (extras.containsKey(EXTRA_MED)) {
-            params.put("med", extras.get(EXTRA_MED).toString());                 // 媒体标识
+        if (allParams.containsKey(EXTRA_MED)) {
+            params.put("med", allParams.get(EXTRA_MED).toString());                 // 媒体标识
         }
-        if (extras.containsKey(EXTRA_TID)) {
-            params.put("tid", extras.get(EXTRA_TID).toString());                 // 投放编号
+        if (allParams.containsKey(EXTRA_TID)) {
+            params.put("tid", allParams.get(EXTRA_TID).toString());                 // 投放编号
         }
-        if (extras.containsKey(EXTRA_MAXC)) {
-            params.put("maxc", extras.get(EXTRA_MAXC).toString());               // 最大广告投放条数
+        if (allParams.containsKey(EXTRA_MAXC)) {
+            params.put("maxc", allParams.get(EXTRA_MAXC).toString());               // 最大广告投放条数
         }
-        if (extras.containsKey(EXTRA_MAXL)) {
-            params.put("maxl", extras.get(EXTRA_MAXL).toString());               // 最大广告时长 秒
+        if (allParams.containsKey(EXTRA_MAXL)) {
+            params.put("maxl", allParams.get(EXTRA_MAXL).toString());               // 最大广告时长 秒
         }
         if (adRequest.getAdKeyWords() != null
                 && adRequest.getAdKeyWords().size() > 0) {
             params.put("kw", adRequest.getAdKeyWords().get(0));                  // 关键词
         }
-        params.put("ipdd", generateIpddJson(adRequest, extras));
+        params.put("ipdd", generateIpddJson(adRequest, allParams));
         return params;
     }
 
@@ -246,6 +299,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
         if (packageInfo != null) {
             result.put("app_version", packageInfo.versionName);               // app 完整版本名
         }
+        result.put("app_version", "1.0");               // app 完整版本名
         String appName = Device.getApplicationName(mContext);
         if (!TextUtils.isEmpty(appName)) {
             result.put("app_name", appName);                                  // app 名称
@@ -319,17 +373,19 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
         return result.toJSONString();
     }
 
-    private AdResponse convertResponse(AdRequest adRequest, Response response) {
+    private AdResponse convertResponse(String appId,
+                                       String adPositionId,
+                                       String oriResponse) {
+        return convertResponse(appId, adPositionId, oriResponse, null);
+    }
+
+    private AdResponse convertResponse(String appId,
+                                       String adPositionId,
+                                       String oriResponse,
+                                       Map<String, String> fileMap) {
         AdResponse.Builder builder = new AdResponse.Builder();
-        builder.adPositionId(adRequest.getAdPositionId());
-        JSONObject errJson = new JSONObject();
-        errJson.put("httpResponseCode", response.code());
-        String oriResponse = null;
-        try {
-            oriResponse = response.body().string();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        builder.adFrom(AdFrom.FROM_MIX_ADX).canCache(true)
+                .appId(appId).adPositionAd(adPositionId);
 
         builder.oriResponse(oriResponse);
         JSONObject resJson = null;
@@ -363,7 +419,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
 
                     AdInfo adInfo = new AdInfo();
 
-                    AdInfo.ContentType contentType = AdInfo.ContentType.PICTURE;
+                    int contentType = AdInfo.ContentType.PICTURE;
                     String creativeType = metaInfoJson.getString("creativeType");
                     switch (creativeType) {
                         case "TEXT": {
@@ -385,7 +441,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
                     }
                     adInfo.setContentType(contentType);
 
-                    AdInfo.ActionType actionType = AdInfo.ActionType.BROWSER;
+                    int actionType = AdInfo.ActionType.BROWSER;
                     String interactionType = metaInfoJson.getString("interactionType");
                     if ("DOWNLOAD".equals(interactionType)) {
                         actionType = AdInfo.ActionType.APP_DOWNLOAD;
@@ -403,13 +459,26 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
                     adInfo.setAppName(metaInfoJson.getString("brandName"));
                     adInfo.setAppPackageName(metaInfoJson.getString("appPackage"));
 
-                    if (!TextUtils.isEmpty(adInfo.getImgUrl())) {
-                        File imgFile = mOkHttpDownloader.downloadSync(
-                                new Request.Builder().url(adInfo.getImgUrl()).build(),
-                                mDownloadPath,
-                                UUID.randomUUID().toString(),
-                                true
-                        );
+                    String imgUrl = adInfo.getImgUrl();
+                    if (!TextUtils.isEmpty(imgUrl)) {
+                        File imgFile = null;
+                        if (fileMap != null && fileMap.containsKey(imgUrl)) {
+                            String filePath = fileMap.get(imgUrl);
+                            if (!TextUtils.isEmpty(filePath)) {
+                                File f = new File(filePath);
+                                if (f.exists()) {
+                                    imgFile = f;
+                                }
+                            }
+                        }
+                        if (imgFile == null) {
+                            imgFile = mOkHttpDownloader.downloadSync(
+                                    new Request.Builder().url(adInfo.getImgUrl()).build(),
+                                    mDownloadPath,
+                                    UUID.randomUUID().toString(),
+                                    true
+                            );
+                        }
                         if (imgFile == null || !imgFile.exists()) {
                             continue;
                         }
@@ -426,7 +495,6 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
             }
         }
 
-        builder.errMsg(errJson.toJSONString());
         return builder.create();
     }
 
@@ -434,19 +502,18 @@ public class MixAdxSDKWrapper implements ISDKWrapper {
 
     private class AdRequestRunnable implements Runnable {
         private AdRequest mAdRequest;
-        private WeakReference<AdResponseListener> mRef;
+        private AdResponseListener mAdResponseListener;
 
         AdRequestRunnable(AdRequest adRequest, AdResponseListener adResponseListener) {
             mAdRequest = adRequest;
-            mRef = new WeakReference<>(adResponseListener);
+            mAdResponseListener = adResponseListener;
         }
 
         @Override
         public void run() {
             AdResponse adResponse = requestAdSync(mAdRequest);
-            AdResponseListener adResponseListener = mRef.get();
-            if (adResponseListener != null) {
-                adResponseListener.onAdResponse(adResponse);
+            if (mAdResponseListener != null) {
+                mAdResponseListener.onAdResponse(adResponse);
             }
         }
     }

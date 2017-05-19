@@ -45,6 +45,6 @@ public class AdRequestTest {
         assertTrue(adRequest.getAdKeyWords().get(0).equals(keyWord1));
         assertTrue(adRequest.getAdWidth() == width);
         assertTrue(adRequest.getAdHeight() == height);
-        assertTrue(adRequest.getAdExtras().get(key).equals(keyValue));
+        assertTrue(adRequest.getAdExtra(key) == keyValue);
     }
 }

@@ -209,7 +209,7 @@ public final class Device {
                 int tryCount = 0;
                 do {
                     macAddress = getMac(context);
-                    tryCount ++;
+                    tryCount++;
                     try {
                         Thread.sleep(200 + tryCount * 100);
                     } catch (InterruptedException e) {
@@ -280,6 +280,7 @@ public final class Device {
 
     /**
      * get cache wifi mac address
+     *
      * @return wifi mac address
      */
     public static String getCacheMac(Context context) {
@@ -332,7 +333,7 @@ public final class Device {
             sdcardRootMac = new String(data);
         }
         if (dataMac != null)
-            return dataMac.equals(sdcardRootMac)? sdcardRootMac : null;
+            return dataMac.equals(sdcardRootMac) ? sdcardRootMac : null;
         return null;
     }
 
@@ -608,8 +609,13 @@ public final class Device {
      * @return NetworkInfo
      */
     private static NetworkInfo getActiveNetworkInfo(Context context) {
-        return ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE))
-                .getActiveNetworkInfo();
+        try {
+            return ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE))
+                    .getActiveNetworkInfo();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**

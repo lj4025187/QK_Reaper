@@ -2,7 +2,6 @@ package com.fighter.wrapper;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.ArrayMap;
 
 import com.ak.android.engine.nav.NativeAd;
 import com.ak.android.engine.nav.NativeAdLoaderListener;
@@ -16,7 +15,6 @@ import com.fighter.common.utils.ThreadPoolUtils;
 import com.fighter.wrapper.download.OkHttpDownloader;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +50,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
         mContext = appContext.getApplicationContext();
         mDownloadPath = mContext.getCacheDir().getAbsolutePath()
                 + File.separator + "reaper_ad";
-        AKAD.initSdk(appContext, true, true);
+        // AKAD.initSdk(appContext, true, true);
     }
 
     @Override
@@ -71,11 +69,11 @@ public class AKAdSDKWrapper implements ISDKWrapper {
 
     private class AKAdRequester {
         private AdRequest mAdRequest;
-        private WeakReference<AdResponseListener> mRef;
+        private AdResponseListener mAdResponseListener;
 
         AKAdRequester(AdRequest adRequest, AdResponseListener adResponseListener) {
             mAdRequest = adRequest;
-            mRef = new WeakReference<>(adResponseListener);
+            mAdResponseListener = adResponseListener;
         }
 
         public void request() {
@@ -103,12 +101,10 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     AKAD.getNativeAdLoader(mContext, new NativeAdLoaderListener() {
                         @Override
                         public void onAdLoadSuccess(ArrayList<NativeAd> ads) {
-                            AdResponseListener listener = mRef.get();
-                            if (listener != null) {
+                            if (mAdResponseListener != null) {
                                 mThreadPoolUtils.execute(new AKAdNativeAdRunnable(
-                                        mAdRequest,
                                         ads,
-                                        listener
+                                        mAdResponseListener
                                 ));
                             }
                         }
@@ -121,16 +117,14 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                             errJson.put("akAdErrMsg", errMsg);
 
                             AdResponse adResponse = new AdResponse.Builder()
-                                    .adPositionId(mAdRequest.getAdPositionId())
                                     .errMsg(errJson.toJSONString())
                                     .create();
 
-                            AdResponseListener listener = mRef.get();
-                            if (listener == null) {
+                            if (mAdResponseListener == null) {
                                 return;
                             }
 
-                            listener.onAdResponse(adResponse);
+                            mAdResponseListener.onAdResponse(adResponse);
                         }
                     }, adSpace);
 
@@ -151,9 +145,8 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                         .errMsg(errJson.toString())
                         .create();
 
-                AdResponseListener listener = mRef.get();
-                if (listener != null) {
-                    listener.onAdResponse(adResponse);
+                if (mAdResponseListener != null) {
+                    mAdResponseListener.onAdResponse(adResponse);
                 }
             }
         }
@@ -170,12 +163,10 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     AKAD.getNativeVideoAdLoader(mContext, new NativeVideoAdLoaderListener() {
                         @Override
                         public void onAdLoadSuccess(ArrayList<NativeVideoAd> ads) {
-                            AdResponseListener listener = mRef.get();
-                            if (listener != null) {
+                            if (mAdResponseListener != null) {
                                 mThreadPoolUtils.execute(new AKAdNativeVideoAdRunnable(
-                                        mAdRequest,
                                         ads,
-                                        listener
+                                        mAdResponseListener
                                 ));
                             }
                         }
@@ -188,16 +179,14 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                             errJson.put("akAdErrMsg", errMsg);
 
                             AdResponse adResponse = new AdResponse.Builder()
-                                    .adPositionId(mAdRequest.getAdPositionId())
                                     .errMsg(errJson.toJSONString())
                                     .create();
 
-                            AdResponseListener listener = mRef.get();
-                            if (listener == null) {
+                            if (mAdResponseListener == null) {
                                 return;
                             }
 
-                            listener.onAdResponse(adResponse);
+                            mAdResponseListener.onAdResponse(adResponse);
                         }
                     }, adSpace);
 
@@ -218,25 +207,21 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                         .errMsg(errJson.toString())
                         .create();
 
-                AdResponseListener listener = mRef.get();
-                if (listener != null) {
-                    listener.onAdResponse(adResponse);
+                if (mAdResponseListener != null) {
+                    mAdResponseListener.onAdResponse(adResponse);
                 }
             }
         }
     }
 
     private class AKAdNativeAdRunnable implements Runnable {
-        private AdRequest mAdRequest;
         private List<NativeAd> mAds;
-        private WeakReference<AdResponseListener> mRef;
+        private AdResponseListener mAdResponseListener;
 
-        public AKAdNativeAdRunnable(AdRequest adRequest,
-                                    List<NativeAd> ads,
+        public AKAdNativeAdRunnable(List<NativeAd> ads,
                                     AdResponseListener adResponseListener) {
-            mAdRequest = adRequest;
             mAds = ads;
-            mRef = new WeakReference<>(adResponseListener);
+            mAdResponseListener = adResponseListener;
         }
 
         @Override
@@ -245,12 +230,8 @@ public class AKAdSDKWrapper implements ISDKWrapper {
             errJson.put("httpResponseCode", 200);
 
             AdResponse.Builder builder = new AdResponse.Builder();
-            builder.adPositionId(mAdRequest.getAdPositionId());
+            builder.adFrom(AdFrom.FROM_AKAD).canCache(false);
             if (mAds != null && mAds.size() > 0) {
-                Map<String, Object> adExtras = new ArrayMap<>();
-                adExtras.put("oriResponseAds", mAds);
-                builder.adExtras(adExtras);
-
                 List<AdInfo> adInfos = new ArrayList<>(mAds.size());
                 for (NativeAd ad : mAds) {
                     JSONObject akAdJson = JSONObject.parseObject(ad.getContent().toString());
@@ -280,19 +261,15 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                             continue;
                         }
                         String akAppLogo = akAdJson.getString("logo");
-                        String akAppKey = akAppJson.getString("key");
                         String akAppPkgName = akAppJson.getString("app_pkg");
                         String akAppName = akAppJson.getString("app_name");
-                        if (TextUtils.isEmpty(akAppKey) ||
-                                TextUtils.isEmpty(akAppPkgName)) {
+                        if (TextUtils.isEmpty(akAppPkgName)) {
                             continue;
                         } else {
                             adInfo.setAppIconUrl(akAppLogo);
                             adInfo.setAppName(akAppName);
                             adInfo.setAppPackageName(akAppPkgName);
-                            Map<String, Object> adInfoExtras = new ArrayMap<>();
-                            adInfoExtras.put("akAdAppKey", akAppKey);
-                            adInfo.setExtras(adInfoExtras);
+                            adInfo.setExtra("nativeAd", ad);
                         }
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);
@@ -329,27 +306,23 @@ public class AKAdSDKWrapper implements ISDKWrapper {
             }
             builder.errMsg(errJson.toJSONString());
 
-            AdResponseListener listener = mRef.get();
-            if (listener == null) {
+            if (mAdResponseListener == null) {
                 return;
             }
 
-            listener.onAdResponse(builder.create());
+            mAdResponseListener.onAdResponse(builder.create());
         }
     }
 
     private class AKAdNativeVideoAdRunnable implements Runnable {
 
-        private AdRequest mAdRequest;
         private List<NativeVideoAd> mAds;
-        private WeakReference<AdResponseListener> mRef;
+        private AdResponseListener mAdResponseListener;
 
-        public AKAdNativeVideoAdRunnable(AdRequest adRequest,
-                                         List<NativeVideoAd> ads,
+        public AKAdNativeVideoAdRunnable(List<NativeVideoAd> ads,
                                          AdResponseListener adResponseListener) {
-            mAdRequest = adRequest;
             mAds = ads;
-            mRef = new WeakReference<>(adResponseListener);
+            mAdResponseListener = adResponseListener;
         }
 
         @Override
@@ -358,12 +331,8 @@ public class AKAdSDKWrapper implements ISDKWrapper {
             errJson.put("httpResponseCode", 200);
 
             AdResponse.Builder builder = new AdResponse.Builder();
-            builder.adPositionId(mAdRequest.getAdPositionId());
+            builder.adFrom(AdFrom.FROM_AKAD).canCache(false);
             if (mAds != null && mAds.size() > 0) {
-                Map<String, Object> adExtras = new ArrayMap<>();
-                adExtras.put("oriResponseAds", mAds);
-                builder.adExtras(adExtras);
-
                 List<AdInfo> adInfos = new ArrayList<>(mAds.size());
                 for (NativeVideoAd ad : mAds) {
                     JSONObject akAdJson = JSONObject.parseObject(ad.getContent().toString());
@@ -406,9 +375,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                             adInfo.setAppIconUrl(akAppLogo);
                             adInfo.setAppName(akAppName);
                             adInfo.setAppPackageName(akAppPkgName);
-                            Map<String, Object> adInfoExtras = new ArrayMap<>();
-                            adInfoExtras.put("akAdAppKey", akAppKey);
-                            adInfo.setExtras(adInfoExtras);
+                            adInfo.setExtra("nativeVideoAd", ad);
                         }
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);
@@ -446,12 +413,11 @@ public class AKAdSDKWrapper implements ISDKWrapper {
             }
             builder.errMsg(errJson.toJSONString());
 
-            AdResponseListener listener = mRef.get();
-            if (listener == null) {
+            if (mAdResponseListener == null) {
                 return;
             }
 
-            listener.onAdResponse(builder.create());
+            mAdResponseListener.onAdResponse(builder.create());
         }
     }
 }

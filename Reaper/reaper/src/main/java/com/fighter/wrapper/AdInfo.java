@@ -1,5 +1,8 @@
 package com.fighter.wrapper;
 
+import android.text.TextUtils;
+import android.util.ArrayMap;
+
 import java.io.File;
 import java.util.Map;
 
@@ -10,187 +13,199 @@ public class AdInfo {
     /**
      * 广告返回的内容类型
      */
-    public enum ContentType {
+    public interface ContentType {
         /**
          * 文字
          */
-        TEXT,
+        int TEXT = 1;
         /**
          * 纯图片
          */
-        PICTURE,
+        int PICTURE = 2;
         /**
          * 图文混合
          */
-        PICTURE_WITH_TEXT,
+        int PICTURE_WITH_TEXT = 3;
         /**
          * 视频
          */
-        VIDEO
+        int VIDEO = 4;
     }
 
-    public enum ActionType {
+    public interface ActionType {
         /**
          * 跳转浏览器查看
          */
-        BROWSER,
+        int BROWSER = 1;
         /**
          * 开始下载广告展示的APP
          */
-        APP_DOWNLOAD
+        int APP_DOWNLOAD = 2;
     }
 
     /**
      * 广告内容类型
      */
-    private ContentType mContentType;
+    private static final String KEY_CONTENT_TYPE = "contentType";
     /**
      * 广告点击表现类型
      */
-    private ActionType mActionType;
+    private static final String KEY_ACTION_TYPE = "actionType";
     /**
      * 广告图片链接，纯文字广告类型时该字段为空
      */
-    private String mImgUrl;
+    private static final String KEY_IMG_URL = "imgUrl";
     /**
      * 广告图片文件
      */
-    private File mImgFile;
+    private static final String KEY_IMG_FILE = "imgFile";
     /**
      * 视频广告类型，视频内容链接
      */
-    private String mVideoUrl;
+    private static final String KEY_VIDEO_URL = "videoUrl";
     /**
      * 标题
      */
-    private String mTitle;
+    private static final String KEY_TITLE = "title";
     /**
      * 描述
      */
-    private String mDesc;
+    private static final String KEY_DESC = "desc";
     /**
      * 广告目标APP的logo链接，
      * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
      */
-    private String mAppIconUrl;
+    private static final String KEY_APP_ICON_URL = "appIconUrl";
     /**
      * 广告目标APP的名称，
      * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
      */
-    private String mAppName;
+    private static final String KEY_APP_NAME = "appName";
     /**
      * 广告目标APP的包名，
      * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
      */
-    private String mAppPackageName;
+    private static final String KEY_APP_PACKAGE_NAME = "appPackageName";
 
-    /**
-     * 扩展字段
-     */
-    private Map<String, Object> mExtras;
+    private Map<String, Object> mAdParams;
 
-    public ContentType getContentType() {
-        return mContentType;
+    public AdInfo() {
+        mAdParams = new ArrayMap<>();
     }
 
-    public void setContentType(ContentType contentType) {
-        mContentType = contentType;
+    public int getContentType() {
+        Object o = mAdParams.get(KEY_CONTENT_TYPE);
+        return o == null ? ContentType.PICTURE : (int) o;
     }
 
-    public ActionType getActionType() {
-        return mActionType;
+    public void setContentType(int contentType) {
+        putParam(KEY_CONTENT_TYPE, contentType);
     }
 
-    public void setActionType(ActionType actionType) {
-        mActionType = actionType;
+    public int getActionType() {
+        Object o = mAdParams.get(KEY_ACTION_TYPE);
+        return o == null ? ActionType.BROWSER : (int) o;
+    }
+
+    public void setActionType(int actionType) {
+        putParam(KEY_ACTION_TYPE, actionType);
     }
 
     public String getImgUrl() {
-        return mImgUrl;
+        return (String) mAdParams.get(KEY_IMG_URL);
     }
 
     public void setImgUrl(String imgUrl) {
-        mImgUrl = imgUrl;
+        putParam(KEY_IMG_URL, imgUrl);
     }
 
     public File getImgFile() {
-        return mImgFile;
+        return (File) mAdParams.get(KEY_IMG_FILE);
     }
 
     public void setImgFile(File imgFile) {
-        mImgFile = imgFile;
+        putParam(KEY_IMG_FILE, imgFile);
     }
 
     public String getVideoUrl() {
-        return mVideoUrl;
+        return (String) mAdParams.get(KEY_VIDEO_URL);
     }
 
     public void setVideoUrl(String videoUrl) {
-        mVideoUrl = videoUrl;
+        putParam(KEY_VIDEO_URL, videoUrl);
     }
 
     public String getTitle() {
-        return mTitle;
+        return (String) mAdParams.get(KEY_TITLE);
     }
 
     public void setTitle(String title) {
-        mTitle = title;
+        putParam(KEY_TITLE, title);
     }
 
     public String getDesc() {
-        return mDesc;
+        return (String) mAdParams.get(KEY_DESC);
     }
 
     public void setDesc(String desc) {
-        mDesc = desc;
+        putParam(KEY_DESC, desc);
     }
 
     public String getAppIconUrl() {
-        return mAppIconUrl;
+        return (String) mAdParams.get(KEY_APP_ICON_URL);
     }
 
     public void setAppIconUrl(String appIconUrl) {
-        mAppIconUrl = appIconUrl;
+        putParam(KEY_APP_ICON_URL, appIconUrl);
     }
 
     public String getAppName() {
-        return mAppName;
+        return (String) mAdParams.get(KEY_APP_NAME);
     }
 
     public void setAppName(String appName) {
-        mAppName = appName;
+        putParam(KEY_APP_NAME, appName);
     }
 
     public String getAppPackageName() {
-        return mAppPackageName;
+        return (String) mAdParams.get(KEY_APP_PACKAGE_NAME);
     }
 
     public void setAppPackageName(String appPackageName) {
-        mAppPackageName = appPackageName;
+        putParam(KEY_APP_PACKAGE_NAME, appPackageName);
     }
 
-    public Map<String, Object> getExtras() {
-        return mExtras;
+    public Object getExtra(String key) {
+        return mAdParams.get(key);
     }
 
-    public void setExtras(Map<String, Object> extras) {
-        mExtras = extras;
+    public void setExtra(String key, Object value) {
+        putParam(key, value);
+    }
+
+    public Map<String, Object> getAdAllParams() {
+        return mAdParams;
     }
 
     @Override
     public String toString() {
         return "AdInfo{" +
-                "mContentType=" + mContentType +
-                ", mActionType=" + mActionType +
-                ", mImgUrl='" + mImgUrl + '\'' +
-                ", mImgFile=" + mImgFile +
-                ", mVideoUrl='" + mVideoUrl + '\'' +
-                ", mTitle='" + mTitle + '\'' +
-                ", mDesc='" + mDesc + '\'' +
-                ", mAppIconUrl='" + mAppIconUrl + '\'' +
-                ", mAppName='" + mAppName + '\'' +
-                ", mAppPackageName='" + mAppPackageName + '\'' +
-                ", mExtras=" + mExtras +
+                "mContentType=" + getContentType() +
+                ", mActionType=" + getActionType() +
+                ", mImgUrl='" + getImgUrl() + '\'' +
+                ", mImgFile=" + getImgFile() +
+                ", mVideoUrl='" + getVideoUrl() + '\'' +
+                ", mTitle='" + getTitle() + '\'' +
+                ", mDesc='" + getDesc() + '\'' +
+                ", mAppIconUrl='" + getAppIconUrl() + '\'' +
+                ", mAppName='" + getAppName() + '\'' +
+                ", mAppPackageName='" + getAppPackageName() + '\'' +
                 '}';
+    }
+
+    private void putParam(String key, Object value) {
+        if (!TextUtils.isEmpty(key) && value != null) {
+            mAdParams.put(key, value);
+        }
     }
 }
