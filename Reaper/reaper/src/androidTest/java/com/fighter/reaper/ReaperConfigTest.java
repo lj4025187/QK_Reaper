@@ -162,6 +162,9 @@ public class ReaperConfigTest {
         ReaperConfigDB db = ReaperConfigDB.getInstance(context);
         db.saveReaperAdvPos(posList);
 
+        posList = ReaperConfigManager.getAllReaperAdvPos(context);
+        Assert.assertEquals(2, posList.size());
+
         ReaperAdvPos pos = db.queryAdvPos("1");
         Assert.assertEquals(pos.adv_type, "banner");
 

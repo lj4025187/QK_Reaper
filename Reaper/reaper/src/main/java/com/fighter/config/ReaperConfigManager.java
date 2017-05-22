@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.fighter.config.db.ReaperConfigDB;
 
+import java.util.List;
+
 /**
  * Manage the config
  *
@@ -35,6 +37,15 @@ public class ReaperConfigManager {
         return ReaperConfigFetcher.fetchWithRetry(context, pkg, salt, appKey, appId);
     }
 
+    /**
+     * Get all adv positions from configs
+     *
+     * @param context
+     * @return
+     */
+    public static List<ReaperAdvPos> getAllReaperAdvPos(Context context) {
+        return ReaperConfigDB.getInstance(context).queryAllAdvPos();
+    }
     /**
      * Get adv pos message by pos id
      *

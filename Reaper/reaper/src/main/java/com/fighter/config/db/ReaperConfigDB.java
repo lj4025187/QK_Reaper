@@ -60,12 +60,48 @@ public class ReaperConfigDB {
         }
     }
 
+    public List<ReaperAdvPos> queryAllAdvPos() {
+        mRWLock.readLock().lock();
+        try {
+            return queryAllAdvPosInner();
+        } finally {
+            mRWLock.readLock().unlock();
+        }
+    }
+
     public ReaperAdSense queryAdSense(String posId) {
         mRWLock.readLock().lock();
         try {
             return queryAdSenseInner(posId);
         } finally {
             mRWLock.readLock().unlock();
+        }
+    }
+
+    private List<ReaperAdvPos> queryAllAdvPosInner() {
+        SQLiteDatabase db = mDBHelper.getReadableDatabase();
+        if (db == null) {
+            return null;
+        }
+        String[] columns = new String[] {POS_COLUMN_POS_ID, POS_COLUMN_ADV_TYPE, POS_COLUMN_ADV_EXPOSURE};
+
+        Cursor cursor = db.query(TABLE_POS, columns, null, null, null, null, null);
+        try {
+            if (cursor == null) {
+                return null;
+            }
+            ArrayList<ReaperAdvPos> posList = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                ReaperAdvPos pos = new ReaperAdvPos();
+                pos.pos_id = cursor.getString(cursor.getColumnIndex(POS_COLUMN_POS_ID));
+                pos.adv_type = cursor.getString(cursor.getColumnIndex(POS_COLUMN_ADV_TYPE));
+                pos.adv_exposure = cursor.getString(cursor.getColumnIndex(POS_COLUMN_ADV_EXPOSURE));
+                posList.add(pos);
+            }
+            return posList;
+        } finally {
+            cursor.close();
+            db.close();
         }
     }
 
@@ -184,4 +220,5 @@ public class ReaperConfigDB {
             db.close();
         }
     }
+
 }
