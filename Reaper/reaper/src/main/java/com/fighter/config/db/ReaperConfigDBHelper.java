@@ -35,7 +35,7 @@ public class ReaperConfigDBHelper extends SQLiteOpenHelper {
     public static final String SENSE_COLUMN_EXPIRE_TIME = "expire_time";
     public static final String SENSE_COLUMN_PRIORITY = "priority";
     public static final String SENSE_COLUMN_ADS_APPID = "ads_appid";
-    public static final String SENSE_COLUMN_ADS_KEY = "ads_key";
+    public static final String SENSE_COLUMN_ADS_APP_KEY = "ads_app_key";
     public static final String SENSE_COLUMN_ADS_POSID = "ads_posid";
     public static final String SENSE_COLUMN_MAX_ADV_NUM = "max_adv_num";
     public static final String SENSE_COLUMN_ADV_SIZE_TYPE = "adv_size_type";
@@ -56,7 +56,7 @@ public class ReaperConfigDBHelper extends SQLiteOpenHelper {
             SENSE_COLUMN_EXPIRE_TIME + " TEXT , " +
             SENSE_COLUMN_PRIORITY + " TEXT , " +
             SENSE_COLUMN_ADS_APPID + " TEXT , " +
-            SENSE_COLUMN_ADS_KEY + " TEXT , " +
+            SENSE_COLUMN_ADS_APP_KEY + " TEXT , " +
             SENSE_COLUMN_ADS_POSID + " TEXT , " +
             SENSE_COLUMN_MAX_ADV_NUM + " TEXT , " +
             SENSE_COLUMN_ADV_SIZE_TYPE + " TEXT , " +

@@ -64,7 +64,7 @@ public final class ReaperConfig {
     public static final String KEY_RES_EXPIRE_TIME   = "expire_time";
     public static final String KEY_RES_PRIORITY      = "priority";
     public static final String KEY_RES_ADS_APPID     = "ads_appid";
-    public static final String KEY_RES_ADS_KEY       = "ads_key";
+    public static final String KEY_RES_ADS_APP_KEY   = "ads_app_key";
     public static final String KEY_RES_ADS_POSID     = "ads_posid";
     public static final String KEY_RES_MAX_ADV_NUM   = "max_adv_num";
     public static final String KEY_RES_ADV_SIZE_TYPE = "adv_size_type";

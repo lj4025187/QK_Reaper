@@ -86,7 +86,7 @@ public class ReaperConfigDB {
                 SENSE_COLUMN_EXPIRE_TIME,
                 SENSE_COLUMN_PRIORITY,
                 SENSE_COLUMN_ADS_APPID,
-                SENSE_COLUMN_ADS_KEY,
+                SENSE_COLUMN_ADS_APP_KEY,
                 SENSE_COLUMN_ADS_POSID,
                 SENSE_COLUMN_MAX_ADV_NUM,
                 SENSE_COLUMN_ADV_SIZE_TYPE,
@@ -107,7 +107,7 @@ public class ReaperConfigDB {
                 sense.expire_time = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_EXPIRE_TIME));
                 sense.priority = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_PRIORITY));
                 sense.ads_appid = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_APPID));
-                sense.ads_key = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_KEY));
+                sense.ads_app_key = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_APP_KEY));
                 sense.ads_posid = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_POSID));
                 sense.max_adv_num = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_MAX_ADV_NUM));
                 sense.adv_size_type = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADV_SIZE_TYPE));

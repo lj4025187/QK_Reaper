@@ -33,7 +33,7 @@ public class ReaperAdSense implements Comparable{
     public String expire_time;
     public String priority;
     public String ads_appid;
-    public String ads_key;
+    public String ads_app_key;
     public String ads_posid;
     public String max_adv_num;
     public String adv_size_type;
@@ -48,7 +48,7 @@ public class ReaperAdSense implements Comparable{
                 ", expire_time='" + expire_time + '\'' +
                 ", priority ='" + priority + '\'' +
                 ", ads_appid='" + ads_appid + '\'' +
-                ", ads_key='" + ads_key + '\'' +
+                ", ads_app_key='" + ads_app_key + '\'' +
                 ", ads_posid='" + ads_posid + '\'' +
                 ", max_adv_num='" + max_adv_num + '\'' +
                 ", adv_size_type='" + adv_size_type + '\'' +
@@ -80,7 +80,7 @@ public class ReaperAdSense implements Comparable{
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_EXPIRE_TIME, expire_time);
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_PRIORITY, priority);
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_ADS_APPID, ads_appid);
-        cv.put(ReaperConfigDBHelper.SENSE_COLUMN_ADS_KEY, ads_key);
+        cv.put(ReaperConfigDBHelper.SENSE_COLUMN_ADS_APP_KEY, ads_app_key);
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_ADS_POSID, ads_posid);
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_MAX_ADV_NUM, max_adv_num);
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_ADV_SIZE_TYPE, adv_size_type);

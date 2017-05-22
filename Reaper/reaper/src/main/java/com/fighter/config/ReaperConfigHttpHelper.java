@@ -165,8 +165,8 @@ public final class ReaperConfigHttpHelper {
                 for (int j = 0; j < senseSize; j++) {
                     JSONObject senseObj = senseArray.getJSONObject(j);
                     ReaperAdSense adSense = senseObj.toJavaObject(ReaperAdSense.class);
-                    ReaperLog.i(TAG, "    parse sense  : " + adSense);
                     pos.addAdSense(adSense);
+                    ReaperLog.i(TAG, "    parse sense  : " + adSense);
                 }
                 posList.add(pos);
             }
