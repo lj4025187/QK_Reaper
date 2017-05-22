@@ -1,11 +1,15 @@
 # Reaper
-
-## Version：1.0
+`Version 1.0.0`<p/>
+`Created By wanghaiteng@360.cn`<p/>
+`Published by FighterTeam`
 
 ## 功能介绍
-`Reaper`是一个聚合各大广告平台的SDK，Android应用接入该SDK可以使用简介的API获取优质的广告，无须为不同的广告源而烦恼。
+`Reaper`是一个聚合各大广告平台的SDK的高级SDK，Android应用接入该SDK可以使用简介的API获取优质的广告，无须为不同的广告源而烦恼。
 
-## Api接口说明
+## Reaper架构图
+![](./Reaper架构图.png?raw=true)
+
+## 组件介绍
 ### Reaper Api
 ......
 
@@ -15,8 +19,14 @@
 ### Reaper Loader
 ........
 
-### Reaper Patch
-........
+### Reaper Patch(reaper.rr)
+每个reaper.rr文件是一个Reaper Patch，该Patch是Reaper SDK的核心组件，内部有整个聚合SDK的核心逻辑，同时也承载着动态更新的使命，是目前Reaper更新的最新单元（以后可考虑做小拆分更新）。
+
+该Patch是一个内部自定义格式的文件，被完全混淆和加密，部分Android平台上支持使用过程全加固保护。
+
+reaper.rr由自定义工具进行签名和加密打包，出于安全考虑。
+
+reaper.rr可能存在于Reaper.apk(OS内置)，assets/下(独立应用内置)，data/下(动态更新后)等多个地方，选取最佳兼容reaper.jar的高版本进行使用。
 
 ### Reaper Wrapper
 ........
