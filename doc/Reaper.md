@@ -6,6 +6,26 @@
 `Reaper`是一个聚合各大广告平台的SDK，Android应用接入该SDK可以使用简介的API获取优质的广告，无须为不同的广告源而烦恼。
 
 ## Api接口说明
+### Reaper Api
+......
+
+### Reaper Cache
+.......
+
+### Reaper Loader
+........
+
+### Reaper Patch
+........
+
+### Reaper Wrapper
+........
+
+### Reaper Configure
+........
+
+### Reaper Tracker
+........
 
 ### Reaper Patch动态更新
 需要解决的问题：
@@ -39,7 +59,13 @@
 
 `update_type`：更新类型，可选字段：`mobile`,`wifi`,`both`
 
-`patch_url`:reaper patch包的url地址，
+`patch_url`:reaper patch包的url地址
+
+### 在reaper.rr中解决Assetsh和Resources问题
+有些第三方广告SDK需要在assets中放置一些自己的集成文件（如：聚效SDK），而由于Reaper支持动态更新，所以这些文件必须放置到reaper.rr中进行动态更新，所以为了放置第三方SDK在寻找assets文件失败时，reaper.rr中必须对Context、AssetManager、Resources等进行代理，从而将reaper.rr中的真实文件返回给第三方SDK。
+
+### 在reaper.rr中解决so问题
+有些第三方广告SDK会依赖so文件，所以reaper.rr中会携带有so文件，而且在第三方SDK需要加载so时会动态找到真实的依赖so，这点使用ReaperClassLoader已经支持。
 
 ## 使用示例
 
