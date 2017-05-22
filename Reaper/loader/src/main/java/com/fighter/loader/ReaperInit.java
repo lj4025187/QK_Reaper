@@ -130,7 +130,19 @@ public class ReaperInit {
             return;
         }
 
-        //2.set sdk path
+        //2.set context obj
+        try {
+            Field sContext = claxx.getDeclaredField("sContext");
+            if (sContext == null) {
+                throw new RuntimeException("cant find sContext");
+            }
+            sContext.setAccessible(true);
+            sContext.set(null, context);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //3.set sdk path
         try {
             Field sdkAbsPath = claxx.getDeclaredField("sSdkPath");
             if (sdkAbsPath == null) {
@@ -140,7 +152,7 @@ public class ReaperInit {
             sdkAbsPath.setAccessible(true);
             sdkAbsPath.set(null, reaperPatch.getAbsolutePath());
 
-            Method initForNetworkMethod = claxx.getDeclaredMethod("initForNetwork");
+            Method initForNetworkMethod = claxx.getDeclaredMethod("initReaperEnv");
             if (initForNetworkMethod == null) {
                 LoaderLog.e(TAG, "initForNetworkMethod == null");
                 throw new RuntimeException("cant find initForNetwork");
@@ -154,14 +166,14 @@ public class ReaperInit {
             LoaderLog.e(TAG, "initReaper, err : " + e.getMessage());
         }
 
-        //3.set context obj
+        //4.set classloader
         try {
-            Field sContext = claxx.getDeclaredField("sContext");
-            if (sContext == null) {
-                throw new RuntimeException("cant find sContext");
+            Field sClassLoader = claxx.getDeclaredField("sClassLoader");
+            if (sClassLoader == null) {
+                throw new RuntimeException("cant find sClassLoader");
             }
-            sContext.setAccessible(true);
-            sContext.set(null, context);
+            sClassLoader.setAccessible(true);
+            sClassLoader.set(null, classLoader);
         } catch (Exception e) {
             e.printStackTrace();
         }

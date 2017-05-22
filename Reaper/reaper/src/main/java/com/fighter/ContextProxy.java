@@ -1,0 +1,28 @@
+package com.fighter;
+
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.res.AssetManager;
+
+import com.fighter.download.ReaperEnv;
+
+/**
+ * Created by Matti on 2017/5/22.
+ */
+
+public class ContextProxy extends ContextWrapper {
+
+    public ContextProxy(Context base) {
+        super(base);
+    }
+
+    @Override
+    public AssetManager getAssets() {
+        return ReaperEnv.mAssetManager;
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return ReaperEnv.mClassLoader;
+    }
+}

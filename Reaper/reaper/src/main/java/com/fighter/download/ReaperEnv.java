@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.text.TextUtils;
 
+import com.fighter.ContextProxy;
 import com.fighter.common.utils.ReaperLog;
 import com.qiku.proguard.annotations.NoProguard;
 
@@ -21,14 +22,21 @@ public class ReaperEnv {
     @NoProguard
     private static String sSdkPath;
 
-    public static AssetManager sAssetManager;
+    @NoProguard
+    public static AssetManager mAssetManager;
     public static HttpsManager sHttpsManager;
 
     @NoProguard
-    public static Context sContext;
+    public static ClassLoader mClassLoader;
 
     @NoProguard
-    public static void initForNetwork() {
+    private static Context sContext;
+
+    @NoProguard
+    public static ContextProxy sContextProxy;
+
+    @NoProguard
+    public static void initReaperEnv() {
         if (TextUtils.isEmpty(sSdkPath)) {
             ReaperLog.e(TAG, "sSdkPath == null !");
             return;
@@ -55,8 +63,9 @@ public class ReaperEnv {
             ReaperLog.e(TAG, "assetManager : " + assetManager);
             return;
         }
-        sAssetManager = assetManager;
+        mAssetManager = assetManager;
 
+        sContextProxy = new ContextProxy(sContext);
 //        if (sHttpsManager == null) {
 //            sHttpsManager = new HttpsManager("");
 //        }

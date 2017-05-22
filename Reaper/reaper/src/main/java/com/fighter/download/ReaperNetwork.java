@@ -96,7 +96,7 @@ public class ReaperNetwork {
             }
             return REAPER_VERSION_CHECK_NO_NEW_VERSION;
         } else {
-            int netType = NetworkUtil.getNetWorkType(ReaperEnv.sContext);
+            int netType = NetworkUtil.getNetWorkType(ReaperEnv.sContextProxy);
             boolean download = false;
             if (netType == NetworkUtil.NETWORN_NONE) {
                 ReaperLog.e(TAG, "current dont have network to download rr !");
@@ -121,7 +121,7 @@ public class ReaperNetwork {
 
             boolean success = downloadHigherVersionReaper(piece);
             if (success) {
-                SharedPreferences sp = ReaperEnv.sContext
+                SharedPreferences sp = ReaperEnv.sContextProxy
                         .getSharedPreferences(ReaperNWConstants.SP_REAPER_NETWORK, Context.MODE_PRIVATE);
                 sp.edit().putString(ReaperNWConstants.KEY_TIME, piece.time).apply();
             }
@@ -273,7 +273,7 @@ public class ReaperNetwork {
             params.put("version", ReaperNWConstants.SERVER_SDK_VERSION); // 设置version
             params.put("api", ReaperNWConstants.SERVER_SDK_API); // 设置api
             params.put("reaper_version", ship.reaperVersion);
-            SharedPreferences sp = ReaperEnv.sContext
+            SharedPreferences sp = ReaperEnv.sContextProxy
                     .getSharedPreferences(ReaperNWConstants.SP_REAPER_NETWORK, Context.MODE_PRIVATE);
             String versionTime = sp.getString(ReaperNWConstants.KEY_TIME, "0");
             //test start

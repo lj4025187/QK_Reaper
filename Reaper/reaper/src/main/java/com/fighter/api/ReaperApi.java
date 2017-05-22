@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
+import com.fighter.ContextProxy;
 import com.fighter.cache.AdCacheManager;
 import com.fighter.common.Device;
 import com.fighter.common.utils.ThreadPoolUtils;
@@ -87,7 +88,7 @@ public class ReaperApi {
         ISDKWrapper akAdWrapper = new AKAdSDKWrapper();
         ISDKWrapper tencentWrapper = new TencentSDKWrapper();
         ISDKWrapper mixAdxWrapper = new MixAdxSDKWrapper();
-        akAdWrapper.init(mContext, null);
+        akAdWrapper.init(new ContextProxy(mContext) /*mContext*/, null);
         tencentWrapper.init(mContext, null);
         mixAdxWrapper.init(mContext, null);
         mSdkWrappers.put("juxiao", akAdWrapper);

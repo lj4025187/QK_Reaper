@@ -50,7 +50,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
         mContext = appContext.getApplicationContext();
         mDownloadPath = mContext.getCacheDir().getAbsolutePath()
                 + File.separator + "reaper_ad";
-        // AKAD.initSdk(appContext, true, true);
+        AKAD.initSdk(appContext, true, true);
     }
 
     @Override
