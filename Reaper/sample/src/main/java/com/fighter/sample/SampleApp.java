@@ -13,8 +13,4 @@ public class SampleApp extends ReaperApplication {
     public void onCreate() {
         super.onCreate();
     }
-
-    public ReaperApi getReaperApi() {
-        return mReaperApi;
-    }
 }
