@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,6 +67,7 @@ public class AdAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ReaperApi.AdInfo adInfo = mList.get(position);
         int contentType = adInfo.getContentType();
+        SampleLog.i(TAG, " ad " + position + " toString : " + adInfo.toString());
         ViewHolder viewHolder;
         if (convertView == null) {
             viewHolder = new ViewHolder();
@@ -88,13 +88,13 @@ public class AdAdapter extends BaseAdapter {
         if (!TextUtils.isEmpty(title)) {
             viewHolder.adTitle.setText(title);
         } else {
-            Log.e(TAG, "attach view title " + title);
+            SampleLog.e(TAG, "attach view title " + title);
         }
         String desc = adInfo.getDesc();
         if (!TextUtils.isEmpty(desc)) {
             viewHolder.adDesc.setText(desc);
         } else {
-            Log.e(TAG, "attach view dec " + desc);
+            SampleLog.e(TAG, "attach view dec " + desc);
         }
         File imageFile = adInfo.getImgFile();
         if (imageFile != null) {

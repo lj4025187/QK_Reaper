@@ -3,7 +3,6 @@ package com.fighter.sample;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.CheckBox;
@@ -74,6 +73,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     }
 
     private void pullAdsType(int adType) {
+        if (mReaperApi == null)
+            SampleLog.e(TAG, "ReaperApi init fail");
         mReaperApi.init(mContext, "10010", "not_a_real_key", null);
         ReaperApi.AdRequester adRequester = mReaperApi.getAdRequester("323232", this, null);
         adRequester.requestAd();
@@ -98,10 +99,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     @Override
     public void onSuccess(final List<ReaperApi.AdInfo> list) {
         if (list == null || list.isEmpty()) {
-            Log.e(TAG, "get ads success but list is null");
+            SampleLog.e(TAG, "get ads success but list is null");
             return;
         }
-        Log.i(TAG, " on success ads size is " + list.size());
+        SampleLog.i(TAG, " on success ads size is " + list.size());
         mMainHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -111,15 +112,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 } else {
                     notifyDataChanged();
                 }
+                SampleLog.i(TAG, " on success ads size is " + mListData.size()
+                        + " list to string" + mListData.toString());
             }
         });
-        Log.i(TAG, " on success ads size is " + mListData.size()
-                + " list to string" + mListData.toString());
     }
 
     @Override
     public void onFailed(String s) {
-        Log.e(TAG, " get ads fail err msg is:" + s);
+        SampleLog.e(TAG, " get ads fail err msg is:" + s);
         mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
     }
 
