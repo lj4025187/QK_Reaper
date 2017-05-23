@@ -23,8 +23,8 @@ public class BaseActivity extends Activity implements Handler.Callback {
     protected Handler mHandler;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
-        super.onCreate(savedInstanceState, persistentState);
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         Application application = getApplication();
         if (application instanceof SampleApp) {
             SampleApp app = (SampleApp) application;
