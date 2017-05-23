@@ -1,8 +1,7 @@
-package com.qiku.sample;
+package com.fighter.sample;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -104,7 +103,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         }
         Log.i(TAG, " on success ads size is " + list.size());
         mListData.addAll(list);
-        Log.i(TAG, " on success ads size is " + mListData.size());
+        Log.i(TAG, " on success ads size is " + mListData.size()
+                + " list to string" + mListData.toString());
         if (mListData.isEmpty()) {
             mHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
         } else {

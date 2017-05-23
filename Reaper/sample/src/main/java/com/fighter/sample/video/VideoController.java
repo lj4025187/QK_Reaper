@@ -1,4 +1,4 @@
-package com.qiku.sample.video;
+package com.fighter.sample.video;
 
 import android.view.Surface;
 import android.view.SurfaceHolder;

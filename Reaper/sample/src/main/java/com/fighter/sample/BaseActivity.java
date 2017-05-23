@@ -1,4 +1,4 @@
-package com.qiku.sample;
+package com.fighter.sample;
 
 import android.app.Activity;
 import android.app.Application;
@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 
 import com.fighter.loader.ReaperApi;
@@ -31,7 +30,7 @@ public class BaseActivity extends Activity implements Handler.Callback {
             mReaperApi = app.getReaperApi();
         }
         mContext = application;
-        new Handler(Looper.getMainLooper(), this);
+        mHandler = new Handler(Looper.getMainLooper(), this);
     }
 
     @Override

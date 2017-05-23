@@ -1,4 +1,4 @@
-package com.qiku.sample.video;
+package com.fighter.sample.video;
 
 import android.media.MediaPlayer;
 import android.os.Handler;

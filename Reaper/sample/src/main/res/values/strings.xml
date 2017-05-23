@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Sample</string>
+    <string name="app_name">ReaperSample</string>
     <string name="banner_type">banner</string>
     <string name="splash_type">splash</string>
     <string name="video_type">video</string>

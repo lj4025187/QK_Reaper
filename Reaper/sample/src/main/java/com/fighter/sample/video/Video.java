@@ -1,4 +1,4 @@
-package com.qiku.sample.video;
+package com.fighter.sample.video;
 
 public class Video {
     /*Video's path*/

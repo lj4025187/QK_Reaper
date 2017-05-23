@@ -1,4 +1,4 @@
-package com.qiku.sample;
+package com.fighter.sample;
 
 import com.fighter.loader.ReaperApi;
 import com.fighter.loader.ReaperApplication;

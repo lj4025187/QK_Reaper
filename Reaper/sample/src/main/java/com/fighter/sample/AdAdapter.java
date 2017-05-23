@@ -1,4 +1,4 @@
-package com.qiku.sample;
+package com.fighter.sample;
 
 import android.content.Context;
 import android.view.LayoutInflater;
