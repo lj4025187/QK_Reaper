@@ -11,7 +11,9 @@ import com.fighter.common.utils.ThreadPoolUtils;
 import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfigManager;
+import com.fighter.download.ReaperEnv;
 import com.fighter.reaper.BumpVersion;
+import com.fighter.reaper.R;
 import com.fighter.wrapper.AKAdSDKWrapper;
 import com.fighter.wrapper.AdRequest;
 import com.fighter.wrapper.AdResponse;
@@ -61,7 +63,11 @@ public class ReaperApi {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return "Requested an Ad for you, your params are : " + name + "; " + time;
+
+        int id = ReaperEnv.sContextProxy.getResources().getIdentifier("app_name", "string", "com.fighter.reaper");
+        String string = ReaperEnv.sContextProxy.getString(id);
+        String s = ReaperEnv.sContextProxy.getString(R.string.app_name);
+        return "Requested an Ad for you, your params are : " + name + "; " + time + "; string : " + s;
     }
 
     //test end

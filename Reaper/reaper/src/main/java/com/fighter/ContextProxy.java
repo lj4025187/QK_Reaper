@@ -3,6 +3,7 @@ package com.fighter;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 
 import com.fighter.download.ReaperEnv;
 
@@ -18,11 +19,16 @@ public class ContextProxy extends ContextWrapper {
 
     @Override
     public AssetManager getAssets() {
-        return ReaperEnv.mAssetManager;
+        return ReaperEnv.sAssetManager;
     }
 
     @Override
     public ClassLoader getClassLoader() {
         return ReaperEnv.mClassLoader;
+    }
+
+    @Override
+    public Resources getResources() {
+        return ReaperEnv.sResources;
     }
 }

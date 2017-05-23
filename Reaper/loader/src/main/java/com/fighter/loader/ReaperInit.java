@@ -77,6 +77,7 @@ public class ReaperInit {
     };
 
     private static Context sContext;
+    private static ReaperApi sInstance;
 
     /**
      * Get highest version of ReaperApi
@@ -85,18 +86,27 @@ public class ReaperInit {
     public static ReaperApi init(Context context) {
         context = context.getApplicationContext();
         sContext = context;
+
+        if (sInstance != null && sInstance.isValid()) {
+            if (DEBUG_REAPER_PATCH)
+                LoaderLog.e(TAG, "already init, use : " + sInstance);
+            return sInstance;
+        }
+
         ReaperPatch reaperPatch = getPatchForHighestVersion(context);
         if (reaperPatch == null) {
             if (DEBUG_REAPER_PATCH)
                 LoaderLog.e(TAG, "init : cant find any patches!");
             return null;
         }
+
         ReaperApi api = makeReaperApiFromPatch(context, reaperPatch);
         if (api == null) {
             if (DEBUG_REAPER_PATCH)
                 LoaderLog.e(TAG, "init : makeApi error !");
             return null;
         }
+        sInstance = api;
 
         initReaper(context, reaperPatch);
         if (QUERY_SERVER) {

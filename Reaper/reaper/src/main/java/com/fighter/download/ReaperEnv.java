@@ -2,6 +2,7 @@ package com.fighter.download;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.text.TextUtils;
 
 import com.fighter.ContextProxy;
@@ -23,8 +24,11 @@ public class ReaperEnv {
     private static String sSdkPath;
 
     @NoProguard
-    public static AssetManager mAssetManager;
+    public static AssetManager sAssetManager;
     public static HttpsManager sHttpsManager;
+
+    @NoProguard
+    public static Resources sResources;
 
     @NoProguard
     public static ClassLoader mClassLoader;
@@ -63,9 +67,12 @@ public class ReaperEnv {
             ReaperLog.e(TAG, "assetManager : " + assetManager);
             return;
         }
-        mAssetManager = assetManager;
+        sAssetManager = assetManager;
 
         sContextProxy = new ContextProxy(sContext);
+
+        sResources = new Resources(sAssetManager, sContext.getResources().getDisplayMetrics(),
+                sContext.getResources().getConfiguration());
 //        if (sHttpsManager == null) {
 //            sHttpsManager = new HttpsManager("");
 //        }

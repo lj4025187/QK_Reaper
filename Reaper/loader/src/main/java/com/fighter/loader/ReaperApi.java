@@ -34,6 +34,10 @@ public class ReaperApi {
         mMethodCache = new ArrayMap<>();
     }
 
+    public boolean isValid() {
+        return mInstance != null;
+    }
+
     public Object requestSplashAds(String name, int time) {
         try {
             Method requestSplashAdsMethod =
