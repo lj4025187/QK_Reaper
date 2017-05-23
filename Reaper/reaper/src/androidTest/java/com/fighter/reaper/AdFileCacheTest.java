@@ -4,7 +4,7 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.fighter.cache.AdFileCacheManager;
+import com.fighter.cache.AdFileCacheUtil;
 import com.fighter.common.utils.ReaperLog;
 
 import org.junit.Test;
@@ -26,11 +26,11 @@ public class AdFileCacheTest {
     @Test
     public void testFileCache() {
         Context context = InstrumentationRegistry.getTargetContext();
-        AdFileCacheManager manager = AdFileCacheManager.getInstance(context, 200 * 1024);
+        AdFileCacheUtil manager = AdFileCacheUtil.getInstance(context, 200 * 1024);
         writeFileToCache(context, manager);
     }
 
-    private void writeFileToCache(final Context context, final AdFileCacheManager manager) {
+    private void writeFileToCache(final Context context, final AdFileCacheUtil manager) {
         new Thread() {
             @Override
             public void run() {

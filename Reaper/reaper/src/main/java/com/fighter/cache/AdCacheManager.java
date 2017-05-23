@@ -3,6 +3,7 @@ package com.fighter.cache;
 import android.content.Context;
 
 import com.fighter.common.utils.EncryptUtils;
+import com.fighter.common.utils.ReaperLog;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +12,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
+
+import static com.ak.android.bridge.d.r;
+import static com.ak.android.bridge.d.t;
 
 /**
  * the class to manager the ad cache.
@@ -105,5 +109,15 @@ public class AdCacheManager {
             }
         }
         return adInfo;
+    }
+
+    /**
+     * The method cache file into disk storage
+     * @param cacheFileId
+     * @return
+     */
+    public boolean cacheFileInDisk(String cacheFileId) {
+
+        return true;
     }
 }

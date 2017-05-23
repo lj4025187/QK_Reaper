@@ -1,122 +1,165 @@
 package com.fighter.cache;
 
 import android.content.Context;
-import android.os.Environment;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.text.TextUtils;
+import android.util.LruCache;
 
 import com.fighter.common.utils.ReaperLog;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
- * File cache manager handle
- * <p>
- * Created by LiuJia on 2017/5/19.
+ * Created by LiuJia on 2017/5/22.
  */
-
 public class AdFileCacheManager {
 
-    private final static String TAG = AdFileCacheManager.class.getSimpleName();
-    private File mCacheDir;
-    private long mMaxSize;
+    private static final String TAG = AdFileCacheManager.class.getSimpleName();
+    private static final long CACHE_FILE_MAX_SIZE = 4 * 1024 * 1024;
+    private ExecutorService mExecutor;
+    private static LruCache<String, Bitmap> mCache;
+    private AdFileCacheManager mInstance;
+    private AdFileCacheUtil mAdFileCacheUtil;
 
     /**
+     * AdFileCacheManager instance method
      *
      * @param context
-     * @param maxSize cache file's max bytes size
      * @return
      */
-    public static AdFileCacheManager getInstance(Context context, long maxSize) {
-        AdFileCacheManager sInstance = new AdFileCacheManager(context, maxSize);
-        return sInstance;
-    }
-
-    private AdFileCacheManager(Context context, long maxSize) {
-        mMaxSize = maxSize;
-        init(context);
-    }
-
-    private void init(Context context) {
-        mCacheDir = getDiskCacheDir(context);
+    public AdFileCacheManager newInstance(Context context) {
+        if (mInstance == null)
+            mInstance = new AdFileCacheManager(context);
+        return mInstance;
     }
 
     /**
-     * clear the given directory
+     * AdFileCacheManager constructor method
      *
-     * @param directory
-     * @return
+     * @param context
      */
-    public synchronized boolean clearCacheFile(File directory) {
-        if (!directory.exists()) {
-            ReaperLog.i(TAG, " directory is not exists");
-            return false;
-        }
-        long dirSize = getDirSize(directory);
-        ReaperLog.i(TAG, " directory size is before " + dirSize);
-        while (dirSize > mMaxSize) {
-            deleteOldestFile(directory);
-            dirSize = getDirSize(directory);
-        }
-        ReaperLog.i(TAG, " directory size is after " + dirSize);
-        return true;
-    }
-
-    /**
-     * clear the app cache dir
-     *
-     * for example "/data/data/com.test.example/cache/*"
-     * @return whether clear success
-     */
-    public synchronized boolean clearCacheFile() {
-        if (!mCacheDir.exists()) {
-            ReaperLog.i(TAG, " mCacheDir is not exists");
-            return false;
-        }
-        long dirSize = getDirSize(mCacheDir);
-        ReaperLog.i(TAG, " mCacheDir size is before " + dirSize);
-        while (dirSize > mMaxSize) {
-            deleteOldestFile(mCacheDir);
-            dirSize = getDirSize(mCacheDir);
-        }
-        ReaperLog.i(TAG, " mCacheDir size is after " + dirSize);
-        return true;
-    }
-
-    private long getDirSize(File dir) {
-        long result = 0;
-        for (File file : dir.listFiles()) {
-            if (file.isDirectory()) {
-                deleteFile(file);
-            } else {
-                result += file.length();
-            }
-        }
-        return result;
-    }
-
-    private synchronized void deleteOldestFile(File directory) {
-        File[] files = directory.listFiles();
-        Arrays.sort(files, new Comparator<File>() {
+    private AdFileCacheManager(Context context) {
+        int maxSize = (int) (Runtime.getRuntime().maxMemory() / 8);
+        mCache = new LruCache<String, Bitmap>(maxSize) {
             @Override
-            public int compare(File f1, File f2) {
-                return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+            protected int sizeOf(String key, Bitmap value) {
+                return value.getByteCount();
             }
-        });
-        deleteFile(files[0]);
+        };
+        mAdFileCacheUtil = AdFileCacheUtil.getInstance(context, CACHE_FILE_MAX_SIZE);
+        mExecutor = Executors.newFixedThreadPool(5);
     }
 
-    private synchronized boolean deleteFile(File file) {
-        String fileName = file.getName();
-        boolean delete = file.delete();
-        ReaperLog.i(TAG, file.lastModified() + " " + (!TextUtils.isEmpty(fileName) ? fileName : " file name is null ")
-                + " delete " + (delete ? "success" : "failed"));
-        return delete;
+    /**
+     * this method load image by url
+     *
+     * @param url
+     * @param listener
+     */
+    public void loadImage(final String url, final AdLoadListener listener) {
+
+        final String key = url.replaceAll("[\\W]", "");
+
+        if (readFromCache(key) != null) {
+
+            listener.loadImageSuccess(readFromCache(key));
+
+        } else {
+
+            final Bitmap sdBitmap = mAdFileCacheUtil.readBitmapCache(key);
+
+            if (sdBitmap != null) {
+                saveToCache(key, sdBitmap);
+                listener.loadImageSuccess(sdBitmap);
+            } else {
+                final Handler handler = new Handler(Looper.getMainLooper()) {
+                    @Override
+                    public void handleMessage(Message msg) {
+                        super.handleMessage(msg);
+                        listener.loadImageSuccess((Bitmap) msg.obj);
+                    }
+                };
+                mExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        URL bitmapUrl = null;
+                        try {
+                            bitmapUrl = new URL(url);
+                            InputStream inputStream = null;
+                            inputStream = bitmapUrl.openStream();
+                            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                            mAdFileCacheUtil.saveBitmapCache(key, bitmap);
+                            saveToCache(key, bitmap);
+                            Message msg = handler.obtainMessage();
+                            msg.obj = bitmap;
+                            handler.sendMessage(msg);
+                        } catch (IOException e) {
+                            ReaperLog.e(TAG, " load image " + e.toString());
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }
     }
 
-    private File getDiskCacheDir(Context context) {
-        String cachePath = context.getCacheDir().getPath();
-        return new File(cachePath);
+    /**
+     * this method load video by url
+     */
+    private void loadFile(final String url, final AdLoadListener listener) {
+        final String key = url.replaceAll("[\\W]", "");
+        String filePath = mAdFileCacheUtil.readVideoPathCache(key, url);
+        if (TextUtils.isEmpty(filePath)) {
+            final Handler handler = new Handler(Looper.getMainLooper()) {
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    listener.loadFileSuccess((String) msg.obj);
+                }
+            };
+            mExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    String path = mAdFileCacheUtil.saveCustomFile(key, url);
+                    if (!TextUtils.isEmpty(path)) {
+                        Message msg = handler.obtainMessage();
+                        msg.obj = path;
+                    }
+                }
+            });
+        } else {
+            listener.loadFileSuccess(filePath);
+        }
+
     }
+
+    /**
+     * Cancel all download thread
+     */
+    public void cancelDownLoad() {
+        mExecutor.shutdown();
+    }
+
+    private void saveToCache(String key, Bitmap bmp) {
+        mCache.put(key, bmp);
+    }
+
+    private Bitmap readFromCache(String key) {
+        return mCache.get(key);
+    }
+
+    interface AdLoadListener {
+        void loadImageSuccess(Bitmap bmp);
+
+        void loadFileSuccess(String videoPath);
+    }
+
 }

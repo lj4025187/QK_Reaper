@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.qiku.sample.MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/id_tencent_check"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="腾讯广告" />
+
+        <CheckBox
+            android:id="@+id/id_baidu_check"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="百度广告" />
+
+        <CheckBox
+            android:id="@+id/id_qihoo_check"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="聚效广告" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/id_start_pull_ads"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="广告拉活" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/id_ads_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="vertical" />
+
+        <LinearLayout
+            android:id="@+id/id_progress_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="6.0dip"
+            android:orientation="horizontal">
+
+            <ProgressBar
+                style="?android:attr/progressBarStyle"
+                android:layout_width="20dip"
+                android:layout_height="20dip"
+                android:layout_gravity="center_vertical" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="12dip"
+                android:textColor="#7b7b7b"
+                android:textDirection="locale"
+                android:text="猥琐发育，别浪。。。"
+                android:textSize="14dip" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</LinearLayout>
