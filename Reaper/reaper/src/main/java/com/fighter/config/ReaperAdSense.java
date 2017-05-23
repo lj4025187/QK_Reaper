@@ -57,7 +57,7 @@ public class ReaperAdSense implements Comparable{
     }
 
     @Override
-    public int compareTo(@NonNull Object o) {
+    public int compareTo(Object o) {
         if (o == null) {
             return 0;
         }

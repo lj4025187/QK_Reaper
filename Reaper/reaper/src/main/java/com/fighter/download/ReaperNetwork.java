@@ -199,7 +199,7 @@ public class ReaperNetwork {
      * @return true if download success
      */
     private static boolean
-        downloadHigherVersionReaper(@NonNull VersionPiece piece) {
+        downloadHigherVersionReaper(VersionPiece piece) {
         if (DEBUG_DOWNLOAD) {
             ReaperLog.e(TAG, "start download ... " + piece.url);
         }

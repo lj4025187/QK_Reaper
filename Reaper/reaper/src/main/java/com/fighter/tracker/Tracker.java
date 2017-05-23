@@ -26,7 +26,7 @@ public class Tracker {
      *  init tracker
      *  @param context the sdk context
      * */
-    public void init(@NonNull Context context) {
+    public void init(Context context) {
         CommonParam.init(context);
         TrackerStatAgent.init(context);
     }
@@ -55,7 +55,7 @@ public class Tracker {
      * @param context the context
      * @param param the display event param
      */
-    public void trackDisplayEvent(@NonNull Context context, @NonNull EventDisPlayParam param) {
+    public void trackDisplayEvent(Context context, EventDisPlayParam param) {
         onEvent(context, TrackerEventType.AD_DISPLAY_EVENT, param);
     }
 
@@ -65,7 +65,7 @@ public class Tracker {
      * @param context the context
      * @param param the click event param
      */
-    public void trackClickEvent(@NonNull Context context, @NonNull EventClickParam param) {
+    public void trackClickEvent(Context context, EventClickParam param) {
         onEvent(context, TrackerEventType.AD_CLICK_EVENT, param);
     }
 
@@ -75,7 +75,7 @@ public class Tracker {
      * @param context the context
      * @param param the action event param
      */
-    public void trackActionEvent(@NonNull Context context, @NonNull EventActionParam param) {
+    public void trackActionEvent(Context context, EventActionParam param) {
         onEvent(context, TrackerEventType.AD_ACTION_EVENT, param);
     }
 
@@ -85,7 +85,7 @@ public class Tracker {
      * @param context the context
      * @param param the download event param
      */
-    public void trackDownloadEvent(@NonNull Context context, @NonNull EventDownLoadParam param) {
+    public void trackDownloadEvent(Context context, EventDownLoadParam param) {
         onEvent(context, TrackerEventType.AD_DOWNLOAD_FAILED_EVENT, param);
     }
 }

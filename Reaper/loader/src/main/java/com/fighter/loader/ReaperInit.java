@@ -476,7 +476,7 @@ public class ReaperInit {
      * @param path path of .rr's parent
      * @return
      */
-    private static ReaperPatch loadReaperFileByPath(@NonNull String path) {
+    private static ReaperPatch loadReaperFileByPath( String path) {
         if (TextUtils.isEmpty(path))
             return null;
         File dir = new File(path);
@@ -540,7 +540,7 @@ public class ReaperInit {
         return null;
     }
 
-    private static List<ReaperPatch> sortPatches(@NonNull List<ReaperPatch> patches) {
+    private static List<ReaperPatch> sortPatches( List<ReaperPatch> patches) {
         Collections.sort(patches, new Comparator<ReaperPatch>() {
             @Override
             public int compare(ReaperPatch l, ReaperPatch r) {

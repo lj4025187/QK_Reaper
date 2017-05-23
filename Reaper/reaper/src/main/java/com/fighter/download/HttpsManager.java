@@ -123,7 +123,7 @@ public final class HttpsManager {
      * @param url
      * @return
      */
-    public Response requestSync(@NonNull String url) {
+    public Response requestSync( String url) {
         if (TextUtils.isEmpty(url) || mHttpsClient == null) {
             ReaperLog.e(TAG, "requestSync error, check url !");
             return null;
@@ -141,7 +141,7 @@ public final class HttpsManager {
         return null;
     }
 
-    public void requestAsync(@NonNull String url, Callback callback) {
+    public void requestAsync( String url, Callback callback) {
         if (TextUtils.isEmpty(url) || mHttpsClient == null
                 || callback == null) {
             ReaperLog.e(TAG, "requestAsync error , check url or callback !");

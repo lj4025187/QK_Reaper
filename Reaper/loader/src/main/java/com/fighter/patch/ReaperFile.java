@@ -26,7 +26,7 @@ public class ReaperFile {
     private File mFile = null;
     private AssetFileDescriptor mAfd = null;
 
-    public ReaperFile(@NonNull String pathname) {
+    public ReaperFile(String pathname) {
         mFile = new File(pathname);
     }
 
