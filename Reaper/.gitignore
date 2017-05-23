@@ -10,3 +10,4 @@
 .externalNativeBuild
 /bin
 log.txt
+/gradle.properties

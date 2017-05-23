@@ -1,7 +1,6 @@
 package com.fighter.config;
 
 import android.content.ContentValues;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.fighter.config.db.ReaperConfigDBHelper;

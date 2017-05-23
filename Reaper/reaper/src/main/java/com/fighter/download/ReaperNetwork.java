@@ -2,13 +2,11 @@ package com.fighter.download;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.fighter.common.utils.ReaperLog;
 import com.qiku.proguard.annotations.NoProguard;
 import com.qiku.serversdk.custom.AppConf;
-
 
 import org.json.JSONArray;
 import org.json.JSONObject;

@@ -1,7 +1,5 @@
 package com.fighter.common.utils;
 
-import android.support.annotation.IntDef;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collection;
@@ -24,7 +22,6 @@ public class ThreadPoolUtils {
     public static final int CachedThread = 1;
     public static final int SingleThread = 2;
 
-    @IntDef({FixedThread, CachedThread, SingleThread})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
     }

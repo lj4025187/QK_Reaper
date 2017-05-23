@@ -1,6 +1,5 @@
 package com.fighter.download;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.fighter.common.utils.ReaperLog;

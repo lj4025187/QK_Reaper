@@ -1,7 +1,6 @@
 package com.fighter.patch;
 
 import android.content.res.AssetFileDescriptor;
-import android.support.annotation.NonNull;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.StructStat;
