@@ -11,8 +11,8 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginTop="16dp"
-        android:singleLine="true"
-        android:text="标题"
+        android:maxLines="1"
+        android:text="Title"
         android:textColor="#454545"
         android:textSize="20dp" />
 
@@ -31,15 +31,15 @@
             android:layout_height="match_parent" />
 
         <ImageView
-            android:id="@+id/id_video_view_cover"
+            android:id="@+id/id_video_view_thumb"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="fitXY" />
 
-        <include layout="@layout/layout_ad_flag" />
+        <include layout="@layout/ad_flag_layout" />
 
         <RelativeLayout
-            android:id="@+id/rl_control"
+            android:id="@+id/id_video_play_control"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignParentLeft="true"
@@ -76,20 +76,20 @@
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/tv_ad_desc"
+            android:id="@+id/id_ad_custom_desc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:layout_toLeftOf="@+id/tv_ad_btntext"
+            android:layout_toLeftOf="@+id/id_ad_custom_action"
             android:singleLine="true"
             android:text="描述"
             android:textColor="#999999"
             android:textSize="16dp" />
 
         <TextView
-            android:id="@+id/tv_ad_btntext"
+            android:id="@+id/id_ad_custom_action"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"

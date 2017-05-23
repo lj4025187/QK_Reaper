@@ -78,5 +78,11 @@
 
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/id_empty_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="什么玩意儿都没有。。。" />
     </RelativeLayout>
 </LinearLayout>

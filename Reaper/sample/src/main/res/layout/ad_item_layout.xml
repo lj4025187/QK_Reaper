@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFBFBFC">
+
+    <TextView
+        android:id="@+id/id_ad_custom_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="16dp"
+        android:text="Default_Title"
+        android:textColor="#454545"
+        android:textSize="20dp" />
+
+    <RelativeLayout
+        android:id="@+id/id_ad_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_custom_title"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="16dp">
+
+        <ImageView
+            android:id="@+id/id_ad_image_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/image_view_default" />
+
+        <include layout="@layout/ad_flag_layout" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_view"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:background="@drawable/layer_ad_bg"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/id_ad_custom_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_toStartOf="@+id/id_ad_custom_action"
+            android:maxLines="1"
+            android:text="Default_Description"
+            android:textColor="#999999"
+            android:textSize="16dp" />
+
+        <TextView
+            android:id="@+id/id_ad_custom_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginBottom="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/layer_ad_btn"
+            android:padding="5dp"
+            android:text="Default_Action"
+            android:textColor="#ffffff" />
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -8,6 +8,7 @@ import android.widget.AbsListView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.fighter.loader.ReaperApi;
 
@@ -27,8 +28,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     private CheckBox baidu, tencent, qihoo;
     private boolean baiduChecked, tencentChecked, qihooChecked;
     private ListView mAdsListView;
+    private TextView mEmptyText;
     private boolean mShouldLoad;
-    private View mEmptyView, mFooterView, mProgress;
+    private View mFooterView, mProgress;
     private AdAdapter mAdAdapter;
     private List<ReaperApi.AdInfo> mListData = new ArrayList<>();
 
@@ -44,8 +46,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         qihoo.setOnCheckedChangeListener(this);
         findViewById(R.id.id_start_pull_ads).setOnClickListener(this);
         mAdsListView = (ListView) findViewById(R.id.id_ads_list);
+        mEmptyText = (TextView) findViewById(R.id.id_empty_view);
         mProgress = findViewById(R.id.id_progress_view);
-        mEmptyView = getLayoutInflater().inflate(R.layout.ad_list_emty, null);
         mFooterView = getLayoutInflater().inflate(R.layout.list_view_foot, null);
         mAdAdapter = new AdAdapter(mContext);
         mAdAdapter.setData(mListData);
@@ -59,6 +61,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         switch (id) {
             case R.id.id_start_pull_ads:
                 showLoadingView(true);
+                showEmptyView(false);
                 startPullAds();
                 break;
             default:
@@ -107,6 +110,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             @Override
             public void run() {
                 mListData.addAll(list);
+                showLoadingView(false);
                 if (mListData.isEmpty()) {
                     mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
                 } else {
@@ -133,13 +137,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         switch (msg.what) {
             case NOTIFY_DATA_CHANGED:
                 mAdAdapter.notifyDataSetChanged();
+                showEmptyView(false);
                 showLoadingView(false);
                 break;
             case NOTIFY_DATA_FAILED:
                 if (mListData.isEmpty()) {
-                    if (mEmptyView == null)
-                        mEmptyView = getLayoutInflater().inflate(R.layout.ad_list_emty, null);
-                    mAdsListView.setEmptyView(mEmptyView);
+                    showEmptyView(true);
                 } else {
                     showFooterView(false);
                 }
@@ -181,5 +184,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 mAdsListView.removeFooterView(mFooterView);
             }
         }
+    }
+
+    private void showEmptyView(boolean empty) {
+        mAdsListView.setVisibility(empty ? View.GONE : View.VISIBLE);
+        mEmptyText.setVisibility(empty ? View.VISIBLE : View.GONE);
     }
 }
