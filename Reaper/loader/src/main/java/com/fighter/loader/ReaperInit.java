@@ -1,6 +1,7 @@
 package com.fighter.loader;
 
 import android.content.Context;
+import android.content.Loader;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
@@ -8,6 +9,7 @@ import android.content.res.AssetManager;
 import android.os.Environment;
 import android.text.TextUtils;
 
+import com.fighter.patch.ReaperClassLoader;
 import com.fighter.patch.ReaperFile;
 import com.fighter.patch.ReaperPatch;
 import com.fighter.patch.ReaperPatchManager;
@@ -68,7 +70,7 @@ public class ReaperInit {
             Environment.getExternalStorageDirectory().toString() +
             File.separator + ".reapers" + File.separator + "download";
     private static final String ASSETS_PREFIX = "file:///assets/";
-    private static final String REAPER_PATH_ASSETS = ASSETS_PREFIX + "ads/" + REAPER;
+    private static final String REAPER_PATH_ASSETS = ASSETS_PREFIX + REAPER;
     private static final String RR_SUFFIX = ".rr";
     private static final String[] ALL_REAPERS = {
             REAPER_SYSTEM,
@@ -97,6 +99,10 @@ public class ReaperInit {
             if (DEBUG_REAPER_PATCH)
                 LoaderLog.e(TAG, "init : cant find any patches!");
             return null;
+        }
+
+        if (DEBUG_REAPER_PATCH) {
+            LoaderLog.i(TAG, "finally, we use : " + (reaperPatch.getReaperFile().hasFD() ? "assets/reaper.rr" : reaperPatch.getAbsolutePath() ));
         }
 
         ReaperApi api = makeReaperApiFromPatch(context, reaperPatch);
@@ -159,7 +165,11 @@ public class ReaperInit {
                 throw new RuntimeException("cant find sSdkPath");
             }
             sdkAbsPath.setAccessible(true);
-            sdkAbsPath.set(null, reaperPatch.getAbsolutePath());
+            ReaperClassLoader rc = (ReaperClassLoader) classLoader;
+            String absPath = TextUtils.isEmpty(reaperPatch.getAbsolutePath()) ?
+                    rc.getRawDexPath() : reaperPatch.getAbsolutePath();
+            LoaderLog.i(TAG, "sdk abs path : " + absPath);
+            sdkAbsPath.set(null, absPath);
 
             Method initForNetworkMethod = claxx.getDeclaredMethod("initReaperEnv");
             if (initForNetworkMethod == null) {
@@ -285,6 +295,7 @@ public class ReaperInit {
                 reaperFile = loadSystemReaperFile(context);
             } else if (reaper.startsWith(ASSETS_PREFIX)) {
                 reaperFile = loadReaperFileByFD(context, reaper);
+                LoaderLog.e(TAG, "asset reaper file : " + reaperFile);
             }
             if (reaperFile == null)
                 continue;
@@ -333,7 +344,8 @@ public class ReaperInit {
         Collections.sort(patches, comparator);
         ReaperPatch targetPatch = patches.get(0);
         if (DEBUG_REAPER_PATCH) {
-            LoaderLog.e(TAG, "get highest version : " + targetPatch.getAbsolutePath());
+            LoaderLog.i(TAG, "hasFd : " + targetPatch.getReaperFile().hasFD());
+            LoaderLog.i(TAG, "get highest version : " + targetPatch.getAbsolutePath());
         }
 
         return targetPatch;

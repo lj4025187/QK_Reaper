@@ -427,10 +427,6 @@ public class ReaperNetwork {
             int serverSecond = Integer.valueOf(serverSplitStr[1]);
             int serverRevision = Integer.valueOf(serverSplitStr[2]);
 
-            if (DEBUG_DOWNLOAD) {
-                ReaperLog.e(TAG, "server : " + getSplitString(serverSplitStr));
-                ReaperLog.e(TAG, "current : " + getSplitString(currentSplitStr));
-            }
             if (serverRelease > currentRelease) {
                 return COMPARE_SERVER_HIGHER;
             } else if (serverRelease < currentRelease){

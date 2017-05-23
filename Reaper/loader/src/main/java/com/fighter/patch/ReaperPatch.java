@@ -5,6 +5,7 @@ import android.os.Environment;
 
 import com.fighter.helper.ReaperPatchHelper;
 
+import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
 
 /**
@@ -54,6 +55,7 @@ public class ReaperPatch {
             mType = TYPE_UNKNOWN;
             mLoader = null;
         }
+
         if (mLoader != null)
             mVersion = new ReaperPatchVersion(mLoader);
     }

@@ -17,7 +17,59 @@
 
 > 初始化Reaper
 
+
+##### 有2种方式初始化
+1.直接继承ReaperApplication，然后用getReaperApi()方法得到ReaperApi请求广告
+
 ```java
+//init 
+public class MyApp extends ReaperApplication {
+	
+    public void onCreate() {
+    	super.onCreate();
+    }
+    
+}
+
+//use
+public class MyActivity extends Activity {
+	
+    protected void requestAd() {
+    	MyApp app = (MyApp)getApplication();
+        ReaperApi api = app.getReaperApi();
+        //使用api
+    }
+    
+}
+
+```
+
+2.Application已经继承了其他Application，使用ReaperInit初始化后，得到ReaperApi请求广告。
+```java
+
+//init
+public class MyApp extends AnotherApplicaiton {
+	
+    private ReaperApi mReaperApi;
+    
+    public void onCreate() {
+    	mReaperApi = ReaperInit.init(this);
+    }
+    
+    public ReaperApi getReaperApi() {
+    	return mReaperApi;
+    }
+}
+
+//use
+public class MyActivity extends Activity {
+	
+    private void requestAds() {
+    	MyApp app = (MyApp)getApplication();
+        ReaperApi api = app.getReaperApi();
+        //使用api
+    }
+}
 ```
 
 > 调用API请求广告
@@ -42,33 +94,6 @@ ReaperInit在初始化状态会自动缓存广告，并自动监管广告的有�
 ....
 
 ### Api使用说明
-#### ReaperApplication和ReaperInit
-```java
-/**
- * Init at ReaperApplication's onCreate.
- * If user don't extends ReaperApplication,
- * user should init it in own Application.
- *
- * eg :
- * public class App extends Application {
- *     private ReaperApi mReaperApi;
- *     public void onCreate() {
- *         mReaperApi = ReaperInit.init(this);
- *     }
- * }
- *
- * or
- *
- * public class App extends ReaperApplication {
- *     public void onCreate() {
- *         super.onCreate();
- *
- *         mReaperApi.xxx
- *     }
- * }
- *
- */
-```
 
 ### ReaperApi
 ....

@@ -19,4 +19,8 @@ public class ReaperClassLoader extends DexClassLoader {
         super(dexPath, optimizedDirectory, librarySearchPath, parent);
         mRawDexPath = dexPath;
     }
+
+    public String getRawDexPath() {
+        return mRawDexPath;
+    }
 }
