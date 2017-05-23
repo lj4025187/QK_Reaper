@@ -96,30 +96,35 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     }
 
     @Override
-    public void onSuccess(List<ReaperApi.AdInfo> list) {
+    public void onSuccess(final List<ReaperApi.AdInfo> list) {
         if (list == null || list.isEmpty()) {
             Log.e(TAG, "get ads success but list is null");
             return;
         }
         Log.i(TAG, " on success ads size is " + list.size());
-        mListData.addAll(list);
+        mMainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mListData.addAll(list);
+                if (mListData.isEmpty()) {
+                    mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
+                } else {
+                    notifyDataChanged();
+                }
+            }
+        });
         Log.i(TAG, " on success ads size is " + mListData.size()
                 + " list to string" + mListData.toString());
-        if (mListData.isEmpty()) {
-            mHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
-        } else {
-            notifyDataChanged();
-        }
     }
 
     @Override
     public void onFailed(String s) {
         Log.e(TAG, " get ads fail err msg is:" + s);
-        mHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
+        mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
     }
 
     private void notifyDataChanged() {
-        mHandler.sendEmptyMessage(NOTIFY_DATA_CHANGED);
+        mAdAdapter.notifyDataSetChanged();
     }
 
     @Override

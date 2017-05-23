@@ -19,7 +19,7 @@ public class BaseActivity extends Activity implements Handler.Callback {
 
     protected ReaperApi mReaperApi;
     protected Context mContext;
-    protected Handler mHandler;
+    protected Handler mMainHandler;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -30,7 +30,7 @@ public class BaseActivity extends Activity implements Handler.Callback {
             mReaperApi = app.getReaperApi();
         }
         mContext = application;
-        mHandler = new Handler(Looper.getMainLooper(), this);
+        mMainHandler = new Handler(Looper.getMainLooper(), this);
     }
 
     @Override

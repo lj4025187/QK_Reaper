@@ -57,7 +57,8 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_marginTop="6.0dip"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <ProgressBar
                 style="?android:attr/progressBarStyle"
@@ -70,9 +71,9 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="12dip"
+                android:text="猥琐发育，别浪。。。"
                 android:textColor="#7b7b7b"
                 android:textDirection="locale"
-                android:text="猥琐发育，别浪。。。"
                 android:textSize="14dip" />
 
         </LinearLayout>
