@@ -3,7 +3,8 @@ package com.fighter.loader;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
+
+import com.fighter.utils.LoaderLog;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,7 +22,7 @@ public class ReaperApiTest {
         ReaperApi reaperApi = ReaperInit.init(context);
         Assert.assertNotNull(reaperApi);
 
-        reaperApi.init(context, "10010", "not_a_real_key", null);
+        reaperApi.init(context, "10010", "not_a_real_key");
     }
 
     @Test
@@ -30,25 +31,30 @@ public class ReaperApiTest {
         ReaperApi reaperApi = ReaperInit.init(context);
         Assert.assertNotNull(reaperApi);
 
-        reaperApi.init(context, "10010", "not_a_real_key", null);
+        reaperApi.init(context, "10010", "not_a_real_key");
 
-        ReaperApi.AdRequester adRequester =
-                reaperApi.getAdRequester("323232", new ReaperApi.AdRequestCallback() {
+        AdRequester adRequester =
+                reaperApi.getAdRequester("323232", new AdRequester.AdRequestCallback() {
                     @Override
-                    public void onSuccess(List<ReaperApi.AdInfo> ads) {
-                        Log.d(TAG, "onSuccess " + ads);
+                    public void onSuccess(List<AdInfo> ads) {
+                        LoaderLog.i(TAG, "onSuccess " + ads);
+                        for (AdInfo adInfo : ads) {
+                            adInfo.onAdShow(null);
+                            adInfo.onAdClicked(null, null, -999, -999, -999, -999);
+                        }
                     }
 
                     @Override
                     public void onFailed(String errMsg) {
-                        Log.d(TAG, "onFailed " + errMsg);
+                        LoaderLog.i(TAG, "onFailed " + errMsg);
                     }
-                }, null);
+                });
 
         adRequester.requestAd();
 
         try {
-            Thread.sleep(100 * 1000);
+            Thread.sleep(500
+                    * 1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

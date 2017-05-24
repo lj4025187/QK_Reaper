@@ -104,6 +104,17 @@ public class AdResponse {
         return mAdParams;
     }
 
+    public void deleteImgFiles() {
+        List<AdInfo> adInfos = getAdInfos();
+        if (adInfos == null) {
+            return;
+        }
+
+        for (AdInfo adInfo : adInfos) {
+            adInfo.deleteImgFile();
+        }
+    }
+
     @Override
     public String toString() {
         return "AdResponse{" +

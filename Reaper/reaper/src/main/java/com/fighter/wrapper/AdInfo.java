@@ -52,6 +52,12 @@ public class AdInfo {
      */
     private static final String KEY_ACTION_TYPE = "actionType";
     /**
+     * 广告来源
+     *
+     * @see AdFrom
+     */
+    private static final String KEY_AD_FROM = "adFrom";
+    /**
      * 广告图片链接，纯文字广告类型时该字段为空
      */
     private static final String KEY_IMG_URL = "imgUrl";
@@ -87,6 +93,11 @@ public class AdInfo {
      */
     private static final String KEY_APP_PACKAGE_NAME = "appPackageName";
 
+    /**
+     * App下载路径
+     */
+    private static final String KEY_APP_DOWNLOAD_FILE = "appDownloadFile";
+
     private Map<String, Object> mAdParams;
 
     public AdInfo() {
@@ -109,6 +120,15 @@ public class AdInfo {
 
     public void setActionType(int actionType) {
         putParam(KEY_ACTION_TYPE, actionType);
+    }
+
+    public int getAdFrom() {
+        Object o = mAdParams.get(KEY_AD_FROM);
+        return o == null ? 0 : (int) o;
+    }
+
+    public void setAdFrom(int adFrom) {
+        putParam(KEY_AD_FROM, adFrom);
     }
 
     public String getImgUrl() {
@@ -183,8 +203,40 @@ public class AdInfo {
         putParam(key, value);
     }
 
+    public void setExtras(Map<String, Object> extras) {
+        if (extras != null) {
+            mAdParams.putAll(extras);
+        }
+    }
+
     public Map<String, Object> getAdAllParams() {
         return mAdParams;
+    }
+
+    public String getAppDownloadFile() {
+        return (String) mAdParams.get(KEY_APP_DOWNLOAD_FILE);
+    }
+
+    public void setAppDownloadFile(String path) {
+        putParam(KEY_APP_DOWNLOAD_FILE, path);
+    }
+
+    public void deleteImgFile() {
+        File f = getImgFile();
+        if (f != null && f.exists()) {
+            f.delete();
+        }
+    }
+
+    public void deleteAppDownloadFile() {
+        String path = getAppDownloadFile();
+        if (TextUtils.isEmpty(path)) {
+            return;
+        }
+        File f = new File(path);
+        if (f != null && f.exists()) {
+            f.delete();
+        }
     }
 
     @Override

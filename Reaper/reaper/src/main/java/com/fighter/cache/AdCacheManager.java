@@ -1,7 +1,6 @@
 package com.fighter.cache;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.ArrayMap;
 
 import com.fighter.common.Device;
@@ -11,6 +10,8 @@ import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfigManager;
 import com.fighter.reaper.BumpVersion;
 import com.fighter.wrapper.AKAdSDKWrapper;
+import com.fighter.wrapper.AdFrom;
+import com.fighter.wrapper.AdInfo;
 import com.fighter.wrapper.AdRequest;
 import com.fighter.wrapper.AdResponse;
 import com.fighter.wrapper.AdResponseListener;
@@ -191,20 +192,14 @@ public class AdCacheManager {
     /**
      * init the ad cache manager
      *
-     * @param params
+     * @param context
+     * @param appId
+     * @param appKey
      */
-    public void init(Map<String, Object> params) {
-        if (params == null) {
-            return;
-        }
-
-        mContext = (Context) params.get("appContext");
-        mAppId = (String) params.get("appId");
-        mAppKey = (String) params.get("appKey");
-        if (mContext == null || TextUtils.isEmpty(mAppId) ||
-                TextUtils.isEmpty(mAppKey)) {
-            return;
-        }
+    public void init(Context context, String appId, String appKey) {
+        mContext = context;
+        mAppId = appId;
+        mAppKey = appKey;
 
         mThreadPoolUtils = new ThreadPoolUtils(ThreadPoolUtils.CachedThread, 1);
         initReaperConfig(mContext);
@@ -380,6 +375,35 @@ public class AdCacheManager {
         }
     }
 
+    public void onRequestAdError(Object receiver, String errMsg) {
+        ArrayMap<String, Object> params = new ArrayMap<>();
+        params.put("isSucceed", false);
+        params.put("errMsg", errMsg);
+        onRequestAd(receiver, params);
+    }
+
+    public void onEvent(int adEvent, AdInfo adInfo, Map<String, Object> eventParams) {
+        ISDKWrapper wrapper = null;
+        switch (adInfo.getAdFrom()) {
+            case AdFrom.FROM_TENCENT: {
+                wrapper = mSdkWrappers.get("guangdiantong");
+                break;
+            }
+            case AdFrom.FROM_MIX_ADX: {
+                wrapper = mSdkWrappers.get("baidu");
+                break;
+            }
+            case AdFrom.FROM_AKAD: {
+                wrapper = mSdkWrappers.get("juxiao");
+                break;
+            }
+        }
+
+        if (wrapper != null) {
+            wrapper.onEvent(adEvent, adInfo, eventParams);
+        }
+    }
+
     /**
      * check the ad cache is available.
      *
@@ -434,13 +458,6 @@ public class AdCacheManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private void onRequestAdError(Object receiver, String errMsg) {
-        ArrayMap<String, Object> params = new ArrayMap<>();
-        params.put("isSucceed", false);
-        params.put("errMsg", errMsg);
-        onRequestAd(receiver, params);
     }
 
     private class RequestAdRunner implements Runnable {
@@ -501,9 +518,18 @@ public class AdCacheManager {
                 baiduSense.adv_real_size = "600x300";
                 baiduSense.max_adv_num = "10";
                 baiduSense.priority = String.valueOf(random.nextInt(10));
+                ReaperAdSense juxiaoSense = new ReaperAdSense();
+                juxiaoSense.ads_name = "juxiao";
+                juxiaoSense.ads_appid = "0";
+                juxiaoSense.ads_posid = "128";
+                juxiaoSense.adv_size_type = "pixel";
+                juxiaoSense.adv_real_size = "640x100";
+                juxiaoSense.max_adv_num = "1";
+                juxiaoSense.priority = String.valueOf(random.nextInt(10));
 
                 reaperAdvPos.addAdSense(tencentSense);
-//                reaperAdvPos.addAdSense(baiduSense);
+                reaperAdvPos.addAdSense(baiduSense);
+                reaperAdvPos.addAdSense(juxiaoSense);
             }
             List<ReaperAdSense> reaperAdSenses = reaperAdvPos.getAdSenseList();
             if (reaperAdSenses == null || reaperAdSenses.size() == 0) {

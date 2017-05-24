@@ -15,6 +15,7 @@ import com.ak.android.shell.AKAD;
 import com.alibaba.fastjson.JSONObject;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
+import com.fighter.download.ReaperEnv;
 import com.fighter.wrapper.download.OkHttpDownloader;
 
 import java.io.File;
@@ -68,7 +69,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
         mOkHttpDownloader = new OkHttpDownloader(mContext, mClient);
         mDownloadPath = mContext.getCacheDir().getAbsolutePath()
                 + File.separator + "reaper_ad";
-        AKAD.initSdk(appContext, true, true);
+        AKAD.initSdk(ReaperEnv.sContextProxy, true, true);
     }
 
     @Override
@@ -334,6 +335,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     String akAdImgUrl = akAdJson.getString("contentimg");
 
                     AdInfo adInfo = new AdInfo();
+                    adInfo.setAdFrom(AdFrom.FROM_AKAD);
                     if (TextUtils.isEmpty(akAdImgUrl)) {
                         adInfo.setContentType(AdInfo.ContentType.TEXT);
                     } else {
@@ -436,6 +438,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     String akVideoUrl = akAdJson.getString("video");
 
                     AdInfo adInfo = new AdInfo();
+                    adInfo.setAdFrom(AdFrom.FROM_AKAD);
                     if (ad.hasVideo()) {
                         adInfo.setContentType(AdInfo.ContentType.VIDEO);
                     } else if (!TextUtils.isEmpty(akAdImgUrl)) {

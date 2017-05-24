@@ -178,6 +178,8 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
 
                 mThreadPoolUtils.execute(new ApkEventRunnable("7", adInfo));
 
+                adInfo.setAppDownloadFile(fileName);
+
                 String pkgName = AppUtils.getArchivePackageName(mContext, fileName);
                 if (TextUtils.isEmpty(pkgName)) {
                     ReaperLog.e(TAG, "download return with empty apk package name");
@@ -186,6 +188,8 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
 
                 if (AppUtils.isInstallApp(mContext, pkgName)) {
                     ReaperLog.i(TAG, "App " + pkgName + " has already installed");
+
+                    adInfo.deleteAppDownloadFile();
                 } else {
                     mApkInstallMap.put(pkgName, adInfo);
                     AppUtils.installApp(mContext, fileName);
@@ -566,6 +570,7 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
                     continue;
                 }
                 AdInfo adInfo = new AdInfo();
+                adInfo.setAdFrom(AdFrom.FROM_TENCENT);
 
                 int contentType = AdInfo.ContentType.PICTURE;
                 int tCrtType = adInfoJson.getIntValue("crt_type");
@@ -884,6 +889,7 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
             // 上报安装完成
             mThreadPoolUtils.execute(new ApkEventRunnable("6", adInfo));
 
+            adInfo.deleteAppDownloadFile();
             mApkInstallMap.remove(packageName);
         }
     }

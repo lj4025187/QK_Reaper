@@ -165,6 +165,7 @@ public class AdInfo {
     public void onVideoAdExit(int position) {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "position", position);
+        ReaperApi.putParam(params, mParams);
         onEvent(AdEvent.EVENT_VIDEO_EXIT, params);
     }
 
@@ -236,7 +237,8 @@ public class AdInfo {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "event", event);
         ReaperApi.putParam(params, extras);
+        ReaperApi.putParam(params, mParams);
 
-        mReaperApi.invokeReaperApi("onEvent", extras);
+        mReaperApi.invokeReaperApi("onEvent", params);
     }
 }

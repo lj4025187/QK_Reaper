@@ -151,6 +151,8 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
                 mThreadPoolUtils.execute(
                         new EventRunnable(AdEvent.EVENT_APP_DOWNLOAD_COMPLETE, adInfo));
 
+                adInfo.setAppDownloadFile(fileName);
+
                 String pkgName = AppUtils.getArchivePackageName(mContext, fileName);
                 if (TextUtils.isEmpty(pkgName)) {
                     ReaperLog.e(TAG, "download return with empty apk package name");
@@ -159,6 +161,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
 
                 if (AppUtils.isInstallApp(mContext, pkgName)) {
                     ReaperLog.i(TAG, "App " + pkgName + " has already installed");
+                    adInfo.deleteAppDownloadFile();
                 } else {
                     mApkInstallMap.put(pkgName, adInfo);
                     AppUtils.installApp(mContext, fileName);
@@ -515,6 +518,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
                     }
 
                     AdInfo adInfo = new AdInfo();
+                    adInfo.setAdFrom(AdFrom.FROM_MIX_ADX);
 
                     int contentType = AdInfo.ContentType.PICTURE;
                     String creativeType = metaInfoJson.getString("creativeType");
@@ -809,6 +813,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
             // 上报安装完成
             mThreadPoolUtils.execute(new EventRunnable(AdEvent.EVENT_APP_INSTALL, adInfo));
 
+            adInfo.deleteAppDownloadFile();
             mApkInstallMap.remove(packageName);
         }
     }
