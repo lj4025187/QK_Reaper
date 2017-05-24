@@ -3,6 +3,7 @@ package com.fighter.sample;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -20,11 +21,11 @@ public class WebViewActivity extends BaseActivity {
         super.onStart();
         try {
             Intent intent = getIntent();
-            if(intent != null){
+            if (intent != null) {
                 String action = intent.getAction();
 
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             SampleLog.e(TAG, "get intent has balabala");
             e.printStackTrace();
         }
@@ -68,7 +69,7 @@ public class WebViewActivity extends BaseActivity {
                 return super.shouldOverrideUrlLoading(view, url);
             }
         });
-
-        mWebView.loadUrl(mUrl);
+        if (!TextUtils.isEmpty(mUrl))
+            mWebView.loadUrl(mUrl);
     }
 }

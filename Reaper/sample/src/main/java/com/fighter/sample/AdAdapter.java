@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.TextureView;
@@ -100,7 +99,8 @@ public class AdAdapter extends BaseAdapter {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(SampleConfig.OPEN_WEB_ACTION);
+                Intent intent = new Intent(mContext, WebViewActivity.class);
+                intent.setAction(SampleConfig.OPEN_WEB_ACTION);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 mContext.startActivity(intent);
             }
@@ -121,7 +121,7 @@ public class AdAdapter extends BaseAdapter {
         videoViewHolder.adVideoTitle = (TextView) convertView.findViewById(R.id.id_video_ad_title);
         videoViewHolder.adVideoTexture = (TextureView) convertView.findViewById(R.id.id_video_texture_view);
         videoViewHolder.adVideoThumb = (ImageView) convertView.findViewById(R.id.id_video_view_thumb);
-        videoViewHolder.adVideoCotroller = (ImageView) convertView.findViewById(R.id.id_video_controller);
+        videoViewHolder.adVideoController = (ImageView) convertView.findViewById(R.id.id_video_controller);
         videoViewHolder.adVideoProgress = (ProgressBar) convertView.findViewById(R.id.id_video_progress);
         videoViewHolder.adVideoDesc = (TextView) convertView.findViewById(R.id.id_ad_custom_desc);
         videoViewHolder.adVideoAction = (TextView) convertView.findViewById(R.id.id_ad_custom_action);
@@ -224,7 +224,7 @@ public class AdAdapter extends BaseAdapter {
         TextView adVideoTitle;
         TextureView adVideoTexture;
         ImageView adVideoThumb;
-        ImageView adVideoCotroller;
+        ImageView adVideoController;
         ProgressBar adVideoProgress;
         TextView adVideoDesc;
         TextView adVideoAction;
