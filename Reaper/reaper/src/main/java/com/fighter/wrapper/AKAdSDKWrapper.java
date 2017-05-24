@@ -1,7 +1,9 @@
 package com.fighter.wrapper;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+import android.view.View;
 
 import com.ak.android.engine.nav.NativeAd;
 import com.ak.android.engine.nav.NativeAdLoaderListener;
@@ -11,6 +13,7 @@ import com.ak.android.engine.navvideo.NativeVideoAd;
 import com.ak.android.engine.navvideo.NativeVideoAdLoaderListener;
 import com.ak.android.shell.AKAD;
 import com.alibaba.fastjson.JSONObject;
+import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
 import com.fighter.wrapper.download.OkHttpDownloader;
 
@@ -28,14 +31,27 @@ import okhttp3.Request;
  * 360 聚效广告SDK Wrapper
  */
 public class AKAdSDKWrapper implements ISDKWrapper {
+    private static final String TAG = AKAdSDKWrapper.class.getSimpleName();
 
+    public static final String PARAMS_KEY_VIEW = "akad_params_view";
+    public static final String PARAMS_KEY_ACTIVITY = "akad_params_activity";
+
+    // ----------------------------------------------------
+
+    private static final String EVENT_POSITION = "position";
+
+    // ----------------------------------------------------
 
     private static final String AK_AD_API_VER = "3.8.3031_0302";
+
+    private static final String EXTRA_EVENT_NATIVE_AD = "akad_event_native_ad";
+
+    // ----------------------------------------------------
 
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
     private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
-    private OkHttpDownloader mOkHttpDownloader = new OkHttpDownloader(mClient);
+    private OkHttpDownloader mOkHttpDownloader;
     private String mDownloadPath;
 
     // ----------------------------------------------------
@@ -47,23 +63,98 @@ public class AKAdSDKWrapper implements ISDKWrapper {
 
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
+        ReaperLog.i(TAG, "[init]");
         mContext = appContext.getApplicationContext();
+        mOkHttpDownloader = new OkHttpDownloader(mContext, mClient);
         mDownloadPath = mContext.getCacheDir().getAbsolutePath()
                 + File.separator + "reaper_ad";
         AKAD.initSdk(appContext, true, true);
     }
 
     @Override
-    public void requestAd(AdRequest adRequest, AdResponseListener adResponseListener) {
+    public void uninit() {
+        ReaperLog.i(TAG, "[uninit]");
+    }
+
+    @Override
+    public boolean isSupportSync() {
+        return false;
+    }
+
+    @Override
+    public AdResponse requestAdSync(AdRequest adRequest) {
+        return null;
+    }
+
+    @Override
+    public void requestAdAsync(AdRequest adRequest, AdResponseListener adResponseListener) {
+        ReaperLog.i(TAG, "[requestAdAsync]");
         new AKAdRequester(adRequest, adResponseListener).request();
     }
 
     @Override
-    public void onEvent(int adEvent, AdResponse adResponse, Map<String, Object> eventParams) {
-
+    public void onEvent(int adEvent, AdInfo adInfo, Map<String, Object> eventParams) {
+        ReaperLog.i(TAG, "[onEvent] " + adEvent +
+                "\nAdInfo " + adInfo +
+                "\nparams " + eventParams);
+        NativeAd nativeAd = (NativeAd) adInfo.getExtra(EXTRA_EVENT_NATIVE_AD);
+        switch (adEvent) {
+            case AdEvent.EVENT_VIEW: {
+                if (eventParams != null && eventParams.containsKey(PARAMS_KEY_VIEW)) {
+                    eventAdShow(nativeAd, (View) eventParams.get(PARAMS_KEY_VIEW));
+                }
+                break;
+            }
+            case AdEvent.EVENT_CLICK: {
+                if (eventParams != null && eventParams.containsKey(PARAMS_KEY_ACTIVITY) &&
+                        eventParams.containsKey(PARAMS_KEY_ACTIVITY)) {
+                    eventAdClick(nativeAd, (Activity) eventParams.get(PARAMS_KEY_ACTIVITY),
+                            (View) eventParams.get(PARAMS_KEY_VIEW));
+                }
+                break;
+            }
+            case AdEvent.EVENT_VIDEO_START_PLAY: {
+                if (nativeAd instanceof NativeVideoAd) {
+                    int position = 0;
+                    if (eventParams.containsKey(EVENT_POSITION)) {
+                        position = (int) eventParams.get(EVENT_POSITION);
+                    }
+                    eventAdVideoChanged((NativeVideoAd) nativeAd, NativeVideoAd.VIDEO_START, position);
+                }
+                break;
+            }
+        }
     }
 
     // ----------------------------------------------------
+
+    private void eventAdShow(NativeAd nativeAd, View v) {
+        if (nativeAd == null || v == null) {
+            return;
+        }
+        nativeAd.onAdShowed(v);
+    }
+
+    private void eventAdClick(NativeAd nativeAd, Activity activity, View v) {
+        if (nativeAd == null || activity == null || v == null) {
+            return;
+        }
+        nativeAd.onAdClick(activity, v);
+    }
+
+    private void eventAdClose(NativeAd nativeAd) {
+        if (nativeAd == null) {
+            return;
+        }
+        nativeAd.onAdClosed();
+    }
+
+    private void eventAdVideoChanged(NativeVideoAd nativeVideoAd, int status, int currentPosition) {
+        if (nativeVideoAd == null) {
+            return;
+        }
+        nativeVideoAd.onVideoChanged(status, currentPosition);
+    }
 
     // ----------------------------------------------------
 
@@ -269,7 +360,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                             adInfo.setAppIconUrl(akAppLogo);
                             adInfo.setAppName(akAppName);
                             adInfo.setAppPackageName(akAppPkgName);
-                            adInfo.setExtra("nativeAd", ad);
+                            adInfo.setExtra(EXTRA_EVENT_NATIVE_AD, ad);
                         }
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);
@@ -375,7 +466,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                             adInfo.setAppIconUrl(akAppLogo);
                             adInfo.setAppName(akAppName);
                             adInfo.setAppPackageName(akAppPkgName);
-                            adInfo.setExtra("nativeVideoAd", ad);
+                            adInfo.setExtra(EXTRA_EVENT_NATIVE_AD, ad);
                         }
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);

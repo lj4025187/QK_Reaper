@@ -613,7 +613,7 @@ public class AdCacheManager {
                 return;
             }
 
-            sdkWrapper.requestAd(builder.create(),
+            sdkWrapper.requestAdAsync(builder.create(),
                     mCached ? new AdResponseCacheCallback(mReaperAdSenses, mAdvType, reaperAdSense, mCallback) :
                             new AdResponseCallback(mReaperAdSenses, mAdvType, mCallback));
         }

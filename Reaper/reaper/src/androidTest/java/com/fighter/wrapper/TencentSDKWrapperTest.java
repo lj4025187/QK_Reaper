@@ -3,13 +3,12 @@ package com.fighter.wrapper;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
+
+import com.fighter.common.utils.ReaperLog;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.concurrent.CountDownLatch;
 
 @RunWith(AndroidJUnit4.class)
 public class TencentSDKWrapperTest {
@@ -28,35 +27,36 @@ public class TencentSDKWrapperTest {
                 .adExtra(TencentSDKWrapper.EXTRA_LNG, 0)
                 .adExtra(TencentSDKWrapper.EXTRA_COORDTIME, System.currentTimeMillis())
                 .create();
-        Log.d(TAG, "request " + adRequest);
+        ReaperLog.i(TAG, "request " + adRequest);
 
         Context context = InstrumentationRegistry.getTargetContext();
         final ISDKWrapper sdkWrapper = new TencentSDKWrapper();
         sdkWrapper.init(context, null);
 
-        final CountDownLatch signal = new CountDownLatch(1);
-        sdkWrapper.requestAd(adRequest, new AdResponseListener() {
+        sdkWrapper.requestAdAsync(adRequest, new AdResponseListener() {
             @Override
             public void onAdResponse(AdResponse adResponse) {
-                Log.d(TAG, "response " + adResponse);
+                ReaperLog.i(TAG, "response " + adResponse);
 
                 if (adResponse != null &&
                         adResponse.isSucceed() &&
                         adResponse.canCache()) {
                     ICacheConvert convert = (ICacheConvert) sdkWrapper;
                     String responseJson = convert.convertToString(adResponse);
-                    Log.d(TAG, "response cache json " + responseJson);
+                    ReaperLog.i(TAG, "response cache json " + responseJson);
                     AdResponse cacheAdResponse = convert.convertFromString(responseJson);
-                    Log.d(TAG, "response cache obj " + cacheAdResponse);
+                    ReaperLog.i(TAG, "response cache obj " + cacheAdResponse);
                     Assert.assertNotNull(cacheAdResponse);
+
+                    sdkWrapper.onEvent(AdEvent.EVENT_VIEW, adResponse.getAdInfos().get(0), null);
+                    sdkWrapper.onEvent(AdEvent.EVENT_CLICK, adResponse.getAdInfos().get(0), null);
                 }
 
-                signal.countDown();
             }
         });
 
         try {
-            signal.await();
+            Thread.sleep(30 * 1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

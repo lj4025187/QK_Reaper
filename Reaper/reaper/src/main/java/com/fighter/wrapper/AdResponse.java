@@ -55,7 +55,6 @@ public class AdResponse {
 
     // ----------------------------------------------------
 
-
     public boolean isSucceed() {
         Object o = mAdParams.get(KEY_IS_SUCCEED);
         return o != null && (boolean) o;

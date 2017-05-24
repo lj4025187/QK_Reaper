@@ -23,13 +23,27 @@ public interface ISDKWrapper {
     public void init(Context appContext, Map<String, Object> extras);
 
     /**
+     * 销毁wrapper
+     */
+    public void uninit();
+
+    /**
+     * 是否支持同步请求广告
+     *
+     * @return true 支持 false 不支持
+     */
+    public boolean isSupportSync();
+
+    public AdResponse requestAdSync(AdRequest adRequest);
+
+    /**
      * 请求广告。
      * 方法将异步请求广告。
      *
      * @param adRequest          请求参数
      * @param adResponseListener 请求广告回调接口
      */
-    public void requestAd(AdRequest adRequest, AdResponseListener adResponseListener);
+    public void requestAdAsync(AdRequest adRequest, AdResponseListener adResponseListener);
 
     /**
      * 上报对应的广告跟踪事件。
@@ -78,8 +92,8 @@ public interface ISDKWrapper {
      * </table>
      *
      * @param adEvent     事件类型
-     * @param adResponse  广告请求返回值，上报时需从中获取上报广告相关信息，处理过程会修改内部extras值
+     * @param adInfo      广告信息
      * @param eventParams 事件携带的参数
      */
-    public void onEvent(int adEvent, AdResponse adResponse, Map<String, Object> eventParams);
+    public void onEvent(int adEvent, AdInfo adInfo, Map<String, Object> eventParams);
 }

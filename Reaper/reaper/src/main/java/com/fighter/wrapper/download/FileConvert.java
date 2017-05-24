@@ -21,8 +21,6 @@ class FileConvert {
     private String mDestFileName;   // 目标文件存储的文件名
     private boolean mKeepExtension;  // 是否保留原扩展名
 
-    private OkHttpDownloader.DownloadCallback mCallback;
-
     public FileConvert() {
         this(null);
     }
@@ -39,10 +37,6 @@ class FileConvert {
         mDestFileDir = destFileDir;
         mDestFileName = destFileName;
         mKeepExtension = keepExtension;
-    }
-
-    public void setCallback(OkHttpDownloader.DownloadCallback callback) {
-        mCallback = callback;
     }
 
     public File convert(Response value) throws Exception {
@@ -76,23 +70,6 @@ class FileConvert {
             while ((len = is.read(buf)) != -1) {
                 sum += len;
                 fos.write(buf, 0, len);
-
-                //下载进度回调
-                if (mCallback != null) {
-                    long curTime = System.currentTimeMillis();
-                    //每200毫秒刷新一次数据
-                    if (curTime - lastRefreshUiTime >= REFRESH_TIME || sum == total) {
-                        //计算下载速度
-                        long diffTime = (curTime - lastRefreshUiTime) / 1000;
-                        if (diffTime == 0) diffTime += 1;
-                        long diffBytes = sum - lastWriteBytes;
-                        final long networkSpeed = diffBytes / diffTime;
-                        mCallback.downloadProgress(sum, total, sum * 1.0f / total,
-                                networkSpeed); //进度回调的方法
-                        lastRefreshUiTime = System.currentTimeMillis();
-                        lastWriteBytes = sum;
-                    }
-                }
             }
             fos.flush();
             return file;

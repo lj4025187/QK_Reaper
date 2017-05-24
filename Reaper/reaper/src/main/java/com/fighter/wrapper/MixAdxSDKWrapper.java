@@ -2,26 +2,33 @@
 
 package com.fighter.wrapper;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.text.TextUtils;
 import android.util.ArrayMap;
+import android.util.LruCache;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fighter.common.Device;
+import com.fighter.common.utils.AppUtils;
+import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.EmptyUtils;
+import com.fighter.common.utils.OpenUtils;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
+import com.fighter.wrapper.download.ApkDownloader;
 import com.fighter.wrapper.download.OkHttpDownloader;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,6 +74,26 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
 
     // ----------------------------------------------------
 
+    private static final String EXTRA_EVENT_CLICK_LDP = "mixadx_event_click_ldp";
+    private static final String EXTRA_EVENT_TRACK_URL_VIEW = "mixadx_track_url_view";
+    private static final String EXTRA_EVENT_TRACK_URL_PLAY_END = "mixadx_track_url_play_end";
+    private static final String EXTRA_EVENT_TRACK_URL_CLICK = "mixadx_track_url_click";
+    private static final String EXTRA_EVENT_TRACK_URL_CLOSE = "mixadx_track_url_close";
+    private static final String EXTRA_EVENT_TRACK_URL_PLAY = "mixadx_track_url_play";
+    private static final String EXTRA_EVENT_TRACK_URL_FULL_SCREEN = "mixadx_track_url_full_screen";
+    private static final String EXTRA_EVENT_TRACK_URL_CARD_CLICK = "mixadx_track_url_card_click";
+    private static final String EXTRA_EVENT_TRACK_URL_VIDEO_CLOSE = "mixadx_track_url_video_close";
+    private static final String EXTRA_EVENT_TRACK_URL_APP_DOWNLOAD =
+            "mixadx_track_url_app_download";
+    private static final String EXTRA_EVENT_TRACK_URL_APP_START_DOWNLOAD =
+            "mixadx_track_url_app_start_download";
+    private static final String EXTRA_EVENT_TRACK_URL_APP_INSTALL =
+            "mixadx_track_url_app_install";
+    private static final String EXTRA_EVENT_TRACK_URL_APP_ACTIVE =
+            "mixadx_track_url_app_active";
+
+    // ----------------------------------------------------
+
     private static final String URL_REQUEST_AD_SCHEME = "http";
     private static final String URL_REQUEST_AD_HOST = "delivery.maihehd.com";
     private static final String URL_REQUEST_AD_PATH = "d/mmj/1.0";
@@ -88,8 +115,12 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
     private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
-    private OkHttpDownloader mOkHttpDownloader = new OkHttpDownloader(mClient);
+    private OkHttpDownloader mOkHttpDownloader;
     private String mDownloadPath;
+    private LruCache<Long, AdInfo> mApkDownloadMap;
+    private LruCache<String, AdInfo> mApkInstallMap;
+    private ApkDownloader mApkDownloader;
+    private BroadcastReceiver mApkInstallReceiver;
 
     // ----------------------------------------------------
 
@@ -100,13 +131,105 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
 
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
+        ReaperLog.i(TAG, "[init]");
+
         mContext = appContext.getApplicationContext();
+        mOkHttpDownloader = new OkHttpDownloader(mContext, mClient);
         mDownloadPath = mContext.getCacheDir().getAbsolutePath()
                 + File.separator + "reaper_ad";
+        mApkDownloadMap = new LruCache<>(100);
+        mApkInstallMap = new LruCache<>(100);
+        mApkDownloader = new ApkDownloader(mContext);
+        mApkDownloader.setDownloadCallback(new ApkDownloader.DownloadCallback() {
+            @Override
+            public void onDownloadComplete(long reference, String fileName) {
+                AdInfo adInfo = mApkDownloadMap.get(reference);
+                if (adInfo == null) {
+                    return;
+                }
+
+                mThreadPoolUtils.execute(
+                        new EventRunnable(AdEvent.EVENT_APP_DOWNLOAD_COMPLETE, adInfo));
+
+                String pkgName = AppUtils.getArchivePackageName(mContext, fileName);
+                if (TextUtils.isEmpty(pkgName)) {
+                    ReaperLog.e(TAG, "download return with empty apk package name");
+                    return;
+                }
+
+                if (AppUtils.isInstallApp(mContext, pkgName)) {
+                    ReaperLog.i(TAG, "App " + pkgName + " has already installed");
+                } else {
+                    mApkInstallMap.put(pkgName, adInfo);
+                    AppUtils.installApp(mContext, fileName);
+                }
+
+                mApkDownloadMap.remove(reference);
+            }
+        });
+
+        mApkInstallReceiver = new ApkInstallReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
+        mContext.registerReceiver(mApkInstallReceiver, filter);
     }
 
     @Override
-    public void requestAd(AdRequest adRequest, AdResponseListener adResponseListener) {
+    public void uninit() {
+        ReaperLog.i(TAG, "[uninit]");
+
+        mContext.unregisterReceiver(mApkInstallReceiver);
+    }
+
+    @Override
+    public boolean isSupportSync() {
+        return true;
+    }
+
+    @Override
+    public AdResponse requestAdSync(AdRequest adRequest) {
+        ReaperLog.i(TAG, "requestAd");
+
+        String errMsg = checkParams(adRequest);
+        if (!TextUtils.isEmpty(errMsg)) {
+            return new AdResponse.Builder()
+                    .errMsg(errMsg).create();
+        }
+
+        Request request = new Request.Builder()
+                .addHeader("content-type", "application/json;charset:utf-8")
+                .url(spliceRequestAdUrl())
+                .post(spliceRequestAdBody(adRequest))
+                .build();
+
+        AdResponse adResponse = null;
+        Response response = null;
+        try {
+            response = mClient.newCall(request).execute();
+            if (response != null) {
+                if (response.isSuccessful()) {
+                    adResponse = convertResponse(
+                            adRequest.getAppId(), adRequest.getAdPositionId(),
+                            response.body().string());
+                } else {
+                    JSONObject errJson = new JSONObject();
+                    errJson.put("httpResponseCode", response.code());
+                    return new AdResponse.Builder().errMsg(errJson.toJSONString()).create();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            CloseUtils.closeIOQuietly(response);
+        }
+        return adResponse == null ?
+                new AdResponse.Builder().errMsg("Request has no response.").create() :
+                adResponse;
+    }
+
+    @Override
+    public void requestAdAsync(AdRequest adRequest, AdResponseListener adResponseListener) {
         if (adRequest == null) {
             throw new NullPointerException("AdRequest is null");
         }
@@ -119,12 +242,18 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
     }
 
     @Override
-    public void onEvent(int adEvent, AdResponse adResponse, Map<String, Object> eventParams) {
+    public void onEvent(int adEvent, AdInfo adInfo, Map<String, Object> eventParams) {
+        mThreadPoolUtils.execute(new EventRunnable(adEvent, adInfo));
 
+        if (adEvent == AdEvent.EVENT_CLICK) {
+            eventClick(adInfo);
+        }
     }
 
     @Override
     public String convertToString(AdResponse adResponse) {
+        ReaperLog.i(TAG, "[convertToString] " + adResponse);
+
         try {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("appId", adResponse.getAppId());
@@ -152,6 +281,8 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
     @SuppressWarnings("unchecked")
     @Override
     public AdResponse convertFromString(String cachedResponse) {
+        ReaperLog.i(TAG, "[convertFromString] " + cachedResponse);
+
         try {
             JSONObject jsonObject = JSON.parseObject(cachedResponse);
             String appId = jsonObject.getString("appId");
@@ -168,41 +299,6 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
     }
 
     // ----------------------------------------------------
-
-    private AdResponse requestAdSync(AdRequest adRequest) {
-        String errMsg = checkParams(adRequest);
-        if (!TextUtils.isEmpty(errMsg)) {
-            return new AdResponse.Builder()
-                    .errMsg(errMsg).create();
-        }
-
-        Request request = new Request.Builder()
-                .addHeader("content-type", "application/json;charset:utf-8")
-                .url(spliceRequestAdUrl())
-                .post(spliceRequestAdBody(adRequest))
-                .build();
-
-        AdResponse adResponse = null;
-        try {
-            Response response = mClient.newCall(request).execute();
-            if (response != null) {
-                if (response.isSuccessful()) {
-                    adResponse = convertResponse(
-                            adRequest.getAppId(), adRequest.getAdPositionId(),
-                            response.body().string());
-                } else {
-                    JSONObject errJson = new JSONObject();
-                    errJson.put("httpResponseCode", response.code());
-                    return new AdResponse.Builder().errMsg(errJson.toJSONString()).create();
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return adResponse == null ?
-                new AdResponse.Builder().errMsg("Request has no response.").create() :
-                adResponse;
-    }
 
     private String checkParams(AdRequest adRequest) {
         // 是否有对应支持的广告类型
@@ -447,6 +543,8 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
                         actionType = AdInfo.ActionType.APP_DOWNLOAD;
                     }
                     adInfo.setActionType(actionType);
+                    String ldpUrl = metaInfoJson.getString("ldp");
+                    adInfo.setExtra(EXTRA_EVENT_CLICK_LDP, ldpUrl);
 
                     adInfo.setImgUrl(metaInfoJson.getString("imageUrl"));
                     adInfo.setVideoUrl(metaInfoJson.getString("videoUrl"));
@@ -458,6 +556,71 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
                     }
                     adInfo.setAppName(metaInfoJson.getString("brandName"));
                     adInfo.setAppPackageName(metaInfoJson.getString("appPackage"));
+
+                    JSONArray trackingEventsJson = creativeJson.getJSONArray("trackingEvents");
+                    if (trackingEventsJson != null) {
+                        for (int trackingIndex = 0; trackingIndex < trackingEventsJson.size(); trackingIndex++) {
+                            JSONObject eventJson = trackingEventsJson.getJSONObject(trackingIndex);
+                            String event = eventJson.getString("event");
+                            ArrayList<String> urls = new ArrayList<>();
+                            JSONArray urlsJson = eventJson.getJSONArray("urls");
+                            for (int urlIndex = 0; urlIndex < urlsJson.size(); urlIndex++) {
+                                urls.add(urlsJson.getString(urlIndex));
+                            }
+                            if (!TextUtils.isEmpty(event) && urls.size() > 0) {
+                                switch (event) {
+                                    case "VIEW": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_VIEW, urls);
+                                        break;
+                                    }
+                                    case "PLAY_END": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_PLAY_END, urls);
+                                        break;
+                                    }
+                                    case "CLICK": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_CLICK, urls);
+                                        break;
+                                    }
+                                    case "CLOSE": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_CLOSE, urls);
+                                        break;
+                                    }
+                                    case "PLAY": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_PLAY, urls);
+                                        break;
+                                    }
+                                    case "FULL_SCREEN": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_FULL_SCREEN, urls);
+                                        break;
+                                    }
+                                    case "CARD_CLICK": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_CARD_CLICK, urls);
+                                        break;
+                                    }
+                                    case "VIDEO_CLOSE": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_VIDEO_CLOSE, urls);
+                                        break;
+                                    }
+                                    case "APP_DOWNLOAD": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_APP_DOWNLOAD, urls);
+                                        break;
+                                    }
+                                    case "APP_START_DOWNLOAD": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_APP_START_DOWNLOAD, urls);
+                                        break;
+                                    }
+                                    case "APP_INSTALL": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_APP_INSTALL, urls);
+                                        break;
+                                    }
+                                    case "APP_ACTIVE": {
+                                        adInfo.setExtra(EXTRA_EVENT_TRACK_URL_APP_ACTIVE, urls);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     String imgUrl = adInfo.getImgUrl();
                     if (!TextUtils.isEmpty(imgUrl)) {
@@ -498,6 +661,21 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
         return builder.create();
     }
 
+    private void eventClick(AdInfo adInfo) {
+        String ldpUrl = (String) adInfo.getExtra(EXTRA_EVENT_CLICK_LDP);
+        if (TextUtils.isEmpty(ldpUrl)) {
+            ReaperLog.e(TAG, "Ldp url is null when click event");
+            return;
+        }
+
+        if (adInfo.getActionType() == AdInfo.ActionType.APP_DOWNLOAD) {
+            long ref = mApkDownloader.requestDownload(ldpUrl, null, null);
+            mApkDownloadMap.put(ref, adInfo);
+        } else {
+            OpenUtils.openWebUrl(mContext, ldpUrl);
+        }
+    }
+
     // ----------------------------------------------------
 
     private class AdRequestRunnable implements Runnable {
@@ -515,6 +693,122 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
             if (mAdResponseListener != null) {
                 mAdResponseListener.onAdResponse(adResponse);
             }
+        }
+    }
+
+    private class EventRunnable implements Runnable {
+        private int mAdEvent;
+        private AdInfo mAdInfo;
+
+        public EventRunnable(int adEvent, AdInfo adInfo) {
+            mAdEvent = adEvent;
+            mAdInfo = adInfo;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void run() {
+            ArrayList<String> urls = null;
+            switch (mAdEvent) {
+                case AdEvent.EVENT_VIEW: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_VIEW);
+                    break;
+                }
+                case AdEvent.EVENT_CLICK: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_CLICK);
+                    break;
+                }
+                case AdEvent.EVENT_CLOSE: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_CLOSE);
+                    break;
+                }
+                case AdEvent.EVENT_APP_START_DOWNLOAD: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_START_DOWNLOAD);
+                    break;
+                }
+                case AdEvent.EVENT_APP_DOWNLOAD_COMPLETE: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_DOWNLOAD);
+                    break;
+                }
+                case AdEvent.EVENT_APP_INSTALL: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_INSTALL);
+                    break;
+                }
+                case AdEvent.EVENT_APP_ACTIVE: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_ACTIVE);
+                    break;
+                }
+                case AdEvent.EVENT_VIDEO_CARD_CLICK: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_CARD_CLICK);
+                    break;
+                }
+                case AdEvent.EVENT_VIDEO_START_PLAY: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_PLAY);
+                    break;
+                }
+                case AdEvent.EVENT_VIDEO_PLAY_COMPLETE: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_PLAY_END);
+                    break;
+                }
+                case AdEvent.EVENT_VIDEO_FULLSCREEN: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_FULL_SCREEN);
+                    break;
+                }
+                case AdEvent.EVENT_VIDEO_EXIT: {
+                    urls = (ArrayList) mAdInfo.getExtra(EXTRA_EVENT_TRACK_URL_VIDEO_CLOSE);
+                    break;
+                }
+            }
+
+            if (urls == null || urls.size() == 0) {
+                ReaperLog.i(TAG, "ignore event type " + mAdEvent);
+                return;
+            }
+
+            for (int i = 0; i < urls.size(); i++) {
+                String url = urls.get(i);
+                ReaperLog.i(TAG, "event report with url " + url);
+
+                Request request = new Request.Builder()
+                        .addHeader("content-type", "application/json;charset:utf-8")
+                        .url(url)
+                        .build();
+
+                Response response = null;
+                try {
+                    response = mClient.newCall(request).execute();
+                    if (response.isSuccessful()) {
+                        ReaperLog.i(TAG, "event report succeed : " + mAdEvent);
+                    } else {
+                        ReaperLog.e(TAG, "Event report failed : " + mAdEvent);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    CloseUtils.closeIOQuietly(response);
+                }
+            }
+        }
+    }
+
+    private class ApkInstallReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String packageName = intent.getData().getSchemeSpecificPart();
+            if (TextUtils.isEmpty(packageName)) {
+                return;
+            }
+
+            AdInfo adInfo = mApkInstallMap.get(packageName);
+            if (adInfo == null) {
+                return;
+            }
+
+            // 上报安装完成
+            mThreadPoolUtils.execute(new EventRunnable(AdEvent.EVENT_APP_INSTALL, adInfo));
+
+            mApkInstallMap.remove(packageName);
         }
     }
 }

@@ -26,15 +26,22 @@ public class AKAdSDKWrapperTest {
                 .create();
         Log.d(TAG, "request " + adRequest);
 
-        Context context = InstrumentationRegistry.getTargetContext();
-        ISDKWrapper sdkWrapper = new AKAdSDKWrapper();
+        final Context context = InstrumentationRegistry.getTargetContext();
+        final ISDKWrapper sdkWrapper = new AKAdSDKWrapper();
         sdkWrapper.init(context, null);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        sdkWrapper.requestAd(adRequest, new AdResponseListener() {
+        sdkWrapper.requestAdAsync(adRequest, new AdResponseListener() {
             @Override
             public void onAdResponse(AdResponse adResponse) {
                 Log.d(TAG, "response " + adResponse);
+
+                if (adResponse != null && adResponse.isSucceed()) {
+                    AdInfo adInfo = adResponse.getAdInfos().get(0);
+                    sdkWrapper.onEvent(AdEvent.EVENT_VIEW, adInfo, null);
+                    sdkWrapper.onEvent(AdEvent.EVENT_CLICK, adInfo, null);
+                }
+
                 signal.countDown();
             }
         });
@@ -61,7 +68,7 @@ public class AKAdSDKWrapperTest {
         sdkWrapper.init(context, null);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        sdkWrapper.requestAd(adRequest, new AdResponseListener() {
+        sdkWrapper.requestAdAsync(adRequest, new AdResponseListener() {
             @Override
             public void onAdResponse(AdResponse adResponse) {
                 Log.d(TAG, "response " + adResponse);

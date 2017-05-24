@@ -53,48 +53,48 @@ public class ReaperConfigTest {
                     "\"ads_posid\": \"10001\"," +
                     "\"max_adv_num\": \"10\"," +
                     "\"adv_size_type\": \"pixel\"," +
-                    "\"adv_real_size\": \"200*100\"" +
-                    "}" +
+                    "\"adv_real_size\": \"640*100\"" +
+                    "}," +
+                    "{" +
+                    "\"ads_name\": \"guangdiantong\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"3\"," +
+                    "\"ads_appid\": \"1104241296\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"6050305154328807\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"640*100\"" +
+                    "}," +
+                    "{" +
+                    "\"ads_name\": \"baidu\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"10\"," +
+                    "\"ads_appid\": \"0\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"128\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"640*100\"" +
+                    "}," +
                     "]" +
                     "}," +
                     "{" +
                     "\"pos_id\": \"2\"," +
-                    "\"adv_type\":\"pic\"," +
+                    "\"adv_type\":\"plugin\"," +
                     "\"adv_exposure\": \"first\"," +
                     "\"adsenses\": [" +
                     "{" +
                     "\"ads_name\": \"guangdiantong\"," +
                     "\"expire_time\": \"1800\"," +
                     "\"priority\": \"3\"," +
-                    "\"ads_appid\": \"100001\"," +
+                    "\"ads_appid\": \"1104241296\"," +
                     "\"ads_key\": \"adbsjmemsfm\"," +
-                    "\"ads_posid\": \"10001\"," +
+                    "\"ads_posid\": \"1060308114529681\"," +
                     "\"max_adv_num\": \"10\"," +
                     "\"adv_size_type\": \"pixel\"," +
-                    "\"adv_real_size\": \"200*100\"" +
-                    "}," +
-                    "{" +
-                    "\"ads_name\": \"baidu\"," +
-                    "\"expire_time\": \"1800\"," +
-                    "\"priority\": \"10\"," +
-                    "\"ads_appid\": \"100001\"," +
-                    "\"ads_key\": \"adbsjmemsfm\"," +
-                    "\"ads_posid\": \"10001\"," +
-                    "\"max_adv_num\": \"10\"," +
-                    "\"adv_size_type\": \"pixel\"," +
-                    "\"adv_real_size\": \"200*100\"" +
-                    "}," +
-                    "{" +
-                    "\"ads_name\": \"guangdiantong\"," +
-                    "\"expire_time\": \"1800\"," +
-                    "\"priority\": \"1\"," +
-                    "\"ads_appid\": \"100001\"," +
-                    "\"ads_key\": \"adbsjmemsfm\"," +
-                    "\"ads_posid\": \"10001\"," +
-                    "\"max_adv_num\": \"10\"," +
-                    "\"adv_size_type\": \"pixel\"," +
-                    "\"adv_real_size\": \"200*100\"" +
-                    "}," +
+                    "\"adv_real_size\": \"640*500\"" +
+                    "}" +
                     "]" +
                     "}" +
                     "]" +
@@ -169,7 +169,7 @@ public class ReaperConfigTest {
         Assert.assertEquals(pos.adv_type, "banner");
 
         ReaperAdSense sense = db.queryAdSense("2");
-        Assert.assertEquals(sense.priority, "1");
+        Assert.assertEquals(sense.priority, "3");
     }
 
     @Test

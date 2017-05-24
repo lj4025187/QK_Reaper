@@ -5,7 +5,7 @@ import com.fighter.common.utils.ThreadPoolUtils;
 enum AdThreadPool {
     INSTANCE;
 
-    private ThreadPoolUtils mThreadPoolUtils = new ThreadPoolUtils(ThreadPoolUtils.CachedThread, 1);
+    private ThreadPoolUtils mThreadPoolUtils = new ThreadPoolUtils(ThreadPoolUtils.SingleThread, 1);
 
     public ThreadPoolUtils getThreadPoolUtils() {
         return mThreadPoolUtils;

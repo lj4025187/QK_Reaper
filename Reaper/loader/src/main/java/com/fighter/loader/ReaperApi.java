@@ -6,7 +6,6 @@ import android.util.ArrayMap;
 
 import com.fighter.utils.LoaderLog;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -58,33 +57,47 @@ public class ReaperApi {
 
     // ----------------------------------------------------
 
+    /**
+     * 初始化广告SDK
+     *
+     * @param appContext 应用上下文
+     * @param appId      360OS广告平台申请的APP id
+     * @param appKey     360OS广告平台申请的APP key
+     */
     public void init(Context appContext, String appId,
-                     String appKey, Map<String, Object> extras) {
+                     String appKey) {
         Map<String, Object> params = new ArrayMap<>();
 
-        putParam(params, "appContext", appContext.getApplicationContext());
+        if (appContext != null) {
+            putParam(params, "appContext", appContext.getApplicationContext());
+        }
         putParam(params, "appId", appId);
         putParam(params, "appKey", appKey);
-        putParam(params, extras);
         invokeReaperApi("init", params);
     }
 
+    /**
+     * 获取某广告位的广告请求句柄，可通过句柄请求广告
+     *
+     * @param adPositionId      360OS广告平台申请的广告位ID
+     * @param adRequestCallback 广告请求回调
+     * @return
+     */
     @SuppressWarnings("unchecked")
-    public AdRequester getAdRequester(String adPositionId, AdRequestCallback adRequestCallback,
-                                      Map<String, Object> extras) {
+    public AdRequester getAdRequester(String adPositionId,
+                                      AdRequester.AdRequestCallback adRequestCallback) {
         Map<String, Object> params = new ArrayMap<>();
         putParam(params, "adPositionId", adPositionId);
         putParam(params, "adRequestCallback", new AdResponse(adRequestCallback));
-        putParam(params, extras);
 
-        AdRequester adRequester = new AdRequester();
+        AdRequester adRequester = new AdRequester(this);
         adRequester.mParams = params;
         return adRequester;
     }
 
     // ----------------------------------------------------
 
-    private Object invokeReaperApi(String methodName, Map<String, Object> params) {
+    Object invokeReaperApi(String methodName, Map<String, Object> params) {
         try {
             Method method = mMethodCache.get(methodName);
 
@@ -105,109 +118,24 @@ public class ReaperApi {
         return null;
     }
 
-    private void putParam(Map<String, Object> params, String key, Object value) {
+    static void putParam(Map<String, Object> params, String key, Object value) {
         if (params != null && !TextUtils.isEmpty(key) && value != null) {
             params.put(key, value);
         }
     }
 
-    private void putParam(Map<String, Object> params, Map<String, Object> extraParams) {
+    static void putParam(Map<String, Object> params, Map<String, Object> extraParams) {
         if (params != null && extraParams != null) {
             params.putAll(extraParams);
         }
     }
 
     // ----------------------------------------------------
-    public interface AdRequestCallback {
-        public void onSuccess(List<AdInfo> ads);
-
-        public void onFailed(String errMsg);
-    }
-
-    public class AdRequester {
-        Map<String, Object> mParams;
-
-        public void requestAd() {
-            invokeReaperApi("requestAd", mParams);
-        }
-    }
-
-    public class AdInfo {
-        Map<String, Object> mParams;
-
-        public void onEvent(int event, Map<String, Object> extras) {
-
-        }
-
-        public int getContentType() {
-            Object o = mParams.get("contentType");
-            return o == null ? 0 : (int) o;
-        }
-
-        public int getActionType() {
-            Object o = mParams.get("actionType");
-            return o == null ? 0 : (int) o;
-        }
-
-        public String getImgUrl() {
-            return (String) mParams.get("imgUrl");
-        }
-
-        public File getImgFile() {
-            return (File) mParams.get("imgFile");
-        }
-
-        public String getVideoUrl() {
-            return (String) mParams.get("videoUrl");
-        }
-
-        public String getTitle() {
-            return (String) mParams.get("title");
-        }
-
-        public String getDesc() {
-            return (String) mParams.get("desc");
-        }
-
-        public String getAppIconUrl() {
-            return (String) mParams.get("appIconUrl");
-        }
-
-        public String getAppName() {
-            return (String) mParams.get("appName");
-        }
-
-        public String getAppPackageName() {
-            return (String) mParams.get("appPackageName");
-        }
-
-        public Object getExtra(String key) {
-            return mParams.get(key);
-        }
-
-        @Override
-        public String toString() {
-            return "AdInfo{" +
-                    "mContentType=" + getContentType() +
-                    ", mActionType=" + getActionType() +
-                    ", mImgUrl='" + getImgUrl() + '\'' +
-                    ", mImgFile=" + getImgFile() +
-                    ", mVideoUrl='" + getVideoUrl() + '\'' +
-                    ", mTitle='" + getTitle() + '\'' +
-                    ", mDesc='" + getDesc() + '\'' +
-                    ", mAppIconUrl='" + getAppIconUrl() + '\'' +
-                    ", mAppName='" + getAppName() + '\'' +
-                    ", mAppPackageName='" + getAppPackageName() + '\'' +
-                    '}';
-        }
-    }
-
-    // ----------------------------------------------------
 
     private class AdResponse {
-        private AdRequestCallback mAdRequestCallback;
+        private AdRequester.AdRequestCallback mAdRequestCallback;
 
-        public AdResponse(AdRequestCallback adRequestCallback) {
+        public AdResponse(AdRequester.AdRequestCallback adRequestCallback) {
             mAdRequestCallback = adRequestCallback;
         }
 
@@ -231,7 +159,7 @@ public class ReaperApi {
             }
             List<AdInfo> adInfos = new ArrayList<>(oriAdInfos.size());
             for (Map<String, Object> m : oriAdInfos) {
-                AdInfo adInfo = new AdInfo();
+                AdInfo adInfo = new AdInfo(ReaperApi.this);
                 adInfo.mParams = m;
                 adInfos.add(adInfo);
             }
