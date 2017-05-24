@@ -11,7 +11,7 @@
         android:layout_marginEnd="10dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="16dp"
-        android:text="Default_Title"
+        android:text="@string/ad_item_title_default"
         android:textColor="#454545"
         android:textSize="20dp" />
 
@@ -52,7 +52,7 @@
             android:layout_marginStart="10dp"
             android:layout_toStartOf="@+id/id_ad_custom_action"
             android:maxLines="1"
-            android:text="Default_Description"
+            android:text="@string/ad_item_desc_default"
             android:textColor="#999999"
             android:textSize="16dp" />
 
@@ -67,7 +67,7 @@
             android:layout_marginTop="5dp"
             android:background="@drawable/layer_ad_btn"
             android:padding="5dp"
-            android:text="Default_Action"
+            android:text="@string/ad_item_action_default"
             android:textColor="#ffffff" />
     </RelativeLayout>
 

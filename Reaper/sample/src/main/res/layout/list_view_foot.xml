@@ -23,7 +23,7 @@
         android:layout_marginStart="10.0dp"
         android:textDirection="locale"
         android:gravity="center"
-        android:text="撸起来。。。别打扰。。。"
+        android:text=""
         android:textColor="#000000" >
     </TextView>
 

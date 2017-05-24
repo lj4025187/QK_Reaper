@@ -9,11 +9,12 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.fighter.loader.ReaperApi;
+import com.fighter.loader.AdInfo;
+import com.fighter.loader.AdRequester;
 import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.adapter.AdAdapter;
 import com.fighter.reaper.sample.model.BaseItem;
-import com.fighter.reaper.sample.model.UnknownItem;
+import com.fighter.reaper.sample.model.PicItem;
 import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.videolist.visibility.calculator.SingleListViewItemActiveCalculator;
 import com.fighter.reaper.sample.videolist.visibility.scroll.ListViewItemPositionGetter;
@@ -21,11 +22,9 @@ import com.fighter.reaper.sample.videolist.visibility.scroll.ListViewItemPositio
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.fighter.reaper.sample.config.SampleConfig.UNKNOWN_AD_TYPE;
-
 public class MainActivity extends BaseActivity implements View.OnClickListener,
         CompoundButton.OnCheckedChangeListener,
-        ReaperApi.AdRequestCallback,
+        AdRequester.AdRequestCallback,
         AbsListView.OnScrollListener {
 
     private final static String TAG = MainActivity.class.getSimpleName();
@@ -50,7 +49,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
         mAdsListView = (ListView) findViewById(R.id.id_ads_list);
@@ -96,8 +94,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     private void pullAdsType(int adType) {
         if (mReaperApi == null)
             SampleLog.e(TAG, "ReaperApi init fail");
-        mReaperApi.init(mContext, "10010", "not_a_real_key", null);
-        ReaperApi.AdRequester adRequester = mReaperApi.getAdRequester("323232", this, null);
+        mReaperApi.init(mContext, "10010", "not_a_real_key");
+        AdRequester adRequester = mReaperApi.getAdRequester("323232", this);
         adRequester.requestAd();
     }
 
@@ -118,7 +116,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     }
 
     @Override
-    public void onSuccess(final List<ReaperApi.AdInfo> list) {
+    public void onSuccess(final List<AdInfo> list) {
         if (list == null || list.isEmpty()) {
             SampleLog.e(TAG, "get ads success but list is null");
             return;
@@ -132,15 +130,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
      *
      * @param list
      */
-    private void generateAdData(final List<ReaperApi.AdInfo> list) {
+    private void generateAdData(final List<AdInfo> list) {
         mMainHandler.post(new Runnable() {
             @Override
             public void run() {
-                for (ReaperApi.AdInfo adInfo : list) {
+                for (AdInfo adInfo : list) {
+                    adInfo.onAdShow(null);
                     BaseItem baseItem = null;
                     switch (adInfo.getContentType()) {
                         default:
-                            baseItem = new UnknownItem(UNKNOWN_AD_TYPE);
+                            baseItem = new PicItem("");
                             break;
                     }
                     baseItem.setAdInfo(adInfo);

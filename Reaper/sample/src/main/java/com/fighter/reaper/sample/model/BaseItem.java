@@ -1,22 +1,22 @@
 package com.fighter.reaper.sample.model;
 
 
-import com.fighter.loader.ReaperApi;
+import com.fighter.loader.AdInfo;
 
 public abstract class BaseItem {
 
     private final int mViewType;
-    private ReaperApi.AdInfo mAdInfo;
+    private AdInfo mAdInfo;
 
     public BaseItem(int viewType) {
         mViewType = viewType;
     }
 
-    public void setAdInfo(ReaperApi.AdInfo adInfo) {
+    public void setAdInfo(AdInfo adInfo) {
         mAdInfo = adInfo;
     }
 
-    public ReaperApi.AdInfo getAdInfo() {
+    public AdInfo getAdInfo() {
         return mAdInfo;
     }
 

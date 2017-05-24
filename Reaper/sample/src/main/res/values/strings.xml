@@ -1,6 +1,19 @@
 <resources>
     <string name="app_name">ReaperSample</string>
-    <string name="banner_type">banner</string>
-    <string name="splash_type">splash</string>
-    <string name="video_type">video</string>
+
+    <string name="ad_item_title_default">标题牺牲了</string>
+    <string name="ad_item_desc_default">内容阵亡了</string>
+    <string name="ad_item_action_default">撩我哦</string>
+    <string name="ad_item_flag">广告</string>
+
+    <string name="ad_video_action">嘿嘿小视频</string>
+    <string name="ad_pic_action">看羞羞图</string>
+    <string name="ad_app_action">点击下载</string>
+    <string name="ad_unknown_action">羞羞羞。。。</string>
+
+    <string name="ad_video_play_toast">FBI Warning。。。</string>
+
+    <string name="list_view_loading">猥琐发育，别浪。。。</string>
+    <string name="list_view_footer">撸起来。。。别打扰。。。</string>
+    <string name="list_view_empty">什么玩意儿都没有。。。</string>
 </resources>

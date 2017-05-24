@@ -5,6 +5,6 @@
     android:background="#22000000"
     android:paddingLeft="1dp"
     android:paddingRight="1dp"
-    android:text="广告"
+    android:text="@string/ad_item_flag"
     android:textColor="#ffffff"
     android:textSize="10dp" />

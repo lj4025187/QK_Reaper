@@ -4,14 +4,13 @@ import static com.fighter.reaper.sample.config.SampleConfig.PICTURE_AD_TYPE;
 
 public class PicItem extends BaseItem {
 
-    private String mCoverUrl;
+//    private String mCoverUrl;
 
     public PicItem(String coverUrl) {
         super(PICTURE_AD_TYPE);
-        mCoverUrl = coverUrl;
     }
 
-    public String getCoverUrl() {
-        return mCoverUrl;
-    }
+//    public String getCoverUrl() {
+//        return mCoverUrl;
+//    }
 }
