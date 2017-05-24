@@ -397,10 +397,8 @@ public final class Device {
             String name = result.successMsg;
             if (name != null) {
                 result = ShellUtils.execCmd("cat /sys/class/net/" + name + "/address", false);
-                if (result.result == 0) {
-                    if (result.successMsg != null) {
+                if (result.result == 0 && result.successMsg != null) {
                         return result.successMsg;
-                    }
                 }
             }
         }

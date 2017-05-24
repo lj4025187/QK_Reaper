@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
+ * THe common ad param for tracker
+ *
  * Created by lichen on 17-5-10.
  */
 
-public class AdParam {
+class AdParam {
     /** ad package name */
     public String app_pkg;
 

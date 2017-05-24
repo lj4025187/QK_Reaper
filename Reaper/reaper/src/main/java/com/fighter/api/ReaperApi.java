@@ -76,45 +76,46 @@ public class ReaperApi {
 
     @NoProguard
     public void init(Map<String, Object> params) {
-        if (params == null) {
-            return;
-        }
-
-        mContext = (Context) params.get("appContext");
-        mAppId = (String) params.get("appId");
-        mAppKey = (String) params.get("appKey");
-        if (mContext == null || TextUtils.isEmpty(mAppId) ||
-                TextUtils.isEmpty(mAppKey)) {
-            return;
-        }
-
+//        if (params == null) {
+//            return;
+//        }
+//
+//        mContext = (Context) params.get("appContext");
+//        mAppId = (String) params.get("appId");
+//        mAppKey = (String) params.get("appKey");
+//        if (mContext == null || TextUtils.isEmpty(mAppId) ||
+//                TextUtils.isEmpty(mAppKey)) {
+//            return;
+//        }
+//
         mIsInitSucceed = new AtomicBoolean(true);
-
-        mSdkWrappers = new ArrayMap<>();
-        ISDKWrapper akAdWrapper = new AKAdSDKWrapper();
-        ISDKWrapper tencentWrapper = new TencentSDKWrapper();
-        ISDKWrapper mixAdxWrapper = new MixAdxSDKWrapper();
-        akAdWrapper.init(new ContextProxy(mContext) /*mContext*/, null);
-        tencentWrapper.init(mContext, null);
-        mixAdxWrapper.init(mContext, null);
-        mSdkWrappers.put("juxiao", akAdWrapper);
-        mSdkWrappers.put("guangdiantong", tencentWrapper);
-        mSdkWrappers.put("baidu", mixAdxWrapper);
-
-        mAdTypeMap = new ArrayMap<>();
-        mAdTypeMap.put("banner", AdType.TYPE_BANNER);
-        mAdTypeMap.put("plugin", AdType.TYPE_PLUG_IN);
-        mAdTypeMap.put("app_wall", AdType.TYPE_APP_WALL);
-        mAdTypeMap.put("full_screen", AdType.TYPE_FULL_SCREEN);
-        mAdTypeMap.put("feed", AdType.TYPE_FEED);
-        mAdTypeMap.put("native", AdType.TYPE_NATIVE);
-        mAdTypeMap.put("native_video", AdType.TYPE_NATIVE_VIDEO);
-
-        mMethodMap = new ArrayMap<>();
-
-        mThreadPoolUtils = new ThreadPoolUtils(ThreadPoolUtils.CachedThread, 1);
-        mAdCacheManager = new AdCacheManager(mContext);
-        updateConfig();
+//
+//        mSdkWrappers = new ArrayMap<>();
+//        ISDKWrapper akAdWrapper = new AKAdSDKWrapper();
+//        ISDKWrapper tencentWrapper = new TencentSDKWrapper();
+//        ISDKWrapper mixAdxWrapper = new MixAdxSDKWrapper();
+//        akAdWrapper.init(new ContextProxy(mContext) /*mContext*/, null);
+//        tencentWrapper.init(mContext, null);
+//        mixAdxWrapper.init(mContext, null);
+//        mSdkWrappers.put("juxiao", akAdWrapper);
+//        mSdkWrappers.put("guangdiantong", tencentWrapper);
+//        mSdkWrappers.put("baidu", mixAdxWrapper);
+//
+//        mAdTypeMap = new ArrayMap<>();
+//        mAdTypeMap.put("banner", AdType.TYPE_BANNER);
+//        mAdTypeMap.put("plugin", AdType.TYPE_PLUG_IN);
+//        mAdTypeMap.put("app_wall", AdType.TYPE_APP_WALL);
+//        mAdTypeMap.put("full_screen", AdType.TYPE_FULL_SCREEN);
+//        mAdTypeMap.put("feed", AdType.TYPE_FEED);
+//        mAdTypeMap.put("native", AdType.TYPE_NATIVE);
+//        mAdTypeMap.put("native_video", AdType.TYPE_NATIVE_VIDEO);
+//
+//        mMethodMap = new ArrayMap<>();
+//
+//        mThreadPoolUtils = new ThreadPoolUtils(ThreadPoolUtils.CachedThread, 1);
+//        updateConfig();
+        mAdCacheManager = AdCacheManager.getInstance();
+        mAdCacheManager.init(params);
     }
 
     @NoProguard
@@ -137,8 +138,7 @@ public class ReaperApi {
                     "Can not request ad with empty position id");
             return;
         }
-
-        mThreadPoolUtils.execute(new RequestAdRunner(adPositionId, adRequestCallback));
+        mAdCacheManager.requestAdCache(adPositionId, adRequestCallback);
     }
 
     // ----------------------------------------------------
@@ -189,194 +189,5 @@ public class ReaperApi {
         params.put("isSucceed", false);
         params.put("errMsg", errMsg);
         onRequestAd(receiver, params);
-    }
-
-    // ----------------------------------------------------
-
-    private class RequestAdRunner implements Runnable {
-        private String mAdPosition;
-        private Object mCallback;
-
-        public RequestAdRunner(String adPosition, Object adRequestCallback) {
-            mAdPosition = adPosition;
-            mCallback = adRequestCallback;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public void run() {
-            // 首先查找缓存是否存在
-
-            // 获取配置信息
-            boolean fetchSucceed = true;
-                    /*ReaperConfigManager.fetchReaperConfigFromServer(mContext,
-                            mContext.getPackageName(), SALT, mAppKey, mAppId);*/
-
-            if (!fetchSucceed) {
-                onRequestAdError(mCallback, "Can not fetch reaper config from server");
-                return;
-            }
-
-            ReaperAdvPos reaperAdvPos =
-                    ReaperConfigManager.getReaperAdvPos(mContext, mAdPosition);
-            if (reaperAdvPos == null) {
-                /*onRequestAdError(mCallback,
-                        "Can not find config info with ad position id [" + mAdPosition + "]");
-                return;*/
-                Random random = new Random(System.currentTimeMillis());
-                reaperAdvPos = new ReaperAdvPos();
-                reaperAdvPos.pos_id = mAdPosition;
-                reaperAdvPos.adv_type = "banner";
-                ReaperAdSense tencentSense = new ReaperAdSense();
-                tencentSense.ads_name = "guangdiantong";
-                tencentSense.ads_appid = "1104241296";
-                tencentSense.ads_posid = "5060504124524896";
-                tencentSense.adv_size_type = "pixel";
-                tencentSense.adv_real_size = "640x100";
-                tencentSense.max_adv_num = "10";
-                tencentSense.priority = String.valueOf(random.nextInt(10));
-                ReaperAdSense baiduSense = new ReaperAdSense();
-                baiduSense.ads_name = "baidu";
-                baiduSense.ads_appid = "0";
-                baiduSense.ads_posid = "128";
-                baiduSense.adv_size_type = "pixel";
-                baiduSense.adv_real_size = "600x300";
-                baiduSense.max_adv_num = "10";
-                baiduSense.priority = String.valueOf(random.nextInt(10));
-
-                // reaperAdvPos.addAdSense(tencentSense);
-                reaperAdvPos.addAdSense(baiduSense);
-            }
-            List<ReaperAdSense> reaperAdSenses = reaperAdvPos.getAdSenseList();
-            if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
-                onRequestAdError(mCallback,
-                        "Config get 0 ad sense with ad position id [" + mAdPosition + "]");
-                return;
-            }
-            Collections.sort(reaperAdSenses);
-
-            // 依据配置信息获取广告
-            mThreadPoolUtils.execute(new RequestSingleAdRunner(
-                    reaperAdSenses,
-                    reaperAdvPos.adv_type,
-                    mCallback
-            ));
-        }
-    }
-
-    private class RequestSingleAdRunner implements Runnable {
-        private Object mCallback;
-        private String mAdvType;
-        private List<ReaperAdSense> mReaperAdSenses;
-
-        public RequestSingleAdRunner(List<ReaperAdSense> reaperAdSenses,
-                                     String advType,
-                                     Object adRequestCallback) {
-            mReaperAdSenses = reaperAdSenses;
-            mAdvType = advType;
-            mCallback = adRequestCallback;
-        }
-
-        @Override
-        public void run() {
-            Iterator<ReaperAdSense> it = mReaperAdSenses.iterator();
-            ReaperAdSense reaperAdSense = it.next();
-            it.remove();
-            String adsName = reaperAdSense.ads_name;
-            ISDKWrapper sdkWrapper = mSdkWrappers.get(adsName);
-            if (sdkWrapper == null) {
-                onRequestAdError(mCallback,
-                        "Can not find " + adsName + "'s sdk implements, may need " +
-                                "upgrade reaper jar, current version " + BumpVersion.value());
-                return;
-            }
-
-            int adType = 0;
-            if (mAdTypeMap.containsKey(mAdvType)) {
-                adType = mAdTypeMap.get(mAdvType);
-            } else {
-                onRequestAdError(mCallback, "Can not find match ad type with type name " +
-                        mAdvType);
-                return;
-            }
-
-            AdRequest.Builder builder = new AdRequest.Builder()
-                    .appId(reaperAdSense.ads_appid)
-                    .adPositionId(reaperAdSense.ads_posid)
-                    .adType(adType)
-                    .adCount(1);
-
-            if ("pixel".equalsIgnoreCase(reaperAdSense.adv_size_type)) {
-                String realSize = reaperAdSense.adv_real_size;
-                String[] size = realSize.split("x");
-                int width = 0;
-                int height = 0;
-
-                if (size.length == 2) {
-                    try {
-                        width = Integer.valueOf(size[0]);
-                        height = Integer.valueOf(size[1]);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (width > 0 || height > 0) {
-                    builder.adWidth(width);
-                    builder.adHeight(height);
-                }
-            } else if ("ratio".equalsIgnoreCase(reaperAdSense.adv_size_type)) {
-                onRequestAdError(mCallback, "[TEST] Not support adv size type " +
-                        reaperAdSense.adv_size_type);
-                return;
-            } else {
-                onRequestAdError(mCallback, "Not support adv size type " +
-                        reaperAdSense.adv_size_type);
-                return;
-            }
-
-            sdkWrapper.requestAd(builder.create(),
-                    new AdResponseCallback(mReaperAdSenses, mAdvType, mCallback));
-        }
-    }
-
-    private class AdResponseCallback implements AdResponseListener {
-
-        private List<ReaperAdSense> mReaperAdSenses;
-        private String mAdvType;
-        private Object mCallback;
-
-        public AdResponseCallback(List<ReaperAdSense> reaperAdSenses,
-                                  String advType,
-                                  Object adRequestCallback) {
-            mReaperAdSenses = reaperAdSenses;
-            mAdvType = advType;
-            mCallback = adRequestCallback;
-        }
-
-        @Override
-        public void onAdResponse(AdResponse adResponse) {
-            if (adResponse == null) {
-                if (!nextRequest()) {
-                    onRequestAdError(mCallback, "Response with no result");
-                }
-                return;
-            }
-
-            if (adResponse.isSucceed() || !nextRequest()) {
-                onRequestAd(mCallback, adResponse.getAdAllParams());
-            }
-        }
-
-        private boolean nextRequest() {
-            if (mReaperAdSenses != null &&
-                    mReaperAdSenses.size() > 0) {
-                mThreadPoolUtils.execute(
-                        new RequestSingleAdRunner(mReaperAdSenses, mAdvType, mCallback));
-                return true;
-            } else {
-                return false;
-            }
-        }
     }
 }

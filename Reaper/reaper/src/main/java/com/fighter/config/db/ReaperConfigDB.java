@@ -101,7 +101,7 @@ public class ReaperConfigDB {
             return posList;
         } finally {
             cursor.close();
-            db.close();
+            //db.close();
         }
     }
 
@@ -152,7 +152,7 @@ public class ReaperConfigDB {
             }
         } finally {
             cursor.close();
-            db.close();
+            //db.close();
         }
 
         if (ReaperConfig.VALUE_ADV_EXPOSURE_FIRST.equals(pos.adv_exposure)) {
@@ -187,7 +187,7 @@ public class ReaperConfigDB {
             }
         } finally {
             cursor.close();
-            db.close();
+            //db.close();
         }
         return null;
     }
@@ -217,7 +217,7 @@ public class ReaperConfigDB {
                 }
             }
         } finally {
-            db.close();
+            //db.close();
         }
     }
 
