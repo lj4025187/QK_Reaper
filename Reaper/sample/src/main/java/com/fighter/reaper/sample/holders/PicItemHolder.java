@@ -1,13 +1,12 @@
 package com.fighter.reaper.sample.holders;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.fighter.loader.AdInfo;
 import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.config.SampleConfig;
@@ -57,7 +56,19 @@ public class PicItemHolder extends BaseItemHolder<PicItem> {
         adDesc.setText(TextUtils.isEmpty(desc) ? context.getString(R.string.ad_item_desc_default) : desc);
         File imageFile = adInfo.getImgFile();
         if (imageFile != null) {
-            Glide.with(baseView.getContext()).load(imageFile).into(adView);
+            if(imageFile.getName().endsWith(".gif")) {
+                Glide.with(baseView.getContext())
+                        .load(imageFile)
+                        .asGif()
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .into(adView);
+            } else {
+                Glide.with(baseView.getContext())
+                        .load(imageFile)
+                        .asBitmap()
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .into(adView);
+            }
         } else {
             Glide.with(baseView.getContext())
                     .load(adInfo.getImgUrl())
