@@ -199,6 +199,7 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_PACKAGE_ADDED);
         filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
+        filter.addDataScheme("package");
         mContext.registerReceiver(mApkInstallReceiver, filter);
     }
 
@@ -881,7 +882,7 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
             }
 
             // 上报安装完成
-            mThreadPoolUtils.execute(new ApkEventRunnable("7", adInfo));
+            mThreadPoolUtils.execute(new ApkEventRunnable("6", adInfo));
 
             mApkInstallMap.remove(packageName);
         }

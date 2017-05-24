@@ -172,6 +172,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_PACKAGE_ADDED);
         filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
+        filter.addDataScheme("package");
         mContext.registerReceiver(mApkInstallReceiver, filter);
     }
 
