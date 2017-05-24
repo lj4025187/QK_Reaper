@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="#FFFBFBFC">
@@ -16,55 +17,90 @@
         android:textColor="#454545"
         android:textSize="20dp" />
 
-    <RelativeLayout
+    <!--<RelativeLayout-->
+    <!--android:id="@+id/id_video_main_view"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="200dip"-->
+    <!--android:layout_below="@+id/id_video_ad_title"-->
+    <!--android:layout_marginLeft="10dp"-->
+    <!--android:layout_marginRight="10dp"-->
+    <!--android:layout_marginTop="16dp">-->
+
+    <!--<TextureView-->
+    <!--android:id="@+id/id_video_texture_view"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent" />-->
+
+    <!--<ImageView-->
+    <!--android:id="@+id/id_video_view_thumb"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:scaleType="fitXY" />-->
+
+    <!--<include layout="@layout/ad_flag_layout" />-->
+
+    <!--<RelativeLayout-->
+    <!--android:id="@+id/id_video_play_control"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_alignParentLeft="true"-->
+    <!--android:layout_alignParentStart="true"-->
+    <!--android:layout_alignParentTop="true">-->
+
+    <!--<ImageView-->
+    <!--android:id="@+id/id_video_controller"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_centerHorizontal="true"-->
+    <!--android:layout_centerInParent="true"-->
+    <!--android:layout_centerVertical="true"-->
+    <!--android:src="@mipmap/bt_play" />-->
+
+    <!--<ProgressBar-->
+    <!--android:id="@+id/id_video_progress"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_centerHorizontal="true"-->
+    <!--android:layout_centerInParent="true"-->
+    <!--android:layout_centerVertical="true"-->
+    <!--android:visibility="invisible" />-->
+    <!--</RelativeLayout>-->
+    <!--</RelativeLayout>-->
+
+    <FrameLayout
         android:id="@+id/id_video_main_view"
-        android:layout_width="match_parent"
-        android:layout_height="200dip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/id_video_ad_title"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginTop="16dp">
 
-        <TextureView
+        <com.fighter.sample.videolist.widget.TextureVideoView
             android:id="@+id/id_video_texture_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="300dp"
+            app:scaleType="fitCenter" />
 
         <ImageView
-            android:id="@+id/id_video_view_thumb"
+            android:id="@+id/id_video_controller"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitXY" />
+            android:layout_height="300dp"
+            android:scaleType="centerCrop" />
 
         <include layout="@layout/ad_flag_layout" />
 
-        <RelativeLayout
-            android:id="@+id/id_video_play_control"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true">
-
-            <ImageView
-                android:id="@+id/id_video_controller"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_centerInParent="true"
-                android:layout_centerVertical="true"
-                android:src="@mipmap/bt_play" />
-
-            <ProgressBar
-                android:id="@+id/id_video_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_centerInParent="true"
-                android:layout_centerVertical="true"
-                android:visibility="invisible" />
-        </RelativeLayout>
-    </RelativeLayout>
+        <com.fighter.sample.videolist.widget.CircularProgressBar
+            android:id="@+id/id_video_progress"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:visibility="invisible"
+            app:cpb_background_progressbar_color="@android:color/white"
+            app:cpb_background_progressbar_width="10dp"
+            app:cpb_progressbar_color="@color/colorPrimary"
+            app:cpb_progressbar_width="10dp" />
+    </FrameLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
