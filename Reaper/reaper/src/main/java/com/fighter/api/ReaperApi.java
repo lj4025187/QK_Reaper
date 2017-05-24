@@ -65,26 +65,7 @@ public class ReaperApi {
     @NoProguard
     public void init(Map<String, Object> params) {
         ReaperLog.i(TAG, "[init]");
-        if (params == null) {
-            ReaperLog.e(TAG, "[init] params is null");
-            return;
-        }
         if (mIsInitSucceed.get()) {
-            return;
-        }
-
-        if (mContext == null) {
-            ReaperLog.e(TAG, "[init] appContext is null");
-            return;
-        }
-
-        if (TextUtils.isEmpty(mAppId)) {
-            ReaperLog.e(TAG, "[init] appId is null");
-            return;
-        }
-
-        if (TextUtils.isEmpty(mAppKey)) {
-            ReaperLog.e(TAG, "[init] app key is null");
             return;
         }
 
