@@ -12,6 +12,7 @@ enum AdOkHttpClient {
 
     private OkHttpClient mClient = new OkHttpClient.Builder()
             .connectTimeout(3000, TimeUnit.MILLISECONDS)
+            .retryOnConnectionFailure(true)
             .build();
 
     public OkHttpClient getOkHttpClient() {
