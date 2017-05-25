@@ -13,12 +13,8 @@ import com.fighter.loader.AdInfo;
 import com.fighter.loader.AdRequester;
 import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.adapter.AdAdapter;
-import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.model.BaseItem;
 import com.fighter.reaper.sample.model.PicItem;
-import com.fighter.reaper.sample.model.PicTextItem;
-import com.fighter.reaper.sample.model.UnknownItem;
-import com.fighter.reaper.sample.model.VideoItem;
 import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.utils.ToastUtil;
 import com.fighter.reaper.sample.videolist.visibility.calculator.SingleListViewItemActiveCalculator;
@@ -34,7 +30,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
     private final static String TAG = MainActivity.class.getSimpleName();
     private final static int BAIDU_TYPE = 0x01, TENCENT_TYPE = 0x02, QIHOO_TYPE = 0x03;
-    private final static int NOTIFY_DATA_CHANGED = 0x10, NOTIFY_DATA_FAILED = 0x11, NOTIFY_INIT_VIEW = 0x12;
+    private final static int NOTIFY_DATA_CHANGED = 0x10, NOTIFY_DATA_FAILED = 0x11;
 
     private CheckBox baidu, tencent, qihoo;
     private boolean baiduChecked, tencentChecked, qihooChecked;
@@ -159,11 +155,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     pullAdsType(BAIDU_TYPE);
                     return;
                 }
-                showLoadingView(false);
                 if (mListData.isEmpty()) {
                     mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
                 } else {
-                    notifyDataChanged();
+                    mMainHandler.sendEmptyMessage(NOTIFY_DATA_CHANGED);
                 }
             }
 
@@ -197,30 +192,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
     }
 
-    private void notifyDataChanged() {
-        mAdAdapter.notifyDataSetChanged();
-    }
-
     @Override
     public boolean handleMessage(Message msg) {
         switch (msg.what) {
             case NOTIFY_DATA_CHANGED:
                 mAdAdapter.notifyDataSetChanged();
-                showEmptyView(false);
-                showLoadingView(false);
                 break;
             case NOTIFY_DATA_FAILED:
-                if (mListData.isEmpty()) {
-                    showEmptyView(true);
-                } else {
-                    showFooterView(false);
-                }
-                showLoadingView(false);
-                break;
-            case NOTIFY_INIT_VIEW:
-                initView();
+                showFooterView(mListData.isEmpty());
                 break;
         }
+        showEmptyView(mListData.isEmpty());
+        showLoadingView(false);
         return true;
     }
 
@@ -267,6 +250,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     }
 
     private void showEmptyView(boolean empty) {
+        SampleLog.i(TAG, " show empty view " + empty);
         mAdsListView.setVisibility(empty ? View.GONE : View.VISIBLE);
         mEmptyText.setVisibility(empty ? View.VISIBLE : View.GONE);
     }
