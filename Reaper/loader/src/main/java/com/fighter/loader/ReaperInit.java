@@ -158,6 +158,7 @@ public class ReaperInit {
         }
 
         //3.set sdk path
+        String absPath = null;
         try {
             Field sdkAbsPath = claxx.getDeclaredField("sSdkPath");
             if (sdkAbsPath == null) {
@@ -165,9 +166,12 @@ public class ReaperInit {
                 throw new RuntimeException("cant find sSdkPath");
             }
             sdkAbsPath.setAccessible(true);
-            ReaperClassLoader rc = (ReaperClassLoader) classLoader;
-            String absPath = TextUtils.isEmpty(reaperPatch.getAbsolutePath()) ?
-                    rc.getRawDexPath() : reaperPatch.getAbsolutePath();
+            if (classLoader instanceof ReaperClassLoader) {
+                ReaperClassLoader rc = (ReaperClassLoader) classLoader;
+                absPath = rc.getRawDexPath();
+            } else {
+                absPath = reaperPatch.getAbsolutePath();
+            }
             LoaderLog.i(TAG, "sdk abs path : " + absPath);
             sdkAbsPath.set(null, absPath);
 
@@ -183,6 +187,9 @@ public class ReaperInit {
         } catch (Exception e) {
             e.printStackTrace();
             LoaderLog.e(TAG, "initReaper, err : " + e.getMessage());
+        }
+        if (TextUtils.isEmpty(absPath)) {
+            throw new RuntimeException("ReaperInit error ! Can't find reaper.rr or reaper.apk");
         }
 
         //4.set classloader
