@@ -3,17 +3,17 @@ package com.fighter.cache;
 import android.content.Context;
 import android.util.ArrayMap;
 
+import com.fighter.ad.AdInfo;
+import com.fighter.ad.AdType;
+import com.fighter.ad.SdkName;
 import com.fighter.common.PriorityTaskDaemon;
 import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfigManager;
 import com.fighter.reaper.BumpVersion;
-import com.fighter.wrapper.AdFrom;
-import com.fighter.wrapper.AdInfo;
 import com.fighter.wrapper.AdRequest;
 import com.fighter.wrapper.AdResponse;
 import com.fighter.wrapper.AdResponseListener;
-import com.fighter.wrapper.AdType;
 import com.fighter.wrapper.ICacheConvert;
 import com.fighter.wrapper.ISDKWrapper;
 import com.fighter.wrapper.MixAdxSDKWrapper;
@@ -40,7 +40,7 @@ import java.util.Map;
  * init() fill the all the posId cache.
  * requestAdCache() firstly request ad from cache, if cache is null,
  * request two ads, one for return to client, another for cache.
- *
+ * <p>
  * Created by lichen on 17-5-17.
  */
 
@@ -54,10 +54,12 @@ public class AdCacheManager {
     private File mCacheDir;
 
     private Map<String, ISDKWrapper> mSdkWrappers;
-    private Map<String, Integer> mAdTypeMap;
+    private Map<String, String> mAdTypeMap;
     private Map<String, Method> mMethodMap;
 
-    /** the memory cache object */
+    /**
+     * the memory cache object
+     */
     private static HashMap<String, List<Object>> mAdCache = new HashMap<>();
 
     private PriorityTaskDaemon mWorkThread;
@@ -108,11 +110,11 @@ public class AdCacheManager {
         if (!adCacheDir.exists())
             adCacheDir.mkdir();
         mCacheDir = adCacheDir;
-        File [] cacheDirs = mCacheDir.listFiles();
+        File[] cacheDirs = mCacheDir.listFiles();
         for (File dir : cacheDirs) {
             if (dir.isDirectory()) {
                 cacheId = dir.getName();
-                File []files = dir.listFiles();
+                File[] files = dir.listFiles();
                 for (File file : files) {
                     if (file.isFile()) {
                         try {
@@ -179,7 +181,6 @@ public class AdCacheManager {
     }
 
     /**
-     *
      * fill ad cache pool when cache init fill it.
      */
     private void fillAdCachePool(String[] posIds) {
@@ -215,8 +216,8 @@ public class AdCacheManager {
 
     private String[] getAllPosId(Context context) {
         List<ReaperAdvPos> reaperAdvPoses = ReaperConfigManager.getAllReaperAdvPos(context);
-        String [] posIds = new String [reaperAdvPoses.size()];
-        for(int i = 0; i < reaperAdvPoses.size(); i++) {
+        String[] posIds = new String[reaperAdvPoses.size()];
+        for (int i = 0; i < reaperAdvPoses.size(); i++) {
             posIds[i] = reaperAdvPoses.get(i).pos_id;
         }
         return posIds;
@@ -224,7 +225,6 @@ public class AdCacheManager {
 
     /**
      * request the ad cache to get the Ad information.
-     *
      */
     public void requestAdCache(String cacheId, Object callBack) {
         mCacheId = cacheId;
@@ -234,7 +234,7 @@ public class AdCacheManager {
             AdCacheInfo info = (AdCacheInfo) cache;
             String adSource = info.getAdSource();
             ISDKWrapper sdkWrapper = mSdkWrappers.get(adSource);
-            ICacheConvert convert = (ICacheConvert)sdkWrapper;
+            ICacheConvert convert = (ICacheConvert) sdkWrapper;
             onRequestAd(callBack, convert.convertFromString(info.getCache()).getAdAllParams());
             requestCacheAdInternal();
         } else {
@@ -247,14 +247,14 @@ public class AdCacheManager {
      * the method is used to cache ad information to sdcard.
      *
      * @param cacheId the ad unique id
-     * @param adInfo the object of ad information
+     * @param adInfo  the object of ad information
      * @throws IOException it maybe throw IOException
      */
-    private void cacheAdInfo(String cacheId, Object adInfo) throws IOException{
+    private void cacheAdInfo(String cacheId, Object adInfo) throws IOException {
         if (cacheId == null || adInfo == null)
             return;
         List<Object> adInfoObjects = new ArrayList<>();
-        AdCacheInfo adCacheInfo = (AdCacheInfo)adInfo;
+        AdCacheInfo adCacheInfo = (AdCacheInfo) adInfo;
         String cacheFileId = generateCacheId(adCacheInfo);
         if (mAdCache.containsKey(cacheId)) {
             adInfoObjects = mAdCache.get(cacheId);
@@ -278,6 +278,7 @@ public class AdCacheManager {
         objectOutputStream.close();
         fileOutputStream.close();
     }
+
     private Object getAdCacheFromFile(File file) throws IOException, ClassNotFoundException {
         Object adInfo = null;
         if (file == null)
@@ -291,11 +292,12 @@ public class AdCacheManager {
         }
         return adInfo;
     }
+
     private Object getAdCacheFromDisk(String cacheId) throws IOException, ClassNotFoundException {
         AdCacheInfo adInfo = null;
         File adCacheDir = new File(mCacheDir, cacheId);
         if (adCacheDir.exists() && adCacheDir.isDirectory()) {
-            File []cacheFiles = adCacheDir.listFiles();
+            File[] cacheFiles = adCacheDir.listFiles();
             List<File> cacheFileList = Arrays.asList(cacheFiles);
             Collections.sort(cacheFileList, new Comparator<File>() {
                 @Override
@@ -314,6 +316,7 @@ public class AdCacheManager {
         }
         return adInfo;
     }
+
     /**
      * the method is used to get the ad cache information from sdcard.
      *
@@ -356,6 +359,7 @@ public class AdCacheManager {
 
     /**
      * The method cache file into disk storage
+     *
      * @param cacheFileId
      * @return
      */
@@ -390,26 +394,26 @@ public class AdCacheManager {
         onRequestAd(receiver, params);
     }
 
-    public void onEvent(int adEvent, AdInfo adInfo, Map<String, Object> eventParams) {
+    public void onEvent(int adEvent, AdInfo adInfo) {
         // TODO set cache is unavailable
         ISDKWrapper wrapper = null;
-        switch (adInfo.getAdFrom()) {
-            case AdFrom.FROM_TENCENT: {
+        switch (adInfo.getAdName()) {
+            case SdkName.GUANG_DIAN_TONG: {
                 wrapper = mSdkWrappers.get("guangdiantong");
                 break;
             }
-            case AdFrom.FROM_MIX_ADX: {
+            case SdkName.MIX_ADX: {
                 wrapper = mSdkWrappers.get("baidu");
                 break;
             }
-            case AdFrom.FROM_AKAD: {
+            case SdkName.AKAD: {
                 wrapper = mSdkWrappers.get("juxiao");
                 break;
             }
         }
 
         if (wrapper != null) {
-            wrapper.onEvent(adEvent, adInfo, eventParams);
+            wrapper.onEvent(adEvent, adInfo);
         }
     }
 
@@ -422,7 +426,7 @@ public class AdCacheManager {
     private boolean isAdCacheTimeout(Object info) {
         if (info == null)
             return false;
-        AdCacheInfo cacheInfo = (AdCacheInfo)info;
+        AdCacheInfo cacheInfo = (AdCacheInfo) info;
         long current = System.currentTimeMillis();
         return (current - cacheInfo.getCacheTime()) > Long.parseLong(cacheInfo.getExpireTime());
     }
@@ -431,7 +435,6 @@ public class AdCacheManager {
     /**
      * if the cache is null, request two ads,
      * one is return to client, another cache if.
-     *
      */
     private void requestDoubleAds() {
         postAdRequestTask(mCacheId, mCallBack, false);
@@ -459,7 +462,7 @@ public class AdCacheManager {
                 new PriorityTaskDaemon.TaskNotify() {
                     @Override
                     public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
-                        if ((boolean)result) {
+                        if ((boolean) result) {
                             updateWrapper(mContext);
                         }
                     }
@@ -472,13 +475,14 @@ public class AdCacheManager {
         PriorityTaskDaemon.NotifyPriorityTask requestAdTask = new PriorityTaskDaemon.NotifyPriorityTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST, adRunner, new PriorityTaskDaemon.TaskNotify() {
             @Override
             public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
-                if((boolean)result) {
+                if ((boolean) result) {
 
                 }
             }
         });
         mWorkThread.postTaskInFront(requestAdTask);
     }
+
     private void requestCacheAdInternal() {
         postAdRequestTask(mCacheId, null, true);
     }
@@ -548,7 +552,7 @@ public class AdCacheManager {
         }
 
         Collections.sort(reaperAdSenses);
-        return requestWrapperAdInner(reaperAdSenses,reaperAdvPos.adv_type, isCached, callBack, errMsg);
+        return requestWrapperAdInner(reaperAdSenses, reaperAdvPos.adv_type, isCached, callBack, errMsg);
     }
 
     private boolean requestWrapperAdInner(List<ReaperAdSense> reaperAdSenses, String advType, boolean isCache,
@@ -562,11 +566,11 @@ public class AdCacheManager {
         ISDKWrapper sdkWrapper = mSdkWrappers.get(adsName);
         if (sdkWrapper == null) {
             errMsg = "Can not find " + adsName + "'s sdk implements, may need " +
-                            "upgrade reaper jar, current version " + BumpVersion.value();
+                    "upgrade reaper jar, current version " + BumpVersion.value();
             return false;
         }
 
-        int adType = 0;
+        String adType = null;
         if (mAdTypeMap.containsKey(advType)) {
             adType = mAdTypeMap.get(advType);
         } else {
@@ -576,8 +580,8 @@ public class AdCacheManager {
         }
 
         AdRequest.Builder builder = new AdRequest.Builder()
-                .appId(reaperAdSense.ads_appid)
-                .adPositionId(reaperAdSense.ads_posid)
+                .adLocalAppId(reaperAdSense.ads_appid)
+                .adLocalPositionId(reaperAdSense.ads_posid)
                 .adType(adType)
                 .adCount(1);
 
@@ -620,7 +624,7 @@ public class AdCacheManager {
         private List<ReaperAdSense> mReaperAdSenses;
         private String mAdvType;
         private Object mCallback;
-        private ReaperAdSense curAdSense ;
+        private ReaperAdSense curAdSense;
         private boolean mCached;
         private String mErrMsg;
 

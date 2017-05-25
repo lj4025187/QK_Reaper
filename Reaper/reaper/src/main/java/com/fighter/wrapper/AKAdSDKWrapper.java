@@ -3,8 +3,11 @@ package com.fighter.wrapper;
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.ArrayMap;
+import android.util.LruCache;
 import android.view.View;
 
+import com.ak.android.engine.download.ApkListener;
 import com.ak.android.engine.nav.NativeAd;
 import com.ak.android.engine.nav.NativeAdLoaderListener;
 import com.ak.android.engine.navbase.AdSpace;
@@ -13,25 +16,23 @@ import com.ak.android.engine.navvideo.NativeVideoAd;
 import com.ak.android.engine.navvideo.NativeVideoAdLoaderListener;
 import com.ak.android.shell.AKAD;
 import com.alibaba.fastjson.JSONObject;
+import com.fighter.ad.AdEvent;
+import com.fighter.ad.AdInfo;
+import com.fighter.ad.AdType;
+import com.fighter.ad.SdkName;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
 import com.fighter.download.ReaperEnv;
-import com.fighter.wrapper.download.OkHttpDownloader;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 
 /**
  * 360 聚效广告SDK Wrapper
  */
-public class AKAdSDKWrapper implements ISDKWrapper {
+public class AKAdSDKWrapper extends ISDKWrapper {
     private static final String TAG = AKAdSDKWrapper.class.getSimpleName();
 
     public static final String PARAMS_KEY_VIEW = "akad_params_view";
@@ -47,13 +48,22 @@ public class AKAdSDKWrapper implements ISDKWrapper {
 
     private static final String EXTRA_EVENT_NATIVE_AD = "akad_event_native_ad";
 
+    private static final Map<Integer, Integer> VIDEO_STATUS_MAP = new ArrayMap<>();
+
+    static {
+        VIDEO_STATUS_MAP.put(AdEvent.EVENT_VIDEO_START_PLAY, NativeVideoAd.VIDEO_START);
+        VIDEO_STATUS_MAP.put(AdEvent.EVENT_VIDEO_PAUSE, NativeVideoAd.VIDEO_PAUSE);
+        VIDEO_STATUS_MAP.put(AdEvent.EVENT_VIDEO_CONTINUE, NativeVideoAd.VIDEO_CONTINUE);
+        VIDEO_STATUS_MAP.put(AdEvent.EVENT_VIDEO_EXIT, NativeVideoAd.VIDEO_EXIT);
+        VIDEO_STATUS_MAP.put(AdEvent.EVENT_VIDEO_PLAY_COMPLETE, NativeVideoAd.VIDEO_COMPLETE);
+    }
+
     // ----------------------------------------------------
 
     private Context mContext;
-    private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
     private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
-    private OkHttpDownloader mOkHttpDownloader;
-    private String mDownloadPath;
+    private DownloadCallback mDownloadCallback;
+    private LruCache<String, AdInfo> mDownloadMap;
 
     // ----------------------------------------------------
 
@@ -63,28 +73,22 @@ public class AKAdSDKWrapper implements ISDKWrapper {
     }
 
     @Override
+    public String getSdkName() {
+        return SdkName.AKAD;
+    }
+
+    @Override
     public void init(Context appContext, Map<String, Object> extras) {
         ReaperLog.i(TAG, "[init]");
-        mContext = appContext.getApplicationContext();
-        mOkHttpDownloader = new OkHttpDownloader(mContext, mClient);
-        mDownloadPath = mContext.getCacheDir().getAbsolutePath()
-                + File.separator + "reaper_ad";
+        mContext = appContext;
+        mDownloadMap = new LruCache<>(200);
         AKAD.initSdk(ReaperEnv.sContextProxy, true, true);
+        AKAD.setApkListener(ReaperEnv.sContextProxy, new ApkDownloadListener());
     }
 
     @Override
-    public void uninit() {
-        ReaperLog.i(TAG, "[uninit]");
-    }
-
-    @Override
-    public boolean isSupportSync() {
+    public boolean isRequestAdSupportSync() {
         return false;
-    }
-
-    @Override
-    public AdResponse requestAdSync(AdRequest adRequest) {
-        return null;
     }
 
     @Override
@@ -94,10 +98,25 @@ public class AKAdSDKWrapper implements ISDKWrapper {
     }
 
     @Override
-    public void onEvent(int adEvent, AdInfo adInfo, Map<String, Object> eventParams) {
+    public boolean isOpenWebOwn() {
+        return true;
+    }
+
+    @Override
+    public boolean isDownloadOwn() {
+        return true;
+    }
+
+    @Override
+    public void setDownloadCallback(DownloadCallback downloadCallback) {
+        mDownloadCallback = downloadCallback;
+    }
+
+    @Override
+    public void onEvent(int adEvent, AdInfo adInfo) {
         ReaperLog.i(TAG, "[onEvent] " + adEvent +
-                "\nAdInfo " + adInfo +
-                "\nparams " + eventParams);
+                "\nAdInfo " + adInfo);
+        Map<String, Object> eventParams = adInfo.getAdAllParams();
         NativeAd nativeAd = (NativeAd) adInfo.getExtra(EXTRA_EVENT_NATIVE_AD);
         switch (adEvent) {
             case AdEvent.EVENT_VIEW: {
@@ -109,18 +128,31 @@ public class AKAdSDKWrapper implements ISDKWrapper {
             case AdEvent.EVENT_CLICK: {
                 if (eventParams != null && eventParams.containsKey(PARAMS_KEY_ACTIVITY) &&
                         eventParams.containsKey(PARAMS_KEY_ACTIVITY)) {
-                    eventAdClick(nativeAd, (Activity) eventParams.get(PARAMS_KEY_ACTIVITY),
+                    eventAdClick(adInfo,
+                            nativeAd,
+                            (Activity) eventParams.get(PARAMS_KEY_ACTIVITY),
                             (View) eventParams.get(PARAMS_KEY_VIEW));
                 }
                 break;
             }
-            case AdEvent.EVENT_VIDEO_START_PLAY: {
+            case AdEvent.EVENT_CLOSE: {
+                eventAdClose(nativeAd);
+            }
+            case AdEvent.EVENT_VIDEO_START_PLAY:
+            case AdEvent.EVENT_VIDEO_PAUSE:
+            case AdEvent.EVENT_VIDEO_CONTINUE:
+            case AdEvent.EVENT_VIDEO_EXIT:
+            case AdEvent.EVENT_VIDEO_PLAY_COMPLETE: {
                 if (nativeAd instanceof NativeVideoAd) {
                     int position = 0;
                     if (eventParams.containsKey(EVENT_POSITION)) {
                         position = (int) eventParams.get(EVENT_POSITION);
                     }
-                    eventAdVideoChanged((NativeVideoAd) nativeAd, NativeVideoAd.VIDEO_START, position);
+
+                    int status = VIDEO_STATUS_MAP.get(adEvent);
+                    eventAdVideoChanged((NativeVideoAd) nativeAd,
+                            status,
+                            position);
                 }
                 break;
             }
@@ -136,9 +168,17 @@ public class AKAdSDKWrapper implements ISDKWrapper {
         nativeAd.onAdShowed(v);
     }
 
-    private void eventAdClick(NativeAd nativeAd, Activity activity, View v) {
+    private void eventAdClick(AdInfo adInfo, NativeAd nativeAd, Activity activity, View v) {
         if (nativeAd == null || activity == null || v == null) {
             return;
+        }
+        if (nativeAd.getActionType() == 1) {
+            // 下载类广告
+            org.json.JSONObject json = nativeAd.getAPPInfo();
+            String key = json.optString("key");
+            if (!TextUtils.isEmpty(key)) {
+                mDownloadMap.put(key, adInfo);
+            }
         }
         nativeAd.onAdClick(activity, v);
     }
@@ -155,6 +195,13 @@ public class AKAdSDKWrapper implements ISDKWrapper {
             return;
         }
         nativeVideoAd.onVideoChanged(status, currentPosition);
+    }
+
+    private void notifyDownloadCallback(String key, int adEvent) {
+        AdInfo adInfo = mDownloadMap.get(key);
+        if (mDownloadCallback != null && adInfo != null) {
+            mDownloadCallback.onEvent(adInfo, adEvent);
+        }
     }
 
     // ----------------------------------------------------
@@ -182,7 +229,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
         }
 
         private void requestNativeAd() {
-            AdSpace adSpace = new AdSpace(mAdRequest.getAdPositionId());
+            AdSpace adSpace = new AdSpace(mAdRequest.getAdLocalPositionId());
             adSpace.setAdNum(mAdRequest.getAdCount());
             if (mAdRequest.getAdWidth() > 0 &&
                     mAdRequest.getAdHeight() > 0) {
@@ -195,6 +242,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                         public void onAdLoadSuccess(ArrayList<NativeAd> ads) {
                             if (mAdResponseListener != null) {
                                 mThreadPoolUtils.execute(new AKAdNativeAdRunnable(
+                                        mAdRequest,
                                         ads,
                                         mAdResponseListener
                                 ));
@@ -244,7 +292,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
         }
 
         private void requestNativeVideoAd() {
-            AdSpace adSpace = new AdSpace(mAdRequest.getAdPositionId());
+            AdSpace adSpace = new AdSpace(mAdRequest.getAdLocalPositionId());
             adSpace.setAdNum(mAdRequest.getAdCount());
             if (mAdRequest.getAdWidth() > 0 &&
                     mAdRequest.getAdHeight() > 0) {
@@ -257,6 +305,7 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                         public void onAdLoadSuccess(ArrayList<NativeVideoAd> ads) {
                             if (mAdResponseListener != null) {
                                 mThreadPoolUtils.execute(new AKAdNativeVideoAdRunnable(
+                                        mAdRequest,
                                         ads,
                                         mAdResponseListener
                                 ));
@@ -307,11 +356,14 @@ public class AKAdSDKWrapper implements ISDKWrapper {
     }
 
     private class AKAdNativeAdRunnable implements Runnable {
+        private AdRequest mAdRequest;
         private List<NativeAd> mAds;
         private AdResponseListener mAdResponseListener;
 
-        public AKAdNativeAdRunnable(List<NativeAd> ads,
+        public AKAdNativeAdRunnable(AdRequest adRequest,
+                                    List<NativeAd> ads,
                                     AdResponseListener adResponseListener) {
+            mAdRequest = adRequest;
             mAds = ads;
             mAdResponseListener = adResponseListener;
         }
@@ -322,7 +374,13 @@ public class AKAdSDKWrapper implements ISDKWrapper {
             errJson.put("httpResponseCode", 200);
 
             AdResponse.Builder builder = new AdResponse.Builder();
-            builder.adFrom(AdFrom.FROM_AKAD).canCache(false);
+            builder
+                    .adPosId(mAdRequest.getAdPosId())
+                    .adName(SdkName.AKAD)
+                    .adType(mAdRequest.getAdType())
+                    .canCache(false)
+                    .adLocalAppId(mAdRequest.getAdLocalAppId())
+                    .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
             if (mAds != null && mAds.size() > 0) {
                 List<AdInfo> adInfos = new ArrayList<>(mAds.size());
                 for (NativeAd ad : mAds) {
@@ -335,7 +393,9 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     String akAdImgUrl = akAdJson.getString("contentimg");
 
                     AdInfo adInfo = new AdInfo();
-                    adInfo.setAdFrom(AdFrom.FROM_AKAD);
+                    adInfo.setAdName(SdkName.AKAD);
+                    adInfo.setAdPosId(mAdRequest.getAdPosId());
+                    adInfo.setAdType(mAdRequest.getAdType());
                     if (TextUtils.isEmpty(akAdImgUrl)) {
                         adInfo.setContentType(AdInfo.ContentType.TEXT);
                     } else {
@@ -370,20 +430,6 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     adInfo.setImgUrl(akAdImgUrl);
                     adInfo.setTitle(akAdTitle);
                     adInfo.setDesc(akAdDesc);
-
-                    if (!TextUtils.isEmpty(adInfo.getImgUrl())) {
-                        File imgFile = mOkHttpDownloader.downloadSync(
-                                new Request.Builder().url(adInfo.getImgUrl()).build(),
-                                mDownloadPath,
-                                UUID.randomUUID().toString(),
-                                true
-                        );
-                        if (imgFile == null || !imgFile.exists()) {
-                            continue;
-                        }
-                        adInfo.setImgFile(imgFile);
-                    }
-
                     adInfos.add(adInfo);
                 }
                 if (adInfos.size() > 0) {
@@ -408,12 +454,14 @@ public class AKAdSDKWrapper implements ISDKWrapper {
     }
 
     private class AKAdNativeVideoAdRunnable implements Runnable {
-
+        private AdRequest mAdRequest;
         private List<NativeVideoAd> mAds;
         private AdResponseListener mAdResponseListener;
 
-        public AKAdNativeVideoAdRunnable(List<NativeVideoAd> ads,
+        public AKAdNativeVideoAdRunnable(AdRequest adRequest,
+                                         List<NativeVideoAd> ads,
                                          AdResponseListener adResponseListener) {
+            mAdRequest = adRequest;
             mAds = ads;
             mAdResponseListener = adResponseListener;
         }
@@ -424,7 +472,13 @@ public class AKAdSDKWrapper implements ISDKWrapper {
             errJson.put("httpResponseCode", 200);
 
             AdResponse.Builder builder = new AdResponse.Builder();
-            builder.adFrom(AdFrom.FROM_AKAD).canCache(false);
+            builder
+                    .adPosId(mAdRequest.getAdPosId())
+                    .adName(SdkName.AKAD)
+                    .adType(mAdRequest.getAdType())
+                    .canCache(false)
+                    .adLocalAppId(mAdRequest.getAdLocalAppId())
+                    .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
             if (mAds != null && mAds.size() > 0) {
                 List<AdInfo> adInfos = new ArrayList<>(mAds.size());
                 for (NativeVideoAd ad : mAds) {
@@ -438,7 +492,9 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     String akVideoUrl = akAdJson.getString("video");
 
                     AdInfo adInfo = new AdInfo();
-                    adInfo.setAdFrom(AdFrom.FROM_AKAD);
+                    adInfo.setAdName(SdkName.AKAD);
+                    adInfo.setAdPosId(mAdRequest.getAdPosId());
+                    adInfo.setAdType(mAdRequest.getAdType());
                     if (ad.hasVideo()) {
                         adInfo.setContentType(AdInfo.ContentType.VIDEO);
                     } else if (!TextUtils.isEmpty(akAdImgUrl)) {
@@ -479,19 +535,6 @@ public class AKAdSDKWrapper implements ISDKWrapper {
                     adInfo.setDesc(akAdDesc);
                     adInfo.setVideoUrl(akVideoUrl);
 
-                    if (!TextUtils.isEmpty(adInfo.getImgUrl())) {
-                        File imgFile = mOkHttpDownloader.downloadSync(
-                                new Request.Builder().url(adInfo.getImgUrl()).build(),
-                                mDownloadPath,
-                                UUID.randomUUID().toString(),
-                                true
-                        );
-                        if (imgFile == null || !imgFile.exists()) {
-                            continue;
-                        }
-                        adInfo.setImgFile(imgFile);
-                    }
-
                     adInfos.add(adInfo);
                 }
                 if (adInfos.size() > 0) {
@@ -512,6 +555,49 @@ public class AKAdSDKWrapper implements ISDKWrapper {
             }
 
             mAdResponseListener.onAdResponse(builder.create());
+        }
+    }
+
+    private class ApkDownloadListener implements ApkListener {
+
+        @Override
+        public void onApkDownloadStart(String s) {
+            notifyDownloadCallback(s, AdEvent.EVENT_APP_START_DOWNLOAD);
+        }
+
+        @Override
+        public void onApkDownloadProgress(String s, int i) {
+
+        }
+
+        @Override
+        public void onApkDownloadCompleted(String s) {
+            notifyDownloadCallback(s, AdEvent.EVENT_APP_DOWNLOAD_COMPLETE);
+        }
+
+        @Override
+        public void onApkDownloadFailed(String s) {
+            notifyDownloadCallback(s, AdEvent.EVENT_APP_DOWNLOAD_FAILED);
+        }
+
+        @Override
+        public void onApkDownloadCanceled(String s) {
+            notifyDownloadCallback(s, AdEvent.EVENT_APP_DOWNLOAD_CANCELED);
+        }
+
+        @Override
+        public void onApkDownloadPaused(String s) {
+
+        }
+
+        @Override
+        public void onApkDownloadContinued(String s) {
+
+        }
+
+        @Override
+        public void onApkInstallCompleted(String s, String s1) {
+            notifyDownloadCallback(s, AdEvent.EVENT_APP_INSTALL);
         }
     }
 }

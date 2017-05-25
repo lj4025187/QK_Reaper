@@ -2,29 +2,25 @@
 
 package com.fighter.wrapper;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.text.TextUtils;
 import android.util.ArrayMap;
-import android.util.LruCache;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.fighter.ad.AdEvent;
+import com.fighter.ad.AdInfo;
+import com.fighter.ad.AdType;
+import com.fighter.ad.SdkName;
 import com.fighter.common.Device;
-import com.fighter.common.utils.AppUtils;
 import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.EmptyUtils;
-import com.fighter.common.utils.OpenUtils;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
-import com.fighter.wrapper.download.ApkDownloader;
-import com.fighter.wrapper.download.OkHttpDownloader;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -43,7 +38,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
+public class MixAdxSDKWrapper extends ISDKWrapper {
 
     private static final String TAG = MixAdxSDKWrapper.class.getSimpleName();
 
@@ -103,7 +98,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
     /**
      * 广告类型对应表
      */
-    private static final Map<Integer, Integer> TYPE_REF_MAP = new ArrayMap<>();
+    private static final Map<String, Integer> TYPE_REF_MAP = new ArrayMap<>();
 
     // 1:banner 2:插屏 4:开屏
     static {
@@ -115,12 +110,6 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
     private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
-    private OkHttpDownloader mOkHttpDownloader;
-    private String mDownloadPath;
-    private LruCache<Long, AdInfo> mApkDownloadMap;
-    private LruCache<String, AdInfo> mApkInstallMap;
-    private ApkDownloader mApkDownloader;
-    private BroadcastReceiver mApkInstallReceiver;
 
     // ----------------------------------------------------
 
@@ -130,64 +119,19 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
     }
 
     @Override
+    public String getSdkName() {
+        return SdkName.MIX_ADX;
+    }
+
+    @Override
     public void init(Context appContext, Map<String, Object> extras) {
         ReaperLog.i(TAG, "[init]");
 
-        mContext = appContext.getApplicationContext();
-        mOkHttpDownloader = new OkHttpDownloader(mContext, mClient);
-        mDownloadPath = mContext.getCacheDir().getAbsolutePath()
-                + File.separator + "reaper_ad";
-        mApkDownloadMap = new LruCache<>(100);
-        mApkInstallMap = new LruCache<>(100);
-        mApkDownloader = new ApkDownloader(mContext);
-        mApkDownloader.setDownloadCallback(new ApkDownloader.DownloadCallback() {
-            @Override
-            public void onDownloadComplete(long reference, String fileName) {
-                AdInfo adInfo = mApkDownloadMap.get(reference);
-                if (adInfo == null) {
-                    return;
-                }
-
-                mThreadPoolUtils.execute(
-                        new EventRunnable(AdEvent.EVENT_APP_DOWNLOAD_COMPLETE, adInfo));
-
-                adInfo.setAppDownloadFile(fileName);
-
-                String pkgName = AppUtils.getArchivePackageName(mContext, fileName);
-                if (TextUtils.isEmpty(pkgName)) {
-                    ReaperLog.e(TAG, "download return with empty apk package name");
-                    return;
-                }
-
-                if (AppUtils.isInstallApp(mContext, pkgName)) {
-                    ReaperLog.i(TAG, "App " + pkgName + " has already installed");
-                    adInfo.deleteAppDownloadFile();
-                } else {
-                    mApkInstallMap.put(pkgName, adInfo);
-                    AppUtils.installApp(mContext, fileName);
-                }
-
-                mApkDownloadMap.remove(reference);
-            }
-        });
-
-        mApkInstallReceiver = new ApkInstallReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
-        filter.addDataScheme("package");
-        mContext.registerReceiver(mApkInstallReceiver, filter);
+        mContext = appContext;
     }
 
     @Override
-    public void uninit() {
-        ReaperLog.i(TAG, "[uninit]");
-
-        mContext.unregisterReceiver(mApkInstallReceiver);
-    }
-
-    @Override
-    public boolean isSupportSync() {
+    public boolean isRequestAdSupportSync() {
         return true;
     }
 
@@ -214,7 +158,10 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
             if (response != null) {
                 if (response.isSuccessful()) {
                     adResponse = convertResponse(
-                            adRequest.getAppId(), adRequest.getAdPositionId(),
+                            adRequest.getAdPosId(),
+                            adRequest.getAdType(),
+                            adRequest.getAdLocalAppId(),
+                            adRequest.getAdLocalPositionId(),
                             response.body().string());
                 } else {
                     JSONObject errJson = new JSONObject();
@@ -246,12 +193,28 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
     }
 
     @Override
-    public void onEvent(int adEvent, AdInfo adInfo, Map<String, Object> eventParams) {
-        mThreadPoolUtils.execute(new EventRunnable(adEvent, adInfo));
+    public boolean isOpenWebOwn() {
+        return false;
+    }
 
-        if (adEvent == AdEvent.EVENT_CLICK) {
-            eventClick(adInfo);
-        }
+    @Override
+    public String requestWebUrl(AdInfo adInfo) {
+        return (String) adInfo.getExtra(EXTRA_EVENT_CLICK_LDP);
+    }
+
+    @Override
+    public boolean isDownloadOwn() {
+        return false;
+    }
+
+    @Override
+    public String requestDownloadUrl(AdInfo adInfo) {
+        return (String) adInfo.getExtra(EXTRA_EVENT_CLICK_LDP);
+    }
+
+    @Override
+    public void onEvent(int adEvent, AdInfo adInfo) {
+        mThreadPoolUtils.execute(new EventRunnable(adEvent, adInfo));
     }
 
     @Override
@@ -260,8 +223,10 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
 
         try {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("appId", adResponse.getAppId());
-            jsonObject.put("adPositionId", adResponse.getAdPositionId());
+            jsonObject.put("adPosId", adResponse.getAdPosId());
+            jsonObject.put("adType", adResponse.getAdType());
+            jsonObject.put("adLocalAppId", adResponse.getAdLocalAppId());
+            jsonObject.put("adLocalPositionId", adResponse.getAdLocalPositionId());
             jsonObject.put("oriResponse", JSON.parseObject(adResponse.getOriResponse()));
 
             ArrayMap<String, String> fileMap = new ArrayMap<>();
@@ -289,13 +254,16 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
 
         try {
             JSONObject jsonObject = JSON.parseObject(cachedResponse);
-            String appId = jsonObject.getString("appId");
-            String adPositionAd = jsonObject.getString("adPositionId");
+
+            String adPosId = jsonObject.getString("adPosId");
+            String adType = jsonObject.getString("adType");
+            String adLocalAppId = jsonObject.getString("adLocalAppId");
+            String adLocalPositionAd = jsonObject.getString("adLocalPositionId");
             String oriResponse = jsonObject.getString("oriResponse");
 
             Map<String, String> fileMap = jsonObject.getObject("fileMap", Map.class);
 
-            return convertResponse(appId, adPositionAd, oriResponse, fileMap);
+            return convertResponse(adPosId, adType, adLocalAppId, adLocalPositionAd, oriResponse, fileMap);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -310,10 +278,10 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
             return "Can not find match mix adx ad type with ad type " +
                     adRequest.getAdType();
         }
-        if (EmptyUtils.isEmpty(adRequest.getAppId())) {
+        if (EmptyUtils.isEmpty(adRequest.getAdLocalAppId())) {
             return "MixAdx app id is null";
         }
-        if (EmptyUtils.isEmpty(adRequest.getAdPositionId())) {
+        if (EmptyUtils.isEmpty(adRequest.getAdLocalPositionId())) {
             return "MixAdx ad position id is null";
         }
 
@@ -330,8 +298,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
 
     private RequestBody spliceRequestAdBody(AdRequest adRequest) {
         HashMap<String, String> paramsMap = generatePostParams(adRequest);
-        RequestBody body = generatePostData(paramsMap);
-        return body;
+        return generatePostData(paramsMap);
     }
 
     private RequestBody generatePostData(HashMap<String, String> params) {
@@ -361,9 +328,9 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
         }
 
         HashMap<String, String> params = new HashMap<>();
-        params.put("pos", adRequest.getAdPositionId());                              // 广告位ID
-        params.put("posw", adRequest.getAdPositionId());                             // 广告位宽
-        params.put("posh", adRequest.getAdPositionId());                             // 广告位高
+        params.put("pos", adRequest.getAdLocalPositionId());                              // 广告位ID
+        params.put("posw", adRequest.getAdLocalPositionId());                             // 广告位宽
+        params.put("posh", adRequest.getAdLocalPositionId());                             // 广告位高
         params.put("postp", String.valueOf(TYPE_REF_MAP.get(adRequest.getAdType())));// 广告位类型
 
         if (allParams.containsKey(EXTRA_MED)) {
@@ -391,7 +358,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
         result.put("device_type", "0");                                       // 设备类型 0-phone 1-pad 2-pc 3-tv
         result.put("os", "0");                                                // MMA标准，i系统标识参数
         // 0 代表 Android 1 代表 iOS 2 代表 Wphone 3 代表 其他移动系统类型
-        result.put("app_id", adRequest.getAppId());                           // app id
+        result.put("app_id", adRequest.getAdLocalAppId());                           // app id
         result.put("app_package", mContext.getPackageName());                 // package name
         PackageInfo packageInfo =
                 Device.getPackageInfo(mContext, mContext.getPackageName(),
@@ -473,19 +440,24 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
         return result.toJSONString();
     }
 
-    private AdResponse convertResponse(String appId,
-                                       String adPositionId,
+    private AdResponse convertResponse(String adPosId,
+                                       String adType,
+                                       String adLocalAppId,
+                                       String adLocalPositionId,
                                        String oriResponse) {
-        return convertResponse(appId, adPositionId, oriResponse, null);
+        return convertResponse(adPosId, adType, adLocalAppId, adLocalPositionId, oriResponse, null);
     }
 
-    private AdResponse convertResponse(String appId,
-                                       String adPositionId,
+    private AdResponse convertResponse(String adPosId,
+                                       String adType,
+                                       String adLocalAppId,
+                                       String adLocalPositionId,
                                        String oriResponse,
                                        Map<String, String> fileMap) {
         AdResponse.Builder builder = new AdResponse.Builder();
-        builder.adFrom(AdFrom.FROM_MIX_ADX).canCache(true)
-                .appId(appId).adPositionAd(adPositionId);
+        builder.adPosId(adPosId).adName(SdkName.MIX_ADX).adType(adType)
+                .canCache(true)
+                .adLocalAppId(adLocalAppId).adLocalPositionAd(adLocalPositionId);
 
         builder.oriResponse(oriResponse);
         JSONObject resJson = null;
@@ -518,7 +490,9 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
                     }
 
                     AdInfo adInfo = new AdInfo();
-                    adInfo.setAdFrom(AdFrom.FROM_MIX_ADX);
+                    adInfo.setAdName(SdkName.MIX_ADX);
+                    adInfo.setAdPosId(adPosId);
+                    adInfo.setAdType(adType);
 
                     int contentType = AdInfo.ContentType.PICTURE;
                     String creativeType = metaInfoJson.getString("creativeType");
@@ -544,7 +518,7 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
 
                     int actionType = AdInfo.ActionType.BROWSER;
                     String interactionType = metaInfoJson.getString("interactionType");
-                    if ("DOWNLOAD".equals(interactionType)) {
+                    if ("DOWNLOAD".equalsIgnoreCase(interactionType)) {
                         actionType = AdInfo.ActionType.APP_DOWNLOAD;
                     }
                     adInfo.setActionType(actionType);
@@ -639,17 +613,6 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
                                 }
                             }
                         }
-                        if (imgFile == null) {
-                            imgFile = mOkHttpDownloader.downloadSync(
-                                    new Request.Builder().url(adInfo.getImgUrl()).build(),
-                                    mDownloadPath,
-                                    UUID.randomUUID().toString(),
-                                    true
-                            );
-                        }
-                        if (imgFile == null || !imgFile.exists()) {
-                            continue;
-                        }
                         adInfo.setImgFile(imgFile);
                     }
 
@@ -664,21 +627,6 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
         }
 
         return builder.create();
-    }
-
-    private void eventClick(AdInfo adInfo) {
-        String ldpUrl = (String) adInfo.getExtra(EXTRA_EVENT_CLICK_LDP);
-        if (TextUtils.isEmpty(ldpUrl)) {
-            ReaperLog.e(TAG, "Ldp url is null when click event");
-            return;
-        }
-
-        if (adInfo.getActionType() == AdInfo.ActionType.APP_DOWNLOAD) {
-            long ref = mApkDownloader.requestDownload(ldpUrl, null, null);
-            mApkDownloadMap.put(ref, adInfo);
-        } else {
-            OpenUtils.openWebUrl(mContext, ldpUrl);
-        }
     }
 
     // ----------------------------------------------------
@@ -793,28 +741,6 @@ public class MixAdxSDKWrapper implements ISDKWrapper, ICacheConvert {
                     CloseUtils.closeIOQuietly(response);
                 }
             }
-        }
-    }
-
-    private class ApkInstallReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String packageName = intent.getData().getSchemeSpecificPart();
-            if (TextUtils.isEmpty(packageName)) {
-                return;
-            }
-
-            AdInfo adInfo = mApkInstallMap.get(packageName);
-            if (adInfo == null) {
-                return;
-            }
-
-            // 上报安装完成
-            mThreadPoolUtils.execute(new EventRunnable(AdEvent.EVENT_APP_INSTALL, adInfo));
-
-            adInfo.deleteAppDownloadFile();
-            mApkInstallMap.remove(packageName);
         }
     }
 }

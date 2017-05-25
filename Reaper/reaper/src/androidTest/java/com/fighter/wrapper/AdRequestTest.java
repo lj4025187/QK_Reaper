@@ -2,6 +2,8 @@ package com.fighter.wrapper;
 
 import android.support.test.runner.AndroidJUnit4;
 
+import com.fighter.ad.AdType;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -17,7 +19,7 @@ public class AdRequestTest {
     public void testBuild() {
         String appId = "appid";
         String posId = "posId";
-        int adType = AdType.TYPE_NATIVE;
+        String adType = AdType.TYPE_NATIVE;
         int adCount = 10;
         ArrayList<String> keyWords = new ArrayList<>();
         String keyWord1 = "key1";
@@ -28,8 +30,8 @@ public class AdRequestTest {
         String keyValue = "test_key_value";
 
         AdRequest.Builder builder = new AdRequest.Builder();
-        builder.appId(appId)
-                .adPositionId(posId)
+        builder.adLocalAppId(appId)
+                .adLocalPositionId(posId)
                 .adType(adType)
                 .adCount(adCount)
                 .adKeyWords(keyWords)
@@ -38,9 +40,9 @@ public class AdRequestTest {
                 .adExtra(key, keyValue);
         AdRequest adRequest = builder.create();
 
-        assertTrue(adRequest.getAppId().equals(appId));
-        assertTrue(adRequest.getAdPositionId().equals(posId));
-        assertTrue(adRequest.getAdType() == adType);
+        assertTrue(adRequest.getAdLocalAppId().equals(appId));
+        assertTrue(adRequest.getAdLocalPositionId().equals(posId));
+        assertTrue(adRequest.getAdType().equals(adType));
         assertTrue(adRequest.getAdCount() == adCount);
         assertTrue(adRequest.getAdKeyWords().get(0).equals(keyWord1));
         assertTrue(adRequest.getAdWidth() == width);

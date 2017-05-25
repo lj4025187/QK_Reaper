@@ -3,6 +3,8 @@ package com.fighter.wrapper;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
+import com.fighter.ad.AdInfo;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,13 +19,25 @@ public class AdResponse {
      */
     private static final String KEY_ERR_MSG = "errMsg";
     /**
+     * 360OS广告平台位置ID
+     */
+    private static final String KEY_AD_POS_ID = "adPosId";
+    /**
+     * 广告来源名称
+     */
+    private static final String KEY_AD_NAME = "adName";
+    /**
+     * 广告类型 {@link com.fighter.ad.AdType}
+     */
+    private static final String KEY_AD_TYPE = "adType";
+    /**
      * 广告在各个广告商平台注册的ID
      */
-    private static final String KEY_APP_ID = "appId";
+    private static final String KEY_AD_LOCAL_APP_ID = "adLocalAppId";
     /**
      * 广告位在广告商处的真实ID
      */
-    private static final String KEY_AD_POSITION_ID = "adPositionId";
+    private static final String KEY_AD_LOCAL_POSITION_ID = "adLocalPositionId";
     /**
      * 原始响应字符串
      */
@@ -36,10 +50,6 @@ public class AdResponse {
      * 返回的广告 map形式
      */
     private static final String KEY_AD_INFOS_MAP = "adInfosMap";
-    /**
-     * 广告获取来源，各个SDK Wrapper
-     */
-    private static final String KEY_AD_FROM = "adFrom";
     /**
      * 是否支持缓存
      */
@@ -64,12 +74,24 @@ public class AdResponse {
         return (String) mAdParams.get(KEY_ERR_MSG);
     }
 
-    public String getAppId() {
-        return (String) mAdParams.get(KEY_APP_ID);
+    public String getAdPosId() {
+        return (String) mAdParams.get(KEY_AD_POS_ID);
     }
 
-    public String getAdPositionId() {
-        return (String) mAdParams.get(KEY_AD_POSITION_ID);
+    public String getAdName() {
+        return (String) mAdParams.get(KEY_AD_NAME);
+    }
+
+    public String getAdType() {
+        return (String) mAdParams.get(KEY_AD_TYPE);
+    }
+
+    public String getAdLocalAppId() {
+        return (String) mAdParams.get(KEY_AD_LOCAL_APP_ID);
+    }
+
+    public String getAdLocalPositionId() {
+        return (String) mAdParams.get(KEY_AD_LOCAL_POSITION_ID);
     }
 
     public String getOriResponse() {
@@ -84,11 +106,6 @@ public class AdResponse {
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getAdInfosMap() {
         return (List<Map<String, Object>>) mAdParams.get(KEY_AD_INFOS_MAP);
-    }
-
-    public int getAdFrom() {
-        Object o = mAdParams.get(KEY_AD_FROM);
-        return o == null ? 0 : (int) o;
     }
 
     public boolean canCache() {
@@ -120,8 +137,11 @@ public class AdResponse {
         return "AdResponse{" +
                 "mIsSucceed=" + isSucceed() +
                 ", mErrMsg='" + getErrMsg() + '\'' +
-                ", mAppId='" + getAppId() + '\'' +
-                ", mAdPositionId='" + getAdPositionId() + '\'' +
+                ", mAdPosId='" + getAdPosId() + '\'' +
+                ", mAdName='" + getAdName() + '\'' +
+                ", mAdType='" + getAdType() + '\'' +
+                ", mADLocalAppId='" + getAdLocalAppId() + '\'' +
+                ", mAdLocalPositionId='" + getAdLocalPositionId() + '\'' +
                 ", mOriResponse='" + getOriResponse() + '\'' +
                 ", mAdInfos=" + getAdInfos() +
                 '}';
@@ -146,13 +166,28 @@ public class AdResponse {
             return this;
         }
 
-        Builder appId(String appId) {
-            putParam(KEY_APP_ID, appId);
+        Builder adPosId(String adPosId) {
+            putParam(KEY_AD_POS_ID, adPosId);
             return this;
         }
 
-        Builder adPositionAd(String adPositionId) {
-            putParam(KEY_AD_POSITION_ID, adPositionId);
+        Builder adName(String adName) {
+            putParam(KEY_AD_NAME, adName);
+            return this;
+        }
+
+        Builder adType(String adType) {
+            putParam(KEY_AD_TYPE, adType);
+            return this;
+        }
+
+        Builder adLocalAppId(String adLocalAppId) {
+            putParam(KEY_AD_LOCAL_APP_ID, adLocalAppId);
+            return this;
+        }
+
+        Builder adLocalPositionAd(String adLocalPositionId) {
+            putParam(KEY_AD_LOCAL_POSITION_ID, adLocalPositionId);
             return this;
         }
 
@@ -170,11 +205,6 @@ public class AdResponse {
                 }
                 putParam(KEY_AD_INFOS_MAP, list);
             }
-            return this;
-        }
-
-        Builder adFrom(int adFrom) {
-            putParam(KEY_AD_FROM, adFrom);
             return this;
         }
 

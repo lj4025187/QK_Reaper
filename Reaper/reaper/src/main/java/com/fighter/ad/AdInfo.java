@@ -1,4 +1,4 @@
-package com.fighter.wrapper;
+package com.fighter.ad;
 
 import android.text.TextUtils;
 import android.util.ArrayMap;
@@ -13,35 +13,45 @@ public class AdInfo {
     /**
      * 广告返回的内容类型
      */
-    public interface ContentType {
+    public class ContentType {
         /**
          * 文字
          */
-        int TEXT = 1;
+        public static final int TEXT = 1;
         /**
          * 纯图片
          */
-        int PICTURE = 2;
+        public static final int PICTURE = 2;
         /**
          * 图文混合
          */
-        int PICTURE_WITH_TEXT = 3;
+        public static final int PICTURE_WITH_TEXT = 3;
         /**
          * 视频
          */
-        int VIDEO = 4;
+        public static final int VIDEO = 4;
+
+        private ContentType() {
+
+        }
     }
 
-    public interface ActionType {
+    public class ActionType {
         /**
          * 跳转浏览器查看
          */
-        int BROWSER = 1;
+        public static final int BROWSER = 1;
         /**
          * 开始下载广告展示的APP
          */
-        int APP_DOWNLOAD = 2;
+        public static final int APP_DOWNLOAD = 2;
+
+        private ActionType() {
+
+        }
     }
+
+    // ----------------------------------------------------
 
     /**
      * 广告内容类型
@@ -54,9 +64,27 @@ public class AdInfo {
     /**
      * 广告来源
      *
-     * @see AdFrom
+     * @see SdkName
      */
-    private static final String KEY_AD_FROM = "adFrom";
+    private static final String KEY_AD_NAME = "adName";
+    /**
+     * 360OS广告平台广告位ID
+     */
+    private static final String KEY_AD_POS_ID = "adPosId";
+    /**
+     * 360OS广告类型
+     *
+     * @see AdType
+     */
+    private static final String KEY_AD_TYPE = "adType";
+    /**
+     * 对应广告商平台的真实APP ID
+     */
+    private static final String KEY_AD_LOCAL_APP_ID = "adLocalAppId";
+    /**
+     * 对应广告商平台的真实广告位ID
+     */
+    private static final String KEY_AD_LOCAL_POS_ID = "adLocalPosId";
     /**
      * 广告图片链接，纯文字广告类型时该字段为空
      */
@@ -122,13 +150,40 @@ public class AdInfo {
         putParam(KEY_ACTION_TYPE, actionType);
     }
 
-    public int getAdFrom() {
-        Object o = mAdParams.get(KEY_AD_FROM);
-        return o == null ? 0 : (int) o;
+    public String getAdName() {
+        return (String) mAdParams.get(KEY_AD_NAME);
     }
 
-    public void setAdFrom(int adFrom) {
-        putParam(KEY_AD_FROM, adFrom);
+    public void setAdName(String adName) {
+        putParam(KEY_AD_NAME, adName);
+    }
+
+    public String getAdType() {
+        return (String) mAdParams.get(KEY_AD_NAME);
+    }
+
+    public void setAdType(String adType) {
+        putParam(KEY_AD_NAME, adType);
+    }
+
+    public String getAdPosId() {
+        return (String) mAdParams.get(KEY_AD_POS_ID);
+    }
+
+    public void setAdPosId(String adPosId) {
+        putParam(KEY_AD_POS_ID, adPosId);
+    }
+
+    public String getAdLocalAppId() {
+        return (String) mAdParams.get(KEY_AD_LOCAL_APP_ID);
+    }
+
+    public void setLocalAppId(String localAppId) {
+        putParam(KEY_AD_LOCAL_APP_ID, localAppId);
+    }
+
+    public String getAdLocalPosId() {
+        return (String) mAdParams.get(KEY_AD_LOCAL_POS_ID);
     }
 
     public String getImgUrl() {
@@ -244,6 +299,10 @@ public class AdInfo {
         return "AdInfo{" +
                 "mContentType=" + getContentType() +
                 ", mActionType=" + getActionType() +
+                ", mAdSource=" + getAdName() +
+                ", mAdPosId=" + getAdPosId() +
+                ", mAdLocalAppId=" + getAdLocalAppId() +
+                ", mAdLocalPosId=" + getAdLocalPosId() +
                 ", mImgUrl='" + getImgUrl() + '\'' +
                 ", mImgFile=" + getImgFile() +
                 ", mVideoUrl='" + getVideoUrl() + '\'' +

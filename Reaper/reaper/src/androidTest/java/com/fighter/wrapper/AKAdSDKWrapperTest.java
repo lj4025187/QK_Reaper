@@ -3,7 +3,11 @@ package com.fighter.wrapper;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
+
+import com.fighter.ad.AdEvent;
+import com.fighter.ad.AdInfo;
+import com.fighter.ad.AdType;
+import com.fighter.common.utils.ReaperLog;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,14 +21,15 @@ public class AKAdSDKWrapperTest {
     @Test
     public void testRequestAd() {
         AdRequest adRequest = new AdRequest.Builder()
-                .appId("1104241296")
-                .adPositionId("5060504124524896")
+                .adPosId("")
+                .adLocalAppId("1104241296")
+                .adLocalPositionId("5060504124524896")
                 .adType(AdType.TYPE_NATIVE)
                 .adCount(1)
                 .adWidth(640)
                 .adHeight(100)
                 .create();
-        Log.d(TAG, "request " + adRequest);
+        ReaperLog.i(TAG, "request " + adRequest);
 
         final Context context = InstrumentationRegistry.getTargetContext();
         final ISDKWrapper sdkWrapper = new AKAdSDKWrapper();
@@ -34,12 +39,12 @@ public class AKAdSDKWrapperTest {
         sdkWrapper.requestAdAsync(adRequest, new AdResponseListener() {
             @Override
             public void onAdResponse(AdResponse adResponse) {
-                Log.d(TAG, "response " + adResponse);
+                ReaperLog.i(TAG, "response " + adResponse);
 
                 if (adResponse != null && adResponse.isSucceed()) {
                     AdInfo adInfo = adResponse.getAdInfos().get(0);
-                    sdkWrapper.onEvent(AdEvent.EVENT_VIEW, adInfo, null);
-                    sdkWrapper.onEvent(AdEvent.EVENT_CLICK, adInfo, null);
+                    sdkWrapper.onEvent(AdEvent.EVENT_VIEW, adInfo);
+                    sdkWrapper.onEvent(AdEvent.EVENT_CLICK, adInfo);
                 }
 
                 signal.countDown();
@@ -56,12 +61,12 @@ public class AKAdSDKWrapperTest {
     @Test
     public void testRequestVideoAd() {
         AdRequest adRequest = new AdRequest.Builder()
-                .appId("1104241296")
-                .adPositionId("5060504124524896")
+                .adLocalAppId("1104241296")
+                .adLocalPositionId("5060504124524896")
                 .adType(AdType.TYPE_NATIVE_VIDEO)
                 .adCount(1)
                 .create();
-        Log.d(TAG, "request " + adRequest);
+        ReaperLog.i(TAG, "request " + adRequest);
 
         Context context = InstrumentationRegistry.getTargetContext();
         ISDKWrapper sdkWrapper = new AKAdSDKWrapper();
@@ -71,7 +76,7 @@ public class AKAdSDKWrapperTest {
         sdkWrapper.requestAdAsync(adRequest, new AdResponseListener() {
             @Override
             public void onAdResponse(AdResponse adResponse) {
-                Log.d(TAG, "response " + adResponse);
+                ReaperLog.i(TAG, "response " + adResponse);
                 signal.countDown();
             }
         });

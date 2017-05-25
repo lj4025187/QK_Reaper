@@ -3,6 +3,8 @@ package com.fighter.wrapper;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
+import com.fighter.ad.AdType;
+
 import java.util.List;
 import java.util.Map;
 
@@ -11,13 +13,18 @@ public class AdRequest {
     // 必填
     // ----------------------------------------------------
     /**
+     * 360OS广告平台Pos Id
+     */
+    private static final String KEY_AD_POS_ID = "adPosId";
+
+    /**
      * 申请时广告商下发的App ID
      */
-    private static final String KEY_APP_ID = "appId";
+    private static final String KEY_AD_LOCAL_APP_ID = "adLocalAppId";
     /**
-     * 广告位对应的广告位ID
+     * 申请时广告商广告位ID
      */
-    private static final String KEY_AD_POSITION_ID = "adPositionId";
+    private static final String KEY_AD_LOCAL_POSITION_ID = "adLocalPositionId";
     /**
      * 广告类型
      * {@link AdType}
@@ -56,17 +63,20 @@ public class AdRequest {
 
     // ----------------------------------------------------
 
-    public String getAppId() {
-        return (String) mAdParams.get(KEY_APP_ID);
+    public String getAdPosId() {
+        return (String) mAdParams.get(KEY_AD_POS_ID);
     }
 
-    public String getAdPositionId() {
-        return (String) mAdParams.get(KEY_AD_POSITION_ID);
+    public String getAdLocalAppId() {
+        return (String) mAdParams.get(KEY_AD_LOCAL_APP_ID);
     }
 
-    public int getAdType() {
-        Object o = mAdParams.get(KEY_AD_TYPE);
-        return o == null ? AdType.TYPE_BANNER : (int) o;
+    public String getAdLocalPositionId() {
+        return (String) mAdParams.get(KEY_AD_LOCAL_POSITION_ID);
+    }
+
+    public String getAdType() {
+        return (String) mAdParams.get(KEY_AD_TYPE);
     }
 
     public int getAdCount() {
@@ -100,8 +110,9 @@ public class AdRequest {
     @Override
     public String toString() {
         return "AdRequest{" +
-                "mAppId='" + getAppId() + '\'' +
-                ", mAdPositionId='" + getAdPositionId() + '\'' +
+                "mAdPosId='" + getAdPosId() + '\'' +
+                ", mAdLocalAppId='" + getAdLocalAppId() + '\'' +
+                ", mAdLocalPositionId='" + getAdLocalPositionId() + '\'' +
                 ", mAdType=" + getAdType() +
                 ", mAdCount=" + getAdCount() +
                 ", mAdWidth=" + getAdWidth() +
@@ -119,14 +130,25 @@ public class AdRequest {
         }
 
         /**
+         * 360OS 广告平台位置ID
+         *
+         * @param adPosId
+         * @return
+         */
+        public Builder adPosId(String adPosId) {
+            putParam(KEY_AD_POS_ID, adPosId);
+            return this;
+        }
+
+        /**
          * 填写应用向各个广告商申请的app id<br></br>
          * <b>注意：各个广告商申请到的ID不同</b>
          *
          * @param appId 应用ID
          * @return 广告创建器
          */
-        public Builder appId(String appId) {
-            putParam(KEY_APP_ID, appId);
+        public Builder adLocalAppId(String appId) {
+            putParam(KEY_AD_LOCAL_APP_ID, appId);
             return this;
         }
 
@@ -136,8 +158,8 @@ public class AdRequest {
          * @param positionId 广告位置ID
          * @return 广告创建器
          */
-        public Builder adPositionId(String positionId) {
-            putParam(KEY_AD_POSITION_ID, positionId);
+        public Builder adLocalPositionId(String positionId) {
+            putParam(KEY_AD_LOCAL_POSITION_ID, positionId);
             return this;
         }
 
@@ -147,7 +169,7 @@ public class AdRequest {
          * @param type 广告类型{@link AdType}
          * @return 广告创建器
          */
-        public Builder adType(int type) {
+        public Builder adType(String type) {
             putParam(KEY_AD_TYPE, type);
             return this;
         }

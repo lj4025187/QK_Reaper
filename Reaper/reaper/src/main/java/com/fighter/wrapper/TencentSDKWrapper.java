@@ -1,33 +1,28 @@
 package com.fighter.wrapper;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.text.TextUtils;
 import android.util.ArrayMap;
-import android.util.LruCache;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.fighter.ad.AdEvent;
+import com.fighter.ad.AdInfo;
+import com.fighter.ad.AdType;
+import com.fighter.ad.SdkName;
 import com.fighter.common.Device;
-import com.fighter.common.utils.AppUtils;
 import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.EmptyUtils;
 import com.fighter.common.utils.EncryptUtils;
-import com.fighter.common.utils.OpenUtils;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
-import com.fighter.wrapper.download.ApkDownloader;
-import com.fighter.wrapper.download.OkHttpDownloader;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -36,48 +31,9 @@ import okhttp3.Response;
 import okhttp3.internal.Version;
 
 /**
- * 腾讯广点通Wrapper。<br></br>
- * <p>
- * <b>请求广告所需额外参数</b>
- * <table>
- * <tr>
- * <th>
- * 参数名
- * </th>
- * <th>
- * 类型
- * </th>
- * <th>
- * 说明
- * </th>
- * <th>
- * 是否必填
- * </th>
- * </tr>
- * <tr>
- * <td>{@code EXTRA_LAT}</td>
- * <td>{@code int}</td>
- * <td>经度</td>
- * </tr>
- * <tr>
- * <td>{@code EXTRA_LNG}</td>
- * <td>{@code int}</td>
- * <td>纬度</td>
- * </tr>
- * <tr>
- * <td>{@code EXTRA_COORDTIME}</td>
- * <td>{@code int}</td>
- * <td>获取经纬度(lat/lng)的时间，毫秒值</td>
- * </tr>
- * <tr>
- * <td>{@code EXTRA_ADVERTISING_ID}</td>
- * <td>{@code String}</td>
- * <td>Android Advertising ID</td>
- * </tr>
- * </table>
- * </p>
+ * 腾讯广点通Wrapper。
  */
-public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
+public class TencentSDKWrapper extends ISDKWrapper {
     private static final String TAG = TencentSDKWrapper.class.getSimpleName();
 
     /**
@@ -103,6 +59,7 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
     private static final String EXTRA_EVENT_APP_TARGET_ID = "tencent_event_app_target_id";
     private static final String EXTRA_EVENT_CLICK_ID = "tencent_event_app_clickid";
     private static final String EXTRA_EVENT_CLICK_URL = "tencent_event_click_url";
+    private static final String EXTRA_EVENT_CLICK_ACTION_URL = "tencent_event_click_action_url";
 
     private static final String EXTRA_EVENT_DOWN_X = "downX";
     private static final String EXTRA_EVENT_DOWN_Y = "downY";
@@ -128,7 +85,7 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
      * 广告类型对应表。<br></br>
      * 腾讯广点通原生广告，不填宽高
      */
-    private static final Map<Integer, Integer> TYPE_REF_MAP = new ArrayMap<>();
+    private static final Map<String, Integer> TYPE_REF_MAP = new ArrayMap<>();
 
     // 1:banner 2:插屏 3:应用墙 4:开屏 5:feed 8:原生
     static {
@@ -143,12 +100,6 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
     private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
-    private OkHttpDownloader mOkHttpDownloader;
-    private String mDownloadPath;
-    private LruCache<Long, AdInfo> mApkDownloadMap;
-    private LruCache<String, AdInfo> mApkInstallMap;
-    private ApkDownloader mApkDownloader;
-    private BroadcastReceiver mApkInstallReceiver;
 
     // ----------------------------------------------------
 
@@ -158,70 +109,30 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
     }
 
     @Override
+    public String getSdkName() {
+        return SdkName.GUANG_DIAN_TONG;
+    }
+
+    @Override
     public void init(Context appContext, Map<String, Object> extras) {
         ReaperLog.i(TAG, "[init]");
 
         mContext = appContext;
-        mOkHttpDownloader = new OkHttpDownloader(mContext, mClient);
-        mDownloadPath = mContext.getCacheDir().getAbsolutePath()
-                + File.separator + "reaper_ad";
-        mApkDownloadMap = new LruCache<>(100);
-        mApkInstallMap = new LruCache<>(100);
-        mApkDownloader = new ApkDownloader(mContext);
-        mApkDownloader.setDownloadCallback(new ApkDownloader.DownloadCallback() {
-            @Override
-            public void onDownloadComplete(long reference, String fileName) {
-                AdInfo adInfo = mApkDownloadMap.get(reference);
-                if (adInfo == null) {
-                    return;
-                }
-
-                mThreadPoolUtils.execute(new ApkEventRunnable("7", adInfo));
-
-                adInfo.setAppDownloadFile(fileName);
-
-                String pkgName = AppUtils.getArchivePackageName(mContext, fileName);
-                if (TextUtils.isEmpty(pkgName)) {
-                    ReaperLog.e(TAG, "download return with empty apk package name");
-                    return;
-                }
-
-                if (AppUtils.isInstallApp(mContext, pkgName)) {
-                    ReaperLog.i(TAG, "App " + pkgName + " has already installed");
-
-                    adInfo.deleteAppDownloadFile();
-                } else {
-                    mApkInstallMap.put(pkgName, adInfo);
-                    AppUtils.installApp(mContext, fileName);
-                }
-
-                mApkDownloadMap.remove(reference);
-            }
-        });
-
-        mApkInstallReceiver = new ApkInstallReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
-        filter.addDataScheme("package");
-        mContext.registerReceiver(mApkInstallReceiver, filter);
     }
 
     @Override
     public void uninit() {
-        ReaperLog.i(TAG, "[tencent guangdiantong uninit]");
-
-        mContext.unregisterReceiver(mApkInstallReceiver);
+        ReaperLog.i(TAG, "[uninit]");
     }
 
     @Override
-    public boolean isSupportSync() {
+    public boolean isRequestAdSupportSync() {
         return true;
     }
 
     @Override
     public AdResponse requestAdSync(AdRequest adRequest) {
-        ReaperLog.i(TAG, "[request Ad] params : " + adRequest);
+        ReaperLog.i(TAG, "[requestAdSync] params : " + adRequest);
 
         String errMsg = checkParams(adRequest);
         if (!TextUtils.isEmpty(errMsg)) {
@@ -241,7 +152,10 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
             if (response != null) {
                 if (response.isSuccessful()) {
                     adResponse = convertResponse(
-                            adRequest.getAppId(), adRequest.getAdPositionId(),
+                            adRequest.getAdPosId(),
+                            adRequest.getAdType(),
+                            adRequest.getAdLocalAppId(),
+                            adRequest.getAdLocalPositionId(),
                             response.body().string());
                 } else {
                     JSONObject errJson = new JSONObject();
@@ -261,26 +175,34 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
 
     @Override
     public void requestAdAsync(AdRequest adRequest, AdResponseListener adResponseListener) {
-        if (adRequest == null) {
-            throw new NullPointerException("AdRequest is null");
-        }
-
-        if (adResponseListener == null) {
-            throw new NullPointerException("AdResponse is null");
-        }
-
         mThreadPoolUtils.execute(new AdRequestRunnable(adRequest, adResponseListener));
     }
 
     @Override
-    public void onEvent(int adEvent, AdInfo adInfo, Map<String, Object> eventParams) {
+    public boolean isOpenWebOwn() {
+        return false;
+    }
+
+    @Override
+    public String requestWebUrl(AdInfo adInfo) {
+        return requestUrlInner(adInfo);
+    }
+
+    @Override
+    public boolean isDownloadOwn() {
+        return false;
+    }
+
+    @Override
+    public String requestDownloadUrl(AdInfo adInfo) {
+        return requestUrlInner(adInfo);
+    }
+
+    @Override
+    public void onEvent(int adEvent, AdInfo adInfo) {
         switch (adEvent) {
             case AdEvent.EVENT_VIEW: {
                 eventView(adInfo);
-                break;
-            }
-            case AdEvent.EVENT_CLICK: {
-                eventClick(adInfo, eventParams);
                 break;
             }
         }
@@ -292,8 +214,10 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
 
         try {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("appId", adResponse.getAppId());
-            jsonObject.put("adPositionId", adResponse.getAdPositionId());
+            jsonObject.put("adPosId", adResponse.getAdPosId());
+            jsonObject.put("adType", adResponse.getAdType());
+            jsonObject.put("adLocalAppId", adResponse.getAdLocalAppId());
+            jsonObject.put("adLocalPositionId", adResponse.getAdLocalPositionId());
             jsonObject.put("oriResponse", JSON.parseObject(adResponse.getOriResponse()));
 
             ArrayMap<String, String> fileMap = new ArrayMap<>();
@@ -321,13 +245,21 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
 
         try {
             JSONObject jsonObject = JSON.parseObject(cachedResponse);
-            String appId = jsonObject.getString("appId");
-            String adPositionAd = jsonObject.getString("adPositionId");
+            String adPosId = jsonObject.getString("adPosId");
+            String adType = jsonObject.getString("adType");
+            String adLocalAppId = jsonObject.getString("adLocalAppId");
+            String adLocalPositionId = jsonObject.getString("adLocalPositionId");
             String oriResponse = jsonObject.getString("oriResponse");
 
             Map<String, String> fileMap = jsonObject.getObject("fileMap", Map.class);
 
-            return convertResponse(appId, adPositionAd, oriResponse, fileMap);
+            return convertResponse(
+                    adPosId,
+                    adType,
+                    adLocalAppId,
+                    adLocalPositionId,
+                    oriResponse,
+                    fileMap);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -342,10 +274,10 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
             return "Can not find match tencent ad type with ad type " +
                     adRequest.getAdType();
         }
-        if (EmptyUtils.isEmpty(adRequest.getAppId())) {
+        if (EmptyUtils.isEmpty(adRequest.getAdLocalAppId())) {
             return "Tencent app id is null";
         }
-        if (EmptyUtils.isEmpty(adRequest.getAdPositionId())) {
+        if (EmptyUtils.isEmpty(adRequest.getAdLocalPositionId())) {
             return "Tencent ad position id is null";
         }
 
@@ -363,7 +295,7 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
                 .addQueryParameter("count",
                         String.valueOf(adCounts))               // 广告位广告个数
                 .addQueryParameter("posid",
-                        adRequest.getAdPositionId())            // 广告位 id，由腾讯广告联盟平台生成
+                        adRequest.getAdLocalPositionId())            // 广告位 id，由腾讯广告联盟平台生成
 
                 .addQueryParameter("charset", "utf8")           // 广告内容的数据编码。只能填 utf8
                 .addQueryParameter("datafmt", "json")           // html或json
@@ -408,7 +340,7 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
 
         JSONObject jsonReq = new JSONObject();
         jsonReq.put("apiver", TENCENT_AD_API_VER);          // api 版本
-        jsonReq.put("appid", adRequest.getAppId());         // 广点通分配的 appid
+        jsonReq.put("appid", adRequest.getAdLocalAppId());         // 广点通分配的 appid
         jsonReq.put("c_os", "android");                     // ios android
         jsonReq.put("muidtype", !TextUtils.isEmpty(strImeiMd5) ? 1 : 3); // 1:imei 2:ifa 3:mac
         String strMuid = !TextUtils.isEmpty(strImeiMd5) ? strImeiMd5 : strMacMd5;
@@ -510,19 +442,24 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
         return jsonExt.toString();
     }
 
-    private AdResponse convertResponse(String appId,
-                                       String adPositionId,
+    private AdResponse convertResponse(String adPosId,
+                                       String adType,
+                                       String appLocalId,
+                                       String adLocalPositionId,
                                        String oriResponse) {
-        return convertResponse(appId, adPositionId, oriResponse, null);
+        return convertResponse(adPosId, adType, appLocalId, adLocalPositionId, oriResponse, null);
     }
 
-    private AdResponse convertResponse(String appId,
-                                       String adPositionId,
+    private AdResponse convertResponse(String adPosId,
+                                       String adType,
+                                       String adLocalAppId,
+                                       String adLocalPositionId,
                                        String oriResponse,
                                        Map<String, String> fileMap) {
         AdResponse.Builder builder = new AdResponse.Builder();
-        builder.adFrom(AdFrom.FROM_TENCENT).canCache(true)
-                .appId(appId).adPositionAd(adPositionId);
+        builder.adPosId(adPosId).adName(SdkName.GUANG_DIAN_TONG).adType(adType)
+                .canCache(true)
+                .adLocalAppId(adLocalAppId).adLocalPositionAd(adLocalPositionId);
         JSONObject errJson = new JSONObject();
 
         builder.oriResponse(oriResponse);
@@ -547,7 +484,7 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
             dataJson = resJson.getJSONObject("data");
         }
         if (dataJson != null) {
-            adPosJson = dataJson.getJSONObject(adPositionId);
+            adPosJson = dataJson.getJSONObject(adLocalPositionId);
         }
         if (adPosJson != null) {
             int dataRetCode = adPosJson.getIntValue("ret");
@@ -570,7 +507,9 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
                     continue;
                 }
                 AdInfo adInfo = new AdInfo();
-                adInfo.setAdFrom(AdFrom.FROM_TENCENT);
+                adInfo.setAdName(SdkName.GUANG_DIAN_TONG);
+                adInfo.setAdPosId(adPosId);
+                adInfo.setAdType(adType);
 
                 int contentType = AdInfo.ContentType.PICTURE;
                 int tCrtType = adInfoJson.getIntValue("crt_type");
@@ -628,17 +567,6 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
                             }
                         }
                     }
-                    if (imgFile == null) {
-                        imgFile = mOkHttpDownloader.downloadSync(
-                                new Request.Builder().url(adInfo.getImgUrl()).build(),
-                                mDownloadPath,
-                                UUID.randomUUID().toString(),
-                                true
-                        );
-                    }
-                    if (imgFile == null || !imgFile.exists()) {
-                        continue;
-                    }
                     adInfo.setImgFile(imgFile);
                 }
 
@@ -683,10 +611,16 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
         }
     }
 
-    private void eventClick(AdInfo adInfo, Map<String, Object> eventParams) {
+    private String requestUrlInner(AdInfo adInfo) {
+        String url = (String) adInfo.getExtra(EXTRA_EVENT_CLICK_ACTION_URL);
+        if (!TextUtils.isEmpty(url)) {
+            return url;
+        }
+
         String rl = (String) adInfo.getExtra(EXTRA_EVENT_CLICK_URL);
         if (TextUtils.isEmpty(rl)) {
-            return;
+            ReaperLog.e(TAG, "[requestUrlInner] rl is null");
+            return null;
         }
 
         if (adInfo.getActionType() == AdInfo.ActionType.APP_DOWNLOAD) {
@@ -699,6 +633,9 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
         int downY = -999;
         int upX = -999;
         int upY = -999;
+
+        Map<String, Object> eventParams = adInfo.getAdAllParams();
+
         if (eventParams != null) {
             if (eventParams.containsKey(EXTRA_EVENT_DOWN_X)) {
                 downX = (int) eventParams.get(EXTRA_EVENT_DOWN_X);
@@ -721,48 +658,62 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
         s.put("up_y", upY);
         rl += "&s=" + s.toJSONString();
 
-        if (adInfo.getActionType() == AdInfo.ActionType.APP_DOWNLOAD) {
-            mThreadPoolUtils.execute(new ApkDownloadRunnable(adInfo, rl));
+        if (adInfo.getActionType() == AdInfo.ActionType.BROWSER) {
+            url = rl;
         } else {
-            OpenUtils.openWebUrl(mContext, rl);
+            url = requestAppUrl(rl, adInfo);
         }
+        adInfo.setExtra(EXTRA_EVENT_CLICK_ACTION_URL, url);
+
+        return url;
     }
 
-    private void eventApp(String actionId, String targetId, String clickId) {
-        HttpUrl url = new HttpUrl.Builder()
-                .scheme(URL_HTTP)
-                .host(URL_EVENT_APP_HOST)
-                .addPathSegments(URL_EVENT_APP_PATH)
-                .addQueryParameter("actionid", actionId)
-                .addQueryParameter("targettype", "6")
-                .addQueryParameter("tagetid", targetId)
-                .addQueryParameter("clickid", clickId)
-                .build();
+    private String requestAppUrl(String rl, AdInfo adInfo) {
+        String url = null;
 
         Request request = new Request.Builder()
                 .addHeader("content-type", "application/json;charset:utf-8")
-                .url(url)
+                .url(rl)
                 .build();
 
         Response response = null;
         try {
             response = mClient.newCall(request).execute();
-            if (response != null) {
-                if (response.isSuccessful()) {
-                    ReaperLog.i(TAG, "App convert report succeed : actionId " + actionId);
+            if (response != null && response.isSuccessful()) {
+                String body = response.body().string();
+
+                JSONObject resJson = JSONObject.parseObject(body);
+                int ret = resJson.getInteger("ret");
+                if (ret == 0) {
+                    JSONObject dataJson = resJson.getJSONObject("data");
+                    if (dataJson != null) {
+                        String dstlink = dataJson.getString("dstlink");
+                        String clickid = dataJson.getString("clickid");
+
+                        if (!TextUtils.isEmpty(dstlink)) {
+                            url = dstlink;
+                        }
+
+                        if (!TextUtils.isEmpty(clickid)) {
+                            adInfo.setExtra(EXTRA_EVENT_CLICK_ID, clickid);
+                        }
+                    } else {
+                        ReaperLog.e(TAG,
+                                "Request apk download url failed due to null data");
+                    }
                 } else {
-                    ReaperLog.e(TAG, "App convert report failed : " +
-                            "\nactionId " + actionId +
-                            "\nhttp response code " + response.code());
+                    ReaperLog.e(TAG, "Request apk download url failed");
                 }
             } else {
-                ReaperLog.e(TAG, "App convert report failed due http request failed");
+                ReaperLog.e(TAG, "Request http error");
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             CloseUtils.closeIOQuietly(response);
         }
+
+        return url;
     }
 
     // ----------------------------------------------------
@@ -781,116 +732,6 @@ public class TencentSDKWrapper implements ISDKWrapper, ICacheConvert {
             if (mAdResponseListener != null) {
                 mAdResponseListener.onAdResponse(adResponse);
             }
-        }
-    }
-
-    private class ApkDownloadRunnable implements Runnable {
-        private AdInfo mAdInfo;
-        private String mUrl;
-
-        public ApkDownloadRunnable(AdInfo adInfo, String url) {
-            mAdInfo = adInfo;
-            mUrl = url;
-        }
-
-        @Override
-        public void run() {
-            Request request = new Request.Builder()
-                    .addHeader("content-type", "application/json;charset:utf-8")
-                    .url(mUrl)
-                    .build();
-
-            Response response = null;
-            try {
-                response = mClient.newCall(request).execute();
-                if (response != null) {
-                    if (response.isSuccessful()) {
-                        String body = response.body().string();
-
-                        JSONObject resJson = JSONObject.parseObject(body);
-                        int ret = resJson.getInteger("ret");
-                        if (ret == 0) {
-                            JSONObject dataJson = resJson.getJSONObject("data");
-                            if (dataJson != null) {
-                                String dstlink = dataJson.getString("dstlink");
-                                String clickid = dataJson.getString("clickid");
-                                String targetId = (String) mAdInfo.getExtra(EXTRA_EVENT_APP_TARGET_ID);
-                                if (!TextUtils.isEmpty(dstlink) &&
-                                        !TextUtils.isEmpty(clickid) &&
-                                        !TextUtils.isEmpty(targetId)) {
-
-                                    // 开始下载
-                                    mThreadPoolUtils.execute(new ApkEventRunnable("5", mAdInfo));
-
-                                    long ref = mApkDownloader.requestDownload(dstlink, null, null);
-                                    mAdInfo.setExtra(EXTRA_EVENT_CLICK_ID, clickid);
-                                    mApkDownloadMap.put(ref, mAdInfo);
-                                } else {
-                                    ReaperLog.e(TAG,
-                                            "Request apk download url failed :" +
-                                                    "\ndstlink " + dstlink +
-                                                    "\nclickid " + clickid +
-                                                    "\ntargetId " + targetId);
-                                }
-                            } else {
-                                ReaperLog.e(TAG,
-                                        "Request apk download url failed due to null data");
-                            }
-                        } else {
-                            ReaperLog.e(TAG,
-                                    "Request apk download url failed with error code " + ret);
-                        }
-
-                    } else {
-                        ReaperLog.e(TAG, "Request apk download url failed");
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                CloseUtils.closeIOQuietly(response);
-            }
-        }
-    }
-
-    private class ApkEventRunnable implements Runnable {
-        private String mActionId;
-        private AdInfo mAdInfo;
-
-        public ApkEventRunnable(String actionId, AdInfo adInfo) {
-            mActionId = actionId;
-            mAdInfo = adInfo;
-        }
-
-        @Override
-        public void run() {
-            String targetId = (String) mAdInfo.getExtra(EXTRA_EVENT_APP_TARGET_ID);
-            String clickId = (String) mAdInfo.getExtra(EXTRA_EVENT_CLICK_ID);
-            if (!TextUtils.isEmpty(targetId) && !TextUtils.isEmpty(clickId)) {
-                eventApp(mActionId, targetId, clickId);
-            }
-        }
-    }
-
-    private class ApkInstallReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String packageName = intent.getData().getSchemeSpecificPart();
-            if (TextUtils.isEmpty(packageName)) {
-                return;
-            }
-
-            AdInfo adInfo = mApkInstallMap.get(packageName);
-            if (adInfo == null) {
-                return;
-            }
-
-            // 上报安装完成
-            mThreadPoolUtils.execute(new ApkEventRunnable("6", adInfo));
-
-            adInfo.deleteAppDownloadFile();
-            mApkInstallMap.remove(packageName);
         }
     }
 }

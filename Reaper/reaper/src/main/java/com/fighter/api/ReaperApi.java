@@ -3,11 +3,11 @@ package com.fighter.api;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.fighter.ad.AdInfo;
 import com.fighter.cache.AdCacheManager;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.download.ReaperEnv;
 import com.fighter.reaper.R;
-import com.fighter.wrapper.AdInfo;
 import com.qiku.proguard.annotations.NoProguard;
 
 import java.util.Map;
@@ -130,7 +130,7 @@ public class ReaperApi {
             adInfo.setExtras(params);
 
             int adEvent = (int) params.get("event");
-            mAdCacheManager.onEvent(adEvent, adInfo, params);
+            mAdCacheManager.onEvent(adEvent, adInfo);
         }
     }
 }
