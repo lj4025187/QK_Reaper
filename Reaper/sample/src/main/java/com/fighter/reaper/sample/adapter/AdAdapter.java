@@ -10,8 +10,6 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 
 import com.fighter.loader.AdInfo;
-import com.fighter.loader.ReaperApi;
-import com.fighter.reaper.sample.activities.WebViewActivity;
 import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.holders.BaseItemHolder;
 import com.fighter.reaper.sample.holders.VideoItemHolder;
@@ -72,7 +70,7 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
 
     @Override
     public int getItemViewType(int position) {
-        return /*getItem(position).getViewType()*/2;
+        return SampleConfig.DEBUG_VIDEO_MODE ? 2 : getItem(position).getViewType();
     }
 
     @Override
@@ -93,10 +91,6 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(mContext, WebViewActivity.class);
-//                intent.setAction(SampleConfig.OPEN_WEB_ACTION);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                mContext.startActivity(intent);
                 adInfo.onAdClicked(null, null, 0, 0, 0, 0);
             }
         });

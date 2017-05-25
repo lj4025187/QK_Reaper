@@ -34,7 +34,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
     private final static String TAG = MainActivity.class.getSimpleName();
     private final static int BAIDU_TYPE = 0x01, TENCENT_TYPE = 0x02, QIHOO_TYPE = 0x03;
-    private final static int NOTIFY_DATA_CHANGED = 0x10, NOTIFY_DATA_FAILED = 0x11;
+    private final static int NOTIFY_DATA_CHANGED = 0x10, NOTIFY_DATA_FAILED = 0x11, NOTIFY_INIT_VIEW = 0x12;
 
     private CheckBox baidu, tencent, qihoo;
     private boolean baiduChecked, tencentChecked, qihooChecked;
@@ -54,8 +54,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        initView();
+    }
 
+    public void initView() {
+        setContentView(R.layout.activity_main);
         mAdsListView = (ListView) findViewById(R.id.id_ads_list);
         mAdAdapter = new AdAdapter(mContext);
         mAdAdapter.setData(mListData);
@@ -98,10 +101,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     }
 
     private void pullAdsType(int adType) {
-        if (mReaperApi == null)
+        if (mReaperApi == null) {
             SampleLog.e(TAG, "ReaperApi init fail");
+            ToastUtil.getInstance(mContext).showSingletonToast(getString(R.string.ad_reaper_init_failed));
+            return;
+        }
         mReaperApi.init(mContext, "10010", "not_a_real_key");
-        AdRequester adRequester = mReaperApi.getAdRequester("323232", this);
+        AdRequester adRequester = mReaperApi.getAdRequester("1", this);
         adRequester.requestAd();
     }
 
@@ -165,17 +171,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 adInfo.onAdShow(null);
                 BaseItem baseItem;
                 switch (adInfo.getContentType()) {
-                    case SampleConfig.VIDEO_AD_TYPE:
-                        baseItem = new VideoItem(adInfo);
-                        break;
-                    case SampleConfig.PICTURE_AD_TYPE:
-                        baseItem = new PicItem(adInfo);
-                        break;
-                    case SampleConfig.PIC_TEXT_AD_TYPE:
-                        baseItem = new PicTextItem(adInfo);
-                        break;
+//                    case SampleConfig.VIDEO_AD_TYPE:
+//                        baseItem = new VideoItem(adInfo);
+//                        break;
+//                    case SampleConfig.PICTURE_AD_TYPE:
+//                        baseItem = new PicItem(adInfo);
+//                        break;
+//                    case SampleConfig.PIC_TEXT_AD_TYPE:
+//                        baseItem = new PicTextItem(adInfo);
+//                        break;
                     default:
-                        baseItem = new UnknownItem(adInfo);
+                        baseItem = new PicItem(adInfo);
                         break;
                 }
                 SampleLog.i(TAG, " data should add " + adInfo.getTitle());
@@ -186,7 +192,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
     @Override
     public void onFailed(String s) {
-        SampleLog.e(TAG, " get ads fail err msg is:" + s);
+        SampleLog.e(TAG, " on fail ads err msg is:" + s);
         ToastUtil.getInstance(mContext).showSingletonToast(R.string.ad_load_failed_toast);
         mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
     }
@@ -210,6 +216,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     showFooterView(false);
                 }
                 showLoadingView(false);
+                break;
+            case NOTIFY_INIT_VIEW:
+                initView();
                 break;
         }
         return true;
@@ -261,4 +270,5 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         mAdsListView.setVisibility(empty ? View.GONE : View.VISIBLE);
         mEmptyText.setVisibility(empty ? View.VISIBLE : View.GONE);
     }
+
 }

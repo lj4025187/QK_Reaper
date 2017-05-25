@@ -27,11 +27,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.WebViewActivity">
-            <intent-filter>
-                <action android:name="com.reaper.action.webview" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>

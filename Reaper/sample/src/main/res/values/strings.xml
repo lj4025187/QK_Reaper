@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">ReaperSample</string>
+    <string name="ad_reaper_init_failed">初始化失败，啥都不想干</string>
     <string name="ad_load_failed_toast">醒醒啊小强，广告都挂了</string>
 
     <string name="ad_item_title_default">标题牺牲了</string>

@@ -6,9 +6,6 @@ package com.fighter.reaper.sample.config;
 
 public class SampleConfig {
 
-    public static String OPEN_WEB_ACTION = "com.reaper.action.webview";
-    public static String OPEN_WEB_URL_TAG = "reaper_sample_tag";
-
     public final static int TEXT_AD_TYPE = 0x01,    /*文字类型*/
             PICTURE_AD_TYPE = 0x02,                 /*图片类型*/
             PIC_TEXT_AD_TYPE = 0x03,                /*图字类型*/
@@ -21,5 +18,7 @@ public class SampleConfig {
     public final static boolean DEBUG_VIDEO_MODE = /*true*/false;
     public static final String TEST_VIDEO_URL = "http://techslides.com/demos/sample-videos/small.mp4";
     public static final String TEST_VIDEO_COVER_URL = "http://img10.3lian.com/sc6/show02/67/27/04.jpg";
+
+    public final static boolean DEBUG_DATA_BASE = true;
 
 }
