@@ -3,8 +3,7 @@ package com.fighter.cache;
 import android.content.Context;
 import android.util.ArrayMap;
 
-import com.fighter.common.Device;
-import com.fighter.common.utils.ThreadPoolUtils;
+import com.fighter.common.PriorityTaskDaemon;
 import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfigManager;
@@ -29,13 +28,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * the class to manager the ad cache.
@@ -59,19 +58,38 @@ public class AdCacheManager {
     private Map<String, Integer> mAdTypeMap;
     private Map<String, Method> mMethodMap;
 
-    /** the disk cache path */
-    private final static HashMap<String, List<String>> mAdCacheFilePath = new HashMap<>();
     /** the memory cache object */
     private static HashMap<String, List<Object>> mAdCache = new HashMap<>();
 
-    private ThreadPoolUtils mThreadPoolUtils;
-
+    private PriorityTaskDaemon mWorkThread;
     private Context mContext;
 
     private String mCacheId;
     private String mAppId;
     private String mAppKey;
     private Object mCallBack;
+
+    private class RequestAdRunner implements PriorityTaskDaemon.TaskRunnable {
+        private String mPosId;
+        private Object mCallBack;
+        private boolean mCached;
+
+        public RequestAdRunner(String posId, Object callBack, boolean isCached) {
+            this.mPosId = posId;
+            this.mCallBack = callBack;
+            this.mCached = isCached;
+        }
+
+        @Override
+        public Object doSomething() {
+            String errMsg = "";
+            if (!requestWrapperAd(mPosId, mCallBack, mCached, errMsg)) {
+                onRequestAdError(mCallBack, errMsg);
+                return false;
+            }
+            return true;
+        }
+    }
 
     public static synchronized AdCacheManager getInstance() {
         if (mAdCacheManager == null)
@@ -84,8 +102,6 @@ public class AdCacheManager {
 
     private void initCache(Context context) {
         String cacheId = null;
-        String cachePath;
-        List<String> adCacheFilePaths = new ArrayList<>();
         List<Object> adCacheObjects = new ArrayList<>();
         File cacheDir = context.getCacheDir();
         File adCacheDir = new File(cacheDir, "ac");
@@ -99,10 +115,8 @@ public class AdCacheManager {
                 File []files = dir.listFiles();
                 for (File file : files) {
                     if (file.isFile()) {
-                        cachePath = file.getAbsolutePath();
-                        adCacheFilePaths.add(cachePath);
                         try {
-                            Object adInfo = getAdCacheFromDisk(file);
+                            Object adInfo = getAdCacheFromFile(file);
                             adCacheObjects.add(adInfo);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -113,40 +127,38 @@ public class AdCacheManager {
                 }
             }
         }
-        Collections.sort(adCacheFilePaths, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                String path1 = o1.substring(o1.lastIndexOf("/") + 1);
-                String path2 = o2.substring(o2.lastIndexOf("/") + 1);
-                return (int)(Long.parseLong(path1) - Long.parseLong(path2));
-            }
-        });
-        mAdCacheFilePath.put(cacheId, adCacheFilePaths);
-        Collections.sort(adCacheObjects, new Comparator<Object>() {
-            @Override
-            public int compare(Object o1, Object o2) {
-                return (int) (((AdCacheInfo)o1).getCacheTime() -
-                        ((AdCacheInfo)o2).getCacheTime());
-            }
-        });
-        mAdCache.put(cacheId, adCacheObjects);
+
+        if (adCacheObjects.size() > 0) {
+            Collections.sort(adCacheObjects, new Comparator<Object>() {
+                @Override
+                public int compare(Object o1, Object o2) {
+                    return (int) (((AdCacheInfo) o1).getCacheTime() -
+                            ((AdCacheInfo) o2).getCacheTime());
+                }
+            });
+            mAdCache.put(cacheId, adCacheObjects);
+        }
         String []posIds = getAllPosId(context);
         fillAdCachePool(posIds);
     }
 
     private void initReaperConfig(Context context) {
-        updateConfig(context);
+//        updateConfig(context);
+        postConfigUpdate();
     }
 
-    private void initReaperWrapper(Context context) {
+    private void updateWrapper(Context context) {
+        if (context == null)
+            return;
         mSdkWrappers = new ArrayMap<>();
-        ISDKWrapper akAdWrapper = new AKAdSDKWrapper();
+
+        //ISDKWrapper akAdWrapper = new AKAdSDKWrapper();
         ISDKWrapper tencentWrapper = new TencentSDKWrapper();
         ISDKWrapper mixAdxWrapper = new MixAdxSDKWrapper();
-        akAdWrapper.init(context, null);
+        //akAdWrapper.init(context, null);
         tencentWrapper.init(context, null);
         mixAdxWrapper.init(context, null);
-        mSdkWrappers.put("juxiao", akAdWrapper);
+        //mSdkWrappers.put("juxiao", akAdWrapper);
         mSdkWrappers.put("guangdiantong", tencentWrapper);
         mSdkWrappers.put("baidu", mixAdxWrapper);
 
@@ -162,29 +174,16 @@ public class AdCacheManager {
         mMethodMap = new ArrayMap<>();
     }
 
-    private void updateConfig(Context context) {
-        /// TODO care thread sync
-        Device.NetworkType networkType = Device.getNetworkType(context);
-        if (networkType != Device.NetworkType.NETWORK_NO) {
-            mThreadPoolUtils.execute(new Runnable() {
-                @Override
-                public void run() {
-                    ReaperConfigManager.fetchReaperConfigFromServer(mContext,
-                            mContext.getPackageName(), SALT, mAppKey, mAppId);
-                }
-            });
-        }
-    }
-
     /**
      *
      * fill ad cache pool when cache init fill it.
      */
     private void fillAdCachePool(String[] posIds) {
+        cleanCache(posIds);
         for (String posId : posIds) {
             File file = new File(mCacheDir, posId);
             if (!file.exists()) {
-                mThreadPoolUtils.execute(new RequestAdRunner(posId, null, true));
+                postAdRequestTask(posId, null, true);
             }
         }
     }
@@ -196,14 +195,16 @@ public class AdCacheManager {
      * @param appId
      * @param appKey
      */
-    public void init(Context context, String appId, String appKey) {
+    public void
+    init(Context context, String appId, String appKey) {
         mContext = context;
         mAppId = appId;
         mAppKey = appKey;
 
-        mThreadPoolUtils = new ThreadPoolUtils(ThreadPoolUtils.CachedThread, 1);
+        mWorkThread = new PriorityTaskDaemon();
+        mWorkThread.start();
         initReaperConfig(mContext);
-        initReaperWrapper(mContext);
+        updateWrapper(mContext);
         initCache(mContext);
     }
 
@@ -235,8 +236,9 @@ public class AdCacheManager {
             ISDKWrapper sdkWrapper = mSdkWrappers.get(adSource);
             ICacheConvert convert = (ICacheConvert)sdkWrapper;
             onRequestAd(callBack, convert.convertFromString(info.getCache()).getAdAllParams());
-            //consumeAdCache(info);
             requestCacheAdInternal();
+        } else {
+            onRequestAdError(callBack, "the request ad form all source is null");
         }
     }
 
@@ -252,16 +254,10 @@ public class AdCacheManager {
         if (cacheId == null || adInfo == null)
             return;
         List<Object> adInfoObjects = new ArrayList<>();
-        List<String> adInfoFilePaths = new ArrayList<>();
         AdCacheInfo adCacheInfo = (AdCacheInfo)adInfo;
         String cacheFileId = generateCacheId(adCacheInfo);
         if (mAdCache.containsKey(cacheId)) {
             adInfoObjects = mAdCache.get(cacheId);
-        }
-        adInfoObjects.add(adInfo);
-        mAdCache.put(cacheId, adInfoObjects);
-        if (mAdCacheFilePath.containsKey(cacheId)) {
-            adInfoFilePaths = mAdCacheFilePath.get(cacheId);
         }
         File cacheIdDir = new File(mCacheDir, cacheId);
         if (!cacheIdDir.exists()) {
@@ -271,15 +267,18 @@ public class AdCacheManager {
         if (!adInfoFile.exists()) {
             adInfoFile.createNewFile();
         }
-        adInfoFilePaths.add(adInfoFile.getAbsolutePath());
-        mAdCacheFilePath.put(cacheId, adInfoFilePaths);
+        adCacheInfo.setCachePath(adInfoFile.getAbsolutePath());
+        // TODO test all the adc cache is available
+        adCacheInfo.setCacheAvailable(true);
+        adInfoObjects.add(adInfo);
+        mAdCache.put(cacheId, adInfoObjects);
         FileOutputStream fileOutputStream = new FileOutputStream(adInfoFile);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
         objectOutputStream.writeObject(adInfo);
         objectOutputStream.close();
         fileOutputStream.close();
     }
-    private Object getAdCacheFromDisk(File file) throws IOException, ClassNotFoundException {
+    private Object getAdCacheFromFile(File file) throws IOException, ClassNotFoundException {
         Object adInfo = null;
         if (file == null)
             return null;
@@ -293,17 +292,24 @@ public class AdCacheManager {
         return adInfo;
     }
     private Object getAdCacheFromDisk(String cacheId) throws IOException, ClassNotFoundException {
-        Object adInfo = null;
-        List<String> cacheAdInfoPaths = mAdCacheFilePath.get(cacheId);
-        File adInfoFile;
-        if (cacheAdInfoPaths != null && cacheAdInfoPaths.size() > 0) {
-            adInfoFile = new File(cacheAdInfoPaths.get(0));
-            if (adInfoFile.exists()) {
-                FileInputStream fileInputStream = new FileInputStream(adInfoFile);
-                ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-                adInfo = objectInputStream.readObject();
-                objectInputStream.close();
-                fileInputStream.close();
+        AdCacheInfo adInfo = null;
+        File adCacheDir = new File(mCacheDir, cacheId);
+        if (adCacheDir.exists() && adCacheDir.isDirectory()) {
+            File []cacheFiles = adCacheDir.listFiles();
+            List<File> cacheFileList = Arrays.asList(cacheFiles);
+            Collections.sort(cacheFileList, new Comparator<File>() {
+                @Override
+                public int compare(File o1, File o2) {
+                    String n1 = o1.getName();
+                    String n2 = o2.getName();
+                    return (int) (Long.parseLong(n1) - Long.parseLong(n2));
+                }
+            });
+            for (File file : cacheFileList) {
+                adInfo = (AdCacheInfo) getAdCacheFromFile(file);
+                if (adInfo != null && adInfo.isCacheAvailable()) {
+                    break;
+                }
             }
         }
         return adInfo;
@@ -322,21 +328,23 @@ public class AdCacheManager {
         /* 1. find ad cache in memory cache */
         Object adInfo = null;
         List<Object> adInfoObjects = mAdCache.get(cacheId);
-        if (adInfoObjects != null && adInfoObjects.size() > 0) {
-            adInfo = adInfoObjects.get(0);
-            if (adInfo != null && adInfo instanceof AdCacheInfo)
-                return adInfo;
+        for (int i = 0; i< adInfoObjects.size(); i++) {
+            adInfo = adInfoObjects.get(i);
+            if (adInfo != null && adInfo instanceof AdCacheInfo && ((AdCacheInfo) adInfo).isCacheAvailable())
+                break;
         }
         /* 2. find ad cache in disk cache */
-        try {
-            adInfo = getAdCacheFromDisk(cacheId);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        if (adInfo == null) {
+            try {
+                adInfo = getAdCacheFromDisk(cacheId);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         }
         /* 3. check ad cache is available */
-        if (isAdCacheAvailable(adInfo)) {
+        if (isAdCacheTimeout(adInfo)) {
             return adInfo;
         }
         /* 4. request two ads from sdk, one is return, another is cache */
@@ -354,24 +362,22 @@ public class AdCacheManager {
         return true;
     }
 
-    public void consumeAdCache(AdCacheInfo info) {
-        if (info == null)
+    public void consumeAdCache(String cacheId) {
+        if (cacheId == null)
             return;
-        String cacheId = info.getAdCacheId();
         List<Object> cacheObjects = mAdCache.get(cacheId);
-        if (cacheObjects != null && cacheObjects.size() > 0) {
-            cacheObjects.remove(0);
+        AdCacheInfo cacheInfoInBottom = null;
+        if (cacheObjects != null) {
+            cacheInfoInBottom = (AdCacheInfo) cacheObjects.get(0);
         }
-        List<String> cachePaths = mAdCacheFilePath.get(cacheId);
-        if (cachePaths != null && cachePaths.size() > 0) {
-            File cacheFile = new File(cachePaths.get(0));
-            if (cacheFile.exists()) {
-                cacheFile.delete();
+        if (cacheObjects != null && cacheObjects.size() > 2) {
+            if (cacheInfoInBottom != null && !cacheInfoInBottom.isCacheAvailable()) {
+                File cacheFile = new File(cacheInfoInBottom.getCachePath());
+                if (cacheFile.exists()) {
+                    cacheFile.delete();
+                }
+                cacheObjects.remove(0);
             }
-        }
-        File cacheDir = new File(mCacheDir, cacheId);
-        if (cacheDir.exists()) {
-            cacheDir.delete();
         }
     }
 
@@ -383,6 +389,7 @@ public class AdCacheManager {
     }
 
     public void onEvent(int adEvent, AdInfo adInfo, Map<String, Object> eventParams) {
+        // TODO set cache is unavailable
         ISDKWrapper wrapper = null;
         switch (adInfo.getAdFrom()) {
             case AdFrom.FROM_TENCENT: {
@@ -410,7 +417,7 @@ public class AdCacheManager {
      * @param info the ad cache info
      * @return if available return true
      */
-    private boolean isAdCacheAvailable(Object info) {
+    private boolean isAdCacheTimeout(Object info) {
         if (info == null)
             return false;
         AdCacheInfo cacheInfo = (AdCacheInfo)info;
@@ -425,13 +432,59 @@ public class AdCacheManager {
      *
      */
     private void requestDoubleAds() {
-        mThreadPoolUtils.execute(new RequestAdRunner(mCacheId, mCallBack));
-        mThreadPoolUtils.execute(new RequestAdRunner(mCacheId, null, true));
+        postAdRequestTask(mCacheId, mCallBack, false);
+        postAdRequestTask(mCacheId, null, true);
     }
 
-    private void requestCacheAdInternal() {
-        mThreadPoolUtils.execute(new RequestAdRunner(mCacheId, null, true));
+    private void cleanCache(String[] posIds) {
+        for (String posId : posIds) {
+            File dir = new File(mCacheDir, posId);
+            if (dir.isDirectory()) {
+                File[] files = dir.listFiles();
+                for (File file : files) {
+                    if (file.isFile() && file.exists()) {
+                        file.delete();
+                    }
+                }
+            }
+        }
     }
+    private void postConfigUpdate() {
+        PriorityTaskDaemon.NotifyPriorityTask mUpdateConfig = new PriorityTaskDaemon.NotifyPriorityTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
+                new PriorityTaskDaemon.TaskRunnable() {
+                    @Override
+                    public Object doSomething() {
+                        return ReaperConfigManager.fetchReaperConfigFromServer(mContext,
+                                mContext.getPackageName(), SALT, mAppKey, mAppId);
+                    }
+                },
+                new PriorityTaskDaemon.TaskNotify() {
+                    @Override
+                    public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+                        if ((boolean)result) {
+                            updateWrapper(mContext);
+                        }
+                    }
+                });
+        mWorkThread.postTaskInFront(mUpdateConfig);
+    }
+
+    private void postAdRequestTask(String posId, Object callBack, boolean isCache) {
+        RequestAdRunner adRunner = new RequestAdRunner(posId, callBack, isCache);
+        PriorityTaskDaemon.NotifyPriorityTask requestAdTask = new PriorityTaskDaemon.NotifyPriorityTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST, adRunner, new PriorityTaskDaemon.TaskNotify() {
+            @Override
+            public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+                if((boolean)result) {
+
+                }
+            }
+        });
+        mWorkThread.postTaskInFront(requestAdTask);
+    }
+    private void requestCacheAdInternal() {
+        postAdRequestTask(mCacheId, null, true);
+    }
+
     private void onRequestAd(Object receiver, Map<String, Object> params) {
         if (receiver == null) {
             return;
@@ -460,189 +513,108 @@ public class AdCacheManager {
         }
     }
 
-    private class RequestAdRunner implements Runnable {
-        private String mAdPosition;
-        private Object mCallback;
-        private boolean mCached;
+    private boolean requestWrapperAd(String adPosition, Object callBack, boolean isCached, String errMsg) {
+        // 首先查找缓存是否存在
 
-        public RequestAdRunner(String adPosition, Object adRequestCallback) {
-            mAdPosition = adPosition;
-            mCallback = adRequestCallback;
+        // 获取配置信息
+        boolean fetchSucceed = true;
+        //TODO : update fetch config update wrapper
+//        ReaperConfigManager.fetchReaperConfigFromServer(mContext,
+//                            mContext.getPackageName(), SALT, mAppKey, mAppId);
+
+//        postConfigUpdate();
+
+        if (!fetchSucceed) {
+//            onRequestAdError(mCallback, "Can not fetch reaper config from server");
+            errMsg = "Can not fetch reaper config from server";
+            return false;
         }
 
-        public RequestAdRunner(String adPosition, Object adRequestCallback, boolean isCache) {
-            mAdPosition = adPosition;
-            mCallback = adRequestCallback;
-            mCached = isCache;
+        ReaperAdvPos reaperAdvPos =
+                ReaperConfigManager.getReaperAdvPos(mContext, adPosition);
+        if (reaperAdvPos == null) {
+            errMsg = "Can not find config info with ad position id [" + adPosition + "]";
+            return false;
+        }
+        List<ReaperAdSense> reaperAdSenses = reaperAdvPos.getAdSenseList();
+        if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
+            ReaperAdSense adSense = ReaperConfigManager.getReaperAdSens(mContext, adPosition);
+            List<ReaperAdSense> adSenses = new ArrayList<>();
+            adSenses.add(adSense);
+            reaperAdSenses = adSenses;
         }
 
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public void run() {
-            // 首先查找缓存是否存在
-
-            // 获取配置信息
-            boolean fetchSucceed = true;
-                    /*ReaperConfigManager.fetchReaperConfigFromServer(mContext,
-                            mContext.getPackageName(), SALT, mAppKey, mAppId);*/
-
-            if (!fetchSucceed) {
-                onRequestAdError(mCallback, "Can not fetch reaper config from server");
-                return;
-            }
-
-            ReaperAdvPos reaperAdvPos =
-                    ReaperConfigManager.getReaperAdvPos(mContext, mAdPosition);
-            if (reaperAdvPos == null) {
-                /*onRequestAdError(mCallback,
-                        "Can not find config info with ad position id [" + mAdPosition + "]");
-                return;*/
-                Random random = new Random(System.currentTimeMillis());
-                reaperAdvPos = new ReaperAdvPos();
-                reaperAdvPos.pos_id = mAdPosition;
-                reaperAdvPos.adv_type = "banner";
-                ReaperAdSense tencentSense = new ReaperAdSense();
-                tencentSense.ads_name = "guangdiantong";
-                tencentSense.ads_appid = "1104241296";
-                tencentSense.ads_posid = "5060504124524896";
-                tencentSense.adv_size_type = "pixel";
-                tencentSense.adv_real_size = "640x100";
-                tencentSense.max_adv_num = "10";
-                tencentSense.priority = String.valueOf(random.nextInt(10));
-                ReaperAdSense baiduSense = new ReaperAdSense();
-                baiduSense.ads_name = "baidu";
-                baiduSense.ads_appid = "0";
-                baiduSense.ads_posid = "128";
-                baiduSense.adv_size_type = "pixel";
-                baiduSense.adv_real_size = "600x300";
-                baiduSense.max_adv_num = "10";
-                baiduSense.priority = String.valueOf(random.nextInt(10));
-                ReaperAdSense juxiaoSense = new ReaperAdSense();
-                juxiaoSense.ads_name = "juxiao";
-                juxiaoSense.ads_appid = "0";
-                juxiaoSense.ads_posid = "128";
-                juxiaoSense.adv_size_type = "pixel";
-                juxiaoSense.adv_real_size = "640x100";
-                juxiaoSense.max_adv_num = "1";
-                juxiaoSense.priority = String.valueOf(random.nextInt(10));
-
-                reaperAdvPos.addAdSense(tencentSense);
-                reaperAdvPos.addAdSense(baiduSense);
-                reaperAdvPos.addAdSense(juxiaoSense);
-            }
-            List<ReaperAdSense> reaperAdSenses = reaperAdvPos.getAdSenseList();
-            if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
-                ReaperAdSense adSense = ReaperConfigManager.getReaperAdSens(mContext, mAdPosition);
-                List<ReaperAdSense> adSenses = new ArrayList<>();
-                adSenses.add(adSense);
-                reaperAdSenses = adSenses;
-            }
-            if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
-                onRequestAdError(mCallback,
-                        "Config get 0 ad sense with ad position id [" + mAdPosition + "]");
-                return;
-            }
-            Collections.sort(reaperAdSenses);
-
-            // 依据配置信息获取广告
-            mThreadPoolUtils.execute(new RequestSingleAdRunner(
-                    reaperAdSenses,
-                    reaperAdvPos.adv_type,
-                    mCallback,
-                    mCached
-            ));
+        if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
+            errMsg = "Config get 0 ad sense with ad position id [" + adPosition + "]";
+            return false;
         }
+
+        Collections.sort(reaperAdSenses);
+        return requestWrapperAdInner(reaperAdSenses,reaperAdvPos.adv_type, isCached, callBack, errMsg);
     }
 
-    private class RequestSingleAdRunner implements Runnable {
-        private Object mCallback;
-        private String mAdvType;
-        private List<ReaperAdSense> mReaperAdSenses;
-        private boolean mCached;
-
-        public RequestSingleAdRunner(List<ReaperAdSense> reaperAdSenses,
-                                     String advType,
-                                     Object adRequestCallback) {
-            mReaperAdSenses = reaperAdSenses;
-            mAdvType = advType;
-            mCallback = adRequestCallback;
+    private boolean requestWrapperAdInner(List<ReaperAdSense> reaperAdSenses, String advType, boolean isCache,
+                                          Object callBack, String errMsg) {
+        Iterator<ReaperAdSense> it = reaperAdSenses.iterator();
+        ReaperAdSense reaperAdSense = it.next();
+        it.remove();
+        String adsName = reaperAdSense.ads_name;
+        if (mSdkWrappers == null)
+            return false;
+        ISDKWrapper sdkWrapper = mSdkWrappers.get(adsName);
+        if (sdkWrapper == null) {
+            errMsg = "Can not find " + adsName + "'s sdk implements, may need " +
+                            "upgrade reaper jar, current version " + BumpVersion.value();
+            return false;
         }
 
-        public RequestSingleAdRunner(List<ReaperAdSense> reaperAdSenses,
-                                     String advType,
-                                     Object adRequestCallback,
-                                     boolean isCache) {
-            mReaperAdSenses = reaperAdSenses;
-            mAdvType = advType;
-            mCallback = adRequestCallback;
-            mCached = isCache;
+        int adType = 0;
+        if (mAdTypeMap.containsKey(advType)) {
+            adType = mAdTypeMap.get(advType);
+        } else {
+            errMsg = "Can not find match ad type with type name " +
+                    advType;
+            return false;
         }
 
-        @Override
-        public void run() {
-            Iterator<ReaperAdSense> it = mReaperAdSenses.iterator();
-            ReaperAdSense reaperAdSense = it.next();
-            it.remove();
-            String adsName = reaperAdSense.ads_name;
-            if (mSdkWrappers == null)
-                return;
-            ISDKWrapper sdkWrapper = mSdkWrappers.get(adsName);
-            if (sdkWrapper == null) {
-                onRequestAdError(mCallback,
-                        "Can not find " + adsName + "'s sdk implements, may need " +
-                                "upgrade reaper jar, current version " + BumpVersion.value());
-                return;
-            }
+        AdRequest.Builder builder = new AdRequest.Builder()
+                .appId(reaperAdSense.ads_appid)
+                .adPositionId(reaperAdSense.ads_posid)
+                .adType(adType)
+                .adCount(1);
 
-            int adType = 0;
-            if (mAdTypeMap.containsKey(mAdvType)) {
-                adType = mAdTypeMap.get(mAdvType);
-            } else {
-                onRequestAdError(mCallback, "Can not find match ad type with type name " +
-                        mAdvType);
-                return;
-            }
+        if ("pixel".equalsIgnoreCase(reaperAdSense.adv_size_type)) {
+            String realSize = reaperAdSense.adv_real_size;
+            String[] size = realSize.split("x");
+            int width = 0;
+            int height = 0;
 
-            AdRequest.Builder builder = new AdRequest.Builder()
-                    .appId(reaperAdSense.ads_appid)
-                    .adPositionId(reaperAdSense.ads_posid)
-                    .adType(adType)
-                    .adCount(1);
-
-            if ("pixel".equalsIgnoreCase(reaperAdSense.adv_size_type)) {
-                String realSize = reaperAdSense.adv_real_size;
-                String[] size = realSize.split("x");
-                int width = 0;
-                int height = 0;
-
-                if (size.length == 2) {
-                    try {
-                        width = Integer.valueOf(size[0]);
-                        height = Integer.valueOf(size[1]);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            if (size.length == 2) {
+                try {
+                    width = Integer.valueOf(size[0]);
+                    height = Integer.valueOf(size[1]);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
-                if (width > 0 || height > 0) {
-                    builder.adWidth(width);
-                    builder.adHeight(height);
-                }
-            } else if ("ratio".equalsIgnoreCase(reaperAdSense.adv_size_type)) {
-                onRequestAdError(mCallback, "[TEST] Not support adv size type " +
-                        reaperAdSense.adv_size_type);
-                return;
-            } else {
-                onRequestAdError(mCallback, "Not support adv size type " +
-                        reaperAdSense.adv_size_type);
-                return;
             }
 
-            sdkWrapper.requestAdAsync(builder.create(),
-                    mCached ? new AdResponseCacheCallback(mReaperAdSenses, mAdvType, reaperAdSense, mCallback) :
-                            new AdResponseCallback(mReaperAdSenses, mAdvType, mCallback));
+            if (width > 0 || height > 0) {
+                builder.adWidth(width);
+                builder.adHeight(height);
+            }
+        } else if ("ratio".equalsIgnoreCase(reaperAdSense.adv_size_type)) {
+            errMsg = "[TEST] Not support adv size type " +
+                    reaperAdSense.adv_size_type;
+            return false;
+        } else {
+            errMsg = "Not support adv size type " +
+                    reaperAdSense.adv_size_type;
+            return false;
         }
+
+        sdkWrapper.requestAdAsync(builder.create(), new AdResponseCallback(reaperAdSenses, advType,
+                callBack, reaperAdSense, isCache, errMsg));
+        return true;
     }
 
     private class AdResponseCallback implements AdResponseListener {
@@ -650,13 +622,18 @@ public class AdCacheManager {
         private List<ReaperAdSense> mReaperAdSenses;
         private String mAdvType;
         private Object mCallback;
+        private ReaperAdSense curAdSense ;
+        private boolean mCached;
+        private String mErrMsg;
 
-        public AdResponseCallback(List<ReaperAdSense> reaperAdSenses,
-                                  String advType,
-                                  Object adRequestCallback) {
-            mReaperAdSenses = reaperAdSenses;
-            mAdvType = advType;
-            mCallback = adRequestCallback;
+        public AdResponseCallback(List<ReaperAdSense> mReaperAdSenses, String mAdvType, Object mCallback,
+                                  ReaperAdSense curAdSense, boolean mCached, String mErrMsg) {
+            this.mReaperAdSenses = mReaperAdSenses;
+            this.mAdvType = mAdvType;
+            this.mCallback = mCallback;
+            this.curAdSense = curAdSense;
+            this.mCached = mCached;
+            this.mErrMsg = mErrMsg;
         }
 
         @Override
@@ -669,68 +646,31 @@ public class AdCacheManager {
             }
 
             if (adResponse.isSucceed() || !nextRequest()) {
-                onRequestAd(mCallback, adResponse.getAdAllParams());
+                if (!mCached) {
+                    onRequestAd(mCallback, adResponse.getAdAllParams());
+                } else {
+                    AdCacheInfo info = new AdCacheInfo();
+                    ISDKWrapper sdkWrapper = mSdkWrappers.get(curAdSense.ads_name);
+                    ICacheConvert convert = (ICacheConvert) sdkWrapper;
+                    info.setAdSource(curAdSense.ads_name);
+                    info.setCache(convert.convertToString(adResponse));
+                    info.setExpireTime(curAdSense.expire_time);
+                    info.setAdCacheId(curAdSense.getPosId());
+                    try {
+                        cacheAdInfo(curAdSense.getPosId(), info);
+                        consumeAdCache(curAdSense.getPosId());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
+
         }
 
         private boolean nextRequest() {
             if (mReaperAdSenses != null &&
                     mReaperAdSenses.size() > 0) {
-                mThreadPoolUtils.execute(
-                        new RequestSingleAdRunner(mReaperAdSenses, mAdvType, mCallback));
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    private class AdResponseCacheCallback implements AdResponseListener {
-
-        private List<ReaperAdSense> mReaperAdSenses;
-        private String mAdvType;
-        private ReaperAdSense curAdSense ;
-        private Object mCallback;
-
-        public AdResponseCacheCallback(List<ReaperAdSense> reaperAdSenses,
-                                       String advType,
-                                       ReaperAdSense adSense,
-                                       Object adRequestCallback) {
-            mReaperAdSenses = reaperAdSenses;
-            mAdvType = advType;
-            curAdSense = adSense;
-            mCallback = adRequestCallback;
-        }
-
-        @Override
-        public void onAdResponse(AdResponse adResponse) {
-            if (adResponse == null) {
-                if (!nextRequest()) {
-                    onRequestAdError(mCallback, "Response with no result");
-                }
-                return;
-            }
-
-            if ((adResponse.isSucceed() && adResponse.canCache()) || !nextRequest()) {
-                AdCacheInfo info = new AdCacheInfo();
-                ISDKWrapper sdkWrapper = mSdkWrappers.get(curAdSense.ads_name);
-                ICacheConvert convert = (ICacheConvert) sdkWrapper;
-                info.setAdSource(curAdSense.ads_name);
-                info.setCache(convert.convertToString(adResponse));
-                info.setExpireTime(curAdSense.expire_time);
-                try {
-                    cacheAdInfo(curAdSense.getPosId(), info);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        private boolean nextRequest() {
-            if (mReaperAdSenses != null &&
-                    mReaperAdSenses.size() > 0) {
-                mThreadPoolUtils.execute(
-                        new RequestSingleAdRunner(mReaperAdSenses, mAdvType, mCallback));
+                requestWrapperAdInner(mReaperAdSenses, mAdvType, mCached, mCallback, mErrMsg);
                 return true;
             } else {
                 return false;

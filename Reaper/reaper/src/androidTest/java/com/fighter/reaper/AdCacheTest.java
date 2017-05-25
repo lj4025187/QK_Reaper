@@ -1,6 +1,7 @@
 package com.fighter.reaper;
 
 import android.content.Context;
+import android.os.HandlerThread;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.core.deps.guava.collect.Collections2;
 import android.support.test.runner.AndroidJUnit4;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by lichen on 17-5-17.
@@ -31,49 +33,67 @@ import java.util.Random;
 public class AdCacheTest {
     private static final String TAG = AdCacheTest.class.getSimpleName();
 
-    private void putParam(Map<String, Object> params, String key, Object value) {
-        if (params != null && !TextUtils.isEmpty(key) && value != null) {
-            params.put(key, value);
-        }
-    }
     @Test
     public void useCacheAdInfo () throws Exception {
-        Context context = InstrumentationRegistry.getTargetContext();
-        Map<String, Object> params = new ArrayMap<>();
-        putParam(params, "appContext", context);
-        putParam(params, "appId", "100010");
-        putParam(params, "appKey", "not_a_real_key");
-        AdCacheManager adCacheManager = AdCacheManager.getInstance();
-        adCacheManager.init(params);
+        final CountDownLatch latch = new CountDownLatch(1);
 
-        Thread.sleep(2*1000);
-
-        Class <?> clz = AdCacheManager.class;
-        Field fieldPath = clz.getDeclaredField("mCacheDir");
-        fieldPath.setAccessible(true);
-        final String path =  ((File)fieldPath.get(adCacheManager)).getAbsolutePath();
-        ReaperLog.i(TAG, "test CacheDir path = " + path);
-        Assert.assertNotNull(path);
-        Field cachePathField = clz.getDeclaredField("mAdCacheFilePath");
-        cachePathField.setAccessible(true);
-        Object map = cachePathField.get(null);
-        HashMap<String, List<String>> cachePathMap = (HashMap<String, List<String>>)map;
-        ReaperLog.i(TAG, "cache path map = " + cachePathMap);
-        Assert.assertTrue(cachePathMap.size() > 0);
-        Field cacheField = clz.getDeclaredField("mAdCache");
-        cacheField.setAccessible(true);
-        HashMap<String, List<Object>> cacheMap = (HashMap<String, List<Object>>) cacheField.get(null);
-        ReaperLog.i(TAG, "cache map = " + cacheMap);
-        Assert.assertTrue(cacheMap.size() > 0);
-
-        adCacheManager.requestAdCache("121212", new TestCallBack() {
+        HandlerThread thread = new HandlerThread("adCache test") {
             @Override
-            public void onResponse(Map<String, Object> params) {
-                ReaperLog.i(TAG, "onResponse param = " + params);
-                Assert.assertNotNull(params);
-                Assert.assertTrue(params.size() > 0);
+            protected void onLooperPrepared() {
+                Context context = InstrumentationRegistry.getTargetContext();
+                AdCacheManager adCacheManager = AdCacheManager.getInstance();
+                adCacheManager.init(context, "100010", "not_a_real_key");
+
+                latch.countDown();
+
+                Class <?> clz = AdCacheManager.class;
+                Field fieldPath = null;
+                try {
+                    fieldPath = clz.getDeclaredField("mCacheDir");
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                }
+                fieldPath.setAccessible(true);
+                String path = null;
+                try {
+                    path = ((File)fieldPath.get(adCacheManager)).getAbsolutePath();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                ReaperLog.i(TAG, "test CacheDir path = " + path);
+                Assert.assertNotNull(path);
+                Field cacheField = null;
+                try {
+                    cacheField = clz.getDeclaredField("mAdCache");
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                }
+                cacheField.setAccessible(true);
+                HashMap<String, List<Object>> cacheMap = null;
+                try {
+                    cacheMap = (HashMap<String, List<Object>>) cacheField.get(null);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                ReaperLog.i(TAG, "cache map = " + cacheMap);
+                Assert.assertTrue(cacheMap.size() > 0);
+
+                adCacheManager.requestAdCache("121212", new TestCallBack() {
+                    @Override
+                    public void onResponse(Map<String, Object> params) {
+                        ReaperLog.i(TAG, "onResponse param = " + params);
+                        Assert.assertNotNull(params);
+                        Assert.assertTrue(params.size() > 0);
+                    }
+                });
             }
-        });
+        };
+        thread.start();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private interface TestCallBack {

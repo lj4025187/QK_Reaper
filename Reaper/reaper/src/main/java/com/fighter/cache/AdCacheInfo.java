@@ -22,6 +22,15 @@ public class AdCacheInfo implements Serializable {
     private String mCache;
     private boolean mCacheAvailable;
     private String mAdSource;
+    private String mCachePath;
+
+    public String getCachePath() {
+        return mCachePath;
+    }
+
+    public void setCachePath(String mCachePath) {
+        this.mCachePath = mCachePath;
+    }
 
     public String getAdSource() {
         return mAdSource;
@@ -31,7 +40,7 @@ public class AdCacheInfo implements Serializable {
         this.mAdSource = mAdSource;
     }
 
-    public boolean ismCacheAvailable() {
+    public boolean isCacheAvailable() {
         return mCacheAvailable;
     }
 
