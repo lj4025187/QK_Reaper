@@ -1,5 +1,7 @@
 package com.fighter.reaper.sample.holders;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -66,7 +68,6 @@ public class PicItemHolder extends BaseItemHolder<PicItem> {
                 Glide.with(baseView.getContext())
                         .load(imageFile)
                         .asBitmap()
-                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                         .into(adView);
             }
         } else {

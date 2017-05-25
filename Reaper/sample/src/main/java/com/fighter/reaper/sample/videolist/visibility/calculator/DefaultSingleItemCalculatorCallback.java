@@ -15,14 +15,14 @@ public class DefaultSingleItemCalculatorCallback implements SingleListViewItemAc
     @Override
     public void activateNewCurrentItem(ListItem newListItem, View newView, int newViewPosition) {
         if (newListItem != null) {
-            newListItem.setActive(newView, newViewPosition);
+            newListItem.setPositive(newView, newViewPosition);
         }
     }
 
     @Override
     public void deactivateCurrentItem(ListItem listItemToDeactivate, View view, int position) {
         if (listItemToDeactivate != null) {
-            listItemToDeactivate.deactivate(view, position);
+            listItemToDeactivate.negative(view, position);
         }
     }
 }

@@ -76,7 +76,7 @@
         android:layout_marginRight="10dp"
         android:layout_marginTop="16dp">
 
-        <com.fighter.sample.videolist.widget.TextureVideoView
+        <com.fighter.reaper.sample.videolist.widget.TextureVideoView
             android:id="@+id/id_video_texture_view"
             android:layout_width="match_parent"
             android:layout_height="300dp"
@@ -90,7 +90,7 @@
 
         <include layout="@layout/ad_flag_layout" />
 
-        <com.fighter.sample.videolist.widget.CircularProgressBar
+        <com.fighter.reaper.sample.videolist.widget.CircularProgressBar
             android:id="@+id/id_video_progress"
             android:layout_width="100dp"
             android:layout_height="100dp"

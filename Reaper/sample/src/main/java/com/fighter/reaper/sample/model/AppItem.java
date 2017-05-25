@@ -1,13 +1,17 @@
 package com.fighter.reaper.sample.model;
 
+import com.fighter.loader.AdInfo;
+import com.fighter.reaper.sample.config.SampleConfig;
+
 /**
  * Created by Administrator on 2017/5/24.
  */
 
 public class AppItem extends BaseItem{
 
-    public AppItem(int viewType) {
-        super(viewType);
+    public AppItem(AdInfo adInfo) {
+        super(adInfo);
+        this.setViewType(SampleConfig.UNKNOWN_AD_TYPE);
     }
 
 }

@@ -18,4 +18,8 @@ public class SampleConfig {
     public final static int ACTION_TYPE_BROWSER = 0x01, /*可浏览的类型*/
             ACTION_TYPE_DOWNLOAD = 0x02;                /*可下载类型*/
 
+    public final static boolean DEBUG_VIDEO_MODE = /*true*/false;
+    public static final String TEST_VIDEO_URL = "http://techslides.com/demos/sample-videos/small.mp4";
+    public static final String TEST_VIDEO_COVER_URL = "http://img10.3lian.com/sc6/show02/67/27/04.jpg";
+
 }

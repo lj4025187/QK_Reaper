@@ -13,9 +13,14 @@ import com.fighter.loader.AdInfo;
 import com.fighter.loader.AdRequester;
 import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.adapter.AdAdapter;
+import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.model.BaseItem;
 import com.fighter.reaper.sample.model.PicItem;
+import com.fighter.reaper.sample.model.PicTextItem;
+import com.fighter.reaper.sample.model.UnknownItem;
+import com.fighter.reaper.sample.model.VideoItem;
 import com.fighter.reaper.sample.utils.SampleLog;
+import com.fighter.reaper.sample.utils.ToastUtil;
 import com.fighter.reaper.sample.videolist.visibility.calculator.SingleListViewItemActiveCalculator;
 import com.fighter.reaper.sample.videolist.visibility.scroll.ListViewItemPositionGetter;
 
@@ -86,9 +91,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     }
 
     private void startPullAds() {
-        if (baiduChecked) pullAdsType(BAIDU_TYPE);
-        if (tencentChecked) pullAdsType(TENCENT_TYPE);
-        if (qihooChecked) pullAdsType(QIHOO_TYPE);
+//        if (baiduChecked) pullAdsType(BAIDU_TYPE);
+//        if (tencentChecked) pullAdsType(TENCENT_TYPE);
+//        if (qihooChecked) pullAdsType(QIHOO_TYPE);
+        pullAdsType(BAIDU_TYPE);
     }
 
     private void pullAdsType(int adType) {
@@ -135,19 +141,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             @Override
             public void run() {
                 for (AdInfo adInfo : list) {
-                    adInfo.onAdShow(null);
-                    BaseItem baseItem = null;
-                    switch (adInfo.getContentType()) {
-                        default:
-                            baseItem = new PicItem("");
-                            break;
-                    }
-                    baseItem.setAdInfo(adInfo);
+                    BaseItem baseItem = parseBaseItem(adInfo);
                     if (mListData.contains(baseItem)) {
                         SampleLog.i(TAG, " data has exists " + adInfo.getTitle());
                         continue;
                     }
-                    SampleLog.i(TAG, " data should add " + adInfo.getTitle());
                     mListData.add(baseItem);
                 }
                 SampleLog.i(TAG, " on success ads size is " + mListData.size());
@@ -162,12 +160,34 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     notifyDataChanged();
                 }
             }
+
+            private BaseItem parseBaseItem(AdInfo adInfo) {
+                adInfo.onAdShow(null);
+                BaseItem baseItem;
+                switch (adInfo.getContentType()) {
+                    case SampleConfig.VIDEO_AD_TYPE:
+                        baseItem = new VideoItem(adInfo);
+                        break;
+                    case SampleConfig.PICTURE_AD_TYPE:
+                        baseItem = new PicItem(adInfo);
+                        break;
+                    case SampleConfig.PIC_TEXT_AD_TYPE:
+                        baseItem = new PicTextItem(adInfo);
+                        break;
+                    default:
+                        baseItem = new UnknownItem(adInfo);
+                        break;
+                }
+                SampleLog.i(TAG, " data should add " + adInfo.getTitle());
+                return baseItem;
+            }
         });
     }
 
     @Override
     public void onFailed(String s) {
         SampleLog.e(TAG, " get ads fail err msg is:" + s);
+        ToastUtil.getInstance(mContext).showSingletonToast(R.string.ad_load_failed_toast);
         mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
     }
 
@@ -202,8 +222,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 && mAdAdapter.getCount() > 0) {
             if (mAdAdapter.getCount() > 0)
                 mCalculator.onScrollStateIdle();
-            showFooterView(true);
-            startPullAds();
+            if (mShouldLoad) {
+                showFooterView(true);
+                startPullAds();
+            }
         }
     }
 

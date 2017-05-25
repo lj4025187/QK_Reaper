@@ -30,6 +30,9 @@ import com.fighter.reaper.sample.videolist.widget.TextureVideoView;
 import java.io.File;
 import java.io.InputStream;
 
+import static com.fighter.reaper.sample.config.SampleConfig.TEST_VIDEO_COVER_URL;
+import static com.fighter.reaper.sample.config.SampleConfig.TEST_VIDEO_URL;
+
 /**
  * Created by Administrator on 2017/5/24.
  */
@@ -94,24 +97,21 @@ public class VideoItemHolder extends BaseItemHolder<VideoItem>
             @Override
             public void onClick(View v) {
                 ToastUtil.getInstance(v.getContext()).showSingletonToast(R.string.ad_video_play_toast);
-                String videoUrl = adInfo.getVideoUrl();
             }
         });
-        String videoUrl = adInfo.getVideoUrl();
-        if (!TextUtils.isEmpty(videoUrl)) {
-            Glide.with(baseView.getContext())
-                    .using(VideoListGlideModule.getOkHttpUrlLoader(), InputStream.class)
-                    .load(new GlideUrl(videoUrl))
-                    .as(File.class)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .into(progressTarget);
-        } else {
-            Glide.with(baseView.getContext())
-                    .load(adInfo.getImgUrl())
-                    .placeholder(new ColorDrawable(0xffdcdcdc))
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .into(adVideoThumb);
-        }
+        String videoUrl = SampleConfig.DEBUG_VIDEO_MODE ? TEST_VIDEO_URL : adInfo.getVideoUrl();
+        String imageUrl = SampleConfig.DEBUG_VIDEO_MODE ? TEST_VIDEO_COVER_URL : adInfo.getImgUrl();
+        Glide.with(baseView.getContext())
+                .using(VideoListGlideModule.getOkHttpUrlLoader(), InputStream.class)
+                .load(new GlideUrl(videoUrl))
+                .as(File.class)
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .into(progressTarget);
+        Glide.with(baseView.getContext())
+                .load(imageUrl)
+                .placeholder(new ColorDrawable(0xffdcdcdc))
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .into(adVideoThumb);
     }
 
     private void reset() {
@@ -173,7 +173,7 @@ public class VideoItemHolder extends BaseItemHolder<VideoItem>
     }
 
     @Override
-    public void setActive(View newActiveView, int newActiveViewPosition) {
+    public void setPositive(View newActiveView, int newActiveViewPosition) {
         videoState = STATE_POSITIVE;
         if (adVideoPath != null) {
             adVideoTexture.setVideoPath(adVideoPath);
@@ -182,7 +182,7 @@ public class VideoItemHolder extends BaseItemHolder<VideoItem>
     }
 
     @Override
-    public void deactivate(View currentView, int position) {
+    public void negative(View currentView, int position) {
         videoState = STATE_NEGATIVE;
         adVideoTexture.stop();
         videoStopped();

@@ -56,11 +56,6 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
     }
 
     @Override
-    public int getViewTypeCount() {
-        return VIEW_TYPE_COUNT;
-    }
-
-    @Override
     public BaseItem getItem(int position) {
         return mList.get(position);
     }
@@ -71,8 +66,13 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
     }
 
     @Override
+    public int getViewTypeCount() {
+        return VIEW_TYPE_COUNT;
+    }
+
+    @Override
     public int getItemViewType(int position) {
-        return getItem(position).getViewType();
+        return /*getItem(position).getViewType()*/2;
     }
 
     @Override
@@ -80,7 +80,9 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
         final AdInfo adInfo = mList.get(position).getAdInfo();
         SampleLog.i(TAG, " ad " + position + " contentType : " + adInfo.getContentType());
         BaseItemHolder baseItemHolder;
-        int contentType = adInfo.getContentType();
+        int contentType = SampleConfig.DEBUG_VIDEO_MODE ?
+                SampleConfig.VIDEO_AD_TYPE :
+                adInfo.getContentType();
         if (convertView == null) {
             baseItemHolder = ViewHolderFactory.buildViewHolder(parent, contentType);
             convertView = baseItemHolder.baseView;

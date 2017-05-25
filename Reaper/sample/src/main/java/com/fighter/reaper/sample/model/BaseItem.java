@@ -5,15 +5,15 @@ import com.fighter.loader.AdInfo;
 
 public abstract class BaseItem {
 
-    private final int mViewType;
-    private AdInfo mAdInfo;
+    protected int mViewType;
+    protected AdInfo mAdInfo;
 
-    public BaseItem(int viewType) {
-        mViewType = viewType;
+    public BaseItem(AdInfo adInfo) {
+        mAdInfo = adInfo;
     }
 
-    public void setAdInfo(AdInfo adInfo) {
-        mAdInfo = adInfo;
+    protected void setViewType(int viewType) {
+        mViewType = viewType;
     }
 
     public AdInfo getAdInfo() {

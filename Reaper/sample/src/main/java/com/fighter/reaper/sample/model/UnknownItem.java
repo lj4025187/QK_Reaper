@@ -1,5 +1,7 @@
 package com.fighter.reaper.sample.model;
 
+import com.fighter.loader.AdInfo;
+
 import static com.fighter.reaper.sample.config.SampleConfig.UNKNOWN_AD_TYPE;
 
 /**
@@ -8,7 +10,8 @@ import static com.fighter.reaper.sample.config.SampleConfig.UNKNOWN_AD_TYPE;
 
 public class UnknownItem extends BaseItem{
 
-    public UnknownItem(int viewType) {
-        super(UNKNOWN_AD_TYPE);
+    public UnknownItem(AdInfo adInfo) {
+        super(adInfo);
+        this.setViewType(UNKNOWN_AD_TYPE);
     }
 }
