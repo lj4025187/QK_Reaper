@@ -8,7 +8,6 @@ import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfigManager;
 import com.fighter.reaper.BumpVersion;
-import com.fighter.wrapper.AKAdSDKWrapper;
 import com.fighter.wrapper.AdFrom;
 import com.fighter.wrapper.AdInfo;
 import com.fighter.wrapper.AdRequest;
@@ -101,6 +100,7 @@ public class AdCacheManager {
     }
 
     private void initCache(Context context) {
+        String []posIds = getAllPosId(context);
         String cacheId = null;
         List<Object> adCacheObjects = new ArrayList<>();
         File cacheDir = context.getCacheDir();
@@ -117,7 +117,12 @@ public class AdCacheManager {
                     if (file.isFile()) {
                         try {
                             Object adInfo = getAdCacheFromFile(file);
-                            adCacheObjects.add(adInfo);
+                            AdCacheInfo adCacheInfo = (AdCacheInfo)adInfo;
+                            if(adCacheInfo.isCacheAvailable() || isAdCacheTimeout(adInfo)) {
+                                cleanBeforeCache(adCacheInfo);
+                            } else {
+                                adCacheObjects.add(adInfo);
+                            }
                         } catch (IOException e) {
                             e.printStackTrace();
                         } catch (ClassNotFoundException e) {
@@ -138,7 +143,6 @@ public class AdCacheManager {
             });
             mAdCache.put(cacheId, adCacheObjects);
         }
-        String []posIds = getAllPosId(context);
         fillAdCachePool(posIds);
     }
 
@@ -179,12 +183,8 @@ public class AdCacheManager {
      * fill ad cache pool when cache init fill it.
      */
     private void fillAdCachePool(String[] posIds) {
-        cleanCache(posIds);
         for (String posId : posIds) {
-            File file = new File(mCacheDir, posId);
-            if (!file.exists()) {
-                postAdRequestTask(posId, null, true);
-            }
+            postAdRequestTask(posId, null, true);
         }
     }
 
@@ -328,10 +328,12 @@ public class AdCacheManager {
         /* 1. find ad cache in memory cache */
         Object adInfo = null;
         List<Object> adInfoObjects = mAdCache.get(cacheId);
-        for (int i = 0; i< adInfoObjects.size(); i++) {
-            adInfo = adInfoObjects.get(i);
-            if (adInfo != null && adInfo instanceof AdCacheInfo && ((AdCacheInfo) adInfo).isCacheAvailable())
-                break;
+        if (adInfoObjects != null) {
+            for (int i = 0; i < adInfoObjects.size(); i++) {
+                adInfo = adInfoObjects.get(i);
+                if (adInfo != null && adInfo instanceof AdCacheInfo && ((AdCacheInfo) adInfo).isCacheAvailable())
+                    break;
+            }
         }
         /* 2. find ad cache in disk cache */
         if (adInfo == null) {
@@ -436,19 +438,15 @@ public class AdCacheManager {
         postAdRequestTask(mCacheId, null, true);
     }
 
-    private void cleanCache(String[] posIds) {
-        for (String posId : posIds) {
-            File dir = new File(mCacheDir, posId);
-            if (dir.isDirectory()) {
-                File[] files = dir.listFiles();
-                for (File file : files) {
-                    if (file.isFile() && file.exists()) {
-                        file.delete();
-                    }
-                }
-            }
+    private void cleanBeforeCache(AdCacheInfo info) {
+        if (info == null)
+            return;
+        File cacheFile = new File(info.getCachePath());
+        if (cacheFile.exists() && cacheFile.isFile()) {
+            cacheFile.delete();
         }
     }
+
     private void postConfigUpdate() {
         PriorityTaskDaemon.NotifyPriorityTask mUpdateConfig = new PriorityTaskDaemon.NotifyPriorityTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
                 new PriorityTaskDaemon.TaskRunnable() {

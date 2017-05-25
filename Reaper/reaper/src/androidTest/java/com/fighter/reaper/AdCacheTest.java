@@ -35,8 +35,6 @@ public class AdCacheTest {
 
     @Test
     public void useCacheAdInfo () throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1);
-
         HandlerThread thread = new HandlerThread("adCache test") {
             @Override
             protected void onLooperPrepared() {
@@ -44,7 +42,11 @@ public class AdCacheTest {
                 AdCacheManager adCacheManager = AdCacheManager.getInstance();
                 adCacheManager.init(context, "100010", "not_a_real_key");
 
-                latch.countDown();
+                try {
+                    Thread.sleep(2 * 1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
                 Class <?> clz = AdCacheManager.class;
                 Field fieldPath = null;
@@ -78,7 +80,7 @@ public class AdCacheTest {
                 ReaperLog.i(TAG, "cache map = " + cacheMap);
                 Assert.assertTrue(cacheMap.size() > 0);
 
-                adCacheManager.requestAdCache("121212", new TestCallBack() {
+                adCacheManager.requestAdCache("1", new TestCallBack() {
                     @Override
                     public void onResponse(Map<String, Object> params) {
                         ReaperLog.i(TAG, "onResponse param = " + params);
@@ -89,11 +91,6 @@ public class AdCacheTest {
             }
         };
         thread.start();
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     private interface TestCallBack {
