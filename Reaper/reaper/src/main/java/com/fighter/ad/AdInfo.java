@@ -159,11 +159,11 @@ public class AdInfo {
     }
 
     public String getAdType() {
-        return (String) mAdParams.get(KEY_AD_NAME);
+        return (String) mAdParams.get(KEY_AD_TYPE);
     }
 
     public void setAdType(String adType) {
-        putParam(KEY_AD_NAME, adType);
+        putParam(KEY_AD_TYPE, adType);
     }
 
     public String getAdPosId() {
