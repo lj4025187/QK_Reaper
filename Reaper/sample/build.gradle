@@ -22,6 +22,14 @@ android {
     }
 }
 
+afterEvaluate {
+    assembleRelease {
+        doFirst {
+            // copy reaper.rr to assets/
+        }
+    }
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {

@@ -29,3 +29,5 @@
 -dontwarn com.alibaba.fastjson.**
 -dontwarn springfox.documentation.**
 -dontwarn com.qiku.serversdk.**
+-keep class okhttp3.** { *; }
+-keep class com.alibaba.** { *; }
