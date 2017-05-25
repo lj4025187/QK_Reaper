@@ -178,12 +178,16 @@ public class AdInfo {
         return (String) mAdParams.get(KEY_AD_LOCAL_APP_ID);
     }
 
-    public void setLocalAppId(String localAppId) {
-        putParam(KEY_AD_LOCAL_APP_ID, localAppId);
+    public void setAdLocalAppId(String adLocalAppId) {
+        putParam(KEY_AD_LOCAL_APP_ID, adLocalAppId);
     }
 
     public String getAdLocalPosId() {
         return (String) mAdParams.get(KEY_AD_LOCAL_POS_ID);
+    }
+
+    public void setAdLocalPosId(String adLocalPosId) {
+        putParam(KEY_AD_LOCAL_POS_ID, adLocalPosId);
     }
 
     public String getImgUrl() {

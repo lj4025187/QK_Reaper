@@ -493,6 +493,8 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                     adInfo.setAdName(SdkName.MIX_ADX);
                     adInfo.setAdPosId(adPosId);
                     adInfo.setAdType(adType);
+                    adInfo.setAdLocalAppId(adLocalAppId);
+                    adInfo.setAdLocalPosId(adLocalPositionId);
 
                     int contentType = AdInfo.ContentType.PICTURE;
                     String creativeType = metaInfoJson.getString("creativeType");

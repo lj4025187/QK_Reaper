@@ -510,6 +510,8 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 adInfo.setAdName(SdkName.GUANG_DIAN_TONG);
                 adInfo.setAdPosId(adPosId);
                 adInfo.setAdType(adType);
+                adInfo.setAdLocalAppId(adLocalAppId);
+                adInfo.setAdLocalPosId(adLocalPositionId);
 
                 int contentType = AdInfo.ContentType.PICTURE;
                 int tCrtType = adInfoJson.getIntValue("crt_type");

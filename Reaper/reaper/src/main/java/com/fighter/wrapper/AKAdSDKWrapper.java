@@ -396,6 +396,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     adInfo.setAdName(SdkName.AKAD);
                     adInfo.setAdPosId(mAdRequest.getAdPosId());
                     adInfo.setAdType(mAdRequest.getAdType());
+                    adInfo.setAdLocalAppId(mAdRequest.getAdLocalAppId());
+                    adInfo.setAdLocalPosId(mAdRequest.getAdLocalPositionId());
                     if (TextUtils.isEmpty(akAdImgUrl)) {
                         adInfo.setContentType(AdInfo.ContentType.TEXT);
                     } else {
@@ -495,6 +497,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     adInfo.setAdName(SdkName.AKAD);
                     adInfo.setAdPosId(mAdRequest.getAdPosId());
                     adInfo.setAdType(mAdRequest.getAdType());
+                    adInfo.setAdLocalAppId(mAdRequest.getAdLocalAppId());
+                    adInfo.setAdLocalPosId(mAdRequest.getAdLocalPositionId());
                     if (ad.hasVideo()) {
                         adInfo.setContentType(AdInfo.ContentType.VIDEO);
                     } else if (!TextUtils.isEmpty(akAdImgUrl)) {
