@@ -13,6 +13,9 @@ class AdParam {
     /** ad package name */
     public String app_pkg;
 
+    /** ad application id */
+    public int ad_appid;
+
     /** ad position id */
     public int ad_posid;
 
@@ -34,6 +37,7 @@ class AdParam {
     HashMap<String, String> generateMap() {
         HashMap<String, String> map = new HashMap<>();
         map.put("app_pkg", app_pkg);
+        map.put("ad_appid", String.valueOf(ad_appid));
         map.put("ad_posid", String.valueOf(ad_posid));
         map.put("ad_source", ad_source);
         map.put("ad_type", ad_type);
@@ -47,6 +51,7 @@ class AdParam {
     public String toString() {
         return "AdParam{" +
                 "app_pkg='" + app_pkg + '\'' +
+                ", ad_appid=" + ad_appid +
                 ", ad_posid=" + ad_posid +
                 ", ad_source='" + ad_source + '\'' +
                 ", ad_type='" + ad_type + '\'' +

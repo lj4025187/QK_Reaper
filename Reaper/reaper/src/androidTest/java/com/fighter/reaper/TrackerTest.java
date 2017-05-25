@@ -76,6 +76,7 @@ public class TrackerTest {
 
         EventDisPlayParam param1 = new EventDisPlayParam();
         param1.ad_num = 1;
+        param1.ad_appid = 12222;
         param1.ad_posid = 10001;
         param1.ad_source = "gtk";
         param1.ad_type = "banner";
@@ -87,16 +88,18 @@ public class TrackerTest {
 
         EventClickParam param2 = new EventClickParam();
         param2.ad_num = 1;
+        param2.ad_appid = 12222;
         param2.ad_posid = 10002;
         param2.ad_source = "gtk";
         param2.ad_type = "banner";
         param2.app_pkg = "com.fighter.test";
-        param2.click_pos = "(100,100)";
+        param2.click_pos = "(100*100)";
         ReaperLog.i(TAG, "EventClickParam = " + param2);
         tTracker.trackClickEvent(context, param2);
 
         EventActionParam param3 = new EventActionParam();
         param3.ad_num = 1;
+        param3.ad_appid = 12222;
         param3.ad_posid = 10003;
         param3.ad_source = "gtk";
         param3.ad_type = "banner";
@@ -105,14 +108,37 @@ public class TrackerTest {
         ReaperLog.i(TAG, "EventActionParam = " + param3);
         tTracker.trackActionEvent(context, param3);
 
-        EventDownLoadParam param4 = new EventDownLoadParam();
+        EventActionParam param4 = new EventActionParam();
         param4.ad_num = 1;
-        param4.ad_posid = 10004;
+        param4.ad_appid = 12222;
+        param4.ad_posid = 10003;
         param4.ad_source = "gtk";
         param4.ad_type = "banner";
         param4.app_pkg = "com.fighter.test";
-        param4.reason = "network_timeout";
-        ReaperLog.i(TAG, "EventDownLoadParam = " + param4);
-        tTracker.trackDownloadEvent(context, param4);
+        param4.act_type = TrackerEventType.AD_ACTION_TYPE_END;
+        ReaperLog.i(TAG, "EventActionParam = " + param4);
+        tTracker.trackActionEvent(context, param4);
+
+        EventActionParam param5 = new EventActionParam();
+        param5.ad_num = 1;
+        param5.ad_appid = 12222;
+        param5.ad_posid = 10003;
+        param5.ad_source = "gtk";
+        param5.ad_type = "banner";
+        param5.app_pkg = "com.fighter.test";
+        param5.act_type = TrackerEventType.AD_ACTION_TYPE_INSTALL;
+        ReaperLog.i(TAG, "EventActionParam = " + param5);
+        tTracker.trackActionEvent(context, param5);
+
+        EventDownLoadParam param6 = new EventDownLoadParam();
+        param6.ad_num = 1;
+        param6.ad_appid = 12222;
+        param6.ad_posid = 10004;
+        param6.ad_source = "gtk";
+        param6.ad_type = "banner";
+        param6.app_pkg = "com.fighter.test";
+        param6.reason = "network_timeout";
+        ReaperLog.i(TAG, "EventDownLoadParam = " + param6);
+        tTracker.trackDownloadEvent(context, param6);
     }
 }
