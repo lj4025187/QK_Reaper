@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by wxthon on 5/5/17.
+ * 广告SDK API接口类
  */
 
 public class ReaperApi {
@@ -58,7 +58,7 @@ public class ReaperApi {
     // ----------------------------------------------------
 
     /**
-     * 初始化广告SDK
+     * 初始化广告SDK。
      *
      * @param appContext 应用上下文
      * @param appId      360OS广告平台申请的APP id
@@ -77,7 +77,7 @@ public class ReaperApi {
     }
 
     /**
-     * 获取某广告位的广告请求句柄，可通过句柄请求广告
+     * 获取某广告位的广告请求句柄{@link AdRequester}，可通过句柄请求广告
      *
      * @param adPositionId      360OS广告平台申请的广告位ID
      * @param adRequestCallback 广告请求回调

@@ -52,7 +52,7 @@ public class AdInfo {
     /**
      * 广告被展示
      *
-     * @param v 展示广告所使用的view (不传时聚效将无法上报)
+     * @param v 展示广告所使用的view (不传时聚效广告源将无法上报)
      */
     public void onAdShow(View v) {
         Map<String, Object> params = new ArrayMap<>();
@@ -61,7 +61,7 @@ public class AdInfo {
     }
 
     /**
-     * 广告被点击
+     * 广告被点击，点击后，由SDK处理点击事件(打开浏览器或是开始下载APP)
      *
      * @param activity 广告所在activity (不传时聚效无法正常处理点击)
      * @param v        广告展示所在view (不传时聚效无法正常处理点击)
@@ -169,48 +169,117 @@ public class AdInfo {
         onEvent(AdEvent.EVENT_VIDEO_EXIT, params);
     }
 
+    /**
+     * 获取广告返回的内容类型
+     *
+     * @return 广告内容类型
+     * @see #CONTENT_TYPE_TEXT
+     * @see #CONTENT_TYPE_PICTURE
+     * @see #CONTENT_TYPE_PICTURE_WITH_TEXT
+     * @see #CONTENT_TYPE_VIDEO
+     */
     public int getContentType() {
         Object o = mParams.get("contentType");
         return o == null ? 0 : (int) o;
     }
 
+    /**
+     * 获取广告点击后的表现，如跳转浏览器展示网页，或者开始下载APP
+     *
+     * @return
+     * @see #ACTION_TYPE_BROWSER
+     * @see #ACTION_TYPE_APP_DOWNLOAD
+     */
     public int getActionType() {
         Object o = mParams.get("actionType");
         return o == null ? 0 : (int) o;
     }
 
+    /**
+     * 返回展示图片的链接，{@link #getImgFile()}可返回已缓存好的图片文件，
+     * 在图片文件失效时，可通过此链接重新获取并展示图片
+     *
+     * @return 图片URL链接
+     */
     public String getImgUrl() {
         return (String) mParams.get("imgUrl");
     }
 
+    /**
+     * 获取{@link #getImgUrl()}对应的图片文件，可以直接用来展示，不必再下载。
+     * 图片文件可能格式包括 {@code .png}、{@code .jpg}、{@code .gif}，
+     * 需注意兼容性，如选择{@code glide}等支持{@code .gif}播放的库作为图片展示工具。
+     * 图片文件将在成功曝光后删除，调用曝光后，若需重新展示广告，请勿读取文件，而应重新请求新广告。
+     * 在图片文件失效时，可通过{@link #getImgUrl()}请求图片。
+     *
+     * @return 图片文件
+     */
     public File getImgFile() {
         return (File) mParams.get("imgFile");
     }
 
+    /**
+     * 对{@link #getContentType()}为{@link #CONTENT_TYPE_VIDEO}内容类型的广告，
+     * 可以通过此方法获取视频广告的链接。
+     *
+     * @return 视频广告链接
+     */
     public String getVideoUrl() {
         return (String) mParams.get("videoUrl");
     }
 
+    /**
+     * 广告标题(仅部分广告存在)
+     *
+     * @return 广告标题
+     */
     public String getTitle() {
         return (String) mParams.get("title");
     }
 
+    /**
+     * 广告详细描述(仅部分广告存在)
+     *
+     * @return 广告描述
+     */
     public String getDesc() {
         return (String) mParams.get("desc");
     }
 
+    /**
+     * 下载APP类的广告，可通过此链接获取APP图标(可能为空)
+     *
+     * @return APP图标链接
+     */
     public String getAppIconUrl() {
         return (String) mParams.get("appIconUrl");
     }
 
+    /**
+     * 下载APP类的广告，获取APP名称(可能为空)
+     *
+     * @return APP名称
+     */
     public String getAppName() {
         return (String) mParams.get("appName");
     }
 
+    /**
+     * 下载APP类的广告，获取APP的包名(可能为空)
+     *
+     * @return APP软件包名
+     */
     public String getAppPackageName() {
         return (String) mParams.get("appPackageName");
     }
 
+    /**
+     * 对于不满足需求的业务，可通过此方法获取到更多信息。
+     * 具体请于我们沟通。
+     *
+     * @param key 属性key值
+     * @return 属性value值
+     */
     public Object getExtra(String key) {
         return mParams.get(key);
     }

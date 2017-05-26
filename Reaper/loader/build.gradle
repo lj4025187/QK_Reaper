@@ -28,7 +28,7 @@ android {
     }
 }
 
-task publishSDKJar(type:Jar) {
+task publishSDKJar(type: Jar) {
     archiveName 'reaper.jar'
 
     manifest {
@@ -54,7 +54,7 @@ task publishSDKJar(type:Jar) {
 
 }
 
-task makeGeneratorJar(type:Jar) {
+task makeGeneratorJar(type: Jar) {
     archiveName 'generator.jar'
 
     manifest {
@@ -81,11 +81,28 @@ task makeGeneratorJar(type:Jar) {
     }
 }
 
+// make java doc, generate out path is build/docs/javadoc/...
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+javadoc {
+    options {
+        encoding "UTF-8"
+        charSet "UTF-8"
+        author false
+        version true
+        links "http://docs.oracle.com/javase/7/docs/api"
+    }
+}
+
 afterEvaluate {
     assembleRelease {
         doLast {
             makeGeneratorJar.execute()
             publishSDKJar.execute()
+            javadoc.execute()
         }
     }
 }
@@ -104,7 +121,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     testCompile 'junit:junit:4.12'
-    compile(name:'proguard', ext:'aar')
+    compile(name: 'proguard', ext: 'aar')
 
     compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.57'
 }
