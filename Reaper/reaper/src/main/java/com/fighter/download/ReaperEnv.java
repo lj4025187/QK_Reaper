@@ -31,7 +31,7 @@ public class ReaperEnv {
     public static Resources sResources;
 
     @NoProguard
-    public static ClassLoader mClassLoader;
+    public static ClassLoader sClassLoader;
 
     @NoProguard
     private static Context sContext;
