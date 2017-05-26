@@ -437,13 +437,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
     }
 
-    public void onRequestAdError(Object receiver, String errMsg) {
-        ArrayMap<String, Object> params = new ArrayMap<>();
-        params.put("isSucceed", false);
-        params.put("errMsg", errMsg);
-        onRequestAd(receiver, params);
-    }
-
     public void onEvent(int adEvent, AdInfo adInfo) {
         // TODO set cache is unavailable
         ISDKWrapper wrapper = null;
@@ -466,6 +459,24 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             wrapper.onEvent(adEvent, adInfo);
             handleTouchEvent(adEvent, adInfo);
         }
+    }
+
+    public void onRequestAdError(Object receiver, String errMsg) {
+        ArrayMap<String, Object> params = new ArrayMap<>();
+        params.put("isSucceed", false);
+        params.put("errMsg", errMsg);
+        onRequestAd(receiver, params);
+    }
+
+    private void onRequestAdSucceed(Object receiver, AdInfo adInfo) {
+        ArrayMap<String, Object> params = new ArrayMap<>();
+        if (adInfo != null) {
+            params.put("isSucceed", false);
+            params.put("adInfo", adInfo.getAdAllParams());
+        } else {
+            onRequestAdError(receiver, "request ad succeed, but with no ad response");
+        }
+        onRequestAd(receiver, params);
     }
 
     /**
@@ -741,7 +752,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             if (adResponse.isSucceed() || !nextRequest()) {
                 if (!mCached) {
                     onAdResponseCacheAdFile(adResponse);
-                    onRequestAd(mCallback, adResponse.getAdAllParams());
+                    onRequestAdSucceed(mCallback, adResponse.getAdInfo());
                 } else {
                     onAdResponseCacheAdInfo(adResponse);
                     onAdResponseCacheAdFile(adResponse);
