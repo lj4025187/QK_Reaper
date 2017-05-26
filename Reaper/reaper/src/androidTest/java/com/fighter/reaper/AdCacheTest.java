@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,6 +92,10 @@ public class AdCacheTest {
             }
         };
         thread.start();
+    }
+
+    @Test
+    public void localTest() throws Exception {
     }
 
     private interface TestCallBack {

@@ -54,6 +54,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private static final String SALT = "salt_not_define";
     private static final String METHOD_ON_RESPONSE = "onResponse";
 
+    private static final int CACHE_MAX = 5;
+
     private static AdCacheManager mAdCacheManager = new AdCacheManager();
     private File mCacheDir;
 
@@ -126,7 +128,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                         try {
                             Object adInfo = getAdCacheFromFile(file);
                             AdCacheInfo adCacheInfo = (AdCacheInfo)adInfo;
-                            if(adCacheInfo.isCacheAvailable() || isAdCacheTimeout(adInfo)) {
+                            if(adCacheInfo.isCacheDisPlayed() || isAdCacheTimeout(adInfo)) {
                                 cleanBeforeCache(adCacheInfo);
                             } else {
                                 adCacheObjects.add(adInfo);
@@ -230,6 +232,43 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         return posIds;
     }
 
+    private void setCacheUsed(AdCacheInfo adCacheInfo) {
+        if (adCacheInfo == null)
+            return;
+        adCacheInfo.setCacheState(AdCacheInfo.CACHE_BACK_TO_USER);
+        File cacheDir = new File(mCacheDir, adCacheInfo.getAdCacheId());
+        if (cacheDir.isDirectory() && cacheDir.exists()) {
+            File cacheFile = new File(cacheDir, String.valueOf(adCacheInfo.getCacheTime()));
+            if (cacheFile.isFile() && cacheFile.exists()) {
+                FileOutputStream fileOutputStream = null;
+                ObjectOutputStream objectOutputStream = null;
+                try {
+                    fileOutputStream = new FileOutputStream(cacheFile);
+                    objectOutputStream = new ObjectOutputStream(fileOutputStream);
+                    objectOutputStream.writeObject(adCacheInfo);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (objectOutputStream != null) {
+                        try {
+                            objectOutputStream.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (fileOutputStream != null) {
+                        try {
+                            fileOutputStream.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
     /**
      * request the ad cache to get the Ad information.
      */
@@ -241,8 +280,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             AdCacheInfo info = (AdCacheInfo) cache;
             String adSource = info.getAdSource();
             ISDKWrapper sdkWrapper = mSdkWrappers.get(adSource);
-            ICacheConvert convert = (ICacheConvert) sdkWrapper;
-            onRequestAd(callBack, convert.convertFromString(info.getCache()).getAdAllParams());
+            onRequestAd(callBack, sdkWrapper.convertFromString(info.getCache()).getAdAllParams());
+            setCacheUsed((AdCacheInfo) cache);
             requestCacheAdInternal();
         } else {
             onRequestAdError(callBack, "the request ad form all source is null");
@@ -276,7 +315,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
         adCacheInfo.setCachePath(adInfoFile.getAbsolutePath());
         // TODO test all the adc cache is available
-        adCacheInfo.setCacheAvailable(true);
+        adCacheInfo.setCacheState(AdCacheInfo.CACHE_DISPLAY_BY_USER);
         adInfoObjects.add(adInfo);
         mAdCache.put(cacheId, adInfoObjects);
         FileOutputStream fileOutputStream = new FileOutputStream(adInfoFile);
@@ -316,7 +355,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             });
             for (File file : cacheFileList) {
                 adInfo = (AdCacheInfo) getAdCacheFromFile(file);
-                if (adInfo != null && adInfo.isCacheAvailable()) {
+                if (adInfo != null && !adInfo.isCacheBackToUser()) {
                     break;
                 }
             }
@@ -356,7 +395,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         if (adInfoObjects != null) {
             for (int i = 0; i < adInfoObjects.size(); i++) {
                 adInfo = adInfoObjects.get(i);
-                if (adInfo != null && adInfo instanceof AdCacheInfo && ((AdCacheInfo) adInfo).isCacheAvailable())
+                if (adInfo != null && adInfo instanceof AdCacheInfo && !((AdCacheInfo) adInfo).isCacheBackToUser())
                     break;
             }
         }
@@ -379,7 +418,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         return adInfo;
     }
 
-    public void consumeAdCache(String cacheId) {
+    public void collateAdCache(String cacheId) {
         if (cacheId == null)
             return;
         List<Object> cacheObjects = mAdCache.get(cacheId);
@@ -387,8 +426,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         if (cacheObjects != null) {
             cacheInfoInBottom = (AdCacheInfo) cacheObjects.get(0);
         }
-        if (cacheObjects != null && cacheObjects.size() > 2) {
-            if (cacheInfoInBottom != null && !cacheInfoInBottom.isCacheAvailable()) {
+        if (cacheObjects != null && cacheObjects.size() > CACHE_MAX) {
+            if (cacheInfoInBottom != null && cacheInfoInBottom.isCacheBackToUser()) {
                 File cacheFile = new File(cacheInfoInBottom.getCachePath());
                 if (cacheFile.exists()) {
                     cacheFile.delete();
@@ -515,7 +554,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                         }
                     }
                 });
-        mWorkThread.postTaskInFront(mUpdateConfig);
+        mWorkThread.postTask(mUpdateConfig);
     }
 
     private void postAdRequestTask(String posId, Object callBack, boolean isCache) {
@@ -572,7 +611,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 //        ReaperConfigManager.fetchReaperConfigFromServer(mContext,
 //                            mContext.getPackageName(), SALT, mAppKey, mAppId);
 
-//        postConfigUpdate();
+        postConfigUpdate();
 
         if (!fetchSucceed) {
 //            onRequestAdError(mCallback, "Can not fetch reaper config from server");
@@ -701,6 +740,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
             if (adResponse.isSucceed() || !nextRequest()) {
                 if (!mCached) {
+                    onAdResponseCacheAdFile(adResponse);
                     onRequestAd(mCallback, adResponse.getAdAllParams());
                 } else {
                     onAdResponseCacheAdInfo(adResponse);
@@ -713,14 +753,13 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         private void onAdResponseCacheAdInfo(AdResponse adResponse) {
             AdCacheInfo info = new AdCacheInfo();
             ISDKWrapper sdkWrapper = mSdkWrappers.get(curAdSense.ads_name);
-            ICacheConvert convert = (ICacheConvert) sdkWrapper;
             info.setAdSource(curAdSense.ads_name);
-            info.setCache(convert.convertToString(adResponse));
+            info.setCache(sdkWrapper.convertToString(adResponse));
             info.setExpireTime(curAdSense.expire_time);
             info.setAdCacheId(curAdSense.getPosId());
             try {
                 cacheAdInfo(curAdSense.getPosId(), info);
-                consumeAdCache(curAdSense.getPosId());
+                collateAdCache(curAdSense.getPosId());
             } catch (IOException e) {
                 e.printStackTrace();
             }

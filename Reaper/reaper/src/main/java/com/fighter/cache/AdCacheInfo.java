@@ -1,10 +1,5 @@
 package com.fighter.cache;
 
-import com.fighter.wrapper.ICacheConvert;
-
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
@@ -16,13 +11,25 @@ import java.io.Serializable;
 public class AdCacheInfo implements Serializable {
     private static final long serialVersionUID = -4242968385056676005L;
 
+    public static final int CACHE_IS_GOOD = 1;
+    public static final int CACHE_BACK_TO_USER = 1 << 1;
+    public static final int CACHE_DISPLAY_BY_USER = 1 << 2;
+
     private long mCacheTime;
     private String mExpireTime;
     private String mAdCacheId;
     private String mCache;
-    private boolean mCacheAvailable;
+    private int mCacheState = CACHE_IS_GOOD;
     private String mAdSource;
     private String mCachePath;
+
+    public void setCacheState(int mCacheState) {
+        this.mCacheState = mCacheState;
+    }
+
+    public boolean isCacheBackToUser() {
+        return (mCacheState & ~CACHE_BACK_TO_USER) == 0;
+    }
 
     public String getCachePath() {
         return mCachePath;
@@ -40,12 +47,8 @@ public class AdCacheInfo implements Serializable {
         this.mAdSource = mAdSource;
     }
 
-    public boolean isCacheAvailable() {
-        return mCacheAvailable;
-    }
-
-    public void setCacheAvailable(boolean isAvailable) {
-        mCacheAvailable = isAvailable;
+    public boolean isCacheDisPlayed() {
+        return (mCacheState & CACHE_DISPLAY_BY_USER) == 0;
     }
 
     public AdCacheInfo() {
@@ -97,8 +100,38 @@ public class AdCacheInfo implements Serializable {
                 ", mExpireTime='" + mExpireTime + '\'' +
                 ", mAdCacheId='" + mAdCacheId + '\'' +
                 ", mCache='" + mCache + '\'' +
-                ", mCacheAvailable=" + mCacheAvailable +
+                ", mCacheState=" + mCacheState +
                 ", mAdSource='" + mAdSource + '\'' +
+                ", mCachePath='" + mCachePath + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AdCacheInfo that = (AdCacheInfo) o;
+
+        if (mCacheTime != that.mCacheTime) return false;
+        if (mCacheState != that.mCacheState) return false;
+        if (!mExpireTime.equals(that.mExpireTime)) return false;
+        if (!mAdCacheId.equals(that.mAdCacheId)) return false;
+        if (!mCache.equals(that.mCache)) return false;
+        if (!mAdSource.equals(that.mAdSource)) return false;
+        return mCachePath.equals(that.mCachePath);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (mCacheTime ^ (mCacheTime >>> 32));
+        result = 31 * result + mExpireTime.hashCode();
+        result = 31 * result + mAdCacheId.hashCode();
+        result = 31 * result + mCache.hashCode();
+        result = 31 * result + mCacheState;
+        result = 31 * result + mAdSource.hashCode();
+        result = 31 * result + mCachePath.hashCode();
+        return result;
     }
 }
