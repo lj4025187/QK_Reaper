@@ -70,6 +70,32 @@ public class PriorityTaskDaemonTest {
                         new TaskRunnable() {
                             @Override
                             public Object doSomething() {
+                                daemon.postTaskInFront(createNewTask(PriorityTask.PRI_FIRST,
+                                        new TaskRunnable() {
+                                            @Override
+                                            public Object doSomething() {
+                                                Log.d("daemon", "in front task: 22222");
+                                                return null;
+                                            }
+                                        }, new TaskNotify() {
+                                            @Override
+                                            public void onResult(NotifyPriorityTask task, Object result, TaskTiming timing) {
+
+                                            }
+                                        }));
+                                daemon.postTaskInFront(createNewTask(PriorityTask.PRI_FIRST,
+                                        new TaskRunnable() {
+                                            @Override
+                                            public Object doSomething() {
+                                                Log.d("daemon", "in front task: 33333");
+                                                return null;
+                                            }
+                                        }, new TaskNotify() {
+                                            @Override
+                                            public void onResult(NotifyPriorityTask task, Object result, TaskTiming timing) {
+
+                                            }
+                                        }));
                                 return null;
                             }
                         },
@@ -88,7 +114,5 @@ public class PriorityTaskDaemonTest {
             e.printStackTrace();
         }
         testThread.getLooper().quit();
-
-        Log.d("daemon", "thread - looper:" + Thread.currentThread().getId());
     }
 }

@@ -78,7 +78,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
     private AdCacheFileDownloadManager mAdFileManager;
 
-    private class RequestAdRunner implements PriorityTaskDaemon.TaskRunnable {
+    private class RequestAdRunner extends PriorityTaskDaemon.TaskRunnable {
         private String mPosId;
         private Object mCallBack;
         private boolean mCached;

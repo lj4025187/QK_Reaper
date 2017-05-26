@@ -251,8 +251,13 @@ public final class PriorityTaskDaemon extends Thread {
     /**
      * Put you work in task runnable
      */
-    public interface TaskRunnable {
-        Object doSomething();
+    public abstract static class TaskRunnable {
+        private NotifyPriorityTask mTask = null;
+
+        public abstract Object doSomething();
+        public NotifyPriorityTask createNewTask(int priority, TaskRunnable runnable, TaskNotify notify) {
+            return new NotifyPriorityTask(priority, runnable, notify, mTask.mNotifyHandler.getLooper());
+        }
     }
 
     public static class NotifyPriorityTask extends PriorityTask {
@@ -270,6 +275,7 @@ public final class PriorityTaskDaemon extends Thread {
             super(priority);
             mNotifyHandler = new NotifyHandler(looper, this, notify);
             mRunnable = runnable;
+            mRunnable.mTask = this;
         }
 
         @Override
