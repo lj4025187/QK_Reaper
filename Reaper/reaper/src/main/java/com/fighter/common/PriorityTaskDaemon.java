@@ -184,6 +184,7 @@ public final class PriorityTaskDaemon extends Thread {
         public static final int PRI_LAST = 0x10;
 
         private int mPriority;
+        private int mCreatedTime;
         private boolean mRunning;
 
         PriorityTask(int priority) {
@@ -262,8 +263,12 @@ public final class PriorityTaskDaemon extends Thread {
         private TaskRunnable mRunnable;
 
         public NotifyPriorityTask(int priority, TaskRunnable runnable, TaskNotify notify) {
+            this(priority, runnable, notify, Looper.myLooper());
+        }
+
+        private NotifyPriorityTask(int priority, TaskRunnable runnable, TaskNotify notify, Looper looper) {
             super(priority);
-            mNotifyHandler = new NotifyHandler(Looper.myLooper(), this, notify);
+            mNotifyHandler = new NotifyHandler(looper, this, notify);
             mRunnable = runnable;
         }
 
@@ -290,10 +295,14 @@ public final class PriorityTaskDaemon extends Thread {
         @Override
         public boolean willLeaveLooper() {
             super.willLeaveLooper();
-            if (Looper.myLooper() == null) {
+            if (mNotifyHandler.getLooper() == null) {
                 return false;
             }
             return true;
+        }
+
+        public NotifyPriorityTask createNewTask(int priority, TaskRunnable runnable, TaskNotify notify) {
+            return new NotifyPriorityTask(priority, runnable, notify, mNotifyHandler.getLooper());
         }
     }
 
