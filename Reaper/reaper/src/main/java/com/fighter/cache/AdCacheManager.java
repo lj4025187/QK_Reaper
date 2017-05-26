@@ -611,7 +611,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 //        ReaperConfigManager.fetchReaperConfigFromServer(mContext,
 //                            mContext.getPackageName(), SALT, mAppKey, mAppId);
 
-        postConfigUpdate();
+//        postConfigUpdate();
 
         if (!fetchSucceed) {
 //            onRequestAdError(mCallback, "Can not fetch reaper config from server");
