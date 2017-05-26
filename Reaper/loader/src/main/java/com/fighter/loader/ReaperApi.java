@@ -8,8 +8,6 @@ import com.fighter.utils.LoaderLog;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -152,18 +150,15 @@ public class ReaperApi {
                 mAdRequestCallback.onFailed(errMsg);
                 return;
             }
-            List<Map<String, Object>> oriAdInfos = (List) params.get("adInfosMap");
-            if (oriAdInfos == null || oriAdInfos.size() == 0) {
-                mAdRequestCallback.onFailed("Requester returns no ads");
-                return;
-            }
-            List<AdInfo> adInfos = new ArrayList<>(oriAdInfos.size());
-            for (Map<String, Object> m : oriAdInfos) {
+
+            Map<String, Object> adInfoMap = (Map<String, Object>) params.get("adInfo");
+
+            if (adInfoMap != null) {
                 AdInfo adInfo = new AdInfo(ReaperApi.this);
-                adInfo.mParams = m;
-                adInfos.add(adInfo);
+                adInfo.mParams = adInfoMap;
+            } else {
+                mAdRequestCallback.onFailed("Request succeed but contains no ad");
             }
-            mAdRequestCallback.onSuccess(adInfos);
         }
     }
 }

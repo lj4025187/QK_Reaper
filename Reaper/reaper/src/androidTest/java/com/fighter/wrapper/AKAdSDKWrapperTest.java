@@ -21,7 +21,7 @@ public class AKAdSDKWrapperTest {
     @Test
     public void testRequestAd() {
         AdRequest adRequest = new AdRequest.Builder()
-                .adPosId("")
+                .adPosId("1")
                 .adLocalAppId("1104241296")
                 .adLocalPositionId("5060504124524896")
                 .adType(AdType.TYPE_NATIVE)
@@ -42,7 +42,7 @@ public class AKAdSDKWrapperTest {
                 ReaperLog.i(TAG, "response " + adResponse);
 
                 if (adResponse != null && adResponse.isSucceed()) {
-                    AdInfo adInfo = adResponse.getAdInfos().get(0);
+                    AdInfo adInfo = adResponse.getAdInfo();
                     sdkWrapper.onEvent(AdEvent.EVENT_VIEW, adInfo);
                     sdkWrapper.onEvent(AdEvent.EVENT_CLICK, adInfo);
                 }
@@ -61,6 +61,7 @@ public class AKAdSDKWrapperTest {
     @Test
     public void testRequestVideoAd() {
         AdRequest adRequest = new AdRequest.Builder()
+                .adPosId("1")
                 .adLocalAppId("1104241296")
                 .adLocalPositionId("5060504124524896")
                 .adType(AdType.TYPE_NATIVE_VIDEO)

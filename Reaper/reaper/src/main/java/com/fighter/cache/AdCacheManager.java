@@ -18,7 +18,6 @@ import com.fighter.reaper.BumpVersion;
 import com.fighter.wrapper.AdRequest;
 import com.fighter.wrapper.AdResponse;
 import com.fighter.wrapper.AdResponseListener;
-import com.fighter.wrapper.ICacheConvert;
 import com.fighter.wrapper.ISDKWrapper;
 import com.fighter.wrapper.MixAdxSDKWrapper;
 import com.fighter.wrapper.TencentSDKWrapper;
@@ -280,7 +279,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             AdCacheInfo info = (AdCacheInfo) cache;
             String adSource = info.getAdSource();
             ISDKWrapper sdkWrapper = mSdkWrappers.get(adSource);
-            onRequestAd(callBack, sdkWrapper.convertFromString(info.getCache()).getAdAllParams());
+            // TODO: Fix me
+            // onRequestAd(callBack, sdkWrapper.convertFromString(info.getCache()).getAdAllParams());
             setCacheUsed((AdCacheInfo) cache);
             requestCacheAdInternal();
         } else {
@@ -754,7 +754,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             AdCacheInfo info = new AdCacheInfo();
             ISDKWrapper sdkWrapper = mSdkWrappers.get(curAdSense.ads_name);
             info.setAdSource(curAdSense.ads_name);
-            info.setCache(sdkWrapper.convertToString(adResponse));
+            // TODO: Fix me
+            // info.setCache(sdkWrapper.convertToString(adResponse));
             info.setExpireTime(curAdSense.expire_time);
             info.setAdCacheId(curAdSense.getPosId());
             try {
@@ -772,7 +773,9 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
          * @return
          */
         private void onAdResponseCacheAdFile(AdResponse adResponse) {
-            List<AdInfo> ads = adResponse.getAdInfos();
+            // TODO: Fix me
+            // List<AdInfo> ads = adResponse.getAdInfos();
+            List<AdInfo> ads = new ArrayList<>();
             if(ads == null || ads.isEmpty()){
                 ReaperLog.e(TAG, "adResponse get ads is null");
                 return;

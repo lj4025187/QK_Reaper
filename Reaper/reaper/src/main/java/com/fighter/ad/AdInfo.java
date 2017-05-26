@@ -3,8 +3,11 @@ package com.fighter.ad;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
+import com.alibaba.fastjson.JSONObject;
+
 import java.io.File;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 广告信息
@@ -53,6 +56,14 @@ public class AdInfo {
 
     // ----------------------------------------------------
 
+    private static final String CACHE_KEY = "_CACHE_KEY_";
+
+    // ----------------------------------------------------
+
+    /**
+     * 广告唯一标志 uuid生成
+     */
+    private static final String KEY_UUID = "uuid";
     /**
      * 广告内容类型
      */
@@ -61,6 +72,10 @@ public class AdInfo {
      * 广告点击表现类型
      */
     private static final String KEY_ACTION_TYPE = "actionType";
+    /**
+     * 广告是否可缓存
+     */
+    private static final String KEY_CAN_CACHE = "canCache";
     /**
      * 广告来源
      *
@@ -132,6 +147,16 @@ public class AdInfo {
         mAdParams = new ArrayMap<>();
     }
 
+    public String getUUID() {
+        return (String) mAdParams.get(KEY_UUID);
+    }
+
+    public void generateUUID() {
+        if (!mAdParams.containsKey(KEY_UUID)) {
+            putParam(KEY_UUID, UUID.randomUUID().toString());
+        }
+    }
+
     public int getContentType() {
         Object o = mAdParams.get(KEY_CONTENT_TYPE);
         return o == null ? ContentType.PICTURE : (int) o;
@@ -148,6 +173,15 @@ public class AdInfo {
 
     public void setActionType(int actionType) {
         putParam(KEY_ACTION_TYPE, actionType);
+    }
+
+    public boolean canCache() {
+        Object o = mAdParams.get(KEY_CAN_CACHE);
+        return o != null && (boolean) o;
+    }
+
+    public void setCanCache(boolean canCache) {
+        putParam(KEY_CAN_CACHE, canCache);
     }
 
     public String getAdName() {
@@ -303,6 +337,8 @@ public class AdInfo {
         return "AdInfo{" +
                 "mContentType=" + getContentType() +
                 ", mActionType=" + getActionType() +
+                ", mUuid=" + getUUID() +
+                ", mCanCache=" + canCache() +
                 ", mAdSource=" + getAdName() +
                 ", mAdPosId=" + getAdPosId() +
                 ", mAdLocalAppId=" + getAdLocalAppId() +
@@ -317,6 +353,40 @@ public class AdInfo {
                 ", mAppPackageName='" + getAppPackageName() + '\'' +
                 '}';
     }
+
+    // ----------------------------------------------------
+
+    public static String convertToString(AdInfo adInfo) {
+        if (!adInfo.canCache()) {
+            return null;
+        }
+        try {
+            JSONObject json = new JSONObject();
+            json.put(CACHE_KEY, adInfo.getAdAllParams());
+            return json.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static AdInfo convertFromString(String cache) {
+        try {
+            JSONObject json = JSONObject.parseObject(cache);
+            Map<String, Object> params = (Map<String, Object>) json.get(CACHE_KEY);
+            if (params != null) {
+                AdInfo adInfo = new AdInfo();
+                adInfo.setExtras(params);
+                return adInfo;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // ----------------------------------------------------
 
     private void putParam(String key, Object value) {
         if (!TextUtils.isEmpty(key) && value != null) {

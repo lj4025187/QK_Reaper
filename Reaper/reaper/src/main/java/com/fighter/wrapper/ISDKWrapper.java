@@ -9,7 +9,7 @@ import com.fighter.common.utils.ReaperLog;
 
 import java.util.Map;
 
-public abstract class ISDKWrapper implements ICacheConvert {
+public abstract class ISDKWrapper {
     private static final String TAG = ISDKWrapper.class.getSimpleName();
 
     // ----------------------------------------------------
@@ -126,14 +126,4 @@ public abstract class ISDKWrapper implements ICacheConvert {
      * @param adInfo  广告信息
      */
     public abstract void onEvent(int adEvent, AdInfo adInfo);
-
-    @Override
-    public String convertToString(AdResponse adResponse) {
-        return null;
-    }
-
-    @Override
-    public AdResponse convertFromString(String cachedResponse) {
-        return null;
-    }
 }

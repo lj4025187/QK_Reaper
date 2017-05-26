@@ -5,8 +5,6 @@ import android.util.ArrayMap;
 
 import com.fighter.ad.AdInfo;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class AdResponse {
@@ -39,21 +37,9 @@ public class AdResponse {
      */
     private static final String KEY_AD_LOCAL_POSITION_ID = "adLocalPositionId";
     /**
-     * 原始响应字符串
-     */
-    private static final String KEY_ORI_RESPONSE = "oriResponse";
-    /**
-     * 返回的广告
-     */
-    private static final String KEY_AD_INFOS = "adInfos";
-    /**
      * 返回的广告 map形式
      */
-    private static final String KEY_AD_INFOS_MAP = "adInfosMap";
-    /**
-     * 是否支持缓存
-     */
-    private static final String KEY_CAN_CACHE = "canCache";
+    private static final String KEY_AD_INFO = "adInfo";
 
     private Map<String, Object> mAdParams;
 
@@ -94,23 +80,16 @@ public class AdResponse {
         return (String) mAdParams.get(KEY_AD_LOCAL_POSITION_ID);
     }
 
-    public String getOriResponse() {
-        return (String) mAdParams.get(KEY_ORI_RESPONSE);
-    }
-
     @SuppressWarnings("unchecked")
-    public List<AdInfo> getAdInfos() {
-        return (List<AdInfo>) mAdParams.get(KEY_AD_INFOS);
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Map<String, Object>> getAdInfosMap() {
-        return (List<Map<String, Object>>) mAdParams.get(KEY_AD_INFOS_MAP);
-    }
-
-    public boolean canCache() {
-        Object o = mAdParams.get(KEY_CAN_CACHE);
-        return o != null && (boolean) o;
+    public AdInfo getAdInfo() {
+        Map<String, Object> params = (Map<String, Object>) mAdParams.get(KEY_AD_INFO);
+        if (params != null) {
+            AdInfo adInfo = new AdInfo();
+            adInfo.setExtras(params);
+            return adInfo;
+        } else {
+            return null;
+        }
     }
 
     public Object getAdExtra(String key) {
@@ -119,17 +98,6 @@ public class AdResponse {
 
     public Map<String, Object> getAdAllParams() {
         return mAdParams;
-    }
-
-    public void deleteImgFiles() {
-        List<AdInfo> adInfos = getAdInfos();
-        if (adInfos == null) {
-            return;
-        }
-
-        for (AdInfo adInfo : adInfos) {
-            adInfo.deleteImgFile();
-        }
     }
 
     @Override
@@ -142,8 +110,7 @@ public class AdResponse {
                 ", mAdType='" + getAdType() + '\'' +
                 ", mADLocalAppId='" + getAdLocalAppId() + '\'' +
                 ", mAdLocalPositionId='" + getAdLocalPositionId() + '\'' +
-                ", mOriResponse='" + getOriResponse() + '\'' +
-                ", mAdInfos=" + getAdInfos() +
+                ", mAdInfo=" + getAdInfo() +
                 '}';
     }
 
@@ -191,25 +158,8 @@ public class AdResponse {
             return this;
         }
 
-        Builder oriResponse(String oriResponse) {
-            putParam(KEY_ORI_RESPONSE, oriResponse);
-            return this;
-        }
-
-        Builder adInfos(List<AdInfo> adInfos) {
-            putParam(KEY_AD_INFOS, adInfos);
-            if (adInfos != null) {
-                List<Map<String, Object>> list = new ArrayList<>();
-                for (AdInfo adInfo : adInfos) {
-                    list.add(adInfo.getAdAllParams());
-                }
-                putParam(KEY_AD_INFOS_MAP, list);
-            }
-            return this;
-        }
-
-        Builder canCache(boolean canCache) {
-            putParam(KEY_CAN_CACHE, canCache);
+        Builder adInfo(AdInfo adInfo) {
+            putParam(KEY_AD_INFO, adInfo.getAdAllParams());
             return this;
         }
 

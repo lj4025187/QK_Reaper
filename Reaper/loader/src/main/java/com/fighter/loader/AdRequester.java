@@ -1,6 +1,5 @@
 package com.fighter.loader;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,9 +30,9 @@ public class AdRequester {
         /**
          * 广告请求成功
          *
-         * @param ads 广告，可能返回多个
+         * @param adInfo 广告
          */
-        void onSuccess(List<AdInfo> ads);
+        void onSuccess(AdInfo adInfo);
 
         /**
          * 广告请求失败

@@ -13,8 +13,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.List;
-
 @RunWith(AndroidJUnit4.class)
 public class MixAdxSDKWrapperTest {
     private static final String TAG = MixAdxSDKWrapperTest.class.getSimpleName();
@@ -22,7 +20,7 @@ public class MixAdxSDKWrapperTest {
     @Test
     public void testNativeAdRequest() {
         AdRequest adRequest = new AdRequest.Builder()
-                .adPosId("")
+                .adPosId("1")
                 .adLocalAppId("0")
                 .adLocalPositionId("128")
                 .adType(AdType.TYPE_BANNER)
@@ -41,19 +39,17 @@ public class MixAdxSDKWrapperTest {
         ReaperLog.i(TAG, "response " + adResponse);
 
         if (adResponse != null &&
-                adResponse.isSucceed() &&
-                adResponse.canCache()) {
-            String responseJson = sdkWrapper.convertToString(adResponse);
-            ReaperLog.i(TAG, "response cache json " + responseJson);
-            AdResponse cacheAdResponse = sdkWrapper.convertFromString(responseJson);
-            ReaperLog.i(TAG, "response cache obj " + cacheAdResponse);
-            Assert.assertNotNull(cacheAdResponse);
+                adResponse.isSucceed()) {
+            AdInfo adInfo = adResponse.getAdInfo();
+            if (adInfo != null && adInfo.canCache()) {
+                String cacheJson = AdInfo.convertToString(adInfo);
+                ReaperLog.i(TAG, "ad info cache json " + cacheJson);
+                AdInfo cacheAdInfo = AdInfo.convertFromString(cacheJson);
+                ReaperLog.i(TAG, "ad info cache obj " + cacheAdInfo);
+                Assert.assertNotNull(cacheAdInfo);
+                sdkWrapper.onEvent(AdEvent.EVENT_VIEW, adInfo);
+                sdkWrapper.onEvent(AdEvent.EVENT_CLICK, adInfo);
 
-            sdkWrapper.onEvent(AdEvent.EVENT_VIEW, adResponse.getAdInfos().get(0));
-            sdkWrapper.onEvent(AdEvent.EVENT_CLICK, adResponse.getAdInfos().get(0));
-
-            List<AdInfo> adInfoList = adResponse.getAdInfos();
-            for (AdInfo adInfo : adInfoList) {
                 if (adInfo.getActionType() == AdInfo.ActionType.BROWSER) {
                     ReaperLog.i(TAG, "Browser url " + sdkWrapper.requestWebUrl(adInfo));
                 } else {

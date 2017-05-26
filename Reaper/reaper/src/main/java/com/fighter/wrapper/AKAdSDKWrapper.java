@@ -82,8 +82,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         ReaperLog.i(TAG, "[init]");
         mContext = appContext;
         mDownloadMap = new LruCache<>(200);
-        AKAD.initSdk(ReaperEnv.sContextProxy, true, true);
-        AKAD.setApkListener(ReaperEnv.sContextProxy, new ApkDownloadListener());
+        AKAD.initSdk(mContext, true, true);
+        AKAD.setApkListener(mContext, new ApkDownloadListener());
     }
 
     @Override
@@ -378,11 +378,10 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     .adPosId(mAdRequest.getAdPosId())
                     .adName(SdkName.AKAD)
                     .adType(mAdRequest.getAdType())
-                    .canCache(false)
                     .adLocalAppId(mAdRequest.getAdLocalAppId())
                     .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
             if (mAds != null && mAds.size() > 0) {
-                List<AdInfo> adInfos = new ArrayList<>(mAds.size());
+                AdInfo adInfo = null;
                 for (NativeAd ad : mAds) {
                     JSONObject akAdJson = JSONObject.parseObject(ad.getContent().toString());
                     if (akAdJson == null) {
@@ -392,7 +391,9 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     String akAdDesc = akAdJson.getString("desc");
                     String akAdImgUrl = akAdJson.getString("contentimg");
 
-                    AdInfo adInfo = new AdInfo();
+                    adInfo = new AdInfo();
+                    adInfo.generateUUID();
+                    adInfo.setCanCache(false);
                     adInfo.setAdName(SdkName.AKAD);
                     adInfo.setAdPosId(mAdRequest.getAdPosId());
                     adInfo.setAdType(mAdRequest.getAdType());
@@ -427,11 +428,12 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     adInfo.setImgUrl(akAdImgUrl);
                     adInfo.setTitle(akAdTitle);
                     adInfo.setDesc(akAdDesc);
-                    adInfos.add(adInfo);
+
+                    break;
                 }
-                if (adInfos.size() > 0) {
+                if (adInfo != null) {
                     builder.isSucceed(true);
-                    builder.adInfos(adInfos);
+                    builder.adInfo(adInfo);
                 } else {
                     errJson.put("akAdErrCode", 0);
                     errJson.put("akAdErrMsg", "no mAds");
@@ -473,11 +475,10 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     .adPosId(mAdRequest.getAdPosId())
                     .adName(SdkName.AKAD)
                     .adType(mAdRequest.getAdType())
-                    .canCache(false)
                     .adLocalAppId(mAdRequest.getAdLocalAppId())
                     .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
             if (mAds != null && mAds.size() > 0) {
-                List<AdInfo> adInfos = new ArrayList<>(mAds.size());
+                AdInfo adInfo = null;
                 for (NativeVideoAd ad : mAds) {
                     JSONObject akAdJson = JSONObject.parseObject(ad.getContent().toString());
                     if (akAdJson == null) {
@@ -488,7 +489,9 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     String akAdImgUrl = akAdJson.getString("contentimg");
                     String akVideoUrl = akAdJson.getString("video");
 
-                    AdInfo adInfo = new AdInfo();
+                    adInfo = new AdInfo();
+                    adInfo.generateUUID();
+                    adInfo.setCanCache(true);
                     adInfo.setAdName(SdkName.AKAD);
                     adInfo.setAdPosId(mAdRequest.getAdPosId());
                     adInfo.setAdType(mAdRequest.getAdType());
@@ -527,11 +530,11 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     adInfo.setDesc(akAdDesc);
                     adInfo.setVideoUrl(akVideoUrl);
 
-                    adInfos.add(adInfo);
+                    break;
                 }
-                if (adInfos.size() > 0) {
+                if (adInfo != null) {
                     builder.isSucceed(true);
-                    builder.adInfos(adInfos);
+                    builder.adInfo(adInfo);
                 } else {
                     errJson.put("akAdErrCode", 0);
                     errJson.put("akAdErrMsg", "no mAds");

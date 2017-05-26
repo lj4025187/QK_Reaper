@@ -4,7 +4,6 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fighter.ad.AdEvent;
@@ -18,10 +17,7 @@ import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import okhttp3.HttpUrl;
@@ -208,64 +204,6 @@ public class TencentSDKWrapper extends ISDKWrapper {
         }
     }
 
-    @Override
-    public String convertToString(AdResponse adResponse) {
-        ReaperLog.i(TAG, "[convertToString] " + adResponse);
-
-        try {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("adPosId", adResponse.getAdPosId());
-            jsonObject.put("adType", adResponse.getAdType());
-            jsonObject.put("adLocalAppId", adResponse.getAdLocalAppId());
-            jsonObject.put("adLocalPositionId", adResponse.getAdLocalPositionId());
-            jsonObject.put("oriResponse", JSON.parseObject(adResponse.getOriResponse()));
-
-            ArrayMap<String, String> fileMap = new ArrayMap<>();
-
-            for (AdInfo adInfo : adResponse.getAdInfos()) {
-                String imgUrl = adInfo.getImgUrl();
-                File f = adInfo.getImgFile();
-                if (!TextUtils.isEmpty(imgUrl) &&
-                        f != null) {
-                    fileMap.put(imgUrl, f.getAbsolutePath());
-                }
-            }
-            jsonObject.put("fileMap", fileMap);
-            return jsonObject.toJSONString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public AdResponse convertFromString(String cachedResponse) {
-        ReaperLog.i(TAG, "[convertFromString] " + cachedResponse);
-
-        try {
-            JSONObject jsonObject = JSON.parseObject(cachedResponse);
-            String adPosId = jsonObject.getString("adPosId");
-            String adType = jsonObject.getString("adType");
-            String adLocalAppId = jsonObject.getString("adLocalAppId");
-            String adLocalPositionId = jsonObject.getString("adLocalPositionId");
-            String oriResponse = jsonObject.getString("oriResponse");
-
-            Map<String, String> fileMap = jsonObject.getObject("fileMap", Map.class);
-
-            return convertResponse(
-                    adPosId,
-                    adType,
-                    adLocalAppId,
-                    adLocalPositionId,
-                    oriResponse,
-                    fileMap);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     // ----------------------------------------------------
 
     private String checkParams(AdRequest adRequest) {
@@ -444,25 +382,13 @@ public class TencentSDKWrapper extends ISDKWrapper {
 
     private AdResponse convertResponse(String adPosId,
                                        String adType,
-                                       String appLocalId,
-                                       String adLocalPositionId,
-                                       String oriResponse) {
-        return convertResponse(adPosId, adType, appLocalId, adLocalPositionId, oriResponse, null);
-    }
-
-    private AdResponse convertResponse(String adPosId,
-                                       String adType,
                                        String adLocalAppId,
                                        String adLocalPositionId,
-                                       String oriResponse,
-                                       Map<String, String> fileMap) {
+                                       String oriResponse) {
         AdResponse.Builder builder = new AdResponse.Builder();
         builder.adPosId(adPosId).adName(SdkName.GUANG_DIAN_TONG).adType(adType)
-                .canCache(true)
                 .adLocalAppId(adLocalAppId).adLocalPositionAd(adLocalPositionId);
         JSONObject errJson = new JSONObject();
-
-        builder.oriResponse(oriResponse);
 
         JSONObject resJson = null;
         try {
@@ -497,16 +423,17 @@ public class TencentSDKWrapper extends ISDKWrapper {
             }
         }
 
-        List<AdInfo> adInfos;
+        AdInfo adInfo = null;
         if (adListJson != null && adListJson.size() > 0) {
             int size = adListJson.size();
-            adInfos = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
                 JSONObject adInfoJson = adListJson.getJSONObject(i);
                 if (adInfoJson == null) {
                     continue;
                 }
-                AdInfo adInfo = new AdInfo();
+                adInfo = new AdInfo();
+                adInfo.generateUUID();
+                adInfo.setCanCache(true);
                 adInfo.setAdName(SdkName.GUANG_DIAN_TONG);
                 adInfo.setAdPosId(adPosId);
                 adInfo.setAdType(adType);
@@ -557,26 +484,11 @@ public class TencentSDKWrapper extends ISDKWrapper {
                     adInfo.setAppName(adExtJson.getString("appname"));
                 }
 
-                String imgUrl = adInfo.getImgUrl();
-                if (!TextUtils.isEmpty(imgUrl)) {
-                    File imgFile = null;
-                    if (fileMap != null && fileMap.containsKey(imgUrl)) {
-                        String filePath = fileMap.get(imgUrl);
-                        if (!TextUtils.isEmpty(filePath)) {
-                            File f = new File(filePath);
-                            if (f.exists()) {
-                                imgFile = f;
-                            }
-                        }
-                    }
-                    adInfo.setImgFile(imgFile);
-                }
-
-                adInfos.add(adInfo);
+                break;
             }
-            if (adInfos.size() > 0) {
+            if (adInfo != null) {
                 builder.isSucceed(true);
-                builder.adInfos(adInfos);
+                builder.adInfo(adInfo);
             }
         }
 
