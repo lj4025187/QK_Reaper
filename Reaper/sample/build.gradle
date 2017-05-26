@@ -22,13 +22,13 @@ android {
     }
 }
 
-afterEvaluate {
-    assembleRelease {
-        doFirst {
-            // copy reaper.rr to assets/
-        }
-    }
-}
+//afterEvaluate {
+//    assembleRelease {
+//        doFirst {
+//            // copy reaper.rr to assets/
+//        }
+//    }
+//}
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')

@@ -1,12 +1,16 @@
 package com.fighter.cache;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.ArrayMap;
 
+import com.fighter.ad.AdEvent;
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
+import com.fighter.cache.downloader.AdCacheFileDownloadManager;
 import com.fighter.common.PriorityTaskDaemon;
+import com.fighter.common.utils.ReaperLog;
 import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfigManager;
@@ -44,7 +48,7 @@ import java.util.Map;
  * Created by lichen on 17-5-17.
  */
 
-public class AdCacheManager {
+public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallback{
     private static final String TAG = AdCacheManager.class.getSimpleName();
 
     private static final String SALT = "salt_not_define";
@@ -69,6 +73,8 @@ public class AdCacheManager {
     private String mAppId;
     private String mAppKey;
     private Object mCallBack;
+
+    private AdCacheFileDownloadManager mAdFileManager;
 
     private class RequestAdRunner implements PriorityTaskDaemon.TaskRunnable {
         private String mPosId;
@@ -158,15 +164,15 @@ public class AdCacheManager {
             return;
         mSdkWrappers = new ArrayMap<>();
 
-        //ISDKWrapper akAdWrapper = new AKAdSDKWrapper();
+//        ISDKWrapper akAdWrapper = new AKAdSDKWrapper();
         ISDKWrapper tencentWrapper = new TencentSDKWrapper();
         ISDKWrapper mixAdxWrapper = new MixAdxSDKWrapper();
-        //akAdWrapper.init(context, null);
+//        akAdWrapper.init(context, null);
         tencentWrapper.init(context, null);
         mixAdxWrapper.init(context, null);
-        //mSdkWrappers.put("juxiao", akAdWrapper);
-        mSdkWrappers.put("guangdiantong", tencentWrapper);
-        mSdkWrappers.put("baidu", mixAdxWrapper);
+//        mSdkWrappers.put(SdkName.AKAD, akAdWrapper);
+        mSdkWrappers.put(SdkName.GUANG_DIAN_TONG, tencentWrapper);
+        mSdkWrappers.put(SdkName.MIX_ADX, mixAdxWrapper);
 
         mAdTypeMap = new ArrayMap<>();
         mAdTypeMap.put("banner", AdType.TYPE_BANNER);
@@ -196,8 +202,7 @@ public class AdCacheManager {
      * @param appId
      * @param appKey
      */
-    public void
-    init(Context context, String appId, String appKey) {
+    public void init(Context context, String appId, String appKey) {
         mContext = context;
         mAppId = appId;
         mAppKey = appKey;
@@ -207,6 +212,8 @@ public class AdCacheManager {
         initReaperConfig(mContext);
         updateWrapper(mContext);
         initCache(mContext);
+        mAdFileManager = AdCacheFileDownloadManager.getInstance(context);
+        mAdFileManager.setDownloadCallback(this);
     }
 
     private String generateCacheId(AdCacheInfo info) {
@@ -318,6 +325,21 @@ public class AdCacheManager {
     }
 
     /**
+     * cache ad file
+     * @param imageUrl
+     * @return cache file instance
+     */
+    private File cacheAdFile(String imageUrl){
+        return mAdFileManager.cacheAdFile(imageUrl);
+    }
+
+    @Override
+    public void onDownloadComplete(long reference, String fileName) {
+        //download app success
+
+    }
+
+    /**
      * the method is used to get the ad cache information from sdcard.
      *
      * @param cacheId the ad unique id..
@@ -355,17 +377,6 @@ public class AdCacheManager {
         /* 4. request two ads from sdk, one is return, another is cache */
         requestDoubleAds();
         return adInfo;
-    }
-
-    /**
-     * The method cache file into disk storage
-     *
-     * @param cacheFileId
-     * @return
-     */
-    public boolean cacheFileInDisk(String cacheFileId) {
-
-        return true;
     }
 
     public void consumeAdCache(String cacheId) {
@@ -414,7 +425,44 @@ public class AdCacheManager {
 
         if (wrapper != null) {
             wrapper.onEvent(adEvent, adInfo);
+            handleTouchEvent(adEvent, adInfo);
         }
+    }
+
+    /**
+     * handle touch event such as click
+     *
+     * @param adEvent
+     * @param adInfo
+     */
+    private void handleTouchEvent(int adEvent, AdInfo adInfo){
+        switch (adEvent) {
+            case AdEvent.EVENT_CLICK:
+                handleAction(adInfo);
+                break;
+        }
+    }
+
+    private void handleAction(AdInfo adInfo){
+        int actionType = adInfo.getActionType();
+        String adName = adInfo.getAdName();
+        ISDKWrapper isdkWrapper = mSdkWrappers.get(adName);
+        String actionUrl = null;
+        switch (actionType) {
+            case AdInfo.ActionType.APP_DOWNLOAD:
+                actionUrl = isdkWrapper.requestDownloadUrl(adInfo);
+                break;
+            case AdInfo.ActionType.BROWSER:
+                actionUrl = isdkWrapper.requestWebUrl(adInfo);
+                break;
+            default:
+                ReaperLog.i(TAG, " click action type is undefine");
+                break;
+        }
+        if(TextUtils.isEmpty(actionUrl))
+                return;
+        ReaperLog.i(TAG, actionType + " url " + actionUrl);
+        mAdFileManager.requestDownload(actionUrl, null, null);
     }
 
     /**
@@ -619,6 +667,10 @@ public class AdCacheManager {
         return true;
     }
 
+
+    /**
+     * This callback is for ISDKWrapper
+     */
     private class AdResponseCallback implements AdResponseListener {
 
         private List<ReaperAdSense> mReaperAdSenses;
@@ -651,22 +703,51 @@ public class AdCacheManager {
                 if (!mCached) {
                     onRequestAd(mCallback, adResponse.getAdAllParams());
                 } else {
-                    AdCacheInfo info = new AdCacheInfo();
-                    ISDKWrapper sdkWrapper = mSdkWrappers.get(curAdSense.ads_name);
-                    ICacheConvert convert = (ICacheConvert) sdkWrapper;
-                    info.setAdSource(curAdSense.ads_name);
-                    info.setCache(convert.convertToString(adResponse));
-                    info.setExpireTime(curAdSense.expire_time);
-                    info.setAdCacheId(curAdSense.getPosId());
-                    try {
-                        cacheAdInfo(curAdSense.getPosId(), info);
-                        consumeAdCache(curAdSense.getPosId());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    onAdResponseCacheAdInfo(adResponse);
+                    onAdResponseCacheAdFile(adResponse);
                 }
             }
 
+        }
+
+        private void onAdResponseCacheAdInfo(AdResponse adResponse) {
+            AdCacheInfo info = new AdCacheInfo();
+            ISDKWrapper sdkWrapper = mSdkWrappers.get(curAdSense.ads_name);
+            ICacheConvert convert = (ICacheConvert) sdkWrapper;
+            info.setAdSource(curAdSense.ads_name);
+            info.setCache(convert.convertToString(adResponse));
+            info.setExpireTime(curAdSense.expire_time);
+            info.setAdCacheId(curAdSense.getPosId());
+            try {
+                cacheAdInfo(curAdSense.getPosId(), info);
+                consumeAdCache(curAdSense.getPosId());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        /**
+         * The method for caching file into disk storage
+         *
+         * @param adResponse
+         * @return
+         */
+        private void onAdResponseCacheAdFile(AdResponse adResponse) {
+            List<AdInfo> ads = adResponse.getAdInfos();
+            if(ads == null || ads.isEmpty()){
+                ReaperLog.e(TAG, "adResponse get ads is null");
+                return;
+            }
+            for(AdInfo adInfo : ads) {
+                String imageUrl = adInfo.getImgUrl();
+                if(TextUtils.isEmpty(imageUrl))
+                    continue;
+                File imageFile = cacheAdFile(imageUrl);
+                if(imageFile == null || !imageFile.exists()){
+                    continue;
+                }
+                adInfo.setImgFile(imageFile);
+            }
         }
 
         private boolean nextRequest() {
