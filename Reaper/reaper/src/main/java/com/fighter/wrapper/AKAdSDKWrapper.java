@@ -35,8 +35,8 @@ import java.util.Map;
 public class AKAdSDKWrapper extends ISDKWrapper {
     private static final String TAG = AKAdSDKWrapper.class.getSimpleName();
 
-    public static final String PARAMS_KEY_VIEW = "akad_params_view";
-    public static final String PARAMS_KEY_ACTIVITY = "akad_params_activity";
+    public static final String PARAMS_KEY_VIEW = "view";
+    public static final String PARAMS_KEY_ACTIVITY = "activity";
 
     // ----------------------------------------------------
 
@@ -412,23 +412,18 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                         adInfo.setActionType(AdInfo.ActionType.APP_DOWNLOAD);
 
                         JSONObject akAppJson = JSONObject.parseObject(ad.getAPPInfo().toString());
-                        if (akAppJson == null) {
-                            continue;
-                        }
-                        String akAppLogo = akAdJson.getString("logo");
-                        String akAppPkgName = akAppJson.getString("app_pkg");
-                        String akAppName = akAppJson.getString("app_name");
-                        if (TextUtils.isEmpty(akAppPkgName)) {
-                            continue;
-                        } else {
+                        if (akAppJson != null) {
+                            String akAppLogo = akAdJson.getString("logo");
+                            String akAppPkgName = akAppJson.getString("app_pkg");
+                            String akAppName = akAppJson.getString("app_name");
                             adInfo.setAppIconUrl(akAppLogo);
                             adInfo.setAppName(akAppName);
                             adInfo.setAppPackageName(akAppPkgName);
-                            adInfo.setExtra(EXTRA_EVENT_NATIVE_AD, ad);
                         }
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);
                     }
+                    adInfo.setExtra(EXTRA_EVENT_NATIVE_AD, ad);
                     adInfo.setImgUrl(akAdImgUrl);
                     adInfo.setTitle(akAdTitle);
                     adInfo.setDesc(akAdDesc);
@@ -515,25 +510,18 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                         adInfo.setActionType(AdInfo.ActionType.APP_DOWNLOAD);
 
                         JSONObject akAppJson = JSONObject.parseObject(ad.getAPPInfo().toString());
-                        if (akAppJson == null) {
-                            continue;
-                        }
-                        String akAppLogo = akAdJson.getString("logo");
-                        String akAppKey = akAppJson.getString("key");
-                        String akAppPkgName = akAppJson.getString("app_pkg");
-                        String akAppName = akAppJson.getString("app_name");
-                        if (TextUtils.isEmpty(akAppKey) ||
-                                TextUtils.isEmpty(akAppPkgName)) {
-                            continue;
-                        } else {
+                        if (akAppJson != null) {
+                            String akAppLogo = akAdJson.getString("logo");
+                            String akAppPkgName = akAppJson.getString("app_pkg");
+                            String akAppName = akAppJson.getString("app_name");
                             adInfo.setAppIconUrl(akAppLogo);
                             adInfo.setAppName(akAppName);
                             adInfo.setAppPackageName(akAppPkgName);
-                            adInfo.setExtra(EXTRA_EVENT_NATIVE_AD, ad);
                         }
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);
                     }
+                    adInfo.setExtra(EXTRA_EVENT_NATIVE_AD, ad);
                     adInfo.setImgUrl(akAdImgUrl);
                     adInfo.setTitle(akAdTitle);
                     adInfo.setDesc(akAdDesc);
