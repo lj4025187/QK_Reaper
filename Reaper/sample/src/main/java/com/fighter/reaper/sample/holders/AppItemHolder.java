@@ -11,17 +11,19 @@ import com.fighter.reaper.sample.model.AppItem;
 
 public class AppItemHolder extends BaseItemHolder<AppItem> {
 
+    protected String TAG = AppItemHolder.class.getSimpleName();
+
     public AppItemHolder(View view) {
         super(view);
+        initView(view);
     }
 
-    @Override
-    public int getType() {
-        return SampleConfig.UNKNOWN_AD_TYPE;
+    public void initView(View view) {
+
     }
 
     @Override
     public void onAttachView(int position, AppItem iItem) {
-
+        super.onAttachView(position, iItem);
     }
 }

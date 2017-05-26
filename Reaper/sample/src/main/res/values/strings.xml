@@ -18,4 +18,21 @@
     <string name="list_view_loading">猥琐发育，别浪。。。</string>
     <string name="list_view_footer">撸起来。。。别打扰。。。</string>
     <string name="list_view_empty">什么玩意儿都没有。。。</string>
+
+    <string name="ad_src_unknown">未知广告源</string>
+
+    <string name="text_ad_type">文字:只有标题、内容</string>
+    <string name="pic_ad_type">图片:只有图片</string>
+    <string name="pic_text_ad_type">图文</string>
+    <string name="video_ad_type">视频</string>
+    <string name="unknown_ad_type">未定义类型</string>
+
+    <string name="detail_banner_type">Banner</string>
+    <string name="detail_plugin_type">插屏</string>
+    <string name="detail_app_type">应用</string>
+    <string name="detail_full_screen_type">开屏</string>
+    <string name="detail_feed_type">Feed</string>
+    <string name="detail_native_type">原生</string>
+    <string name="detail_video_type">视频</string>
+    <string name="detail_unknown_type">未知类型</string>
 </resources>

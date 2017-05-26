@@ -40,7 +40,7 @@ import static com.fighter.reaper.sample.config.SampleConfig.TEST_VIDEO_URL;
 public class VideoItemHolder extends BaseItemHolder<VideoItem>
         implements VideoLoadMvpView, ViewPropertyAnimatorListener, ListItem {
 
-    private final static String TAG = VideoItemHolder.class.getSimpleName();
+    protected String TAG = VideoItemHolder.class.getSimpleName();
 
     public TextView adVideoTitle;
     public TextureVideoView adVideoTexture;
@@ -73,11 +73,6 @@ public class VideoItemHolder extends BaseItemHolder<VideoItem>
         adVideoProgress = (CircularProgressBar) view.findViewById(R.id.id_video_progress);
         adVideoDesc = (TextView) view.findViewById(R.id.id_ad_custom_desc);
         adVideoAction = (TextView) view.findViewById(R.id.id_ad_custom_action);
-    }
-
-    @Override
-    public int getType() {
-        return SampleConfig.VIDEO_AD_TYPE;
     }
 
     @Override

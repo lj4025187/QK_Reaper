@@ -11,15 +11,15 @@ import com.fighter.reaper.sample.config.SampleConfig;
  */
 public class ViewHolderFactory {
 
-    public static BaseItemHolder buildViewHolder(ViewGroup parent, int viewType) {
+    public static BaseItemHolder buildViewHolder(ViewGroup parent, int detailType) {
         BaseItemHolder baseItemHolder = null;
-        switch (viewType) {
+        switch (detailType) {
             case SampleConfig.VIDEO_AD_TYPE:
                 baseItemHolder = new VideoItemHolder(LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.ad_item_video_layout, parent, false));
                 break;
             default:
-                baseItemHolder = new PicItemHolder(LayoutInflater.from(parent.getContext())
+                baseItemHolder = new BaseItemHolder(LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.ad_item_layout, parent, false));
 
         }

@@ -78,11 +78,11 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
         final AdInfo adInfo = mList.get(position).getAdInfo();
         SampleLog.i(TAG, " ad " + position + " contentType : " + adInfo.getContentType());
         BaseItemHolder baseItemHolder;
-        int contentType = SampleConfig.DEBUG_VIDEO_MODE ?
+        int detailType = SampleConfig.DEBUG_VIDEO_MODE ?
                 SampleConfig.VIDEO_AD_TYPE :
-                adInfo.getContentType();
+                SampleConfig.getDetailType(adInfo);
         if (convertView == null) {
-            baseItemHolder = ViewHolderFactory.buildViewHolder(parent, contentType);
+            baseItemHolder = ViewHolderFactory.buildViewHolder(parent, detailType);
             convertView = baseItemHolder.baseView;
             convertView.setTag(baseItemHolder);
         } else {

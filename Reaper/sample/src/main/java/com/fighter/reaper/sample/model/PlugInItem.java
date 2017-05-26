@@ -4,13 +4,12 @@ import com.fighter.loader.AdInfo;
 import com.fighter.reaper.sample.config.SampleConfig;
 
 /**
- * Created by Administrator on 2017/5/24.
+ * Created by Administrator on 2017/5/26.
  */
 
-public class AppItem extends BaseItem{
+public class PlugInItem extends BaseItem {
 
-    public AppItem(AdInfo adInfo) {
+    public PlugInItem(AdInfo adInfo) {
         super(adInfo);
     }
-
 }

@@ -4,13 +4,43 @@
     android:layout_height="match_parent"
     android:background="#FFFBFBFC">
 
+    <LinearLayout
+        android:id="@+id/id_ad_desc_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:layout_marginEnd="3dp"
+        android:layout_marginStart="3dp">
+
+        <TextView
+            android:id="@+id/id_ad_view_type"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="15dp" />
+
+        <TextView
+            android:id="@+id/id_ad_detail_type"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="15dp" />
+
+        <TextView
+            android:id="@+id/id_ad_src_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/id_ad_custom_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_desc_layout"
         android:layout_marginEnd="10dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="6dp"
         android:text="@string/ad_item_title_default"
         android:textColor="#454545"
         android:textSize="20dp" />

@@ -13,8 +13,15 @@ import com.fighter.loader.AdInfo;
 import com.fighter.loader.AdRequester;
 import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.adapter.AdAdapter;
+import com.fighter.reaper.sample.config.SampleConfig;
+import com.fighter.reaper.sample.model.AppItem;
+import com.fighter.reaper.sample.model.BannerItem;
 import com.fighter.reaper.sample.model.BaseItem;
-import com.fighter.reaper.sample.model.PicItem;
+import com.fighter.reaper.sample.model.FeedItem;
+import com.fighter.reaper.sample.model.FullScreenItem;
+import com.fighter.reaper.sample.model.NativeItem;
+import com.fighter.reaper.sample.model.PlugInItem;
+import com.fighter.reaper.sample.model.UnknownItem;
 import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.utils.ToastUtil;
 import com.fighter.reaper.sample.videolist.visibility.calculator.SingleListViewItemActiveCalculator;
@@ -22,6 +29,15 @@ import com.fighter.reaper.sample.videolist.visibility.scroll.ListViewItemPositio
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_APP_WALL_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_BANNER_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_FEED_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_FULL_SCREEN_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_NATIVE_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_NATIVE_VIDEO_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_PLUG_IN_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_UNKNOWN_TYPE;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener,
         CompoundButton.OnCheckedChangeListener,
@@ -151,10 +167,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     mListData.add(baseItem);
                 }
                 SampleLog.i(TAG, " on success ads size is " + mListData.size());
-                if (mListData.size() < 5) {
-                    pullAdsType(BAIDU_TYPE);
-                    return;
-                }
                 if (mListData.isEmpty()) {
                     mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
                 } else {
@@ -165,18 +177,31 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             private BaseItem parseBaseItem(AdInfo adInfo) {
                 adInfo.onAdShow(null);
                 BaseItem baseItem;
-                switch (adInfo.getContentType()) {
-//                    case SampleConfig.VIDEO_AD_TYPE:
-//                        baseItem = new VideoItem(adInfo);
-//                        break;
-//                    case SampleConfig.PICTURE_AD_TYPE:
-//                        baseItem = new PicItem(adInfo);
-//                        break;
-//                    case SampleConfig.PIC_TEXT_AD_TYPE:
-//                        baseItem = new PicTextItem(adInfo);
-//                        break;
+                switch (SampleConfig.getDetailType(adInfo)) {
+                    case DETAIL_BANNER_TYPE:
+                        baseItem = new BannerItem(adInfo);
+                        break;
+                    case DETAIL_PLUG_IN_TYPE:
+                        baseItem = new PlugInItem(adInfo);
+                        break;
+                    case DETAIL_APP_WALL_TYPE:
+                        baseItem = new AppItem(adInfo);
+                        break;
+                    case DETAIL_FULL_SCREEN_TYPE:
+                        baseItem = new FullScreenItem(adInfo);
+                        break;
+                    case DETAIL_FEED_TYPE:
+                        baseItem = new FeedItem(adInfo);
+                        break;
+                    case DETAIL_NATIVE_TYPE:
+                        baseItem = new NativeItem(adInfo);
+                        break;
+                    case DETAIL_NATIVE_VIDEO_TYPE:
+                        baseItem = new NativeItem(adInfo);
+                        break;
+                    case DETAIL_UNKNOWN_TYPE:
                     default:
-                        baseItem = new PicItem(adInfo);
+                        baseItem = new UnknownItem(adInfo);
                         break;
                 }
                 SampleLog.i(TAG, " data should add " + adInfo.getTitle());
