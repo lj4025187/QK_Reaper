@@ -24,7 +24,7 @@ public class ContextProxy extends ContextWrapper {
 
     @Override
     public ClassLoader getClassLoader() {
-        return ReaperEnv.mClassLoader;
+        return ReaperEnv.sClassLoader;
     }
 
     @Override
