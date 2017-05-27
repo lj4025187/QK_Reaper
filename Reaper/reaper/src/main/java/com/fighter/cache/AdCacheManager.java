@@ -4,9 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
-import com.fighter.ad.AdEvent;
 import com.fighter.ad.AdInfo;
-import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
 import com.fighter.cache.downloader.AdCacheFileDownloadManager;
 import com.fighter.common.PriorityTaskDaemon;
@@ -15,13 +13,14 @@ import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfigManager;
 import com.fighter.reaper.BumpVersion;
+import com.fighter.tracker.AdParam;
+import com.fighter.tracker.EventClickParam;
+import com.fighter.tracker.EventDisPlayParam;
 import com.fighter.tracker.Tracker;
 import com.fighter.wrapper.AdRequest;
 import com.fighter.wrapper.AdResponse;
 import com.fighter.wrapper.AdResponseListener;
 import com.fighter.wrapper.ISDKWrapper;
-import com.fighter.wrapper.MixAdxSDKWrapper;
-import com.fighter.wrapper.TencentSDKWrapper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,6 +38,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static com.fighter.ad.AdEvent.EVENT_APP_ACTIVE;
+import static com.fighter.ad.AdEvent.EVENT_APP_DOWNLOAD_CANCELED;
+import static com.fighter.ad.AdEvent.EVENT_APP_DOWNLOAD_COMPLETE;
+import static com.fighter.ad.AdEvent.EVENT_APP_DOWNLOAD_FAILED;
+import static com.fighter.ad.AdEvent.EVENT_APP_INSTALL;
+import static com.fighter.ad.AdEvent.EVENT_APP_START_DOWNLOAD;
+import static com.fighter.ad.AdEvent.EVENT_CLICK;
+import static com.fighter.ad.AdEvent.EVENT_CLOSE;
+import static com.fighter.ad.AdEvent.EVENT_VIDEO_CARD_CLICK;
+import static com.fighter.ad.AdEvent.EVENT_VIDEO_CONTINUE;
+import static com.fighter.ad.AdEvent.EVENT_VIDEO_EXIT;
+import static com.fighter.ad.AdEvent.EVENT_VIDEO_FULLSCREEN;
+import static com.fighter.ad.AdEvent.EVENT_VIDEO_PAUSE;
+import static com.fighter.ad.AdEvent.EVENT_VIDEO_PLAY_COMPLETE;
+import static com.fighter.ad.AdEvent.EVENT_VIDEO_START_PLAY;
+import static com.fighter.ad.AdEvent.EVENT_VIEW;
+
 /**
  * the class to manager the ad cache.
  * init() fill the all the posId cache.
@@ -48,7 +64,7 @@ import java.util.Map;
  * Created by lichen on 17-5-17.
  */
 
-public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallback{
+public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallback {
     private static final String TAG = AdCacheManager.class.getSimpleName();
 
     private static final String SALT = "salt_not_define";
@@ -63,10 +79,11 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private Map<String, String> mAdTypeMap;
     private Map<String, Method> mMethodMap;
 
+    /**************************************************Init cache task start*****************************************************************/
+    private boolean mInitCacheSuccess = false;
 
     /**
      * for init cache for all posIds
-     *
      */
     private class InitCacheTask extends PriorityTaskDaemon.NotifyPriorityTask {
 
@@ -75,16 +92,128 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
     }
 
+    private class InitCacheRunnable extends PriorityTaskDaemon.TaskRunnable {
+
+        private Context context;
+
+        public InitCacheRunnable(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        public Object doSomething() {
+            boolean initSuccess = initCache(this.context);
+            ReaperLog.i(TAG, "InitCacheRunnable do something init " + initSuccess);
+            return initSuccess;
+        }
+    }
+    /****************************************************Init cache Task end**************************************************************************/
+
+
+    /****************************************************Tracker Task start**************************************************************************/
     /**
-     * tracker task
+     * TrackerTask is used for tracking  onEvent {@link Tracker#onEvent(Context, String, AdParam)}
+     * and ISDKWrapper {@link ISDKWrapper#onEvent(int, AdInfo)}
      */
-    //TODO
-    private class TrackerTask  extends PriorityTaskDaemon.NotifyPriorityTask {
+    private class TrackerTask extends PriorityTaskDaemon.NotifyPriorityTask {
 
         public TrackerTask(int priority, PriorityTaskDaemon.TaskRunnable runnable, PriorityTaskDaemon.TaskNotify notify) {
             super(priority, runnable, notify);
         }
     }
+
+    private class TrackerRunnable extends PriorityTaskDaemon.TaskRunnable {
+
+        private final String TAG = TrackerRunnable.class.getSimpleName();
+        private Context context;
+        private Tracker tracker;
+        private int actionEvent;
+        private AdInfo adInfo;
+        private ISDKWrapper wrapper;
+
+        public TrackerRunnable(Context context, Tracker tracker, int actionEvent, AdInfo adInfo, ISDKWrapper wrapper) {
+            this.context = context;
+            this.tracker = tracker;
+            this.actionEvent = actionEvent;
+            this.adInfo = adInfo;
+            this.wrapper = wrapper;
+        }
+
+        @Override
+        public Object doSomething() {
+            if (context == null) {
+                ReaperLog.e(TAG, "tracker runnable init context is null");
+                return null;
+            }
+            wrapper.onEvent(actionEvent, adInfo);
+            String act_type = String.valueOf(actionEvent);
+            ReaperLog.i(TAG, "tracker runnable track action type " + act_type);
+            trackerEvent(actionEvent, adInfo);
+            return adInfo;
+        }
+
+        private void trackerEvent(int actionEvent, AdInfo adInfo) {
+            switch (actionEvent) {
+                case EVENT_VIEW:
+                    EventDisPlayParam disPlayParam = new EventDisPlayParam();
+                    disPlayParam.ad_num = 1;
+                    disPlayParam.ad_appid = 12222;/*this value should rewrite*/
+                    disPlayParam.ad_posid = Integer.valueOf(adInfo.getAdPosId());
+                    disPlayParam.ad_source = adInfo.getAdName();
+                    disPlayParam.ad_type = adInfo.getAdType();
+                    disPlayParam.app_pkg = context.getPackageName();
+                    disPlayParam.result = "ok";
+                    disPlayParam.reason = "";
+                    ReaperLog.i(TAG, "EventDisPlayParam = " + disPlayParam);
+                    tracker.trackDisplayEvent(context, disPlayParam);
+                    break;
+                case EVENT_CLICK:
+                    EventClickParam clickParam = new EventClickParam();
+                    clickParam.ad_num = 1;
+                    clickParam.ad_appid = 12222;/*this value should rewrite*/
+                    clickParam.ad_posid = Integer.valueOf(adInfo.getAdPosId());
+                    clickParam.ad_source = adInfo.getAdName();
+                    clickParam.ad_type = adInfo.getAdType();
+                    clickParam.app_pkg = context.getPackageName();
+                    clickParam.click_pos = "(100*100)";/*this value should rewrite*/
+                    ReaperLog.i(TAG, "EventClickParam = " + clickParam);
+                    tracker.trackClickEvent(context, clickParam);
+                    break;
+                case EVENT_CLOSE:
+                    break;
+                case EVENT_APP_START_DOWNLOAD:
+                    break;
+                case EVENT_APP_DOWNLOAD_COMPLETE:
+                    break;
+                case EVENT_APP_DOWNLOAD_FAILED:
+                    break;
+                case EVENT_APP_DOWNLOAD_CANCELED:
+                    break;
+                case EVENT_APP_INSTALL:
+                    break;
+                case EVENT_APP_ACTIVE:
+                    break;
+                case EVENT_VIDEO_CARD_CLICK:
+                    break;
+                case EVENT_VIDEO_START_PLAY:
+                    break;
+                case EVENT_VIDEO_PAUSE:
+                    break;
+                case EVENT_VIDEO_CONTINUE:
+                    break;
+                case EVENT_VIDEO_PLAY_COMPLETE:
+                    break;
+                case EVENT_VIDEO_FULLSCREEN:
+                    break;
+                case EVENT_VIDEO_EXIT:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    }
+    /****************************************************Tracker Task end**************************************************************************/
 
     /**
      * request wrapper task for callback cache and notify user
@@ -141,8 +270,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 //                return false;
 //            }
 
-
-
+            return null;
         }
     }
 
@@ -155,38 +283,54 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private AdCacheManager() {
     }
 
-    private void initCache(Context context) {
-        String []posIds = getAllPosId(context);
+    /**
+     * execute init cache task
+     *
+     * @param context
+     */
+    private void postInitCacheTask(Context context) {
+        InitCacheRunnable initCacheRunnable = new InitCacheRunnable(context);
+        InitCacheTask initCacheTask = new InitCacheTask(
+                PriorityTaskDaemon.PriorityTask.PRI_FIRST,
+                initCacheRunnable,
+                new PriorityTaskDaemon.TaskNotify() {
+                    @Override
+                    public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+                        boolean init = false;
+                        if (result instanceof Boolean)
+                            init = (boolean) result;
+                        ReaperLog.i(TAG, " init cache task on result method is called and init " + init);
+                    }
+                });
+        mWorkThread.postTaskInFront(initCacheTask);
+    }
+
+    /**
+     * this method called by InitCacheRunnable
+     *
+     * @param context
+     * @return whether cache init success
+     */
+    private boolean initCache(Context context) {
+        if (context == null) {
+            ReaperLog.e(TAG, " init cache method context is null should return early");
+            return mInitCacheSuccess;
+        }
+        mAdFileManager = AdCacheFileDownloadManager.getInstance(context);
+        mAdFileManager.setDownloadCallback(this);
+        String[] posIds = getAllPosId(context);
         String cacheId = null;
         ArrayMap<String, Object> adCacheObjects = new ArrayMap<>();
-        File cacheDir = context.getCacheDir();
-        File adCacheDir = new File(cacheDir, "ac");
+        File adCacheDir = new File(context.getCacheDir(), "ac");
         if (!adCacheDir.exists())
-            adCacheDir.mkdir();
+            mInitCacheSuccess = adCacheDir.mkdir();
         mCacheDir = adCacheDir;
-        File[] cacheDirs = mCacheDir.listFiles();
+        File[] cacheDirs = adCacheDir.listFiles();
         for (File dir : cacheDirs) {
-            if (dir.isDirectory()) {
-                cacheId = dir.getName();
-                File[] files = dir.listFiles();
-                for (File file : files) {
-                    if (file.isFile()) {
-                        try {
-                            Object adInfo = getAdCacheFromFile(file);
-                            AdCacheInfo adCacheInfo = (AdCacheInfo)adInfo;
-                            if(adCacheInfo.isCacheDisPlayed() || isAdCacheTimeout(adInfo)) {
-                                cleanBeforeCache(adCacheInfo);
-                            } else {
-                                adCacheObjects.put(((AdCacheInfo) adInfo).getUuid(), adInfo);
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
+            if (!dir.isDirectory())
+                continue;
+            cacheId = dir.getName();
+            judgeCleanOrPutCache(adCacheObjects, dir);
         }
 
         if (adCacheObjects.size() > 0) {
@@ -200,10 +344,38 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             mAdCache.put(cacheId, adCacheObjects);
         }
         fillAdCachePool(posIds);
+        return mInitCacheSuccess;
+    }
+
+    /**
+     * judge the ad cache should clean or put ArrayMap
+     *
+     * @param adCacheObjects
+     * @param dir
+     */
+    private void judgeCleanOrPutCache(ArrayMap<String, Object> adCacheObjects, File dir) {
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            if (!file.isFile())
+                continue;
+            try {
+                Object adInfo = getAdCacheFromFile(file);
+                AdCacheInfo adCacheInfo = (AdCacheInfo) adInfo;
+                if (adCacheInfo.isCacheDisPlayed() || isAdCacheTimeout(adInfo)) {
+                    cleanBeforeCache(adCacheInfo);
+                } else {
+                    adCacheObjects.put(((AdCacheInfo) adInfo).getUuid(), adInfo);
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     /**
      * update wrapper config
+     *
      * @param context
      */
     private void updateWrapper(Context context) {
@@ -235,9 +407,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         mWorkThread.start();
         mReaperTracker = Tracker.getTracker();
         mReaperTracker.init(mContext);
-        initCache(mContext);
-        mAdFileManager = AdCacheFileDownloadManager.getInstance(context);
-        mAdFileManager.setDownloadCallback(this);
+//        initCache(mContext);
+        postInitCacheTask(mContext);
     }
 
     /**
@@ -310,8 +481,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
 
     }
-
-
 
 
     /**
@@ -390,10 +559,11 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
     /**
      * cache ad file
+     *
      * @param imageUrl
      * @return cache file instance
      */
-    private File cacheAdFile(String imageUrl){
+    private File cacheAdFile(String imageUrl) {
         return mAdFileManager.cacheAdFile(imageUrl);
     }
 
@@ -460,30 +630,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
     }
 
-    public void onEvent(int adEvent, AdInfo adInfo) {
-        // TODO set cache is unavailable
-        ISDKWrapper wrapper = null;
-        switch (adInfo.getAdName()) {
-            case SdkName.GUANG_DIAN_TONG: {
-                wrapper = mSdkWrappers.get("guangdiantong");
-                break;
-            }
-            case SdkName.MIX_ADX: {
-                wrapper = mSdkWrappers.get("baidu");
-                break;
-            }
-            case SdkName.AKAD: {
-                wrapper = mSdkWrappers.get("juxiao");
-                break;
-            }
-        }
-
-        if (wrapper != null) {
-            wrapper.onEvent(adEvent, adInfo);
-            handleTouchEvent(adEvent, adInfo);
-        }
-    }
-
     public void onRequestAdError(Object receiver, String errMsg) {
         ArrayMap<String, Object> params = new ArrayMap<>();
         params.put("isSucceed", false);
@@ -503,20 +649,76 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     }
 
     /**
+     * post tracker event task in this method
+     *
+     * @param tracker
+     */
+    private void postTrackerTask(Context context, Tracker tracker, int actionEvent, final AdInfo adInfo, ISDKWrapper wrapper) {
+        TrackerRunnable trackerRunnable = new TrackerRunnable(context, tracker, actionEvent, adInfo, wrapper);
+        TrackerTask trackerTask = new TrackerTask(
+                PriorityTaskDaemon.PriorityTask.PRI_FIRST,
+                trackerRunnable,
+                new PriorityTaskDaemon.TaskNotify() {
+                    @Override
+                    public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+                        ReaperLog.i(TAG, "tracker task onResult method is called");
+                        if (result.equals(adInfo)) {
+                            ReaperLog.i(TAG, "tracker ad info " + adInfo.getAdPosId() + "tracker event has handled");
+                        }
+                    }
+                }
+        );
+        mWorkThread.postTask(trackerTask);
+    }
+
+    /**
+     * This method is support for ReaperApi and use Tracker task to record event
+     *
+     * @param adEvent
+     * @param adInfo
+     */
+    public void onEvent(int adEvent, AdInfo adInfo) {
+        // TODO set cache is unavailable
+        ISDKWrapper wrapper = null;
+        switch (adInfo.getAdName()) {
+            case SdkName.GUANG_DIAN_TONG: {
+                wrapper = mSdkWrappers.get("guangdiantong");
+                break;
+            }
+            case SdkName.MIX_ADX: {
+                wrapper = mSdkWrappers.get("baidu");
+                break;
+            }
+            case SdkName.AKAD: {
+                wrapper = mSdkWrappers.get("juxiao");
+                break;
+            }
+        }
+        if(wrapper != null)
+            postTrackerTask(mContext, mReaperTracker, adEvent, adInfo, wrapper);
+        handleTouchEvent(adEvent, adInfo);
+    }
+
+    /**
      * handle touch event such as click
      *
      * @param adEvent
      * @param adInfo
      */
-    private void handleTouchEvent(int adEvent, AdInfo adInfo){
+    private void handleTouchEvent(int adEvent, AdInfo adInfo) {
         switch (adEvent) {
-            case AdEvent.EVENT_CLICK:
+            case EVENT_CLICK:
                 handleAction(adInfo);
                 break;
         }
     }
 
-    private void handleAction(AdInfo adInfo){
+    /**
+     * handle action browse or download
+     *
+     * @param adInfo
+     */
+    private void handleAction(AdInfo adInfo) {
         int actionType = adInfo.getActionType();
         String adName = adInfo.getAdName();
         ISDKWrapper isdkWrapper = mSdkWrappers.get(adName);
@@ -532,8 +734,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 ReaperLog.i(TAG, " click action type is undefine");
                 break;
         }
-        if(TextUtils.isEmpty(actionUrl))
-                return;
+        if (TextUtils.isEmpty(actionUrl))
+            return;
         ReaperLog.i(TAG, actionType + " url " + actionUrl);
         mAdFileManager.requestDownload(actionUrl, null, null);
     }
@@ -651,7 +853,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         boolean fetchSucceed = true;
         //TODO : update fetch config update wrapper
         ReaperConfigManager.fetchReaperConfigFromServer(mContext,
-                            mContext.getPackageName(), SALT, mAppKey, mAppId);
+                mContext.getPackageName(), SALT, mAppKey, mAppId);
 
         if (!fetchSucceed) {
 //            onRequestAdError(mCallback, "Can not fetch reaper config from server");
@@ -683,7 +885,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     }
 
     private AdResponse requestWrapperAdInner(List<ReaperAdSense> reaperAdSenses, String advType, boolean isCache,
-                                          Object callBack, String errMsg) {
+                                             Object callBack, String errMsg) {
         Iterator<ReaperAdSense> it = reaperAdSenses.iterator();
         ReaperAdSense reaperAdSense = it.next();
         it.remove();
@@ -743,7 +945,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         sdkWrapper.requestAdAsync(builder.create(), new AdResponseCallback(reaperAdSenses, advType,
                 callBack, reaperAdSense, isCache, errMsg));
-        return true;
+        return null;
     }
 
 
@@ -819,7 +1021,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             AdInfo adInfo = adResponse.getAdInfo();
 
             String imageUrl = adInfo.getImgUrl();
-            if(!TextUtils.isEmpty(imageUrl)) {
+            if (!TextUtils.isEmpty(imageUrl)) {
                 File imageFile = cacheAdFile(imageUrl);
                 if (imageFile != null || imageFile.exists()) {
                     adInfo.setImgFile(imageFile);
