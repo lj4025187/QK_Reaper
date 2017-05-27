@@ -15,6 +15,7 @@ import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfigManager;
 import com.fighter.reaper.BumpVersion;
+import com.fighter.tracker.Tracker;
 import com.fighter.wrapper.AdRequest;
 import com.fighter.wrapper.AdResponse;
 import com.fighter.wrapper.AdResponseListener;
@@ -62,6 +63,48 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private Map<String, String> mAdTypeMap;
     private Map<String, Method> mMethodMap;
 
+
+    /**
+     * for init cache for all posIds
+     *
+     */
+    private class InitCacheTask extends PriorityTaskDaemon.NotifyPriorityTask {
+
+        public InitCacheTask(int priority, PriorityTaskDaemon.TaskRunnable runnable, PriorityTaskDaemon.TaskNotify notify) {
+            super(priority, runnable, notify);
+        }
+    }
+
+    /**
+     * tracker task
+     */
+    //TODO
+    private class TrackerTask  extends PriorityTaskDaemon.NotifyPriorityTask {
+
+        public TrackerTask(int priority, PriorityTaskDaemon.TaskRunnable runnable, PriorityTaskDaemon.TaskNotify notify) {
+            super(priority, runnable, notify);
+        }
+    }
+
+    /**
+     * request wrapper task for callback cache and notify user
+     */
+    private class AdRequestWrapperTask extends PriorityTaskDaemon.NotifyPriorityTask {
+
+        public AdRequestWrapperTask(int priority, PriorityTaskDaemon.TaskRunnable runnable, PriorityTaskDaemon.TaskNotify notify) {
+            super(priority, runnable, notify);
+        }
+    }
+
+    /**
+     * for user ad request
+     */
+    private class AdRequsetAdTask extends PriorityTaskDaemon.NotifyPriorityTask {
+        public AdRequsetAdTask(int priority, PriorityTaskDaemon.TaskRunnable runnable, PriorityTaskDaemon.TaskNotify notify) {
+            super(priority, runnable, notify);
+        }
+    }
+
     /**
      * the memory cache object
      */
@@ -76,6 +119,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private Object mCallBack;
 
     private AdCacheFileDownloadManager mAdFileManager;
+    private Tracker mReaperTracker;
 
     private class RequestAdRunner extends PriorityTaskDaemon.TaskRunnable {
         private String mPosId;
@@ -158,36 +202,12 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         fillAdCachePool(posIds);
     }
 
-    private void initReaperConfig(Context context) {
-//        updateConfig(context);
-        postConfigUpdate();
-    }
-
+    /**
+     * update wrapper config
+     * @param context
+     */
     private void updateWrapper(Context context) {
-        if (context == null)
-            return;
-        mSdkWrappers = new ArrayMap<>();
 
-//        ISDKWrapper akAdWrapper = new AKAdSDKWrapper();
-        ISDKWrapper tencentWrapper = new TencentSDKWrapper();
-        ISDKWrapper mixAdxWrapper = new MixAdxSDKWrapper();
-//        akAdWrapper.init(context, null);
-        tencentWrapper.init(context, null);
-        mixAdxWrapper.init(context, null);
-//        mSdkWrappers.put(SdkName.AKAD, akAdWrapper);
-        mSdkWrappers.put(SdkName.GUANG_DIAN_TONG, tencentWrapper);
-        mSdkWrappers.put(SdkName.MIX_ADX, mixAdxWrapper);
-
-        mAdTypeMap = new ArrayMap<>();
-        mAdTypeMap.put("banner", AdType.TYPE_BANNER);
-        mAdTypeMap.put("plugin", AdType.TYPE_PLUG_IN);
-        mAdTypeMap.put("app_wall", AdType.TYPE_APP_WALL);
-        mAdTypeMap.put("full_screen", AdType.TYPE_FULL_SCREEN);
-        mAdTypeMap.put("feed", AdType.TYPE_FEED);
-        mAdTypeMap.put("native", AdType.TYPE_NATIVE);
-        mAdTypeMap.put("native_video", AdType.TYPE_NATIVE_VIDEO);
-
-        mMethodMap = new ArrayMap<>();
     }
 
     /**
@@ -213,11 +233,31 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         mWorkThread = new PriorityTaskDaemon();
         mWorkThread.start();
-        initReaperConfig(mContext);
-        updateWrapper(mContext);
+        mReaperTracker = Tracker.getTracker();
+        mReaperTracker.init(mContext);
         initCache(mContext);
         mAdFileManager = AdCacheFileDownloadManager.getInstance(context);
         mAdFileManager.setDownloadCallback(this);
+    }
+
+    /**
+     * request the ad cache to get the Ad information.
+     */
+    public void requestAdCache(String cacheId, Object callBack) {
+        mCacheId = cacheId;
+        mCallBack = callBack;
+        Object cache = getCacheAdInfo(mCacheId);
+        if (cache != null) {
+            AdCacheInfo info = (AdCacheInfo) cache;
+            String adSource = info.getAdSource();
+            ISDKWrapper sdkWrapper = mSdkWrappers.get(adSource);
+            // TODO: Fix me
+            // onRequestAd(callBack, sdkWrapper.convertFromString(info.getCache()).getAdAllParams());
+            setCacheUsed((AdCacheInfo) cache);
+            requestCacheAdInternal();
+        } else {
+            onRequestAdError(callBack, "the request ad form all source is null");
+        }
     }
 
     private String generateCacheId(AdCacheInfo info) {
@@ -271,25 +311,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
     }
 
-    /**
-     * request the ad cache to get the Ad information.
-     */
-    public void requestAdCache(String cacheId, Object callBack) {
-        mCacheId = cacheId;
-        mCallBack = callBack;
-        Object cache = getCacheAdInfo(mCacheId);
-        if (cache != null) {
-            AdCacheInfo info = (AdCacheInfo) cache;
-            String adSource = info.getAdSource();
-            ISDKWrapper sdkWrapper = mSdkWrappers.get(adSource);
-            // TODO: Fix me
-            // onRequestAd(callBack, sdkWrapper.convertFromString(info.getCache()).getAdAllParams());
-            setCacheUsed((AdCacheInfo) cache);
-            requestCacheAdInternal();
-        } else {
-            onRequestAdError(callBack, "the request ad form all source is null");
-        }
-    }
+
 
 
     /**
@@ -628,8 +650,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         // 获取配置信息
         boolean fetchSucceed = true;
         //TODO : update fetch config update wrapper
-//        ReaperConfigManager.fetchReaperConfigFromServer(mContext,
-//                            mContext.getPackageName(), SALT, mAppKey, mAppId);
+        ReaperConfigManager.fetchReaperConfigFromServer(mContext,
+                            mContext.getPackageName(), SALT, mAppKey, mAppId);
 
         if (!fetchSucceed) {
 //            onRequestAdError(mCallback, "Can not fetch reaper config from server");
