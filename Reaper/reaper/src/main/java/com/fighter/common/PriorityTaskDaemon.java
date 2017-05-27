@@ -232,6 +232,10 @@ public final class PriorityTaskDaemon extends Thread {
         private NotifyPriorityTask mTask;
         private TaskNotify mNotify;
 
+        public TaskNotify getNotify() {
+            return mNotify;
+        }
+
         NotifyHandler(Looper looper, NotifyPriorityTask task, TaskNotify notify) {
             super(looper);
             mTask = task;
@@ -266,6 +270,22 @@ public final class PriorityTaskDaemon extends Thread {
         private Object mResult = null;
         private TaskTiming mTiming = null;
         private TaskRunnable mRunnable;
+
+        private TaskRunnable getRunnable() {
+            return mRunnable;
+        }
+
+        private TaskNotify getNotify() {
+            return ((NotifyHandler)mNotifyHandler).getNotify();
+        }
+
+        private Handler getHandle() {
+            return mNotifyHandler;
+        }
+
+        public NotifyPriorityTask(NotifyPriorityTask task) {
+            this(task.getPriority(), task.getRunnable(), task.getNotify(), task.getHandle().getLooper());
+        }
 
         public NotifyPriorityTask(int priority, TaskRunnable runnable, TaskNotify notify) {
             this(priority, runnable, notify, Looper.myLooper());
