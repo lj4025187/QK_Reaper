@@ -13,7 +13,6 @@ import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfigManager;
 import com.fighter.reaper.BumpVersion;
-import com.fighter.tracker.AdParam;
 import com.fighter.tracker.EventClickParam;
 import com.fighter.tracker.EventDisPlayParam;
 import com.fighter.tracker.Tracker;
@@ -112,7 +111,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
     /****************************************************Tracker Task start**************************************************************************/
     /**
-     * TrackerTask is used for tracking  onEvent {@link Tracker#onEvent(Context, String, AdParam)}
+     * TrackerTask is used for tracking  onEvent {@link Tracker#onEvent}
      * and ISDKWrapper {@link ISDKWrapper#onEvent(int, AdInfo)}
      */
     private class TrackerTask extends PriorityTaskDaemon.NotifyPriorityTask {
