@@ -22,6 +22,15 @@ public class AdCacheInfo implements Serializable {
     private int mCacheState = CACHE_IS_GOOD;
     private String mAdSource;
     private String mCachePath;
+    private String mUuid;
+
+    public String getUuid() {
+        return mUuid;
+    }
+
+    public void setUuid(String mUuid) {
+        this.mUuid = mUuid;
+    }
 
     public void setCacheState(int mCacheState) {
         this.mCacheState = mCacheState;
