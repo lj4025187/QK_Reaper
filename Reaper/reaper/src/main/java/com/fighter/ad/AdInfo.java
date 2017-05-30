@@ -233,13 +233,19 @@ public class AdInfo {
     }
 
     public File getImgFile() {
-        return (File) mAdParams.get(KEY_IMG_FILE);
+        String imgPath = (String)mAdParams.get(KEY_IMG_FILE);
+        if (imgPath != null) {
+            File imgFile =  new File(imgPath);
+            if (imgFile.exists()) {
+                return imgFile;
+            }
+        }
+        return null;
     }
 
-    public void setImgFile(File imgFile) {
-        putParam(KEY_IMG_FILE, imgFile);
+    public void setImgFile(String imgFilePath) {
+        putParam(KEY_IMG_FILE, imgFilePath);
     }
-
     public String getVideoUrl() {
         return (String) mAdParams.get(KEY_VIDEO_URL);
     }
@@ -314,12 +320,12 @@ public class AdInfo {
         putParam(KEY_APP_DOWNLOAD_FILE, path);
     }
 
-    public void deleteImgFile() {
-        File f = getImgFile();
-        if (f != null && f.exists()) {
-            f.delete();
-        }
-    }
+//    public void deleteImgFile() {
+//        File f = getImgFile();
+//        if (f != null && f.exists()) {
+//            f.delete();
+//        }
+//    }
 
     public void deleteAppDownloadFile() {
         String path = getAppDownloadFile();

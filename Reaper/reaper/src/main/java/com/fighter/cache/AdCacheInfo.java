@@ -57,7 +57,7 @@ public class AdCacheInfo implements Serializable {
     }
 
     public boolean isCacheDisPlayed() {
-        return (mCacheState & CACHE_DISPLAY_BY_USER) == 0;
+        return (mCacheState & ~CACHE_DISPLAY_BY_USER) == 0;
     }
 
     public AdCacheInfo() {

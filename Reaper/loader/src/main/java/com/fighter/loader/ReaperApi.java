@@ -156,6 +156,7 @@ public class ReaperApi {
             if (adInfoMap != null) {
                 AdInfo adInfo = new AdInfo(ReaperApi.this);
                 adInfo.mParams = adInfoMap;
+                mAdRequestCallback.onSuccess(adInfo);
             } else {
                 mAdRequestCallback.onFailed("Request succeed but contains no ad");
             }

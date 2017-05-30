@@ -138,17 +138,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 break;
         }
     }
-
-    @Override
-    public void onSuccess(final List<AdInfo> list) {
-        if (list == null || list.isEmpty()) {
-            SampleLog.e(TAG, "get ads success but list is null");
-            return;
-        }
-        SampleLog.i(TAG, " on success ads size is " + list.size());
-        generateAdData(list);
-    }
-
+    
     /**
      * add list from call back to mListData
      *
@@ -208,6 +198,21 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 return baseItem;
             }
         });
+    }
+
+    @Override
+    public void
+    onSuccess(AdInfo adInfo) {
+        if (adInfo == null)
+            return;
+        List<AdInfo>list = new ArrayList();
+        list.add(adInfo);
+        if (list == null || list.isEmpty()) {
+            SampleLog.e(TAG, "get ads success but list is null");
+            return;
+        }
+        SampleLog.i(TAG, " on success ads size is " + list.size());
+        generateAdData(list);
     }
 
     @Override

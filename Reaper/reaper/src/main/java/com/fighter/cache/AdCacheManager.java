@@ -271,9 +271,12 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         public Object doSomething() {
             AdInfo adInfo = null;
             ReaperAdvPos advPos;
-            if(!updateConfig()) {
-                return false;
-            }
+            // TODO: test not update config
+            // TODO: updateConfig return false?
+//            if(!updateConfig()) {
+//                return null;
+//            }
+//            updateConfig();
             List<ReaperAdSense> reaperAdSenses = getWrapperConfig(mPosId);
             advPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
             if (reaperAdSenses != null) {
@@ -361,7 +364,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             AdCacheInfo adCacheInfo;
             if (info != null && info instanceof AdCacheInfo) {
                 adCacheInfo = (AdCacheInfo)info;
-
+                setCacheUsed(adCacheInfo);
                 return AdInfo.convertFromString(adCacheInfo.getCache());
             }
             // 3. if cache is empty, post a task call wrapper get ad
@@ -448,7 +451,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         ArrayMap<String, Object> adCacheObjects = new ArrayMap<>();
         File adCacheDir = new File(context.getCacheDir(), "ac");
         if (!adCacheDir.exists())
-            mInitCacheSuccess = adCacheDir.mkdir();
+            adCacheDir.mkdir();
+        mInitCacheSuccess = adCacheDir.exists();
         mCacheDir = adCacheDir;
         File[] cacheDirs = adCacheDir.listFiles();
         for (File dir : cacheDirs) {
@@ -892,7 +896,10 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         if (receiver == null) {
             return;
         }
-        Method methodOnResponse = mMethodCall.get(METHOD_ON_RESPONSE);
+        Method methodOnResponse = null;
+        if (mMethodCall != null) {
+            methodOnResponse = mMethodCall.get(METHOD_ON_RESPONSE);
+        }
         if (methodOnResponse == null) {
             try {
                 methodOnResponse = receiver.getClass().getDeclaredMethod(
@@ -933,15 +940,20 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
     private void updateWrapper(List<ReaperAdSense> reaperAdSenses) {
         if (reaperAdSenses == null) return;
-        mSdkWrapperSupport = new HashMap<>();
-        mSdkWrapperAdTypeSupport = new HashMap<>();
+        if (mSdkWrapperSupport == null)
+            mSdkWrapperSupport = new HashMap<>();
+        if (mSdkWrapperAdTypeSupport == null)
+            mSdkWrapperAdTypeSupport = new HashMap<>();
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_BANNER, AdType.TYPE_BANNER);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_APP_WALL, AdType.TYPE_APP_WALL);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_FEED, AdType.TYPE_FEED);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_FULL_SCREEN, AdType.TYPE_FULL_SCREEN);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_NATIVE, AdType.TYPE_NATIVE);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_NATIVE_VIDEO, AdType.TYPE_NATIVE_VIDEO);
-        mMethodCall = new HashMap<>();
+        mSdkWrapperAdTypeSupport.put(AdType.TYPE_PLUG_IN, AdType.TYPE_PLUG_IN);
+
+        if (mMethodCall == null)
+            mMethodCall = new HashMap<>();
         for(ReaperAdSense adSense : reaperAdSenses) {
             String adSourceName = adSense.ads_name;
             if (!mSdkWrapperSupport.containsKey(adSourceName)) {
@@ -1016,6 +1028,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             }
 
             AdRequest.Builder builder = new AdRequest.Builder()
+                    .adPosId(sense.getPosId())
                     .adLocalAppId(sense.ads_appid)
                     .adLocalPositionId(sense.ads_posid)
                     .adType(adType)
@@ -1074,7 +1087,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
         File imageFile = cacheAdFile(imageUrl);
         if (imageFile != null && imageFile.exists()) {
-            adInfo.setImgFile(imageFile);
+            adInfo.setImgFile(imageFile.getAbsolutePath());
         }
     }
 
@@ -1084,7 +1097,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         AdCacheInfo info = new AdCacheInfo();
         info.setAdSource(adInfo.getAdName());
         info.setCache(AdInfo.convertToString(adInfo));
-        info.setExpireTime("100000");
+        info.setExpireTime("100000000");
         info.setUuid(adInfo.getUUID());
         info.setAdCacheId(adInfo.getAdPosId());
         try {

@@ -215,7 +215,14 @@ public class AdInfo {
      * @return 图片文件
      */
     public File getImgFile() {
-        return (File) mParams.get("imgFile");
+        String imgPath = (String) mParams.get("imgFile");
+        if (imgPath != null) {
+            File imgFile =  new File(imgPath);
+            if (imgFile.exists()) {
+                return imgFile;
+            }
+        }
+        return null;
     }
 
     /**
