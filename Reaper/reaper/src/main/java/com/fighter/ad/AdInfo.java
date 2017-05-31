@@ -65,6 +65,10 @@ public class AdInfo {
      */
     private static final String KEY_UUID = "uuid";
     /**
+     * 广告超时失效时间
+     */
+    private static final String KEY_EXPIRE_TIME = "expire_time";
+    /**
      * 广告内容类型
      */
     private static final String KEY_CONTENT_TYPE = "contentType";
@@ -157,6 +161,15 @@ public class AdInfo {
         }
     }
 
+    public long getExpireTime() {
+        Object o = mAdParams.get(KEY_EXPIRE_TIME);
+        return o == null ? 0 : Long.valueOf(o.toString());
+    }
+
+    public void setExpireTime(long expireTime) {
+        mAdParams.put(KEY_EXPIRE_TIME, expireTime);
+    }
+
     public int getContentType() {
         Object o = mAdParams.get(KEY_CONTENT_TYPE);
         return o == null ? ContentType.PICTURE : (int) o;
@@ -233,9 +246,9 @@ public class AdInfo {
     }
 
     public File getImgFile() {
-        String imgPath = (String)mAdParams.get(KEY_IMG_FILE);
+        String imgPath = (String) mAdParams.get(KEY_IMG_FILE);
         if (imgPath != null) {
-            File imgFile =  new File(imgPath);
+            File imgFile = new File(imgPath);
             if (imgFile.exists()) {
                 return imgFile;
             }
@@ -246,6 +259,7 @@ public class AdInfo {
     public void setImgFile(String imgFilePath) {
         putParam(KEY_IMG_FILE, imgFilePath);
     }
+
     public String getVideoUrl() {
         return (String) mAdParams.get(KEY_VIDEO_URL);
     }
@@ -344,6 +358,7 @@ public class AdInfo {
                 "mContentType=" + getContentType() +
                 ", mActionType=" + getActionType() +
                 ", mUuid=" + getUUID() +
+                ", mExpireTime=" + getExpireTime() +
                 ", mCanCache=" + canCache() +
                 ", mAdSource=" + getAdName() +
                 ", mAdPosId=" + getAdPosId() +

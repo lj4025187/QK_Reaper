@@ -16,7 +16,10 @@ public class AdRequest {
      * 360OS广告平台Pos Id
      */
     private static final String KEY_AD_POS_ID = "adPosId";
-
+    /**
+     * 广告位超时失效时间
+     */
+    private static final String KEY_EXPIRE_TIME = "expire_time";
     /**
      * 申请时广告商下发的App ID
      */
@@ -67,6 +70,11 @@ public class AdRequest {
         return (String) mAdParams.get(KEY_AD_POS_ID);
     }
 
+    public long getExpireTime() {
+        Object o = mAdParams.get(KEY_EXPIRE_TIME);
+        return o == null ? 0 : (long) o;
+    }
+
     public String getAdLocalAppId() {
         return (String) mAdParams.get(KEY_AD_LOCAL_APP_ID);
     }
@@ -111,6 +119,7 @@ public class AdRequest {
     public String toString() {
         return "AdRequest{" +
                 "mAdPosId='" + getAdPosId() + '\'' +
+                ", mExpireTime='" + getExpireTime() + '\'' +
                 ", mAdLocalAppId='" + getAdLocalAppId() + '\'' +
                 ", mAdLocalPositionId='" + getAdLocalPositionId() + '\'' +
                 ", mAdType=" + getAdType() +
@@ -132,11 +141,22 @@ public class AdRequest {
         /**
          * 360OS 广告平台位置ID
          *
-         * @param adPosId
+         * @param adPosId 奇酷广告位ID
          * @return
          */
         public Builder adPosId(String adPosId) {
             putParam(KEY_AD_POS_ID, adPosId);
+            return this;
+        }
+
+        /**
+         * 广告位超时失效时间
+         *
+         * @param expireTime 超时时间 单位：ms
+         * @return 广告创建器
+         */
+        public Builder adExpireTime(long expireTime) {
+            putParam(KEY_EXPIRE_TIME, expireTime);
             return this;
         }
 

@@ -156,6 +156,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                 if (response.isSuccessful()) {
                     adResponse = convertResponse(
                             adRequest.getAdPosId(),
+                            adRequest.getExpireTime(),
                             adRequest.getAdType(),
                             adRequest.getAdLocalAppId(),
                             adRequest.getAdLocalPositionId(),
@@ -385,6 +386,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
     }
 
     private AdResponse convertResponse(String adPosId,
+                                       long expireTime,
                                        String adType,
                                        String adLocalAppId,
                                        String adLocalPositionId,
@@ -424,6 +426,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
 
                     adInfo = new AdInfo();
                     adInfo.generateUUID();
+                    adInfo.setExpireTime(expireTime);
                     adInfo.setCanCache(true);
                     adInfo.setAdName(SdkName.MIX_ADX);
                     adInfo.setAdPosId(adPosId);

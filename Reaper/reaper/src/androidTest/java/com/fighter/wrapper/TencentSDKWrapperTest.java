@@ -23,6 +23,7 @@ public class TencentSDKWrapperTest {
     public void testNativeAdRequest() {
         AdRequest adRequest = new AdRequest.Builder()
                 .adPosId("1")
+                .adExpireTime(30 * 60 * 1000)
                 .adLocalAppId("1104241296")
                 .adLocalPositionId("5060504124524896")
                 .adType(AdType.TYPE_BANNER)

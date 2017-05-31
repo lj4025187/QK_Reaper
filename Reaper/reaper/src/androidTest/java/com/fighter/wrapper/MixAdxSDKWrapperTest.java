@@ -21,6 +21,7 @@ public class MixAdxSDKWrapperTest {
     public void testNativeAdRequest() {
         AdRequest adRequest = new AdRequest.Builder()
                 .adPosId("1")
+                .adExpireTime(30 * 60 * 1000)
                 .adLocalAppId("0")
                 .adLocalPositionId("128")
                 .adType(AdType.TYPE_BANNER)

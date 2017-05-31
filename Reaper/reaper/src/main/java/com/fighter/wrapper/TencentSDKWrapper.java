@@ -149,6 +149,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 if (response.isSuccessful()) {
                     adResponse = convertResponse(
                             adRequest.getAdPosId(),
+                            adRequest.getExpireTime(),
                             adRequest.getAdType(),
                             adRequest.getAdLocalAppId(),
                             adRequest.getAdLocalPositionId(),
@@ -381,6 +382,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
     }
 
     private AdResponse convertResponse(String adPosId,
+                                       long expireTime,
                                        String adType,
                                        String adLocalAppId,
                                        String adLocalPositionId,
@@ -433,6 +435,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 }
                 adInfo = new AdInfo();
                 adInfo.generateUUID();
+                adInfo.setExpireTime(expireTime);
                 adInfo.setCanCache(true);
                 adInfo.setAdName(SdkName.GUANG_DIAN_TONG);
                 adInfo.setAdPosId(adPosId);
