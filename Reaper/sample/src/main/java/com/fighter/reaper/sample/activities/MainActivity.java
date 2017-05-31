@@ -205,6 +205,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     onSuccess(AdInfo adInfo) {
         if (adInfo == null)
             return;
+        SampleLog.i(TAG, "on success ad uuid ==> " + adInfo.getUuid());
         List<AdInfo>list = new ArrayList();
         list.add(adInfo);
         if (list == null || list.isEmpty()) {

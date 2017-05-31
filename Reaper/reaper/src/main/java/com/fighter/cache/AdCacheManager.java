@@ -16,6 +16,7 @@ import com.fighter.config.ReaperConfigManager;
 import com.fighter.reaper.BumpVersion;
 import com.fighter.tracker.EventClickParam;
 import com.fighter.tracker.EventDisPlayParam;
+import com.fighter.tracker.EventDownLoadParam;
 import com.fighter.tracker.Tracker;
 import com.fighter.wrapper.AKAdSDKWrapper;
 import com.fighter.wrapper.AdRequest;
@@ -34,7 +35,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -220,6 +220,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     }
     /****************************************************Tracker Task end**************************************************************************/
 
+    /****************************************************AdRequestWrapper Task start**************************************************************************/
     /**
      * request wrapper task for callback cache and notify user
      */
@@ -311,6 +312,9 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         }
     }
+    /****************************************************AdRequestWrapper Task end**************************************************************************/
+
+    /****************************************************AdRequestTask Task start**************************************************************************/
     /**
      * for user ad request
      */
@@ -364,8 +368,22 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             AdCacheInfo adCacheInfo;
             if (info != null && info instanceof AdCacheInfo) {
                 adCacheInfo = (AdCacheInfo)info;
-                setCacheUsed(adCacheInfo);
-                return AdInfo.convertFromString(adCacheInfo.getCache());
+                AdInfo adInfo = AdInfo.convertFromString(adCacheInfo.getCache());
+                if (isAdCacheTimeout(adCacheInfo)) {
+                    EventDownLoadParam param = new EventDownLoadParam();
+                    param.ad_num = 1;
+                    param.ad_appid = 12222;/*this value should rewrite*/
+                    param.ad_posid = Integer.valueOf(adInfo.getAdPosId());
+                    param.ad_source = adInfo.getAdName();
+                    param.ad_type = adInfo.getAdType();
+                    param.app_pkg = mContext.getPackageName();
+                    param.reason = "timeout";
+                    ReaperLog.i(TAG, "EventDownLoadParam = " + param);
+                    mReaperTracker.trackDownloadEvent(mContext, param);
+                } else {
+                    setCacheUsed(adCacheInfo);
+                    return adInfo;
+                }
             }
             // 3. if cache is empty, post a task call wrapper get ad
             postAdRequestWrapperTask(mPosId, mCallBack, false, AdRequestRunner.this);
@@ -386,6 +404,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             }
         }
     }
+    /****************************************************AdRequestTask Task end**************************************************************************/
 
     /**
      * the memory cache object
@@ -463,13 +482,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
 
         if (adCacheObjects.size() > 0) {
-//            Collections.sort(adCacheObjects, new Comparator<Object>() {
-//                @Override
-//                public int compare(Object o1, Object o2) {
-//                    return (int) (((AdCacheInfo) o1).getCacheTime() -
-//                            ((AdCacheInfo) o2).getCacheTime());
-//                }
-//            });
             mAdCache.put(cacheId, adCacheObjects);
         }
         return mInitCacheSuccess;
@@ -535,7 +547,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     public void requestAdCache(String cacheId, Object callBack) {
         mCacheId = cacheId;
         mCallBack = callBack;
-        postAdRequestTask(cacheId, callBack);
+        postAdRequestTask(mCacheId, mCallBack);
     }
 
     private String generateCacheId(AdCacheInfo info) {
@@ -552,10 +564,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         return posIds;
     }
 
-    private void setCacheUsed(AdCacheInfo adCacheInfo) {
-        if (adCacheInfo == null)
-            return;
-        adCacheInfo.setCacheState(AdCacheInfo.CACHE_BACK_TO_USER);
+    private void updateDiskCache(AdCacheInfo adCacheInfo) {
         File cacheDir = new File(mCacheDir, adCacheInfo.getAdCacheId());
         if (cacheDir.isDirectory() && cacheDir.exists()) {
             File cacheFile = new File(cacheDir, String.valueOf(adCacheInfo.getCacheTime()));
@@ -586,25 +595,48 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 }
             }
         }
-
     }
 
+    private void setCacheUsed(AdCacheInfo adCacheInfo) {
+        if (adCacheInfo == null)
+            return;
+        adCacheInfo.setCacheState(AdCacheInfo.CACHE_BACK_TO_USER);
+        updateDiskCache(adCacheInfo);
+    }
+
+    private void setCacheDisplayed(AdInfo adInfo) {
+        if (adInfo == null)
+            return;
+        ArrayMap<String, Object> cacheObjects = mAdCache.get(adInfo.getAdPosId());
+        if (cacheObjects == null)
+            return;
+        Object object = cacheObjects.get(adInfo.getUUID());
+        if (object instanceof AdCacheInfo) {
+            AdCacheInfo adCacheInfo = (AdCacheInfo) object;
+            adCacheInfo.setCacheState(AdCacheInfo.CACHE_DISPLAY_BY_USER);
+            //updateDiskCache(adCacheInfo);
+            cacheObjects.remove(adCacheInfo.getUuid());
+            cleanBeforeCache(adCacheInfo);
+        }
+    }
 
     /**
      * the method is used to cache ad information to sdcard.
      *
      * @param cacheId the ad unique id
-     * @param adInfo  the object of ad information
+     * @param info  the object of ad information
      * @throws IOException it maybe throw IOException
      */
-    private void cacheAdInfo(String cacheId, Object adInfo) throws IOException {
-        if (cacheId == null || adInfo == null)
+    private void cacheAdInfo(String cacheId, Object info) throws IOException {
+        if (cacheId == null || info == null)
             return;
-        ArrayMap<String, Object> adInfoObjects = new ArrayMap<>();
-        AdCacheInfo adCacheInfo = (AdCacheInfo) adInfo;
-        String cacheFileId = generateCacheId(adCacheInfo);
+        ArrayMap<String, Object> adCacheInfoObjects = null;
+        AdCacheInfo adCacheInfo = (AdCacheInfo) info;
+        String cacheFileId = adCacheInfo.getUuid();
         if (mAdCache.containsKey(cacheId)) {
-            adInfoObjects = mAdCache.get(cacheId);
+            adCacheInfoObjects = mAdCache.get(cacheId);
+        } else {
+            adCacheInfoObjects = new ArrayMap<>();
         }
         File cacheIdDir = new File(mCacheDir, cacheId);
         if (!cacheIdDir.exists()) {
@@ -615,13 +647,12 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             adInfoFile.createNewFile();
         }
         adCacheInfo.setCachePath(adInfoFile.getAbsolutePath());
-        // TODO test all the adc cache is available
         adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_GOOD);
-        adInfoObjects.put(((AdCacheInfo) adInfo).getUuid(), adInfo);
-        mAdCache.put(cacheId, adInfoObjects);
+        adCacheInfoObjects.put(adCacheInfo.getUuid(), adCacheInfo);
+        mAdCache.put(cacheId, adCacheInfoObjects);
         FileOutputStream fileOutputStream = new FileOutputStream(adInfoFile);
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-        objectOutputStream.writeObject(adInfo);
+        objectOutputStream.writeObject(adCacheInfo);
         objectOutputStream.close();
         fileOutputStream.close();
     }
@@ -646,14 +677,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         if (adCacheDir.exists() && adCacheDir.isDirectory()) {
             File[] cacheFiles = adCacheDir.listFiles();
             List<File> cacheFileList = Arrays.asList(cacheFiles);
-            Collections.sort(cacheFileList, new Comparator<File>() {
-                @Override
-                public int compare(File o1, File o2) {
-                    String n1 = o1.getName();
-                    String n2 = o2.getName();
-                    return (int) (Long.parseLong(n1) - Long.parseLong(n2));
-                }
-            });
             for (File file : cacheFileList) {
                 adInfo = (AdCacheInfo) getAdCacheFromFile(file);
                 if (adInfo != null && !adInfo.isCacheBackToUser()) {
@@ -709,10 +732,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 e.printStackTrace();
             }
         }
-        /* 3. check ad cache is available */
-        if (isAdCacheTimeout(adInfo)) {
-            return adInfo;
-        }
         return adInfo;
     }
 
@@ -730,7 +749,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 if (cacheFile.exists()) {
                     cacheFile.delete();
                 }
-                cacheObjects.remove(0);
+                cacheObjects.remove(cacheObjects.keyAt(0));
             }
         }
     }
@@ -783,7 +802,9 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
      * @param adInfo
      */
     public void onEvent(int adEvent, AdInfo adInfo) {
-        // TODO set cache is unavailable
+        if (adEvent == EVENT_VIEW) {
+            setCacheDisplayed(adInfo);
+        }
         ISDKWrapper wrapper = null;
         switch (adInfo.getAdName()) {
             case SdkName.GUANG_DIAN_TONG: {
@@ -1033,6 +1054,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                     .adLocalAppId(sense.ads_appid)
                     .adLocalPositionId(sense.ads_posid)
                     .adType(adType)
+                    .adExpireTime(Long.parseLong(sense.expire_time))
                     .adCount(1);
 
             if ("pixel".equalsIgnoreCase(sense.adv_size_type)) {
@@ -1098,7 +1120,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         AdCacheInfo info = new AdCacheInfo();
         info.setAdSource(adInfo.getAdName());
         info.setCache(AdInfo.convertToString(adInfo));
-        info.setExpireTime("100000000");
+        // TODO the test config db expire_time is too small
+        info.setExpireTime(String.valueOf(adInfo.getExpireTime() * 1000));
         info.setUuid(adInfo.getUUID());
         info.setAdCacheId(adInfo.getAdPosId());
         try {

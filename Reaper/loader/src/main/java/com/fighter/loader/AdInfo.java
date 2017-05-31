@@ -291,6 +291,10 @@ public class AdInfo {
         return mParams.get(key);
     }
 
+    public String getUuid() {
+        return (String)mParams.get("uuid");
+    }
+
     @Override
     public String toString() {
         return "AdInfo{" +
