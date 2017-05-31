@@ -908,6 +908,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 e.printStackTrace();
             }
             if (methodOnResponse != null) {
+                mMethodCall = new ArrayMap<>();
                 mMethodCall.put(METHOD_ON_RESPONSE, methodOnResponse);
             }
         }
