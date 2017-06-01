@@ -75,7 +75,8 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        final AdInfo adInfo = mList.get(position).getAdInfo();
+        BaseItem baseItem = mList.get(position);
+        final AdInfo adInfo = baseItem.getAdInfo();
         SampleLog.i(TAG, " ad " + position + " contentType : " + adInfo.getContentType());
         BaseItemHolder baseItemHolder;
         int detailType = SampleConfig.DEBUG_VIDEO_MODE ?

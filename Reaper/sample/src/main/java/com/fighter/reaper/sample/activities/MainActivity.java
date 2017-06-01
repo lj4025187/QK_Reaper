@@ -118,7 +118,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             ToastUtil.getInstance(mContext).showSingletonToast(getString(R.string.ad_reaper_init_failed));
             return;
         }
-        mReaperApi.init(mContext, "10010", "not_a_real_key");
         AdRequester adRequester = mReaperApi.getAdRequester("1", this);
         adRequester.requestAd();
     }
@@ -142,78 +141,69 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     /**
      * add list from call back to mListData
      *
-     * @param list
+     * @param adInfo
      */
-    private void generateAdData(final List<AdInfo> list) {
-        mMainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                for (AdInfo adInfo : list) {
-                    BaseItem baseItem = parseBaseItem(adInfo);
-                    if (mListData.contains(baseItem)) {
-                        SampleLog.i(TAG, " data has exists " + adInfo.getTitle());
-                        continue;
-                    }
-                    mListData.add(baseItem);
-                }
-                SampleLog.i(TAG, " on success ads size is " + mListData.size());
-                if (mListData.isEmpty()) {
-                    mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
-                } else {
-                    mMainHandler.sendEmptyMessage(NOTIFY_DATA_CHANGED);
-                }
-            }
+    private void generateAdData(AdInfo adInfo) {
+        BaseItem baseItem = parseBaseItem(adInfo);
+        if (mListData.contains(baseItem)) {
+            SampleLog.i(TAG, " data has exists " + adInfo.getTitle());
+            return;
+        }
+        mListData.add(baseItem);
+        if(mListData.size() < 5) {
+            pullAdsType(BAIDU_TYPE);
+            return;
+        }
+        SampleLog.i(TAG, " on success ads size is " + mListData.size());
+        if (mListData.isEmpty()) {
+            mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
+        } else {
+            mMainHandler.sendEmptyMessage(NOTIFY_DATA_CHANGED);
+        }
+    }
 
-            private BaseItem parseBaseItem(AdInfo adInfo) {
-                adInfo.onAdShow(null);
-                BaseItem baseItem;
-                switch (SampleConfig.getDetailType(adInfo)) {
-                    case DETAIL_BANNER_TYPE:
-                        baseItem = new BannerItem(adInfo);
-                        break;
-                    case DETAIL_PLUG_IN_TYPE:
-                        baseItem = new PlugInItem(adInfo);
-                        break;
-                    case DETAIL_APP_WALL_TYPE:
-                        baseItem = new AppItem(adInfo);
-                        break;
-                    case DETAIL_FULL_SCREEN_TYPE:
-                        baseItem = new FullScreenItem(adInfo);
-                        break;
-                    case DETAIL_FEED_TYPE:
-                        baseItem = new FeedItem(adInfo);
-                        break;
-                    case DETAIL_NATIVE_TYPE:
-                        baseItem = new NativeItem(adInfo);
-                        break;
-                    case DETAIL_NATIVE_VIDEO_TYPE:
-                        baseItem = new NativeItem(adInfo);
-                        break;
-                    case DETAIL_UNKNOWN_TYPE:
-                    default:
-                        baseItem = new UnknownItem(adInfo);
-                        break;
-                }
-                SampleLog.i(TAG, " data should add " + adInfo.getTitle());
-                return baseItem;
-            }
-        });
+    private BaseItem parseBaseItem(AdInfo adInfo) {
+        adInfo.onAdShow(null);
+        BaseItem baseItem;
+        switch (SampleConfig.getDetailType(adInfo)) {
+            case DETAIL_BANNER_TYPE:
+                baseItem = new BannerItem(adInfo);
+                break;
+            case DETAIL_PLUG_IN_TYPE:
+                baseItem = new PlugInItem(adInfo);
+                break;
+            case DETAIL_APP_WALL_TYPE:
+                baseItem = new AppItem(adInfo);
+                break;
+            case DETAIL_FULL_SCREEN_TYPE:
+                baseItem = new FullScreenItem(adInfo);
+                break;
+            case DETAIL_FEED_TYPE:
+                baseItem = new FeedItem(adInfo);
+                break;
+            case DETAIL_NATIVE_TYPE:
+                baseItem = new NativeItem(adInfo);
+                break;
+            case DETAIL_NATIVE_VIDEO_TYPE:
+                baseItem = new NativeItem(adInfo);
+                break;
+            case DETAIL_UNKNOWN_TYPE:
+            default:
+                baseItem = new UnknownItem(adInfo);
+                break;
+        }
+        SampleLog.i(TAG, " data should add " + adInfo.getTitle());
+        return baseItem;
     }
 
     @Override
-    public void
-    onSuccess(AdInfo adInfo) {
-        if (adInfo == null)
-            return;
-        SampleLog.i(TAG, "on success ad uuid ==> " + adInfo.getUuid());
-        List<AdInfo>list = new ArrayList();
-        list.add(adInfo);
-        if (list == null || list.isEmpty()) {
-            SampleLog.e(TAG, "get ads success but list is null");
+    public void onSuccess(AdInfo adInfo) {
+        if (adInfo == null) {
+            SampleLog.e(TAG, " on success ads but ad is null");
             return;
         }
-        SampleLog.i(TAG, " on success ads size is " + list.size());
-        generateAdData(list);
+        SampleLog.i(TAG, "on success ad uuid ==> " + adInfo.getUuid());
+        generateAdData(adInfo);
     }
 
     @Override

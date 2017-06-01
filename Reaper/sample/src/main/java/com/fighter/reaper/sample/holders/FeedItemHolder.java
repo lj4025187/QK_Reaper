@@ -15,4 +15,5 @@ public class FeedItemHolder extends BaseItemHolder<FeedItem> {
     public FeedItemHolder(View itemView) {
         super(itemView);
     }
+
 }

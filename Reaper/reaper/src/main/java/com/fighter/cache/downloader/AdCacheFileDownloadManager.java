@@ -110,6 +110,10 @@ public class AdCacheFileDownloadManager {
      * @return
      */
     public long requestDownload(String url, String title, String desc) {
+        if(TextUtils.isEmpty(url)) {
+            ReaperLog.e(TAG, " request download url is null");
+            return -1;
+        }
         Uri uri = Uri.parse(url);
         DownloadManager.Request request = new DownloadManager.Request(uri);
         if (!TextUtils.isEmpty(title)) {

@@ -22,8 +22,4 @@ public class AppItemHolder extends BaseItemHolder<AppItem> {
 
     }
 
-    @Override
-    public void onAttachView(int position, AppItem iItem) {
-        super.onAttachView(position, iItem);
-    }
 }

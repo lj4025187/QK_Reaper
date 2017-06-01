@@ -9,6 +9,7 @@ import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
 import com.fighter.cache.downloader.AdCacheFileDownloadManager;
 import com.fighter.common.PriorityTaskDaemon;
+import com.fighter.common.utils.OpenUtils;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
@@ -72,7 +73,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private static final String METHOD_ON_RESPONSE = "onResponse";
 
     private static final int CACHE_MAX = 5;
-
     private static AdCacheManager mAdCacheManager = new AdCacheManager();
     private File mCacheDir;
 
@@ -852,18 +852,18 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         switch (actionType) {
             case AdInfo.ActionType.APP_DOWNLOAD:
                 actionUrl = isdkWrapper.requestDownloadUrl(adInfo);
+
                 break;
             case AdInfo.ActionType.BROWSER:
                 actionUrl = isdkWrapper.requestWebUrl(adInfo);
+                if(!TextUtils.isEmpty(actionUrl))
+                    OpenUtils.openWebUrl(mContext, actionUrl);
                 break;
             default:
                 ReaperLog.i(TAG, " click action type is undefine");
                 break;
         }
-        if (TextUtils.isEmpty(actionUrl))
-            return;
         ReaperLog.i(TAG, actionType + " url " + actionUrl);
-        mAdFileManager.requestDownload(actionUrl, null, null);
     }
 
     /**

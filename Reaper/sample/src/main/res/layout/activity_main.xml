@@ -49,6 +49,8 @@
             android:id="@+id/id_ads_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:divider="#9f9f9f"
+            android:dividerHeight="6px"
             android:scrollbars="vertical" />
 
         <LinearLayout

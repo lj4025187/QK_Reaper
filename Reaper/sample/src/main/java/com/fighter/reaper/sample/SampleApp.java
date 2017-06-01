@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.fighter.loader.ReaperApplication;
 import com.fighter.reaper.sample.utils.SampleLog;
+import com.fighter.reaper.sample.utils.ToastUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,6 +23,11 @@ public class SampleApp extends ReaperApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+        if(mReaperApi == null) {
+            SampleLog.e(TAG, "Sample app onCreate method mReaperApi is null");
+            ToastUtil.getInstance(this).showSingletonToast(getString(R.string.ad_reaper_init_failed));
+        }
+        mReaperApi.init(this, "10010", "not_a_real_key");
     }
 
     @Override

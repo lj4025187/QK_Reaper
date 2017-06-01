@@ -21,8 +21,8 @@
 
     <string name="ad_src_unknown">未知广告源</string>
 
-    <string name="text_ad_type">文字:只有标题、内容</string>
-    <string name="pic_ad_type">图片:只有图片</string>
+    <string name="text_ad_type">文字:标题、内容</string>
+    <string name="pic_ad_type">图片:图片</string>
     <string name="pic_text_ad_type">图文</string>
     <string name="video_ad_type">视频</string>
     <string name="unknown_ad_type">未定义类型</string>
