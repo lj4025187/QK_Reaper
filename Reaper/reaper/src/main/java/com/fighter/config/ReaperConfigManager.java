@@ -29,10 +29,10 @@ public class ReaperConfigManager {
                                                       String salt, String appKey, String appId) {
 
         // check should request or not
-        if (!ReaperConfigHttpHelper.shouldRequestAgain(context)) {
-            // use current config
-            return true;
-        }
+//        if (!ReaperConfigHttpHelper.shouldRequestAgain(context)) {
+//            // use current config
+//            return true;
+//        }
 
         return ReaperConfigFetcher.fetchWithRetry(context, pkg, salt, appKey, appId);
     }

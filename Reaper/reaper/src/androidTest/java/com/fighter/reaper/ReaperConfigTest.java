@@ -179,10 +179,11 @@ public class ReaperConfigTest {
 
         Context context = InstrumentationRegistry.getTargetContext();
 
-        ReaperConfigManager.fetchReaperConfigFromServer(
+        boolean fetchSuccess = ReaperConfigManager.fetchReaperConfigFromServer(
                 context, context.getPackageName(),
                 ReaperConfig.TEST_SALT,
                 ReaperConfig.TEST_APPKEY,
                 ReaperConfig.TEST_APPID);
+        ReaperLog.i(TAG, "##################### testFetchConfigFromServer ####################" + fetchSuccess);
     }
 }
