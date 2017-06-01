@@ -69,7 +69,7 @@ import static com.fighter.ad.AdEvent.EVENT_VIEW;
 public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallback {
     private static final String TAG = AdCacheManager.class.getSimpleName();
 
-    private static final String SALT = "salt_not_define";
+    private static final String SALT = "cf447fe3adac00476ee9244fd30fba74";
     private static final String METHOD_ON_RESPONSE = "onResponse";
 
     private static final int CACHE_MAX = 5;
@@ -272,11 +272,9 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         public Object doSomething() {
             AdInfo adInfo = null;
             ReaperAdvPos advPos;
-            // TODO: test not update config
-            // TODO: updateConfig return false?
-//            if(!updateConfig()) {
-//                return null;
-//            }
+            if(!updateConfig()) {
+                return null;
+            }
 //            updateConfig();
             List<ReaperAdSense> reaperAdSenses = getWrapperConfig(mPosId);
             advPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
@@ -808,15 +806,15 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         ISDKWrapper wrapper = null;
         switch (adInfo.getAdName()) {
             case SdkName.GUANG_DIAN_TONG: {
-                wrapper = mSdkWrapperSupport.get("guangdiantong");
+                wrapper = mSdkWrapperSupport.get(SdkName.GUANG_DIAN_TONG);
                 break;
             }
             case SdkName.MIX_ADX: {
-                wrapper = mSdkWrapperSupport.get("baidu");
+                wrapper = mSdkWrapperSupport.get(SdkName.MIX_ADX);
                 break;
             }
             case SdkName.AKAD: {
-                wrapper = mSdkWrapperSupport.get("juxiao");
+                wrapper = mSdkWrapperSupport.get(SdkName.AKAD);
                 break;
             }
         }
@@ -967,11 +965,11 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         if (mSdkWrapperAdTypeSupport == null)
             mSdkWrapperAdTypeSupport = new HashMap<>();
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_BANNER, AdType.TYPE_BANNER);
-        mSdkWrapperAdTypeSupport.put(AdType.TYPE_APP_WALL, AdType.TYPE_APP_WALL);
+//        mSdkWrapperAdTypeSupport.put(AdType.TYPE_APP_WALL, AdType.TYPE_APP_WALL);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_FEED, AdType.TYPE_FEED);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_FULL_SCREEN, AdType.TYPE_FULL_SCREEN);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_NATIVE, AdType.TYPE_NATIVE);
-        mSdkWrapperAdTypeSupport.put(AdType.TYPE_NATIVE_VIDEO, AdType.TYPE_NATIVE_VIDEO);
+//        mSdkWrapperAdTypeSupport.put(AdType.TYPE_NATIVE_VIDEO, AdType.TYPE_NATIVE_VIDEO);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_PLUG_IN, AdType.TYPE_PLUG_IN);
 
         if (mMethodCall == null)
@@ -1085,11 +1083,18 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                         sense.adv_size_type);
                 return null;
             }
-            AdResponse adResponse = sdkWrapper.requestAdSync(builder.create());
+            AdResponse adResponse = null;
+            if (sdkWrapper.isRequestAdSupportSync()) {
+                adResponse = sdkWrapper.requestAdSync(builder.create());
+            } else {
+                // TODO
+            }
 
-            if (adResponse.isSucceed()) {
-                adInfo = adResponse.getAdInfo();
-                break;
+            if (adResponse != null) {
+                if (adResponse.isSucceed()) {
+                    adInfo = adResponse.getAdInfo();
+                    break;
+                }
             }
         }
         return adInfo;
@@ -1120,7 +1125,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         AdCacheInfo info = new AdCacheInfo();
         info.setAdSource(adInfo.getAdName());
         info.setCache(AdInfo.convertToString(adInfo));
-        // TODO the test config db expire_time is too small
+        // the config expire time is second
         info.setExpireTime(String.valueOf(adInfo.getExpireTime() * 1000));
         info.setUuid(adInfo.getUUID());
         info.setAdCacheId(adInfo.getAdPosId());
