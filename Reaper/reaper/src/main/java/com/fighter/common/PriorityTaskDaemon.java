@@ -214,10 +214,10 @@ public final class PriorityTaskDaemon extends Thread {
             onFinishInThread(obj, timing);
         }
 
-        public void onPrepareInThread() {}
-        public void onFinishInThread(Object obj, TaskTiming timing) {}
-        public abstract Object doSomethingInThread();
-        public boolean willLeaveLooper() { return true; }
+        protected void onPrepareInThread() {}
+        protected void onFinishInThread(Object obj, TaskTiming timing) {}
+        protected abstract Object doSomethingInThread();
+        protected boolean willLeaveLooper() { return true; }
     }
 
     /**
@@ -299,18 +299,18 @@ public final class PriorityTaskDaemon extends Thread {
         }
 
         @Override
-        public void onPrepareInThread() {
+        protected void onPrepareInThread() {
             super.onPrepareInThread();
 
         }
 
         @Override
-        public Object doSomethingInThread() {
+        protected Object doSomethingInThread() {
             return mRunnable != null ? mRunnable.doSomething() : null;
         }
 
         @Override
-        public void onFinishInThread(Object obj, TaskTiming timing) {
+        protected void onFinishInThread(Object obj, TaskTiming timing) {
             super.onFinishInThread(obj, timing);
             // send messages
             mResult = obj;
