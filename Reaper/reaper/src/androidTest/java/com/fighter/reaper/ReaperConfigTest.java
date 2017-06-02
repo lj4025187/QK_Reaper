@@ -41,11 +41,11 @@ public class ReaperConfigTest {
                     "\"pos_ids\": [" +
                     "{" +
                     "\"pos_id\": \"1\"," +
-                    "\"adv_type\":\"banner\"," +
+                    "\"adv_type\":\"banner_adv\"," +
                     "\"adv_exposure\": \"first\"," +
                     "\"adsenses\": [" +
                     "{" +
-                    "\"ads_name\": \"juxiao\"," +
+                    "\"ads_name\": \"jx\"," +
                     "\"expire_time\": \"1800\"," +
                     "\"priority\": \"10\"," +
                     "\"ads_appid\": \"100001\"," +
@@ -56,7 +56,7 @@ public class ReaperConfigTest {
                     "\"adv_real_size\": \"640*100\"" +
                     "}," +
                     "{" +
-                    "\"ads_name\": \"guangdiantong\"," +
+                    "\"ads_name\": \"gdt\"," +
                     "\"expire_time\": \"1800\"," +
                     "\"priority\": \"3\"," +
                     "\"ads_appid\": \"1104241296\"," +
@@ -81,11 +81,11 @@ public class ReaperConfigTest {
                     "}," +
                     "{" +
                     "\"pos_id\": \"2\"," +
-                    "\"adv_type\":\"plugin\"," +
+                    "\"adv_type\":\"insert_adv\"," +
                     "\"adv_exposure\": \"first\"," +
                     "\"adsenses\": [" +
                     "{" +
-                    "\"ads_name\": \"guangdiantong\"," +
+                    "\"ads_name\": \"gdt\"," +
                     "\"expire_time\": \"1800\"," +
                     "\"priority\": \"3\"," +
                     "\"ads_appid\": \"1104241296\"," +
