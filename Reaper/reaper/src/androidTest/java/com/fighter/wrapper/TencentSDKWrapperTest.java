@@ -25,11 +25,14 @@ public class TencentSDKWrapperTest {
                 .adPosId("1")
                 .adExpireTime(30 * 60 * 1000)
                 .adLocalAppId("1104241296")
-                .adLocalPositionId("5060504124524896")
+                .adLocalPositionId("6050305154328807")/*240*38*/
+//                .adLocalPositionId("9060201144323878")/*320*50*/
+//                .adLocalPositionId("3000800184026889")/*480*75*/
+//                .adLocalPositionId("5060504124524896")/*640*100*/
                 .adType(AdType.TYPE_BANNER)
                 .adCount(1)
-                .adWidth(640)
-                .adHeight(100)
+                .adWidth(240)
+                .adHeight(38)
                 .adExtra(TencentSDKWrapper.EXTRA_LAT, 0)
                 .adExtra(TencentSDKWrapper.EXTRA_LNG, 0)
                 .adExtra(TencentSDKWrapper.EXTRA_COORDTIME, System.currentTimeMillis())
