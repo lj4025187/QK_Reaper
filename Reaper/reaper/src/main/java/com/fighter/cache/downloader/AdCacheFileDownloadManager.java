@@ -130,7 +130,7 @@ public class AdCacheFileDownloadManager {
     }
 
     /**
-     * Download complete receiver
+     * after receiving download complete
      */
     private class DownloadCompleteReceiver extends BroadcastReceiver {
 

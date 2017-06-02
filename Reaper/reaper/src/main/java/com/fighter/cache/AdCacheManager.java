@@ -1,6 +1,8 @@
 package com.fighter.cache;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
@@ -150,9 +152,14 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 ReaperLog.e(TAG, "tracker runnable init context is null");
                 return null;
             }
+            //open web url or download app
+            handleTouchEvent(actionEvent, adInfo);
+
+            //ISdkWrapper onEvent
             wrapper.onEvent(actionEvent, adInfo);
             String act_type = String.valueOf(actionEvent);
             ReaperLog.i(TAG, "tracker runnable track action type " + act_type);
+            //Tracker onEvent
             trackerEvent(actionEvent, adInfo);
             return adInfo;
         }
@@ -698,7 +705,39 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     @Override
     public void onDownloadComplete(long reference, String fileName) {
         //download app success
+        ReaperLog.i(TAG, reference + " on download complete " + fileName);
+        File resultFile;
+        File apkFile = new File(fileName);
+        if(!apkFile.exists())
+            return;
 
+        String parent = apkFile.getParent();
+        ReaperLog.i(TAG, " parent string is " + parent);
+
+        //handle the result file to apk file
+        if(!fileName.endsWith(".apk")) {
+            resultFile = new File(parent, reference+".apk");
+            boolean rename = apkFile.renameTo(resultFile);
+            ReaperLog.i(TAG, resultFile.getAbsolutePath() + " rename " + rename);
+        } else {
+            resultFile = apkFile;
+        }
+
+        //start install apk
+        if(resultFile.getName().endsWith(".apk")) {
+            installApk(resultFile);
+        }
+    }
+
+    /**
+     * Install apk when receive download complete
+     * @param apkFile
+     */
+    private  void installApk(File apkFile) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+        mContext.startActivity(intent);
     }
 
     /**
@@ -820,7 +859,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
         if(wrapper != null)
             postTrackerTask(mContext, mReaperTracker, adEvent, adInfo, wrapper);
-        handleTouchEvent(adEvent, adInfo);
     }
 
     /**
@@ -845,17 +883,22 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private void handleAction(AdInfo adInfo) {
         int actionType = adInfo.getActionType();
         String adName = adInfo.getAdName();
-        ISDKWrapper isdkWrapper = mSdkWrapperSupport.get(adName);
+        ISDKWrapper iSdkWrapper = mSdkWrapperSupport.get(adName);
         String actionUrl = null;
         switch (actionType) {
             case AdInfo.ActionType.APP_DOWNLOAD:
-                actionUrl = isdkWrapper.requestDownloadUrl(adInfo);
-
+                if(!iSdkWrapper.isDownloadOwn()) {
+                    actionUrl = iSdkWrapper.requestDownloadUrl(adInfo);
+                    long id = mAdFileManager.requestDownload(actionUrl, null, null);
+                    ReaperLog.i(TAG, "start download app " + id);
+                }
                 break;
             case AdInfo.ActionType.BROWSER:
-                actionUrl = isdkWrapper.requestWebUrl(adInfo);
-                if(!TextUtils.isEmpty(actionUrl))
-                    OpenUtils.openWebUrl(mContext, actionUrl);
+                if(!iSdkWrapper.isOpenWebOwn()) {
+                    actionUrl = iSdkWrapper.requestWebUrl(adInfo);
+                    if (!TextUtils.isEmpty(actionUrl))
+                        OpenUtils.openWebUrl(mContext, actionUrl);
+                }
                 break;
             default:
                 ReaperLog.i(TAG, " click action type is undefine");

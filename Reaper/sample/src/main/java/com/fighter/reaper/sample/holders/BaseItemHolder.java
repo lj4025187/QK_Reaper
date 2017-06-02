@@ -2,7 +2,6 @@ package com.fighter.reaper.sample.holders;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +10,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.target.Target;
@@ -109,32 +110,40 @@ public class BaseItemHolder<T extends BaseItem> {
             }
         } else {
             SampleLog.i(TAG, " file path " + imageFile.getAbsolutePath());
-            if (imageFile.getName().endsWith(".gif")) {
+            final boolean isGif = imageFile.getName().endsWith(".gif");
+            if (isGif) {
                 Glide.with(baseView.getContext())
                         .load(imageFile)
                         .asGif()
                         .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .listener(new RequestListener<File, GifDrawable>() {
+                            @Override
+                            public boolean onException(Exception e, File file, Target<GifDrawable> target, boolean b) {
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(GifDrawable gifDrawable, File file, Target<GifDrawable> target, boolean b, boolean b1) {
+                                Bitmap resource = gifDrawable.getFirstFrame();
+                                setImageSize(resource, isGif);
+                                return false;
+                            }
+                        })
                         .into(adView);
             } else {
+                Glide.with(baseView.getContext())
+                        .load(imageFile)
+                        .asBitmap()
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .into(new SimpleTarget<Bitmap>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
+                            @Override
+                            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                                setImageSize(resource, isGif);
+                            }
+                        });
 //                Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
 //                adView.setImageBitmap(bitmap);
             }
-            Glide.with(baseView.getContext())
-                    .load(imageFile)
-                    .asBitmap()
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .into(new SimpleTarget<Bitmap>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
-                        @Override
-                        public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                            int imageWidth = resource.getWidth();
-                            int imageHeight = resource.getHeight();
-                            boolean isGif = imageFile.getName().endsWith(".gif");
-                            if(!isGif) {
-                                adView.setImageBitmap(resource);
-                            }
-                            imageSize.setText((isGif ? "gif-" : "jpg-") + "W:H---" + imageWidth + "*" + imageHeight);
-                        }
-                    });
 
         }
 
@@ -150,5 +159,19 @@ public class BaseItemHolder<T extends BaseItem> {
                 adAction.setText(context.getString(R.string.ad_unknown_action));
                 break;
         }
+    }
+
+    /**
+     * For set image size width * height
+     * @param resource
+     * @param isGif
+     */
+    private void setImageSize(Bitmap resource, boolean isGif){
+        int imageWidth = resource.getWidth();
+        int imageHeight = resource.getHeight();
+        if(!isGif) {
+            adView.setImageBitmap(resource);
+        }
+        imageSize.setText((isGif ? "gif-" : "jpg-") + "W:H---" + imageWidth + "*" + imageHeight);
     }
 }
