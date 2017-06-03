@@ -112,4 +112,71 @@ public class SampleConfig {
 
     public final static boolean DEBUG_DATA_BASE = true;
 
+    public static String RESPONSE =
+            "{" +
+                    "\"result\": \"ok\"," +
+                    "\"reason\": \"\"," +
+                    "\"next_time\": \"28800\"," +
+                    "\"pos_ids\": [" +
+                    "{" +
+                    "\"pos_id\": \"1\"," +
+                    "\"adv_type\":\"banner_adv\"," +
+                    "\"adv_exposure\": \"first\"," +
+                    "\"adsenses\": [" +
+                    "{" +
+                    "\"ads_name\": \"jx\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"10\"," +
+                    "\"ads_appid\": \"100001\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"10001\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"640*100\"" +
+                    "}," +
+                    "{" +
+                    "\"ads_name\": \"gdt\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"3\"," +
+                    "\"ads_appid\": \"1104241296\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"6050305154328807\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"640*100\"" +
+                    "}," +
+                    "{" +
+                    "\"ads_name\": \"baidu\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"10\"," +
+                    "\"ads_appid\": \"0\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"128\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"640*100\"" +
+                    "}," +
+                    "]" +
+                    "}," +
+                    "{" +
+                    "\"pos_id\": \"2\"," +
+                    "\"adv_type\":\"insert_adv\"," +
+                    "\"adv_exposure\": \"first\"," +
+                    "\"adsenses\": [" +
+                    "{" +
+                    "\"ads_name\": \"gdt\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"3\"," +
+                    "\"ads_appid\": \"1104241296\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"1060308114529681\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"640*500\"" +
+                    "}" +
+                    "]" +
+                    "}" +
+                    "]" +
+                    "}";
+
 }

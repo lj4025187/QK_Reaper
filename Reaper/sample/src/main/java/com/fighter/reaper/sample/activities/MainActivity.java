@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.fighter.loader.AdInfo;
 import com.fighter.loader.AdRequester;
+import com.fighter.loader.ReaperApi;
 import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.adapter.AdAdapter;
 import com.fighter.reaper.sample.config.SampleConfig;
@@ -67,6 +68,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initView();
+        mReaperApi.setTagetConfig(SampleConfig.RESPONSE);
     }
 
     public void initView() {
@@ -150,10 +152,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             return;
         }
         mListData.add(baseItem);
-        if(mListData.size() < 5) {
-            pullAdsType(BAIDU_TYPE);
-            return;
-        }
+//        if(mListData.size() < 5) {
+//            pullAdsType(BAIDU_TYPE);
+//            return;
+//        }
         SampleLog.i(TAG, " on success ads size is " + mListData.size());
         if (mListData.isEmpty()) {
             mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);

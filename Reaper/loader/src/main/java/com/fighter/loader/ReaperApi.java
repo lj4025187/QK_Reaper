@@ -63,7 +63,7 @@ public class ReaperApi {
      * @param appKey     360OS广告平台申请的APP key
      */
     public void init(Context appContext, String appId,
-                     String appKey) {
+                     String appKey, boolean isTestMode) {
         Map<String, Object> params = new ArrayMap<>();
 
         if (appContext != null) {
@@ -71,7 +71,19 @@ public class ReaperApi {
         }
         putParam(params, "appId", appId);
         putParam(params, "appKey", appKey);
+        putParam(params, "testMode", isTestMode);
         invokeReaperApi("init", params);
+    }
+
+    /**
+     * 设置测试模式使用的Json配置数据
+     *
+     * @param configJson 测试的目标测试数据
+     */
+    public void setTagetConfig(String configJson) {
+        Map<String, Object> params = new ArrayMap<>();
+        putParam(params, "config", configJson);
+        invokeReaperApi("setTargetConfig", params);
     }
 
     /**

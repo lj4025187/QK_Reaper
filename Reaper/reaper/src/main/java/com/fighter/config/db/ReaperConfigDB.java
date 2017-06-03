@@ -78,6 +78,15 @@ public class ReaperConfigDB {
         }
     }
 
+    public List<ReaperAdSense> queryAllAdSense(String posId) {
+        mRWLock.readLock().lock();
+        try {
+            return queryAllAdSenseInner(posId);
+        } finally {
+            mRWLock.readLock().unlock();
+        }
+    }
+
     private List<ReaperAdvPos> queryAllAdvPosInner() {
         SQLiteDatabase db = mDBHelper.getReadableDatabase();
         if (db == null) {
@@ -105,13 +114,7 @@ public class ReaperConfigDB {
         }
     }
 
-    private ReaperAdSense queryAdSenseInner(String posId) {
-        // query adv exposure first
-        ReaperAdvPos pos = queryAdvPosInner(posId);
-        if (pos == null) {
-            return null;
-        }
-
+    private List<ReaperAdSense> queryAllAdSenseInner (String posId) {
         SQLiteDatabase db = mDBHelper.getReadableDatabase();
         if (db == null) {
             return null;
@@ -153,6 +156,22 @@ public class ReaperConfigDB {
         } finally {
             cursor.close();
             //db.close();
+        }
+
+        return senseList;
+    }
+
+    private ReaperAdSense queryAdSenseInner(String posId) {
+        // query adv exposure first
+        ReaperAdvPos pos = queryAdvPosInner(posId);
+        if (pos == null) {
+            return null;
+        }
+
+        List<ReaperAdSense> senseList = queryAllAdSenseInner(posId);
+
+        if (senseList == null || senseList.size() == 0) {
+            return null;
         }
 
         if (ReaperConfig.VALUE_ADV_EXPOSURE_FIRST.equals(pos.adv_exposure)) {

@@ -29,10 +29,10 @@ public class ReaperConfigManager {
                                                       String salt, String appKey, String appId) {
 
         // check should request or not
-//        if (!ReaperConfigHttpHelper.shouldRequestAgain(context)) {
-//            // use current config
-//            return true;
-//        }
+        if (!ReaperConfigHttpHelper.shouldRequestAgain(context)) {
+            // use current config
+            return true;
+        }
 
         return ReaperConfigFetcher.fetchWithRetry(context, pkg, salt, appKey, appId);
     }
@@ -66,6 +66,16 @@ public class ReaperConfigManager {
      */
     public static ReaperAdSense getReaperAdSens(Context context, String posId) {
         return ReaperConfigDB.getInstance(context).queryAdSense(posId);
+    }
+
+    /**
+     * Get all ad senses
+     * @param context
+     * @param posId
+     * @return
+     */
+    public static List<ReaperAdSense> getReaperAdSenses(Context context, String posId) {
+        return ReaperConfigDB.getInstance(context).queryAllAdSense(posId);
     }
 
 }

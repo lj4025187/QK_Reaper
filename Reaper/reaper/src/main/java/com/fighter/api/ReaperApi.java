@@ -5,11 +5,19 @@ import android.text.TextUtils;
 
 import com.fighter.ad.AdInfo;
 import com.fighter.cache.AdCacheManager;
+import com.fighter.common.rc4.IRC4;
+import com.fighter.common.rc4.RC4Factory;
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.config.ReaperAdSense;
+import com.fighter.config.ReaperAdvPos;
+import com.fighter.config.ReaperConfig;
+import com.fighter.config.ReaperConfigHttpHelper;
+import com.fighter.config.db.ReaperConfigDB;
 import com.fighter.download.ReaperEnv;
 import com.fighter.reaper.R;
 import com.qiku.proguard.annotations.NoProguard;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +32,7 @@ public class ReaperApi {
     private Context mContext;
     private String mAppId;
     private String mAppKey;
+    private boolean isTestMode;
     private AtomicBoolean mIsInitSucceed = new AtomicBoolean(false);
     private AdCacheManager mAdCacheManager;
 
@@ -64,6 +73,7 @@ public class ReaperApi {
         mContext = (Context) params.get("appContext");
         mAppId = (String) params.get("appId");
         mAppKey = (String) params.get("appKey");
+        isTestMode = (boolean)params.get("testMode");
 
         if (mContext == null) {
             ReaperLog.e(TAG, "[init] app context is null");
@@ -83,6 +93,23 @@ public class ReaperApi {
         mAdCacheManager.init(mContext, mAppId, mAppKey);
 
         mIsInitSucceed.set(true);
+    }
+
+    @NoProguard
+    public void setTargetConfig(Map<String, Object> params) {
+        if (params == null)
+            return;
+        String config = (String) params.get("config");
+        if (isTestMode) {
+            ReaperConfigHttpHelper.recordLastSuccessTime(mContext);
+            String key = ReaperConfig.TEST_SALT + ReaperConfig.TEST_APPKEY;
+            IRC4 rc4 = RC4Factory.create(key);
+            byte[] encrypt = rc4.encrypt(config.getBytes());
+            List<ReaperAdvPos> reaperAdvPoses = ReaperConfigHttpHelper.parseResponseBody(mContext, encrypt, key);
+            if (reaperAdvPoses != null) {
+                ReaperConfigDB.getInstance(mContext).saveReaperAdvPos(reaperAdvPoses);
+            }
+        }
     }
 
     @NoProguard

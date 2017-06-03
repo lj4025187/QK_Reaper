@@ -3,6 +3,7 @@ package com.fighter.reaper.sample;
 import android.content.Context;
 
 import com.fighter.loader.ReaperApplication;
+import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.utils.ToastUtil;
 
@@ -27,14 +28,14 @@ public class SampleApp extends ReaperApplication {
             SampleLog.e(TAG, "Sample app onCreate method mReaperApi is null");
             ToastUtil.getInstance(this).showSingletonToast(getString(R.string.ad_reaper_init_failed));
         }
-        mReaperApi.init(this, "10010", "not_a_real_key");
+        mReaperApi.init(this, "10010", "not_a_real_key", true);
     }
 
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        boolean success = copyDBToDatabases(this);
-        SampleLog.i(TAG, "attachBaseContext copy data base " + success);
+        //boolean success = copyDBToDatabases(this);
+        //SampleLog.i(TAG, "attachBaseContext copy data base " + success);
     }
 
     private static final String DB_PATH = "/data/data/com.fighter.reaper.sample/databases/";
