@@ -296,7 +296,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             if (mAdResponse != null && mAdResponse.isSucceed()) {
                 return mAdResponse.getAdInfo();
             }
-            return null;
+            return "all the ads has not matter ad";
         }
     }
 
@@ -352,6 +352,9 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 } else {
                     onRequestAdSucceed(callBack, adInfo);
                 }
+            }
+            if (result != null && result instanceof String) {
+                onRequestAdError(callBack, (String) result);
             }
 
         }
@@ -1109,7 +1112,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             ReaperAdSense sense2 = new ReaperAdSense();
             sense2.ads_name = "gdt";
             sense2.expire_time = "1800";
-            sense2.priority = "20";
+            sense2.priority = "5";
             sense2.ads_appid = "1104241296";
             sense2.ads_posid = "6050305154328807";
             sense2.ads_app_key = "adbsjmemsfm";
@@ -1152,8 +1155,13 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         if (reaperAdSenses == null)
             return null;
         Iterator<ReaperAdSense> iterator = reaperAdSenses.iterator();
-        ReaperAdSense sense = iterator.next();
-        iterator.remove();
+        ReaperAdSense sense;
+        if (iterator.hasNext()) {
+            sense = iterator.next();
+            iterator.remove();
+        } else {
+            return null;
+        }
         String adsName = sense.ads_name;
         ISDKWrapper sdkWrapper = mSdkWrapperSupport.get(adsName);
         if (sdkWrapper == null) {

@@ -225,6 +225,18 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     requestNativeVideoAd();
                     break;
                 }
+                default:
+                    JSONObject errJson = new JSONObject();
+                    errJson.put("httpResponseCode", 1);
+                    errJson.put("akAdErrCode", 1);
+                    errJson.put("akAdErrMsg", "the AKAD source not suppoort ad type [" + mAdRequest.getAdType() + "]");
+                    AdResponse adResponse = new AdResponse.Builder()
+                            .errMsg(errJson.toString())
+                            .create();
+
+                    if (mAdResponseListener != null) {
+                        mAdResponseListener.onAdResponse(adResponse);
+                    }
             }
         }
 

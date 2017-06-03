@@ -166,7 +166,7 @@ public class ReaperConfigTest {
         Assert.assertEquals(2, posList.size());
 
         ReaperAdvPos pos = db.queryAdvPos("1");
-        Assert.assertEquals(pos.adv_type, "banner");
+        Assert.assertEquals(pos.adv_type, "banner_adv");
 
         ReaperAdSense sense = db.queryAdSense("2");
         Assert.assertEquals(sense.priority, "3");
