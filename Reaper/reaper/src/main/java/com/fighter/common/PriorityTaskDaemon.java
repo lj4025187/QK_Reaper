@@ -258,6 +258,10 @@ public final class PriorityTaskDaemon extends Thread {
     public abstract static class TaskRunnable {
         private NotifyPriorityTask mTask = null;
 
+        protected NotifyPriorityTask getTask() {
+            return mTask;
+        }
+
         public abstract Object doSomething();
         public NotifyPriorityTask createNewTask(int priority, TaskRunnable runnable, TaskNotify notify) {
             return new NotifyPriorityTask(priority, runnable, notify, mTask.mNotifyHandler.getLooper());
@@ -281,6 +285,10 @@ public final class PriorityTaskDaemon extends Thread {
 
         private Handler getHandle() {
             return mNotifyHandler;
+        }
+
+        public void setRunnable (TaskRunnable runnable) {
+            mRunnable = runnable;
         }
 
         public NotifyPriorityTask(NotifyPriorityTask task) {

@@ -82,8 +82,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         ReaperLog.i(TAG, "[init]");
         mContext = appContext;
         mDownloadMap = new LruCache<>(200);
-        AKAD.initSdk(mContext, true, true);
-        AKAD.setApkListener(mContext, new ApkDownloadListener());
+        AKAD.initSdk(ReaperEnv.sContextProxy, true, true);
+        AKAD.setApkListener(ReaperEnv.sContextProxy, new ApkDownloadListener());
     }
 
     @Override

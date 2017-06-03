@@ -24,6 +24,7 @@ import com.fighter.tracker.Tracker;
 import com.fighter.wrapper.AKAdSDKWrapper;
 import com.fighter.wrapper.AdRequest;
 import com.fighter.wrapper.AdResponse;
+import com.fighter.wrapper.AdResponseListener;
 import com.fighter.wrapper.ISDKWrapper;
 import com.fighter.wrapper.MixAdxSDKWrapper;
 import com.fighter.wrapper.TencentSDKWrapper;
@@ -35,10 +36,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -82,6 +83,10 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private Map<String, String> mSdkWrapperAdTypeSupport;
     private Map<String, Method> mMethodCall;
 
+    private List<ReaperAdSense> mAdSenseList;
+    private ReaperAdvPos mReaperAdvPos;
+    private PriorityTaskDaemon.NotifyPriorityTask mAdRequestWrapperAsnc;
+
     /**************************************************Init cache task start*****************************************************************/
     private boolean mInitCacheSuccess = false;
 
@@ -107,10 +112,10 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         public Object doSomething() {
             boolean initSuccess = initCache(this.context);
             ReaperLog.i(TAG, "InitCacheRunnable do something init " + initSuccess);
-            String[] posIds = getAllPosId(context);
-            for (String posId : posIds) {
-                postAdRequestWrapperTask(posId, null, true, InitCacheRunnable.this);
-            }
+//            String[] posIds = getAllPosId(context);
+//            for (String posId : posIds) {
+//                postAdRequestWrapperTask(posId, null, true, InitCacheRunnable.this);
+//            }
             return initSuccess;
         }
     }
@@ -231,7 +236,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     /**
      * request wrapper task for callback cache and notify user
      */
-    private class AdRequestWrapperTask extends PriorityTaskDaemon.NotifyPriorityTask {
+    private class AdRequestWrapperTask extends PriorityTaskDaemon.NotifyPriorityTask implements AdResponseListener{
         private String mPosId;
         private Object mCallBack;
         private boolean mCache;
@@ -264,6 +269,35 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             this.mCallBack = mCallBack;
             this.mCache = mCache;
         }
+
+        @Override
+        public void onAdResponse(AdResponse adResponse) {
+            AdRequestWrapperAsyncRunner runner = new AdRequestWrapperAsyncRunner(adResponse);
+            this.setRunnable(runner);
+            mWorkThread.postTaskInFront(this);
+        }
+    }
+
+    private class AdRequestWrapperAsyncRunner extends PriorityTaskDaemon.TaskRunnable {
+        private AdResponse mAdResponse;
+
+        public AdRequestWrapperAsyncRunner(AdResponse mAdResponse) {
+            this.mAdResponse = mAdResponse;
+        }
+
+        @Override
+        public Object doSomething() {
+            if (mAdResponse.isSucceed()) {
+                return mAdResponse.getAdInfo();
+            }
+            while(mAdResponse != null && !mAdResponse.isSucceed()) {
+                mAdResponse = requestWrapperAdInner(mAdSenseList, mReaperAdvPos.adv_type, (AdRequestWrapperTask) getTask());
+            }
+            if (mAdResponse != null && mAdResponse.isSucceed()) {
+                return mAdResponse.getAdInfo();
+            }
+            return null;
+        }
     }
 
     private class AdRequestWrapperRunner extends PriorityTaskDaemon.TaskRunnable {
@@ -278,16 +312,21 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         @Override
         public Object doSomething() {
             AdInfo adInfo = null;
-            ReaperAdvPos advPos;
-            if(!updateConfig()) {
-                return null;
-            }
+            AdResponse adResponse;
+//            if(!updateConfig()) {
+//                return null;
+//            }
 //            updateConfig();
-            List<ReaperAdSense> reaperAdSenses = getWrapperConfig(mPosId);
-            advPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
-            if (reaperAdSenses != null) {
-                updateWrapper(reaperAdSenses);
-                adInfo = requestWrapperAdInner(reaperAdSenses,advPos.adv_type);
+            mAdSenseList = getWrapperConfig(mPosId);
+            mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
+            if (mAdSenseList != null) {
+                updateWrapper(mAdSenseList);
+                do {
+                    adResponse = requestWrapperAdInner(mAdSenseList, mReaperAdvPos.adv_type, (AdRequestWrapperTask) getTask());
+                } while (adResponse != null && !adResponse.isSucceed());
+
+                if (adResponse != null && adResponse.isSucceed())
+                    adInfo = adResponse.getAdInfo();
             }
             downloadAdResourceFile(adInfo);
             return adInfo;
@@ -317,6 +356,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         }
     }
+
     /****************************************************AdRequestWrapper Task end**************************************************************************/
 
     /****************************************************AdRequestTask Task start**************************************************************************/
@@ -367,7 +407,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         @Override
         public Object doSomething() {
             // 1.post a task to pull ad for cache
-            postAdRequestWrapperTask(mPosId, mCallBack, true, AdRequestRunner.this);
+            postAdRequestWrapperTask(mPosId, null, true, AdRequestRunner.this);
             // 2. if cache is full, back cache ad info
             Object info = getCacheAdInfo(mPosId);
             AdCacheInfo adCacheInfo;
@@ -643,6 +683,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         } else {
             adCacheInfoObjects = new ArrayMap<>();
         }
+
         File cacheIdDir = new File(mCacheDir, cacheId);
         if (!cacheIdDir.exists()) {
             cacheIdDir.mkdir();
@@ -1050,97 +1091,130 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             ReaperLog.e(TAG, "Can not find config info with ad position id [" + posId + "]");
             return null;
         }
+
         List<ReaperAdSense> reaperAdSenses = reaperAdvPos.getAdSenseList();
-        // query reaper by posId get the best reaperAdSense
-        if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
-            ReaperAdSense adSense = ReaperConfigManager.getReaperAdSens(mContext, posId);
-            List<ReaperAdSense> adSenses = new ArrayList<>();
-            adSenses.add(adSense);
-            reaperAdSenses = adSenses;
+
+        if (reaperAdSenses == null) {
+            ReaperAdSense sense1 = new ReaperAdSense();
+            sense1.ads_name = "jx";
+            sense1.expire_time = "1800";
+            sense1.priority = "10";
+            sense1.ads_appid = "100001";
+            sense1.ads_posid = "10001";
+            sense1.ads_app_key = "adbsjmemsfm";
+            sense1.max_adv_num = "10";
+            sense1.adv_size_type = "pixel";
+            sense1.adv_real_size = "640*100";
+            reaperAdvPos.addAdSense(sense1);
+            ReaperAdSense sense2 = new ReaperAdSense();
+            sense2.ads_name = "gdt";
+            sense2.expire_time = "1800";
+            sense2.priority = "20";
+            sense2.ads_appid = "1104241296";
+            sense2.ads_posid = "6050305154328807";
+            sense2.ads_app_key = "adbsjmemsfm";
+            sense2.max_adv_num = "10";
+            sense2.adv_size_type = "pixel";
+            sense2.adv_real_size = "640*100";
+            reaperAdvPos.addAdSense(sense2);
+            reaperAdSenses = reaperAdvPos.getAdSenseList();
         }
+        // query reaper by posId get the best reaperAdSense
+//        if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
+//            ReaperAdSense adSense = ReaperConfigManager.getReaperAdSens(mContext, posId);
+//            List<ReaperAdSense> adSenses = new ArrayList<>();
+//            adSenses.add(adSense);
+//            reaperAdSenses = adSenses;
+//        }
 
         if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
             ReaperLog.e(TAG, "Config get 0 ad sense with ad position id [" + posId + "]");
             return null;
         }
+        
+        switch (reaperAdvPos.adv_exposure) {
+            case "first":
+                Collections.sort(reaperAdSenses);
+                break;
+            case "loop":
+                //TODO
+                break;
+            case "weight":
+                // TODO
+                break;
+            default:
+        }
 
-        Collections.sort(reaperAdSenses);
         return reaperAdSenses;
     }
 
-    private AdInfo requestWrapperAdInner(List<ReaperAdSense> reaperAdSenses, String advType) {
+    private AdResponse requestWrapperAdInner(List<ReaperAdSense> reaperAdSenses, String advType, AdRequestWrapperTask task) {
         if (reaperAdSenses == null)
             return null;
-        AdInfo adInfo = null;
-        for (ReaperAdSense sense : reaperAdSenses) {
-            String adsName = sense.ads_name;
-            ISDKWrapper sdkWrapper = mSdkWrapperSupport.get(adsName);
-            if (sdkWrapper == null) {
-                ReaperLog.e(TAG, "Can not find " + adsName + "'s sdk implements, may need " +
-                        "upgrade reaper jar, current version " + BumpVersion.value());
-                return null;
-            }
-
-            String adType = null;
-            if (mSdkWrapperAdTypeSupport.containsKey(advType)) {
-                adType = mSdkWrapperAdTypeSupport.get(advType);
-            } else {
-                ReaperLog.e(TAG, "Can not find match ad type with type name " +
-                        advType);
-                return null;
-            }
-
-            AdRequest.Builder builder = new AdRequest.Builder()
-                    .adPosId(sense.getPosId())
-                    .adLocalAppId(sense.ads_appid)
-                    .adLocalPositionId(sense.ads_posid)
-                    .adType(adType)
-                    .adExpireTime(Long.parseLong(sense.expire_time))
-                    .adCount(1);
-
-            if ("pixel".equalsIgnoreCase(sense.adv_size_type)) {
-                String realSize = sense.adv_real_size;
-                String[] size = realSize.split("x");
-                int width = 0;
-                int height = 0;
-
-                if (size.length == 2) {
-                    try {
-                        width = Integer.valueOf(size[0]);
-                        height = Integer.valueOf(size[1]);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (width > 0 || height > 0) {
-                    builder.adWidth(width);
-                    builder.adHeight(height);
-                }
-            } else if ("ratio".equalsIgnoreCase(sense.adv_size_type)) {
-                ReaperLog.e(TAG, "[TEST] Not support adv size type " +
-                        sense.adv_size_type);
-                return null;
-            } else {
-                ReaperLog.e("Not support adv size type " +
-                        sense.adv_size_type);
-                return null;
-            }
-            AdResponse adResponse = null;
-            if (sdkWrapper.isRequestAdSupportSync()) {
-                adResponse = sdkWrapper.requestAdSync(builder.create());
-            } else {
-                // TODO
-            }
-
-            if (adResponse != null) {
-                if (adResponse.isSucceed()) {
-                    adInfo = adResponse.getAdInfo();
-                    break;
-                }
-            }
+        Iterator<ReaperAdSense> iterator = reaperAdSenses.iterator();
+        ReaperAdSense sense = iterator.next();
+        iterator.remove();
+        String adsName = sense.ads_name;
+        ISDKWrapper sdkWrapper = mSdkWrapperSupport.get(adsName);
+        if (sdkWrapper == null) {
+            ReaperLog.e(TAG, "Can not find " + adsName + "'s sdk implements, may need " +
+                    "upgrade reaper jar, current version " + BumpVersion.value());
+            return null;
         }
-        return adInfo;
+
+        String adType = null;
+        if (mSdkWrapperAdTypeSupport.containsKey(advType)) {
+            adType = mSdkWrapperAdTypeSupport.get(advType);
+        } else {
+            ReaperLog.e(TAG, "Can not find match ad type with type name " +
+                    advType);
+            return null;
+        }
+
+        AdRequest.Builder builder = new AdRequest.Builder()
+                .adPosId(sense.getPosId())
+                .adLocalAppId(sense.ads_appid)
+                .adLocalPositionId(sense.ads_posid)
+                .adType(adType)
+                .adExpireTime(Long.parseLong(sense.expire_time))
+                .adCount(1);
+
+        if ("pixel".equalsIgnoreCase(sense.adv_size_type)) {
+            String realSize = sense.adv_real_size;
+            String[] size = realSize.split("\\*");
+            int width = 0;
+            int height = 0;
+
+            if (size.length == 2) {
+                try {
+                    width = Integer.valueOf(size[0]);
+                    height = Integer.valueOf(size[1]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (width > 0 || height > 0) {
+                builder.adWidth(width);
+                builder.adHeight(height);
+            }
+        } else if ("ratio".equalsIgnoreCase(sense.adv_size_type)) {
+            ReaperLog.e(TAG, "[TEST] Not support adv size type " +
+                        sense.adv_size_type);
+            return null;
+        } else {
+            ReaperLog.e("Not support adv size type " +
+                        sense.adv_size_type);
+            return null;
+        }
+        AdResponse adResponse = null;
+        if (sdkWrapper.isRequestAdSupportSync()) {
+            adResponse = sdkWrapper.requestAdSync(builder.create());
+        } else {
+            sdkWrapper.requestAdAsync(builder.create(), task);
+        }
+
+        return adResponse;
     }
 
     /**
@@ -1163,7 +1237,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     }
 
     private void cacheAdInfo(AdInfo adInfo) {
-        if (adInfo == null)
+        if (adInfo == null || !adInfo.canCache())
             return;
         AdCacheInfo info = new AdCacheInfo();
         info.setAdSource(adInfo.getAdName());
