@@ -85,7 +85,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
     private List<ReaperAdSense> mAdSenseList;
     private ReaperAdvPos mReaperAdvPos;
-    private PriorityTaskDaemon.NotifyPriorityTask mAdRequestWrapperAsnc;
 
     /**************************************************Init cache task start*****************************************************************/
     private boolean mInitCacheSuccess = false;
@@ -119,6 +118,33 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             return initSuccess;
         }
     }
+
+    private PriorityTaskDaemon.TaskRunnable mInitRunnable = new PriorityTaskDaemon.TaskRunnable() {
+        @Override
+        public Object doSomething() {
+            boolean initSuccess = initCache(mContext);
+            ReaperLog.i(TAG, "InitCacheRunnable do something init " + initSuccess);
+//            String[] posIds = getAllPosId(context);
+//            for (String posId : posIds) {
+//                postAdRequestWrapperTask(posId, null, true, InitCacheRunnable.this);
+//            }
+            return initSuccess;
+        }
+    };
+
+    private PriorityTaskDaemon.TaskNotify mInitNotify = new PriorityTaskDaemon.TaskNotify() {
+        @Override
+        public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+            boolean init = false;
+            if (result instanceof Boolean)
+                init = (boolean) result;
+            ReaperLog.i(TAG, " init cache task on result method is called and init " + init);
+        }
+    };
+
+    private InitCacheTask mInitTask = new InitCacheTask(
+            PriorityTaskDaemon.PriorityTask.PRI_FIRST, mInitRunnable, mInitNotify);
+
     /****************************************************Init cache Task end**************************************************************************/
 
 
@@ -142,6 +168,29 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         private int actionEvent;
         private AdInfo adInfo;
         private ISDKWrapper wrapper;
+
+        public void setContext(Context context) {
+            this.context = context;
+        }
+
+        public void setTracker(Tracker tracker) {
+            this.tracker = tracker;
+        }
+
+        public void setActionEvent(int actionEvent) {
+            this.actionEvent = actionEvent;
+        }
+
+        public void setAdInfo(AdInfo adInfo) {
+            this.adInfo = adInfo;
+        }
+
+        public void setWrapper(ISDKWrapper wrapper) {
+            this.wrapper = wrapper;
+        }
+
+        public TrackerRunnable() {
+        }
 
         public TrackerRunnable(Context context, Tracker tracker, int actionEvent, AdInfo adInfo, ISDKWrapper wrapper) {
             this.context = context;
@@ -230,16 +279,37 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
 
     }
+    private TrackerRunnable mTrackerRunner  = new TrackerRunnable();
+    private PriorityTaskDaemon.TaskNotify mTrackerNotify = new PriorityTaskDaemon.TaskNotify() {
+        @Override
+        public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+            ReaperLog.i(TAG, "tracker task onResult method is called");
+        }
+    };
+    private TrackerTask mTrackerTask = new TrackerTask(
+            PriorityTaskDaemon.PriorityTask.PRI_FIRST, mTrackerRunner, mTrackerNotify);
     /****************************************************Tracker Task end**************************************************************************/
 
     /****************************************************AdRequestWrapper Task start**************************************************************************/
     /**
      * request wrapper task for callback cache and notify user
      */
-    private class AdRequestWrapperTask extends PriorityTaskDaemon.NotifyPriorityTask implements AdResponseListener{
+    private class AdRequestWrapperTask extends PriorityTaskDaemon.NotifyPriorityTask implements AdResponseListener {
         private String mPosId;
         private Object mCallBack;
         private boolean mCache;
+
+        public void setPosId(String mPosId) {
+            this.mPosId = mPosId;
+        }
+
+        public void setCallBack(Object mCallBack) {
+            this.mCallBack = mCallBack;
+        }
+
+        public void setCache(boolean mCache) {
+            this.mCache = mCache;
+        }
 
         public String getPosId() {
             return mPosId;
@@ -272,14 +342,21 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         @Override
         public void onAdResponse(AdResponse adResponse) {
-            AdRequestWrapperAsyncRunner runner = new AdRequestWrapperAsyncRunner(adResponse);
-            this.setRunnable(runner);
+            mAdRequestWrapperAsyncRunner.setAdResponse(adResponse);
+            this.setRunnable(mAdRequestWrapperAsyncRunner);
             mWorkThread.postTaskInFront(this);
         }
     }
 
     private class AdRequestWrapperAsyncRunner extends PriorityTaskDaemon.TaskRunnable {
         private AdResponse mAdResponse;
+
+        public void setAdResponse(AdResponse mAdResponse) {
+            this.mAdResponse = mAdResponse;
+        }
+
+        public AdRequestWrapperAsyncRunner() {
+        }
 
         public AdRequestWrapperAsyncRunner(AdResponse mAdResponse) {
             this.mAdResponse = mAdResponse;
@@ -301,11 +378,16 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     }
 
     private class AdRequestWrapperRunner extends PriorityTaskDaemon.TaskRunnable {
-        private Context mContext;
         private String mPosId;
 
-        public AdRequestWrapperRunner(Context mContext, String mPosId) {
-            this.mContext = mContext;
+        public void setPosId(String mPosId) {
+            this.mPosId = mPosId;
+        }
+
+        public AdRequestWrapperRunner() {
+        }
+
+        public AdRequestWrapperRunner(String mPosId) {
             this.mPosId = mPosId;
         }
 
@@ -321,7 +403,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             if (mAdSenseList != null) {
                 updateWrapper(mAdSenseList);
                 do {
-                    adResponse = requestWrapperAdInner(mAdSenseList, mReaperAdvPos.adv_type, (AdRequestWrapperTask) getTask());
+                    AdRequestWrapperTask task = (AdRequestWrapperTask) getTask();
+                    adResponse = requestWrapperAdInner(mAdSenseList, mReaperAdvPos.adv_type, task);
                 } while (adResponse != null && !adResponse.isSucceed());
 
                 if (adResponse != null && adResponse.isSucceed())
@@ -358,6 +441,9 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         }
     }
+    private AdRequestWrapperRunner mAdRequestWrapperRunner = new AdRequestWrapperRunner();
+    private AdRequestWrapperAsyncRunner mAdRequestWrapperAsyncRunner = new AdRequestWrapperAsyncRunner();
+    private AdRequestWrapperNotify mAdRequestWrapperNotify = new AdRequestWrapperNotify();
 
     /****************************************************AdRequestWrapper Task end**************************************************************************/
 
@@ -401,6 +487,18 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private class AdRequestRunner extends PriorityTaskDaemon.TaskRunnable {
         private String mPosId;
         private Object mCallBack;
+
+        public void setPosId(String mPosId) {
+            this.mPosId = mPosId;
+        }
+
+        public void setCallBack(Object mCallBack) {
+            this.mCallBack = mCallBack;
+        }
+
+        public AdRequestRunner(){
+        }
+
         public AdRequestRunner(String posId, Object callBack) {
             mPosId = posId;
             mCallBack = callBack;
@@ -416,10 +514,10 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             if (info != null && info instanceof AdCacheInfo) {
                 adCacheInfo = (AdCacheInfo)info;
                 AdInfo adInfo = AdInfo.convertFromString(adCacheInfo.getCache());
-                if (isAdCacheTimeout(adCacheInfo)) {
+                if (isAdCacheTimeout(adCacheInfo) && adInfo != null) {
                     EventDownLoadParam param = new EventDownLoadParam();
                     param.ad_num = 1;
-                        param.ad_appid = 12222;/*this value should rewrite*/
+                    param.ad_appid = 12222;/*this value should rewrite*/
                     param.ad_posid = Integer.valueOf(adInfo.getAdPosId());
                     param.ad_source = adInfo.getAdName();
                     param.ad_type = adInfo.getAdType();
@@ -435,7 +533,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             // 3. if cache is empty, post a task call wrapper get ad
             postAdRequestWrapperTask(mPosId, mCallBack, false, AdRequestRunner.this);
             return null;
-
         }
     }
 
@@ -451,6 +548,10 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             }
         }
     }
+    private AdRequestRunner mAdRequestRunner = new AdRequestRunner();
+    private AdRequestNotify mAdRequestNotify = new AdRequestNotify();
+    private AdRequestTask mAdRequestTask = new AdRequestTask(
+            PriorityTaskDaemon.PriorityTask.PRI_FIRST, mAdRequestRunner, mAdRequestNotify);
     /****************************************************AdRequestTask Task end**************************************************************************/
 
     /**
@@ -484,20 +585,20 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
      * @param context
      */
     private void postInitCacheTask(Context context) {
-        InitCacheRunnable initCacheRunnable = new InitCacheRunnable(context);
-        InitCacheTask initCacheTask = new InitCacheTask(
-                PriorityTaskDaemon.PriorityTask.PRI_FIRST,
-                initCacheRunnable,
-                new PriorityTaskDaemon.TaskNotify() {
-                    @Override
-                    public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
-                        boolean init = false;
-                        if (result instanceof Boolean)
-                            init = (boolean) result;
-                        ReaperLog.i(TAG, " init cache task on result method is called and init " + init);
-                    }
-                });
-        mWorkThread.postTaskInFront(initCacheTask);
+//        InitCacheRunnable initCacheRunnable = new InitCacheRunnable(context);
+//        InitCacheTask initCacheTask = new InitCacheTask(
+//                PriorityTaskDaemon.PriorityTask.PRI_FIRST,
+//                initCacheRunnable,
+//                new PriorityTaskDaemon.TaskNotify() {
+//                    @Override
+//                    public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+//                        boolean init = false;
+//                        if (result instanceof Boolean)
+//                            init = (boolean) result;
+//                        ReaperLog.i(TAG, " init cache task on result method is called and init " + init);
+//                    }
+//                });
+        mWorkThread.postTaskInFront(mInitTask);
     }
 
     /**
@@ -858,21 +959,26 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
      * @param tracker
      */
     private void postTrackerTask(Context context, Tracker tracker, int actionEvent, final AdInfo adInfo, ISDKWrapper wrapper) {
-        TrackerRunnable trackerRunnable = new TrackerRunnable(context, tracker, actionEvent, adInfo, wrapper);
-        TrackerTask trackerTask = new TrackerTask(
-                PriorityTaskDaemon.PriorityTask.PRI_FIRST,
-                trackerRunnable,
-                new PriorityTaskDaemon.TaskNotify() {
-                    @Override
-                    public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
-                        ReaperLog.i(TAG, "tracker task onResult method is called");
-                        if (result.equals(adInfo)) {
-                            ReaperLog.i(TAG, "tracker ad info " + adInfo.getAdPosId() + "tracker event has handled");
-                        }
-                    }
-                }
-        );
-        mWorkThread.postTask(trackerTask);
+//        TrackerRunnable trackerRunnable = new TrackerRunnable(context, tracker, actionEvent, adInfo, wrapper);
+//        TrackerTask trackerTask = new TrackerTask(
+//                PriorityTaskDaemon.PriorityTask.PRI_FIRST,
+//                trackerRunnable,
+//                new PriorityTaskDaemon.TaskNotify() {
+//                    @Override
+//                    public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+//                        ReaperLog.i(TAG, "tracker task onResult method is called");
+//                        if (result.equals(adInfo)) {
+//                            ReaperLog.i(TAG, "tracker ad info " + adInfo.getAdPosId() + "tracker event has handled");
+//                        }
+//                    }
+//                }
+//        );
+        mTrackerRunner.setContext(context);
+        mTrackerRunner.setTracker(tracker);
+        mTrackerRunner.setActionEvent(actionEvent);
+        mTrackerRunner.setAdInfo(adInfo);
+        mTrackerRunner.setWrapper(wrapper);
+        mWorkThread.postTask(mTrackerTask);
     }
 
     /**
@@ -974,24 +1080,28 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     }
 
     private void postAdRequestTask(String posId, Object callBack) {
-        AdRequestRunner runner = new AdRequestRunner(posId, callBack);
-        AdRequestNotify notify = new AdRequestNotify();
-        AdRequestTask task = new AdRequestTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
-                runner, notify, posId, callBack);
-        mWorkThread.postTaskInFront(task);
+//        AdRequestRunner runner = new AdRequestRunner(posId, callBack);
+//        AdRequestNotify notify = new AdRequestNotify();
+//        AdRequestTask task = new AdRequestTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
+//                runner, notify, posId, callBack);
+        mAdRequestRunner.setPosId(posId);
+        mAdRequestRunner.setCallBack(callBack);
+        mAdRequestTask.setPosId(posId);
+        mAdRequestTask.setCallBack(callBack);
+        mWorkThread.postTaskInFront(mAdRequestTask);
     }
 
     private void postAdRequestWrapperTask(String posId, Object callBack, boolean isCache,
                                           PriorityTaskDaemon.TaskRunnable ownerRunner) {
-        AdRequestWrapperRunner runner = new AdRequestWrapperRunner(mContext, posId);
-        AdRequestWrapperNotify notify = new AdRequestWrapperNotify();
+        AdRequestWrapperRunner runner = new AdRequestWrapperRunner(posId);
+//        AdRequestWrapperNotify notify = new AdRequestWrapperNotify();
         AdRequestWrapperTask task;
         if (ownerRunner == null) {
             task = new AdRequestWrapperTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
-                    runner, notify, posId, callBack, isCache);
+                    runner, mAdRequestWrapperNotify, posId, callBack, isCache);
         } else {
             PriorityTaskDaemon.NotifyPriorityTask notifyPriorityTask = ownerRunner.createNewTask(
-                    PriorityTaskDaemon.PriorityTask.PRI_FIRST, runner, notify);
+                    PriorityTaskDaemon.PriorityTask.PRI_FIRST, runner, mAdRequestWrapperNotify);
             task = new AdRequestWrapperTask(notifyPriorityTask, posId, callBack, isCache);
         }
         mWorkThread.postTaskInFront(task);
