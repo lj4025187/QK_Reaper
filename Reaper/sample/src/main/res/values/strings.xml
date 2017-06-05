@@ -3,6 +3,18 @@
     <string name="ad_reaper_init_failed">初始化失败，啥都不想干</string>
     <string name="ad_load_failed_toast">醒醒啊小强，广告都挂了</string>
 
+    <string name="edit_text_tip">温馨提示:可以通过\"adb shell input text ***\"命令输入key,id,posId值</string>
+    <string name="app_key_hint">appkey:52b039014f5ee11cf9865d66f0b8f23f</string>
+    <string name="app_id_hint">appid:100025</string>
+    <string name="app_pos_id_hint">posid:10019</string>
+
+    <string name="toast_edit_text_null">app_key(app_id,posId)不能为空，罢工不干</string>>
+
+    <string name="tencent_ad_src_name">腾讯</string>
+    <string name="baidu_ad_src_name">百度</string>
+    <string name="qihoo_ad_src_name">360</string>
+    <string name="ad_src_unknown">未知广告源</string>
+
     <string name="ad_item_title_default">标题牺牲了</string>
     <string name="ad_item_desc_default">内容阵亡了</string>
     <string name="ad_item_action_default">撩我哦</string>
@@ -19,7 +31,6 @@
     <string name="list_view_footer">撸起来。。。别打扰。。。</string>
     <string name="list_view_empty">什么玩意儿都没有。。。</string>
 
-    <string name="ad_src_unknown">未知广告源</string>
 
     <string name="text_ad_type">文字:标题、内容</string>
     <string name="pic_ad_type">图片:图片</string>

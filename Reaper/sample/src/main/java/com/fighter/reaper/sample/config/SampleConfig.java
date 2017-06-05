@@ -12,7 +12,13 @@ import com.fighter.reaper.sample.R;
 
 public class SampleConfig {
 
-    public final static int TEXT_AD_TYPE = 0x01,    /*文字类型*/
+    public final static boolean IS_FOR_SERVER = false;
+
+    public final static String APP_KEY = "52b039014f5ee11cf9865d66f0b8f23f";
+    public final static String APP_ID = "100025";
+
+    public final static int
+            TEXT_AD_TYPE = 0x01,    /*文字类型*/
             PICTURE_AD_TYPE = 0x02,                 /*图片类型*/
             PIC_TEXT_AD_TYPE = 0x03,                /*图字类型*/
             VIDEO_AD_TYPE = 0x04,                   /*视频类型*/
@@ -20,6 +26,11 @@ public class SampleConfig {
 
     public final static int ACTION_TYPE_BROWSER = 0x01, /*可浏览的类型*/
             ACTION_TYPE_DOWNLOAD = 0x02;                /*可下载类型*/
+
+    public final static String TENCENT_SRC_NAME = "gdt";
+    public final static String BAIDU_SRC_NAME = "baidu";
+    public final static String QIHOO_SRC_NAME = "jx";
+    public final static String UNKNOWN_SRC_NAME = "unknown";
 
     public final static int DETAIL_BANNER_TYPE = 0x01;
     public final static int DETAIL_PLUG_IN_TYPE = 0x02;
@@ -30,12 +41,12 @@ public class SampleConfig {
     public final static int DETAIL_NATIVE_VIDEO_TYPE = 0x07;
     public final static int DETAIL_UNKNOWN_TYPE = -1;
 
-    private static final String TYPE_BANNER = "banner";
-    private static final String TYPE_PLUG_IN = "plugin";
+    private static final String TYPE_BANNER = "banner_adv";
+    private static final String TYPE_PLUG_IN = "insert_adv";
     private static final String TYPE_APP_WALL = "app_wall";
-    private static final String TYPE_FULL_SCREEN = "full_screen";
-    private static final String TYPE_FEED = "feed";
-    private static final String TYPE_NATIVE = "native";
+    private static final String TYPE_FULL_SCREEN = "openapp_adv";
+    private static final String TYPE_FEED = "feed_adv";
+    private static final String TYPE_NATIVE = "original_adv";
     private static final String TYPE_NATIVE_VIDEO = "native_video";
 
     public static final String DETAIL_TYPE_KEY = "adType";

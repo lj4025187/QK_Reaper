@@ -2,16 +2,18 @@ package com.fighter.reaper.sample.activities;
 
 import android.os.Bundle;
 import android.os.Message;
+import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.fighter.loader.AdInfo;
 import com.fighter.loader.AdRequester;
-import com.fighter.loader.ReaperApi;
 import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.adapter.AdAdapter;
 import com.fighter.reaper.sample.config.SampleConfig;
@@ -25,6 +27,7 @@ import com.fighter.reaper.sample.model.PlugInItem;
 import com.fighter.reaper.sample.model.UnknownItem;
 import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.utils.ToastUtil;
+import com.fighter.reaper.sample.utils.ViewUtils;
 import com.fighter.reaper.sample.videolist.visibility.calculator.SingleListViewItemActiveCalculator;
 import com.fighter.reaper.sample.videolist.visibility.scroll.ListViewItemPositionGetter;
 
@@ -51,6 +54,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
     private CheckBox baidu, tencent, qihoo;
     private boolean baiduChecked, tencentChecked, qihooChecked;
+    private ViewGroup mServerView;
+    private EditText mAppKeyEdit, mAppIdEdit, mPosIdEdit;
+    private final static String DEFAULT_POS_ID = "1019";
+
     private ListView mAdsListView;
     private TextView mEmptyText;
     private boolean mShouldLoad;
@@ -87,6 +94,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         tencent.setOnCheckedChangeListener(this);
         qihoo = (CheckBox) findViewById(R.id.id_qihoo_check);
         qihoo.setOnCheckedChangeListener(this);
+
+        mServerView = (ViewGroup) findViewById(R.id.id_for_server);
+        if(!SampleConfig.IS_FOR_SERVER) ViewUtils.setViewVisibility(mServerView, View.GONE);
+        mAppKeyEdit = (EditText) findViewById(R.id.id_app_key_edit);
+        mAppIdEdit = (EditText) findViewById(R.id.id_app_id_edit);
+        mPosIdEdit = (EditText) findViewById(R.id.id_app_pos_edit);
+
         findViewById(R.id.id_start_pull_ads).setOnClickListener(this);
         mEmptyText = (TextView) findViewById(R.id.id_empty_view);
         mProgress = findViewById(R.id.id_progress_view);
@@ -98,8 +112,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         int id = v.getId();
         switch (id) {
             case R.id.id_start_pull_ads:
-                showLoadingView(true);
-                showEmptyView(false);
+                if(mListData.isEmpty()) {
+                    showLoadingView(true);
+                    showEmptyView(false);
+                } else {
+                    showFooterView(true);
+                }
                 startPullAds();
                 break;
             default:
@@ -120,7 +138,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             ToastUtil.getInstance(mContext).showSingletonToast(getString(R.string.ad_reaper_init_failed));
             return;
         }
-        AdRequester adRequester = mReaperApi.getAdRequester("1", this);
+        String appKey = mAppKeyEdit.getText().toString().trim();
+        String appId = mAppIdEdit.getText().toString().trim();
+        String posId = mPosIdEdit.getText().toString().trim();
+        AdRequester adRequester;
+        if(TextUtils.isEmpty(appKey) ||
+                TextUtils.isEmpty(appId) ||
+                 TextUtils.isEmpty(posId)) {
+            if(SampleConfig.IS_FOR_SERVER) {
+                ToastUtil.getInstance(mContext).showSingletonToast(R.string.toast_edit_text_null);
+                showLoadingView(false);
+                showEmptyView(true);
+                return;
+            } else {
+                adRequester = mReaperApi.getAdRequester("1", this);
+            }
+        } else {
+            mReaperApi.init(mContext, appId, appKey, true);
+            adRequester = mReaperApi.getAdRequester(posId, this);
+        }
         adRequester.requestAd();
     }
 
@@ -152,10 +188,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             return;
         }
         mListData.add(baseItem);
-//        if(mListData.size() < 5) {
-//            pullAdsType(BAIDU_TYPE);
-//            return;
-//        }
         SampleLog.i(TAG, " on success ads size is " + mListData.size());
         if (mListData.isEmpty()) {
             mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);

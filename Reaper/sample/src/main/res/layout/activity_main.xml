@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:orientation="vertical"
     tools:context="com.fighter.reaper.sample.activities.MainActivity">
 
@@ -32,6 +34,42 @@
             android:layout_weight="1"
             android:text="聚效广告" />
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/id_for_server"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/edit_text_tip"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/id_app_key_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="52b039014f5ee11cf9865d66f0b8f23f"
+            android:hint="@string/app_key_hint"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/id_app_id_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="100025"
+            android:hint="@string/app_id_hint"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/id_app_pos_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/app_pos_id_hint"
+            android:textSize="15sp" />
     </LinearLayout>
 
     <Button

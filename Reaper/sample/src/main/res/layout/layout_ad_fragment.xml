@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ListView
+        android:id="@+id/id_ad_fragment_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="#9f9f9f"
+        android:dividerHeight="6px"
+        android:scrollbars="vertical" />
+
+    <LinearLayout
+        android:id="@+id/id_ad_fragment_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="6.0dip"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyle"
+            android:layout_width="20dip"
+            android:layout_height="20dip"
+            android:layout_gravity="center_vertical" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="12dip"
+            android:text="@string/list_view_loading"
+            android:textColor="#7b7b7b"
+            android:textDirection="locale"
+            android:textSize="14dip" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/id_ad_fragment_empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="@string/list_view_empty" />
+</RelativeLayout>

@@ -1,6 +1,5 @@
 package com.fighter.reaper.sample.activities;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
@@ -8,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 
 import com.fighter.loader.ReaperApi;
 import com.fighter.reaper.sample.SampleApp;
@@ -16,9 +16,9 @@ import com.fighter.reaper.sample.SampleApp;
  * Created by Administrator on 2017/5/19.
  */
 
-public class BaseActivity extends Activity implements Handler.Callback {
+public class BaseActivity extends FragmentActivity implements Handler.Callback {
 
-    protected ReaperApi mReaperApi;
+    public ReaperApi mReaperApi;
     protected Context mContext;
     protected Handler mMainHandler;
 
