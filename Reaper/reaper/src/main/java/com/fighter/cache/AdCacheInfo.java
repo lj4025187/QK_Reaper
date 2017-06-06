@@ -18,7 +18,7 @@ public class AdCacheInfo implements Serializable {
     private long mCacheTime;
     private String mExpireTime;
     private String mAdCacheId;
-    private String mCache;
+    private Object mCache;
     private int mCacheState = CACHE_IS_GOOD;
     private String mAdSource;
     private String mCachePath;
@@ -76,11 +76,11 @@ public class AdCacheInfo implements Serializable {
         return mCacheTime;
     }
 
-    public String getCache() {
+    public Object getCache() {
         return mCache;
     }
 
-    public void setCache(String cache) {
+    public void setCache(Object cache) {
         this.mCache = cache;
     }
 

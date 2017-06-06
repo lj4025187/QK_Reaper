@@ -411,6 +411,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                     adInfo = adResponse.getAdInfo();
             }
             downloadAdResourceFile(adInfo);
+            if (!mAdSenseList.iterator().hasNext())
+                return "all the ads has not matter ad";
             return adInfo;
         }
     }
@@ -511,9 +513,16 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             // 2. if cache is full, back cache ad info
             Object info = getCacheAdInfo(mPosId);
             AdCacheInfo adCacheInfo;
+            Object cache;
+            AdInfo adInfo = null;
             if (info != null && info instanceof AdCacheInfo) {
                 adCacheInfo = (AdCacheInfo)info;
-                AdInfo adInfo = AdInfo.convertFromString(adCacheInfo.getCache());
+                cache = adCacheInfo.getCache();
+                if (cache instanceof String) {
+                    adInfo = AdInfo.convertFromString((String)cache);
+                } else if (cache instanceof AdInfo) {
+                    adInfo = (AdInfo) cache;
+                }
                 if (isAdCacheTimeout(adCacheInfo) && adInfo != null) {
                     EventDownLoadParam param = new EventDownLoadParam();
                     param.ad_num = 1;
@@ -786,24 +795,31 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         } else {
             adCacheInfoObjects = new ArrayMap<>();
         }
-
-        File cacheIdDir = new File(mCacheDir, cacheId);
-        if (!cacheIdDir.exists()) {
-            cacheIdDir.mkdir();
+        Object cache = adCacheInfo.getCache();
+        if (cache instanceof String) {
+            File cacheIdDir = new File(mCacheDir, cacheId);
+            if (!cacheIdDir.exists()) {
+                cacheIdDir.mkdir();
+            }
+            File adInfoFile = new File(cacheIdDir, cacheFileId);
+            if (!adInfoFile.exists()) {
+                adInfoFile.createNewFile();
+            }
+            adCacheInfo.setCachePath(adInfoFile.getAbsolutePath());
+            adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_GOOD);
+            adCacheInfoObjects.put(adCacheInfo.getUuid(), adCacheInfo);
+            mAdCache.put(cacheId, adCacheInfoObjects);
+            FileOutputStream fileOutputStream = new FileOutputStream(adInfoFile);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(adCacheInfo);
+            objectOutputStream.close();
+            fileOutputStream.close();
+        } else if (cache instanceof AdInfo) {
+            adCacheInfo.setCachePath(null);
+            adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_GOOD);
+            adCacheInfoObjects.put(adCacheInfo.getUuid(), adCacheInfo);
+            mAdCache.put(cacheId, adCacheInfoObjects);
         }
-        File adInfoFile = new File(cacheIdDir, cacheFileId);
-        if (!adInfoFile.exists()) {
-            adInfoFile.createNewFile();
-        }
-        adCacheInfo.setCachePath(adInfoFile.getAbsolutePath());
-        adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_GOOD);
-        adCacheInfoObjects.put(adCacheInfo.getUuid(), adCacheInfo);
-        mAdCache.put(cacheId, adCacheInfoObjects);
-        FileOutputStream fileOutputStream = new FileOutputStream(adInfoFile);
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-        objectOutputStream.writeObject(adCacheInfo);
-        objectOutputStream.close();
-        fileOutputStream.close();
     }
 
     private Object getAdCacheFromFile(File file) throws IOException, ClassNotFoundException {
@@ -926,9 +942,12 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
         if (cacheObjects != null && cacheObjects.size() > CACHE_MAX) {
             if (cacheInfoInBottom != null && cacheInfoInBottom.isCacheBackToUser()) {
-                File cacheFile = new File(cacheInfoInBottom.getCachePath());
-                if (cacheFile.exists()) {
-                    cacheFile.delete();
+                String cachePath = cacheInfoInBottom.getCachePath();
+                if (cachePath != null) {
+                    File cacheFile = new File(cachePath);
+                    if (cacheFile.exists()) {
+                        cacheFile.delete();
+                    }
                 }
                 cacheObjects.remove(cacheObjects.keyAt(0));
             }
@@ -1073,9 +1092,12 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private void cleanBeforeCache(AdCacheInfo info) {
         if (info == null)
             return;
-        File cacheFile = new File(info.getCachePath());
-        if (cacheFile.exists() && cacheFile.isFile()) {
-            cacheFile.delete();
+        String cachePath = info.getCachePath();
+        if (cachePath != null) {
+            File cacheFile = new File(cachePath);
+            if (cacheFile.exists() && cacheFile.isFile()) {
+                cacheFile.delete();
+            }
         }
     }
 
@@ -1353,11 +1375,15 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     }
 
     private void cacheAdInfo(AdInfo adInfo) {
-        if (adInfo == null || !adInfo.canCache())
+        if (adInfo == null)
             return;
         AdCacheInfo info = new AdCacheInfo();
         info.setAdSource(adInfo.getAdName());
-        info.setCache(AdInfo.convertToString(adInfo));
+        if (adInfo.canCache()) {
+            info.setCache(AdInfo.convertToString(adInfo));
+        } else {
+            info.setCache(adInfo);
+        }
         // the config expire time is second
         info.setExpireTime(String.valueOf(adInfo.getExpireTime() * 1000));
         info.setUuid(adInfo.getUUID());
