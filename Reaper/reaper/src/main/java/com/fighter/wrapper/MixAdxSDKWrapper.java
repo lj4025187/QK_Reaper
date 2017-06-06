@@ -168,6 +168,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                 }
             }
         } catch (IOException e) {
+            ReaperLog.e(TAG, e.toString());
             e.printStackTrace();
         } finally {
             CloseUtils.closeIOQuietly(response);
@@ -274,8 +275,8 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
 
         HashMap<String, String> params = new HashMap<>();
         params.put("pos", adRequest.getAdLocalPositionId());                              // 广告位ID
-        params.put("posw", adRequest.getAdLocalPositionId());                             // 广告位宽
-        params.put("posh", adRequest.getAdLocalPositionId());                             // 广告位高
+        params.put("posw", String.valueOf(adRequest.getAdWidth()));                             // 广告位宽
+        params.put("posh", String.valueOf(adRequest.getAdHeight()));                             // 广告位高
         params.put("postp", String.valueOf(TYPE_REF_MAP.get(adRequest.getAdType())));// 广告位类型
 
         if (allParams.containsKey(EXTRA_MED)) {
