@@ -41,13 +41,13 @@ public class SampleConfig {
     public final static int DETAIL_NATIVE_VIDEO_TYPE = 0x07;
     public final static int DETAIL_UNKNOWN_TYPE = -1;
 
-    private static final String TYPE_BANNER = "banner_adv";
-    private static final String TYPE_PLUG_IN = "insert_adv";
-    private static final String TYPE_APP_WALL = "app_wall";
-    private static final String TYPE_FULL_SCREEN = "openapp_adv";
-    private static final String TYPE_FEED = "feed_adv";
-    private static final String TYPE_NATIVE = "original_adv";
-    private static final String TYPE_NATIVE_VIDEO = "native_video";
+    public static final String TYPE_BANNER = "banner_adv";
+    public static final String TYPE_PLUG_IN = "insert_adv";
+    public static final String TYPE_APP_WALL = "app_wall";
+    public static final String TYPE_FULL_SCREEN = "openapp_adv";
+    public static final String TYPE_FEED = "feed_adv";
+    public static final String TYPE_NATIVE = "original_adv";
+    public static final String TYPE_NATIVE_VIDEO = "native_video";
 
     public static final String DETAIL_TYPE_KEY = "adType";
     public static final String DETAIL_SRC_KEY = "adName";
@@ -129,65 +129,65 @@ public class SampleConfig {
                     "\"reason\": \"\"," +
                     "\"next_time\": \"28800\"," +
                     "\"pos_ids\": [" +
-                    "{" +
-                    "\"pos_id\": \"1\"," +
-                    "\"adv_type\":\"banner_adv\"," +
-                    "\"adv_exposure\": \"first\"," +
-                    "\"adsenses\": [" +
-                    "{" +
-                    "\"ads_name\": \"jx\"," +
-                    "\"expire_time\": \"1800\"," +
-                    "\"priority\": \"10\"," +
-                    "\"ads_appid\": \"100001\"," +
-                    "\"ads_key\": \"adbsjmemsfm\"," +
-                    "\"ads_posid\": \"10001\"," +
-                    "\"max_adv_num\": \"10\"," +
-                    "\"adv_size_type\": \"pixel\"," +
-                    "\"adv_real_size\": \"640*100\"" +
-                    "}," +
-                    "{" +
-                    "\"ads_name\": \"gdt\"," +
-                    "\"expire_time\": \"1800\"," +
-                    "\"priority\": \"3\"," +
-                    "\"ads_appid\": \"1104241296\"," +
-                    "\"ads_key\": \"adbsjmemsfm\"," +
-                    "\"ads_posid\": \"6050305154328807\"," +
-                    "\"max_adv_num\": \"10\"," +
-                    "\"adv_size_type\": \"pixel\"," +
-                    "\"adv_real_size\": \"640*100\"" +
-                    "}," +
-                    "{" +
-                    "\"ads_name\": \"baidu\"," +
-                    "\"expire_time\": \"1800\"," +
-                    "\"priority\": \"10\"," +
-                    "\"ads_appid\": \"0\"," +
-                    "\"ads_key\": \"adbsjmemsfm\"," +
-                    "\"ads_posid\": \"128\"," +
-                    "\"max_adv_num\": \"10\"," +
-                    "\"adv_size_type\": \"pixel\"," +
-                    "\"adv_real_size\": \"640*100\"" +
-                    "}," +
+                        "{" +
+                            "\"pos_id\": \"1\"," +
+                            "\"adv_type\":\"banner_adv\"," +
+                            "\"adv_exposure\": \"first\"," +
+                            "\"adsenses\": [" +
+                                "{" +
+                                    "\"ads_name\": \"jx\"," +
+                                    "\"expire_time\": \"1800\"," +
+                                    "\"priority\": \"10\"," +
+                                    "\"ads_appid\": \"100001\"," +
+                                    "\"ads_key\": \"adbsjmemsfm\"," +
+                                    "\"ads_posid\": \"10001\"," +
+                                    "\"max_adv_num\": \"10\"," +
+                                    "\"adv_size_type\": \"pixel\"," +
+                                    "\"adv_real_size\": \"640*100\"" +
+                                "}," +
+                                "{" +
+                                    "\"ads_name\": \"gdt\"," +
+                                    "\"expire_time\": \"1800\"," +
+                                    "\"priority\": \"3\"," +
+                                    "\"ads_appid\": \"1104241296\"," +
+                                    "\"ads_key\": \"adbsjmemsfm\"," +
+                                    "\"ads_posid\": \"6050305154328807\"," +
+                                    "\"max_adv_num\": \"10\"," +
+                                    "\"adv_size_type\": \"pixel\"," +
+                                    "\"adv_real_size\": \"640*100\"" +
+                                "}," +
+                                "{" +
+                                    "\"ads_name\": \"baidu\"," +
+                                    "\"expire_time\": \"1800\"," +
+                                    "\"priority\": \"10\"," +
+                                    "\"ads_appid\": \"0\"," +
+                                    "\"ads_key\": \"adbsjmemsfm\"," +
+                                    "\"ads_posid\": \"128\"," +
+                                    "\"max_adv_num\": \"10\"," +
+                                    "\"adv_size_type\": \"pixel\"," +
+                                    "\"adv_real_size\": \"640*100\"" +
+                                "}," +
+                            "]" +
+                        "}," +
+                        "{" +
+                            "\"pos_id\": \"2\"," +
+                            "\"adv_type\":\"insert_adv\"," +
+                            "\"adv_exposure\": \"first\"," +
+                            "\"adsenses\": [" +
+                                "{" +
+                                    "\"ads_name\": \"gdt\"," +
+                                    "\"expire_time\": \"1800\"," +
+                                    "\"priority\": \"3\"," +
+                                    "\"ads_appid\": \"1104241296\"," +
+                                    "\"ads_key\": \"adbsjmemsfm\"," +
+                                    "\"ads_posid\": \"1060308114529681\"," +
+                                    "\"max_adv_num\": \"10\"," +
+                                    "\"adv_size_type\": \"pixel\"," +
+                                    "\"adv_real_size\": \"640*500\"" +
+                                "}" +
+                            "]" +
+                        "}" +
                     "]" +
-                    "}," +
-                    "{" +
-                    "\"pos_id\": \"2\"," +
-                    "\"adv_type\":\"insert_adv\"," +
-                    "\"adv_exposure\": \"first\"," +
-                    "\"adsenses\": [" +
-                    "{" +
-                    "\"ads_name\": \"gdt\"," +
-                    "\"expire_time\": \"1800\"," +
-                    "\"priority\": \"3\"," +
-                    "\"ads_appid\": \"1104241296\"," +
-                    "\"ads_key\": \"adbsjmemsfm\"," +
-                    "\"ads_posid\": \"1060308114529681\"," +
-                    "\"max_adv_num\": \"10\"," +
-                    "\"adv_size_type\": \"pixel\"," +
-                    "\"adv_real_size\": \"640*500\"" +
-                    "}" +
-                    "]" +
-                    "}" +
-                    "]" +
-                    "}";
+                "}";
 
 }

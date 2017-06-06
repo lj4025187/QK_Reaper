@@ -22,7 +22,6 @@ public class SampleApp extends ReaperApplication {
             ToastUtil.getInstance(this).showSingletonToast(getString(R.string.ad_reaper_init_failed));
         }
         mReaperApi.init(this, SampleConfig.APP_ID, SampleConfig.APP_KEY, true);
-        mReaperApi.setTagetConfig(SampleConfig.RESPONSE);
     }
 
 }

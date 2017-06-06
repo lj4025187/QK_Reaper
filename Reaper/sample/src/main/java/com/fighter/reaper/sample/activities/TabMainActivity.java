@@ -1,5 +1,6 @@
 package com.fighter.reaper.sample.activities;
 
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTabHost;
@@ -44,9 +45,23 @@ public class TabMainActivity extends BaseActivity {
 
     public void initTabData() {
         mTabList = new ArrayList<>();
-        mTabList.add(new TabItem(getString(R.string.tencent_ad_src_name), TabFragment.newInstance()));
-        mTabList.add(new TabItem(getString(R.string.baidu_ad_src_name), TabFragment.newInstance()));
-        mTabList.add(new TabItem(getString(R.string.qihoo_ad_src_name), TabFragment.newInstance()));
+        mTabList.add(new TabItem(getString(R.string.tencent_ad_src_name), R.mipmap.tencent, TabFragment.newInstance()));
+        mTabList.add(new TabItem(getString(R.string.baidu_ad_src_name), R.mipmap.baidu, TabFragment.newInstance()));
+        mTabList.add(new TabItem(getString(R.string.qihoo_ad_src_name), R.mipmap.qihoo, TabFragment.newInstance()));
+
+        mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String tabId) {
+                for (int i = 0; i < mTabList.size(); i++) {
+                    TabItem tabItem = mTabList.get(i);
+                    if (TextUtils.equals(tabItem.getTitleString(), tabId)) {
+                        tabItem.setChecked(true);
+                    } else {
+                        tabItem.setChecked(false);
+                    }
+                }
+            }
+        });
 
         for (int i = 0; i < mTabList.size(); i++) {
             TabItem item = mTabList.get(i);
@@ -72,20 +87,6 @@ public class TabMainActivity extends BaseActivity {
             if (TextUtils.equals(getString(R.string.tencent_ad_src_name), item.getTitleString()))
                 item.setChecked(true);
         }
-
-        mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
-            @Override
-            public void onTabChanged(String tabId) {
-                for (int i = 0; i < mTabList.size(); i++) {
-                    TabItem tabItem = mTabList.get(i);
-                    if (TextUtils.equals(tabItem.getTitleString(), tabId)) {
-                        tabItem.setChecked(true);
-                    } else {
-                        tabItem.setChecked(false);
-                    }
-                }
-            }
-        });
     }
 
     /**
@@ -97,10 +98,12 @@ public class TabMainActivity extends BaseActivity {
         public TabFragment fragment;
         public View view;
         public ImageView imageView;
+        private int imageSrc;
         public TextView textView;
 
-        public TabItem(String title, TabFragment tabFragment) {
+        public TabItem(String title, int imageSrc, TabFragment tabFragment) {
             this.title = title;
+            this.imageSrc = imageSrc;
             this.fragment = tabFragment;
         }
 
@@ -126,8 +129,11 @@ public class TabMainActivity extends BaseActivity {
         public void setChecked(boolean isChecked) {
             if (textView != null) {
                 if (isChecked) {
+                    imageView.setVisibility(View.VISIBLE);
+                    imageView.setImageResource(imageSrc);
                     textView.setTextColor(getResources().getColor(R.color.color_tab_indicator_pressed));
                 } else {
+                    imageView.setVisibility(View.GONE);
                     textView.setTextColor(getResources().getColor(R.color.color_tab_indicator_normal));
                 }
             }

@@ -14,8 +14,8 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewPager.OnPageChangeListener;
+import com.fighter.reaper.sample.widget.ViewPager;
+import com.fighter.reaper.sample.widget.ViewPager.OnPageChangeListener;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -66,16 +66,16 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
     private int dividerColor = 0x1A000000;
 
     private boolean shouldExpand = false;
-    private boolean textAllCaps = true;
+    private boolean textAllCaps = false;
 
     private int scrollOffset = 52;
-    private int indicatorHeight = 8;
+    private int indicatorHeight = 6;
     private int underlineHeight = 2;
     private int dividerPadding = 12;
-    private int tabPadding = 24;
+    private int tabPadding = 12;
     private int dividerWidth = 1;
 
-    private int tabTextSize = 12;
+    private int tabTextSize = 18;
     private int tabTextColor = 0xFF666666;
     private Typeface tabTypeface = null;
     private int tabTypefaceStyle = Typeface.BOLD;

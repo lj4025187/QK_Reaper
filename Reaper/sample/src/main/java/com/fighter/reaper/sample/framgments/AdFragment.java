@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,7 @@ import com.fighter.reaper.sample.model.FullScreenItem;
 import com.fighter.reaper.sample.model.NativeItem;
 import com.fighter.reaper.sample.model.PlugInItem;
 import com.fighter.reaper.sample.model.UnknownItem;
+import com.fighter.reaper.sample.utils.ResponseGenerator;
 import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.utils.ToastUtil;
 import com.fighter.reaper.sample.videolist.visibility.calculator.SingleListViewItemActiveCalculator;
@@ -61,7 +63,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
     public final static int BANNER_AD_CATEGORY = 0x10;
 
     private ReaperApi mReaperApi;
-    private int mCategory;
+    private String mCategory;
     private String mSrcName;
     private Context mContext;
     private Handler mMainHandler;
@@ -82,20 +84,21 @@ public class AdFragment extends Fragment implements Handler.Callback,
     private ViewGroup mFooterView, mProgress;
     private TextView mEmptyView;
 
-    private void setReaperApi(ReaperApi reaperApi) {
+    public void setReaperApi(ReaperApi reaperApi) {
         mReaperApi = reaperApi;
     }
 
-    private void setReaperSrc(String srcName) {
+    public void setReaperSrc(String srcName) {
         mSrcName = srcName;
+    }
+
+    public void setAdCategory(String category) {
+        mCategory = category;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bundle bundle = getArguments();
-        if (bundle == null) return;
-        mCategory = bundle.getInt(AD_CATEGORY);
     }
 
     @Nullable
@@ -108,6 +111,8 @@ public class AdFragment extends Fragment implements Handler.Callback,
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        showLoadingView(true);
+        showEmptyView(false);
         startPullAds();
     }
 
@@ -145,6 +150,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
                 break;
         }
         showEmptyView(mListData.isEmpty());
+        showFooterView(false);
         showLoadingView(false);
         return true;
     }
@@ -176,40 +182,55 @@ public class AdFragment extends Fragment implements Handler.Callback,
         mEmptyView.setVisibility(empty ? View.VISIBLE : View.GONE);
     }
 
-
     private void startPullAds() {
+        boolean isSupport = true;
         if (mReaperApi == null)
             return;
-        switch (mCategory) {
-            default:
+        AdRequester adRequester = null;
+        switch (mSrcName) {
+            case SampleConfig.TENCENT_SRC_NAME:
+                mReaperApi.setTagetConfig(ResponseGenerator.generate(null, mCategory));
+                adRequester = mReaperApi.getAdRequester(generateTencentPosId(), this);
+                if(!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
+                        && !TextUtils.equals(SampleConfig.TYPE_BANNER, mCategory))
+                    isSupport = false;
+                break;
+            case SampleConfig.BAIDU_SRC_NAME:
+                isSupport = false;
+                break;
+            case SampleConfig.QIHOO_SRC_NAME:
+                mReaperApi.setTagetConfig(ResponseGenerator.generate(mCategory, null));
+                adRequester = mReaperApi.getAdRequester("1", this);
+                if(!TextUtils.equals(SampleConfig.TYPE_NATIVE, mCategory))
+                    isSupport = false;
                 break;
         }
-        mReaperApi.init(mContext, "10010", "not_a_real_key", true);
-        AdRequester adRequester = mReaperApi.getAdRequester("1", this);
+        if(!isSupport) {
+            String toast = String.format(getResources().getString(R.string.toast_dis_support_ad), mSrcName, mCategory);
+            ToastUtil.getInstance(mContext).showSingletonToast(toast);
+            mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
+            return;
+        }
+        if(adRequester == null)
+            return;
         adRequester.requestAd();
     }
 
-    public String getAdCategory() {
-        String category = null;
+    private String generateTencentPosId() {
+        String posId = "2";
         switch (mCategory) {
-            case SampleConfig.TEXT_AD_TYPE:
-                category = "text";
+            case SampleConfig.TYPE_BANNER:
+                posId = "2";
                 break;
-            case SampleConfig.PICTURE_AD_TYPE:
-                category = "picture";
-                break;
-            case SampleConfig.PIC_TEXT_AD_TYPE:
-                category = "pic_text";
-                break;
-            case SampleConfig.VIDEO_AD_TYPE:
-                category = "video";
-                break;
-            case SampleConfig.UNKNOWN_AD_TYPE:
-            default:
-                category = "unknown";
+            case SampleConfig.TYPE_PLUG_IN:
+                posId = "3";
                 break;
         }
-        return mSrcName + "_" + category;
+        return posId;
+    }
+
+    public String getAdCategory() {
+        return mSrcName + "_" + mCategory;
     }
 
     @Override
@@ -262,8 +283,9 @@ public class AdFragment extends Fragment implements Handler.Callback,
             return;
         }
         mListData.add(baseItem);
-        if (mListData.size() < 5) {
+        if(mListData.size() < 5) {
             startPullAds();
+            return;
         }
         SampleLog.i(TAG, " on success ads size is " + mListData.size());
         if (mListData.isEmpty()) {
@@ -312,6 +334,8 @@ public class AdFragment extends Fragment implements Handler.Callback,
         int id = v.getId();
         switch (id) {
             case R.id.id_ad_fragment_empty:
+                showLoadingView(true);
+                showEmptyView(false);
                 startPullAds();
                 break;
         }
@@ -321,14 +345,11 @@ public class AdFragment extends Fragment implements Handler.Callback,
         private AdFragment mAdFragment;
 
         public Builder() {
-
+            mAdFragment = new AdFragment();
         }
 
-        public Builder setAdCategory(int adCategory) {
-            mAdFragment = new AdFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt(AD_CATEGORY, adCategory);
-            mAdFragment.setArguments(bundle);
+        public Builder setAdCategory(String adCategory) {
+            mAdFragment.setAdCategory(adCategory);
             return this;
         }
 

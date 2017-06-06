@@ -109,7 +109,6 @@ public class BaseItemHolder<T extends BaseItem> {
                     .into(adView);
             }
         } else {
-            SampleLog.i(TAG, " file path " + imageFile.getAbsolutePath());
             final boolean isGif = imageFile.getName().endsWith(".gif");
             if (isGif) {
                 Glide.with(baseView.getContext())

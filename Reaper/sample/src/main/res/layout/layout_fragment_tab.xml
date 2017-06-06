@@ -7,9 +7,9 @@
     <com.fighter.reaper.sample.widget.PagerSlidingTabStrip
         android:id="@+id/id_tab_fragment_strip"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="45dp"/>
 
-    <android.support.v4.view.ViewPager
+    <com.fighter.reaper.sample.widget.ViewPager
         android:id="@+id/id_tab_fragment_viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

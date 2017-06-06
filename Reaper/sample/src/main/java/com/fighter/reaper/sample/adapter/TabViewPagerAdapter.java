@@ -17,11 +17,8 @@ public class TabViewPagerAdapter extends FragmentStatePagerAdapter {
 
     private List<AdFragment> mFragments;
 
-    public TabViewPagerAdapter(FragmentManager fm) {
+    public TabViewPagerAdapter(FragmentManager fm, List<AdFragment> fragments) {
         super(fm);
-    }
-
-    public void setData(List<AdFragment> fragments){
         mFragments = fragments;
     }
 

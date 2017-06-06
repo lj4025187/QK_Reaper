@@ -1,12 +1,10 @@
 package com.fighter.reaper.sample.framgments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.ViewPager;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +16,7 @@ import com.fighter.reaper.sample.activities.TabMainActivity;
 import com.fighter.reaper.sample.adapter.TabViewPagerAdapter;
 import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.widget.PagerSlidingTabStrip;
+import com.fighter.reaper.sample.widget.ViewPager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +38,10 @@ public class TabFragment extends Fragment implements ViewPager.OnPageChangeListe
     private static TabFragment sInstance;
     private static Context sContext;
     private PagerSlidingTabStrip mTabStrip;
-    private ViewPager mViewPager;
+    private com.fighter.reaper.sample.widget.ViewPager mViewPager;
     private TabViewPagerAdapter mAdapter;
     private List<AdFragment> mAdFragments = new ArrayList<>();
+    private AdFragment mInsert,mBanner,mOpenApp,mFeed,mOriginal;
 
     public static TabFragment newInstance(){
         if(sInstance == null)
@@ -74,25 +74,33 @@ public class TabFragment extends Fragment implements ViewPager.OnPageChangeListe
     }
 
     private void initData() {
-        mAdapter = new TabViewPagerAdapter(getChildFragmentManager());
         FragmentActivity activity = getActivity();
         if(activity instanceof TabMainActivity){
             TabMainActivity main = (TabMainActivity) activity;
             mReaperApi = main.mReaperApi;
         }
-        mAdFragments.add(new AdFragment.Builder().setAdCategory(SampleConfig.TEXT_AD_TYPE).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create());
-        mAdFragments.add(new AdFragment.Builder().setAdCategory(SampleConfig.PICTURE_AD_TYPE).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create());
-        mAdFragments.add(new AdFragment.Builder().setAdCategory(SampleConfig.PIC_TEXT_AD_TYPE).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create());
-        mAdFragments.add(new AdFragment.Builder().setAdCategory(SampleConfig.VIDEO_AD_TYPE).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create());
-        mAdapter.setData(mAdFragments);
+        addAdFragments();
+        mAdapter = new TabViewPagerAdapter(getChildFragmentManager(), mAdFragments);
         mViewPager.setAdapter(mAdapter);
-        mViewPager.setOffscreenPageLimit(1);
         int pageMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, getResources().getDisplayMetrics());
         mViewPager.setPageMargin(pageMargin);
 
         mTabStrip.setViewPager(mViewPager);
         mTabStrip.setIndicatorHeight(6);
         mTabStrip.setOnPageChangeListener(this);
+    }
+
+    private void addAdFragments(){
+        mInsert = mInsert == null ? new AdFragment.Builder().setAdCategory(SampleConfig.TYPE_PLUG_IN).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create() : mInsert;
+        mBanner = mBanner == null ? new AdFragment.Builder().setAdCategory(SampleConfig.TYPE_BANNER).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create() : mBanner;
+        mOpenApp = mOpenApp == null ? new AdFragment.Builder().setAdCategory(SampleConfig.TYPE_FULL_SCREEN).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create() : mOpenApp;
+        mFeed = mFeed == null ? new AdFragment.Builder().setAdCategory(SampleConfig.TYPE_FEED).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create() : mFeed;
+        mOriginal = mOriginal == null ? new AdFragment.Builder().setAdCategory(SampleConfig.TYPE_NATIVE).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create() : mOriginal;
+        if(!mAdFragments.contains(mInsert)) mAdFragments.add(mInsert);
+        if(!mAdFragments.contains(mBanner)) mAdFragments.add(mBanner);
+        if(!mAdFragments.contains(mOpenApp)) mAdFragments.add(mOpenApp);
+        if(!mAdFragments.contains(mFeed)) mAdFragments.add(mFeed);
+        if(!mAdFragments.contains(mOriginal)) mAdFragments.add(mOriginal);
     }
 
     @Override
