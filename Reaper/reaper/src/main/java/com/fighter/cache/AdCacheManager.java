@@ -398,14 +398,14 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         public Object doSomething() {
             AdInfo adInfo = null;
             AdResponse adResponse;
-//            if(!updateConfig()) {
-//                return null;
-//            }
-            mAdSenseList = getWrapperConfig(mPosId);
-            mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
             if (mAdSenseList == null) {
                 return null;
             }
+
+//            if(!updateConfig()) {
+//                return null;
+//            }
+
             updateWrapper(mAdSenseList);
             do {
                 AdRequestWrapperTask task = (AdRequestWrapperTask) getTask();
@@ -415,9 +415,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             if (adResponse != null && adResponse.isSucceed())
                 adInfo = adResponse.getAdInfo();
             downloadAdResourceFile(adInfo);
-            Iterator<ReaperAdSense> iterator = mAdSenseList.iterator();
-//            if (!iterator.hasNext())
-//                return "all the ads has not matter ad";
+//          if (mAdSenseList != null && !mAdSenseList.iterator().hasNext())
+//              return "all the ads has not matter ad";
             return adInfo;
         }
     }
@@ -448,7 +447,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         }
     }
-    private AdRequestWrapperRunner mAdRequestWrapperRunner = new AdRequestWrapperRunner();
     private AdRequestWrapperAsyncRunner mAdRequestWrapperAsyncRunner = new AdRequestWrapperAsyncRunner();
     private AdRequestWrapperNotify mAdRequestWrapperNotify = new AdRequestWrapperNotify();
 
@@ -513,6 +511,11 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         @Override
         public Object doSomething() {
+            mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
+            IAdRequestPolicy policy = AdRequestPolicyManager.getAdRequestPolicy(mContext, mPosId);
+            if (policy != null) {
+                mAdSenseList = policy.generateList();
+            }
             // 1.post a task to pull ad for cache
             postAdRequestWrapperTask(mPosId, null, true, AdRequestRunner.this);
             // 2. if cache is full, back cache ad info
@@ -1236,38 +1239,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
 
         List<ReaperAdSense> reaperAdSenses = ReaperConfigManager.getReaperAdSenses(mContext, posId);
-//        if (reaperAdSenses == null) {
-//            ReaperAdSense sense1 = new ReaperAdSense();
-//            sense1.ads_name = "jx";
-//            sense1.expire_time = "1800";
-//            sense1.priority = "10";
-//            sense1.ads_appid = "100001";
-//            sense1.ads_posid = "10001";
-//            sense1.ads_app_key = "adbsjmemsfm";
-//            sense1.max_adv_num = "10";
-//            sense1.adv_size_type = "pixel";
-//            sense1.adv_real_size = "640*100";
-//            reaperAdvPos.addAdSense(sense1);
-//            ReaperAdSense sense2 = new ReaperAdSense();
-//            sense2.ads_name = "gdt";
-//            sense2.expire_time = "1800";
-//            sense2.priority = "5";
-//            sense2.ads_appid = "1104241296";
-//            sense2.ads_posid = "6050305154328807";
-//            sense2.ads_app_key = "adbsjmemsfm";
-//            sense2.max_adv_num = "10";
-//            sense2.adv_size_type = "pixel";
-//            sense2.adv_real_size = "640*100";
-//            reaperAdvPos.addAdSense(sense2);
-//            reaperAdSenses = reaperAdvPos.getAdSenseList();
-//        }
-        // query reaper by posId get the best reaperAdSense
-//        if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
-//            ReaperAdSense adSense = ReaperConfigManager.getReaperAdSens(mContext, posId);
-//            List<ReaperAdSense> adSenses = new ArrayList<>();
-//            adSenses.add(adSense);
-//            reaperAdSenses = adSenses;
-//        }
 
         if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
             ReaperLog.e(TAG, "Config get 0 ad sense with ad position id [" + posId + "]");
