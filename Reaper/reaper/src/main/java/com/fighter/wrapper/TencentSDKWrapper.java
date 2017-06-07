@@ -198,7 +198,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
     @Override
     public void onEvent(int adEvent, AdInfo adInfo) {
         switch (adEvent) {
-            case AdEvent.EVENT_VIEW: {
+            case AdEvent.EVENT_VIEW_SUCCESS: {
                 eventView(adInfo);
                 break;
             }

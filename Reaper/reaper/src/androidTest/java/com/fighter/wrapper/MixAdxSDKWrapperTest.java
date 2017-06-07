@@ -48,7 +48,7 @@ public class MixAdxSDKWrapperTest {
                 AdInfo cacheAdInfo = AdInfo.convertFromString(cacheJson);
                 ReaperLog.i(TAG, "ad info cache obj " + cacheAdInfo);
                 Assert.assertNotNull(cacheAdInfo);
-                sdkWrapper.onEvent(AdEvent.EVENT_VIEW, cacheAdInfo);
+                sdkWrapper.onEvent(AdEvent.EVENT_VIEW_SUCCESS, cacheAdInfo);
                 sdkWrapper.onEvent(AdEvent.EVENT_CLICK, cacheAdInfo);
 
                 if (cacheAdInfo.getActionType() == AdInfo.ActionType.BROWSER) {

@@ -13,8 +13,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.List;
-
 @RunWith(AndroidJUnit4.class)
 public class TencentSDKWrapperTest {
     private static final String TAG = TencentSDKWrapperTest.class.getSimpleName();
@@ -56,7 +54,7 @@ public class TencentSDKWrapperTest {
                 AdInfo cacheAdInfo = AdInfo.convertFromString(cacheJson);
                 ReaperLog.i(TAG, "ad info cache obj " + cacheAdInfo);
                 Assert.assertNotNull(cacheAdInfo);
-                sdkWrapper.onEvent(AdEvent.EVENT_VIEW, adInfo);
+                sdkWrapper.onEvent(AdEvent.EVENT_VIEW_SUCCESS, adInfo);
                 sdkWrapper.onEvent(AdEvent.EVENT_CLICK, adInfo);
 
                 if (adInfo.getActionType() == AdInfo.ActionType.BROWSER) {

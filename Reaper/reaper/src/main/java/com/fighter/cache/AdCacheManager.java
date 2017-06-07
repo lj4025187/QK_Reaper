@@ -58,7 +58,8 @@ import static com.fighter.ad.AdEvent.EVENT_VIDEO_FULLSCREEN;
 import static com.fighter.ad.AdEvent.EVENT_VIDEO_PAUSE;
 import static com.fighter.ad.AdEvent.EVENT_VIDEO_PLAY_COMPLETE;
 import static com.fighter.ad.AdEvent.EVENT_VIDEO_START_PLAY;
-import static com.fighter.ad.AdEvent.EVENT_VIEW;
+import static com.fighter.ad.AdEvent.EVENT_VIEW_FAIL;
+import static com.fighter.ad.AdEvent.EVENT_VIEW_SUCCESS;
 
 /**
  * the class to manager the ad cache.
@@ -220,7 +221,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         private void trackerEvent(int actionEvent, AdInfo adInfo) {
             switch (actionEvent) {
-                case EVENT_VIEW:
+                case EVENT_VIEW_FAIL:
+                case EVENT_VIEW_SUCCESS:
                     EventDisPlayParam disPlayParam = new EventDisPlayParam();
                     disPlayParam.ad_num = 1;
                     disPlayParam.ad_appid = 12222;/*this value should rewrite*/
@@ -228,8 +230,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                     disPlayParam.ad_source = adInfo.getAdName();
                     disPlayParam.ad_type = adInfo.getAdType();
                     disPlayParam.app_pkg = context.getPackageName();
-                    disPlayParam.result = "ok";
-                    disPlayParam.reason = "";
+                    disPlayParam.result = actionEvent == EVENT_VIEW_SUCCESS ? "ok" : "fail";
+                    disPlayParam.reason = actionEvent == EVENT_VIEW_SUCCESS ? "" : "onAdShow fail view is null";
                     ReaperLog.i(TAG, "EventDisPlayParam = " + disPlayParam);
                     tracker.trackDisplayEvent(context, disPlayParam);
                     break;
@@ -1010,11 +1012,11 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     /**
      * This method is support for ReaperApi and use Tracker task to record event
      *
-     * @param adEvent
+     * @param actionEvent
      * @param adInfo
      */
-    public void onEvent(int adEvent, AdInfo adInfo) {
-        if (adEvent == EVENT_VIEW) {
+    public void onEvent(int actionEvent, AdInfo adInfo) {
+        if (actionEvent == EVENT_VIEW_SUCCESS) {
             setCacheDisplayed(adInfo);
         }
         ISDKWrapper wrapper = null;
@@ -1033,7 +1035,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             }
         }
         if(wrapper != null)
-            postTrackerTask(mContext, mReaperTracker, adEvent, adInfo, wrapper);
+            postTrackerTask(mContext, mReaperTracker, actionEvent, adInfo, wrapper);
     }
 
     /**

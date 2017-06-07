@@ -44,7 +44,7 @@ public class AKAdSDKWrapperTest {
 
                 if (adResponse != null && adResponse.isSucceed()) {
                     AdInfo adInfo = adResponse.getAdInfo();
-                    sdkWrapper.onEvent(AdEvent.EVENT_VIEW, adInfo);
+                    sdkWrapper.onEvent(AdEvent.EVENT_VIEW_SUCCESS, adInfo);
                     sdkWrapper.onEvent(AdEvent.EVENT_CLICK, adInfo);
                 }
 

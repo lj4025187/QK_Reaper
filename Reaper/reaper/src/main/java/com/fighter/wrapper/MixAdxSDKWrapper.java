@@ -570,7 +570,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
     private void reportEvent(AdInfo adInfo, int adEvent) {
         List<String> urls = null;
         switch (adEvent) {
-            case AdEvent.EVENT_VIEW: {
+            case AdEvent.EVENT_VIEW_SUCCESS: {
                 urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_VIEW);
                 break;
             }

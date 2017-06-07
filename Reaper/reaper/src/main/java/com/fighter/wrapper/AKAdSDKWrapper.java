@@ -119,7 +119,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         Map<String, Object> eventParams = adInfo.getAdAllParams();
         NativeAd nativeAd = (NativeAd) adInfo.getExtra(EXTRA_EVENT_NATIVE_AD);
         switch (adEvent) {
-            case AdEvent.EVENT_VIEW: {
+            case AdEvent.EVENT_VIEW_SUCCESS: {
                 if (eventParams != null && eventParams.containsKey(PARAMS_KEY_VIEW)) {
                     eventAdShow(nativeAd, (View) eventParams.get(PARAMS_KEY_VIEW));
                 }

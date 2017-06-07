@@ -5,6 +5,8 @@ import android.media.MediaPlayer;
 import android.util.ArrayMap;
 import android.view.View;
 
+import com.fighter.utils.LoaderLog;
+
 import java.io.File;
 import java.util.Map;
 
@@ -65,14 +67,18 @@ public class AdInfo {
      *
      * @param activity 广告所在activity (不传时聚效无法正常处理点击)
      * @param v        广告展示所在view (不传时聚效无法正常处理点击)
-     * @param downX    广告所在view按下时的x坐标，获取不到填-999
-     * @param downY    广告所在view按下时的y坐标，获取不到填-999
-     * @param upX      广告所在view抬起时的x坐标，获取不到填-999
-     * @param upY      广告所在view抬起时的y坐标，获取不到填-999
+     * @param downX    广告所在view按下时的x坐标，获取不到填-999(若为负值，直接返回，不进行事件上报)
+     * @param downY    广告所在view按下时的y坐标，获取不到填-999(若为负值，直接返回，不进行事件上报)
+     * @param upX      广告所在view抬起时的x坐标，获取不到填-999(若为负值，直接返回，不进行事件上报)
+     * @param upY      广告所在view抬起时的y坐标，获取不到填-999(若为负值，直接返回，不进行事件上报)
      */
     public void onAdClicked(Activity activity, View v,
                             int downX, int downY,
                             int upX, int upY) {
+        if(downX < 0 || downY < 0 || upX < 0 || upY < 0){
+            LoaderLog.e("onAdClicked coordinate has negative number is invalid");
+            return;
+        }
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "activity", activity);
         ReaperApi.putParam(params, "view", v);
