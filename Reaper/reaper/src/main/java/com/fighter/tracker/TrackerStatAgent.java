@@ -155,7 +155,7 @@ final class TrackerStatAgent {
     public static void onEvent(Context context, String eventId, HashMap hashMap) {
         if (!SWITCH_OPEN)
             return;
-        ReaperLog.i(TAG, "onEvent three params contains HashMap");
+//        ReaperLog.i(TAG, "onEvent three params contains HashMap");
         onEvent(context == null ? sContext : context, eventId, hashMap, 1);
     }
 
@@ -168,7 +168,7 @@ final class TrackerStatAgent {
     public static void onEvent(Context context, String eventId, HashMap hashMap, int acc) {
         if (!SWITCH_OPEN)
             return;
-        ReaperLog.i(TAG, "onEvent six params contains HashMap");
+//        ReaperLog.i(TAG, "onEvent six params contains HashMap");
         QHStatAgent.onEvent(context == null ? sContext : context, eventId, hashMap, acc, DataUploadLevel.L9, SamplingPlan.B);
     }
 

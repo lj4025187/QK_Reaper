@@ -35,6 +35,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Reader;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
@@ -404,8 +405,11 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
 //            if(!updateConfig()) {
 //                return null;
+//            } else {
+//                ReaperLog.i(TAG, "config is update now");
 //            }
 
+            ReaperLog.i(TAG, "Reaper advPos: " + mReaperAdvPos + ",Reaper adSenses:" + mAdSenseList);
             updateWrapper(mAdSenseList);
             do {
                 AdRequestWrapperTask task = (AdRequestWrapperTask) getTask();
@@ -435,6 +439,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             }
             if (result != null && result instanceof AdInfo) {
                 adInfo = (AdInfo)result;
+                ReaperLog.i(TAG, "request wrapper ad info: " + adInfo);
                 if (isCache) {
                     cacheAdInfo(adInfo);
                 } else {
@@ -974,6 +979,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     }
 
     private void onRequestAdSucceed(Object receiver, AdInfo adInfo) {
+        ReaperLog.i(TAG, "on success ad info: " + adInfo);
         ArrayMap<String, Object> params = new ArrayMap<>();
         if (adInfo != null) {
             params.put("isSucceed", true);
@@ -1368,6 +1374,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         info.setExpireTime(String.valueOf(adInfo.getExpireTime() * 1000));
         info.setUuid(adInfo.getUUID());
         info.setAdCacheId(adInfo.getAdPosId());
+        ReaperLog.i(TAG, "cache ad info: " + adInfo);
         try {
             cacheAdInfo(adInfo.getAdPosId(), info);
             collateAdCache(adInfo.getAdPosId());

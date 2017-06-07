@@ -2,6 +2,8 @@ package com.fighter.tracker;
 
 import android.content.Context;
 
+import com.fighter.common.utils.ReaperLog;
+
 import java.util.HashMap;
 
 /**
@@ -55,6 +57,7 @@ public class Tracker {
      * @param param the display event param
      */
     public void trackDisplayEvent(Context context, EventDisPlayParam param) {
+        ReaperLog.i(TAG, "tracker event: " + TrackerEventType.AD_DISPLAY_EVENT + ",param: " + param);
         onEvent(context, TrackerEventType.AD_DISPLAY_EVENT, param);
     }
 
@@ -65,6 +68,7 @@ public class Tracker {
      * @param param the click event param
      */
     public void trackClickEvent(Context context, EventClickParam param) {
+        ReaperLog.i(TAG, "tracker event: " + TrackerEventType.AD_CLICK_EVENT + ",param: " + param);
         onEvent(context, TrackerEventType.AD_CLICK_EVENT, param);
     }
 
@@ -75,6 +79,7 @@ public class Tracker {
      * @param param the action event param
      */
     public void trackActionEvent(Context context, EventActionParam param) {
+        ReaperLog.i(TAG, "tracker event: " + TrackerEventType.AD_ACTION_EVENT + ",param: " + param);
         onEvent(context, TrackerEventType.AD_ACTION_EVENT, param);
     }
 
@@ -85,6 +90,7 @@ public class Tracker {
      * @param param the download event param
      */
     public void trackDownloadEvent(Context context, EventDownLoadParam param) {
+        ReaperLog.i(TAG, "tracker event: " + TrackerEventType.AD_DOWNLOAD_FAILED_EVENT + ",param: " + param);
         onEvent(context, TrackerEventType.AD_DOWNLOAD_FAILED_EVENT, param);
     }
 }
