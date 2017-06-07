@@ -704,10 +704,12 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     /**
      * request the ad cache to get the Ad information.
      */
-    public void requestAdCache(String cacheId, Object callBack) {
+    public void requestAdCache(int adCount, String cacheId, Object callBack) {
         mCacheId = cacheId;
         mCallBack = callBack;
-        postAdRequestTask(mCacheId, mCallBack);
+        for(int i = 0; i < adCount; i++) {
+            postAdRequestTask(mCacheId, mCallBack);
+        }
     }
 
     private String generateCacheId(AdCacheInfo info) {
@@ -847,7 +849,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             List<File> cacheFileList = Arrays.asList(cacheFiles);
             for (File file : cacheFileList) {
                 adInfo = (AdCacheInfo) getAdCacheFromFile(file);
-                if (adInfo != null && !adInfo.isCacheBackToUser()) {
+                if (adInfo != null &&
+                        !adInfo.isCacheBackToUser()) {
                     break;
                 }
             }
@@ -917,7 +920,9 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         if (adInfoObjects != null) {
             for (int i = 0; i < adInfoObjects.size(); i++) {
                 adInfo = adInfoObjects.get(adInfoObjects.keyAt(i));
-                if (adInfo != null && adInfo instanceof AdCacheInfo && !((AdCacheInfo) adInfo).isCacheBackToUser())
+                if (adInfo != null &&
+                        adInfo instanceof AdCacheInfo &&
+                        !((AdCacheInfo) adInfo).isCacheBackToUser())
                     break;
             }
         }

@@ -1,6 +1,8 @@
 package com.fighter.reaper.sample.model;
 
 
+import android.text.TextUtils;
+
 import com.fighter.loader.AdInfo;
 import com.fighter.reaper.sample.config.SampleConfig;
 
@@ -34,5 +36,15 @@ public abstract class BaseItem {
 
     public int getDetailType() {
         return mDetailType;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof BaseItem){
+            BaseItem baseItem = (BaseItem) obj;
+            AdInfo adInfo = baseItem.getAdInfo();
+            return TextUtils.equals(mAdInfo.getUuid(), adInfo.getUuid());
+        }
+        return false;
     }
 }

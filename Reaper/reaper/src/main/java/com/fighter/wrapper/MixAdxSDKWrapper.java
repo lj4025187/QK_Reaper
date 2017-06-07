@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -253,11 +254,20 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
         StringBuilder tempParams = new StringBuilder();
         int pos = 0;
         try {
-            for (String key : params.keySet()) {
+            Iterator<String> iterator = params.keySet().iterator();
+            while (iterator.hasNext()) {
+                String key = iterator.next();
+                ReaperLog.i(TAG, "key " + params.get(key));
                 tempParams.append(pos == 0 ? "?" : "&");
                 tempParams.append(String.format("%s=%s", key, URLEncoder.encode(params.get(key), "utf-8")));
                 pos++;
             }
+//            for (String key : params.keySet()) {
+//                ReaperLog.i(TAG, "key " + params.get(key));
+//                tempParams.append(pos == 0 ? "?" : "&");
+//                tempParams.append(String.format("%s=%s", key, URLEncoder.encode(params.get(key), "utf-8")));
+//                pos++;
+//            }
             String bodyString = tempParams.toString();
             ReaperLog.i(TAG, "generatePostData: " + bodyString);
             MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
@@ -276,9 +286,9 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
 
         HashMap<String, String> params = new HashMap<>();
         params.put("pos", adRequest.getAdLocalPositionId());                              // 广告位ID
-        params.put("posw", String.valueOf(adRequest.getAdWidth()));                             // 广告位宽
-        params.put("posh", String.valueOf(adRequest.getAdHeight()));                             // 广告位高
         params.put("postp", String.valueOf(TYPE_REF_MAP.get(adRequest.getAdType())));// 广告位类型
+        params.put("posw", String.valueOf(adRequest.getAdWidth()));                             // 广告位宽
+        params.put("posh", String.valueOf(adRequest.getAdHeight()));                            // 广告位高
 
         if (allParams.containsKey(EXTRA_MED)) {
             params.put("med", allParams.get(EXTRA_MED).toString());                 // 媒体标识
@@ -305,7 +315,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
         result.put("device_type", "0");                                       // 设备类型 0-phone 1-pad 2-pc 3-tv
         result.put("os", "0");                                                // MMA标准，i系统标识参数
         // 0 代表 Android 1 代表 iOS 2 代表 Wphone 3 代表 其他移动系统类型
-        result.put("app_id", adRequest.getAdLocalAppId());                           // app id
+        result.put("app_id", adRequest.getAdLocalAppId());                    // app id
         result.put("app_package", mContext.getPackageName());                 // package name
         PackageInfo packageInfo =
                 Device.getPackageInfo(mContext, mContext.getPackageName(),
@@ -313,7 +323,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
         if (packageInfo != null) {
             result.put("app_version", packageInfo.versionName);               // app 完整版本名
         }
-        result.put("app_version", "1.0");               // app 完整版本名
+        result.put("app_version", "1.0");                                     // app 完整版本名
         String appName = Device.getApplicationName(mContext);
         if (!TextUtils.isEmpty(appName)) {
             result.put("app_name", appName);                                  // app 名称

@@ -57,10 +57,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
         View.OnClickListener {
 
     private final static String TAG = AdFragment.class.getSimpleName();
-    private final static String AD_CATEGORY = "ad_category";
     private final static int NOTIFY_DATA_CHANGED = 0x01, NOTIFY_EMPTY_VIEW = 0x02, NOTIFY_DATA_FAILED = 0x03;
-
-    public final static int BANNER_AD_CATEGORY = 0x10;
 
     private ReaperApi mReaperApi;
     private String mCategory;
@@ -71,8 +68,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
     private ListView mListView;
     private AdAdapter mAdAdapter;
     private List<BaseItem> mListData = new ArrayList<>();
-    ;
-    private boolean mShouldLoad = false;
 
     /**
      * for handle auto play video
@@ -190,14 +185,14 @@ public class AdFragment extends Fragment implements Handler.Callback,
             case SampleConfig.QIHOO_SRC_NAME:
                 mReaperApi.setTagetConfig(ResponseGenerator.generate(mCategory, null, null));
                 adRequester = mReaperApi.getAdRequester("1", this);
-                if(!TextUtils.equals(SampleConfig.TYPE_NATIVE, mCategory))
+                if (!TextUtils.equals(SampleConfig.TYPE_NATIVE, mCategory))
                     isSupport = false;
                 break;
 
             case SampleConfig.TENCENT_SRC_NAME:
                 mReaperApi.setTagetConfig(ResponseGenerator.generate(null, mCategory, null));
                 adRequester = mReaperApi.getAdRequester(generateTencentPosId(), this);
-                if(!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
+                if (!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
                         && !TextUtils.equals(SampleConfig.TYPE_BANNER, mCategory))
                     isSupport = false;
                 break;
@@ -205,22 +200,22 @@ public class AdFragment extends Fragment implements Handler.Callback,
             case SampleConfig.BAIDU_SRC_NAME:
                 mReaperApi.setTagetConfig(ResponseGenerator.generate(null, null, mCategory));
                 adRequester = mReaperApi.getAdRequester("4", this);
-                if(!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
+                if (!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
                         && !TextUtils.equals(SampleConfig.TYPE_BANNER, mCategory)
-                            && !TextUtils.equals(SampleConfig.TYPE_FULL_SCREEN, mCategory))
+                        && !TextUtils.equals(SampleConfig.TYPE_FULL_SCREEN, mCategory))
                     isSupport = false;
                 break;
         }
 
-        if(!isSupport) {
+        if (!isSupport) {
             String toast = String.format(getResources().getString(R.string.toast_dis_support_ad), mSrcName, mCategory);
             ToastUtil.getInstance(mContext).showSingletonToast(toast);
             mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
             return;
         }
-        if(adRequester == null)
+        if (adRequester == null)
             return;
-        adRequester.requestAd(1);
+        adRequester.requestAd(5);
     }
 
     private String generateTencentPosId() {
@@ -247,7 +242,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
                 && mAdAdapter.getCount() > 0) {
             if (mAdAdapter.getCount() > 0)
                 mCalculator.onScrollStateIdle();
-            if (mShouldLoad) {
+            if (view.getLastVisiblePosition() == view.getCount() - 1) {
                 showFooterView(true);
                 startPullAds();
             }
@@ -256,7 +251,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-        mShouldLoad = (firstVisibleItem + visibleItemCount <= totalItemCount);
         if (mCalculator != null)
             mCalculator.onScrolled(mScrollState);
     }
@@ -267,7 +261,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
             SampleLog.e(TAG, " on success ads but ad is null");
             return;
         }
-        SampleLog.i(TAG, "on success ad uuid ==> " + adInfo.getUuid());
         generateAdData(adInfo);
     }
 
@@ -286,14 +279,10 @@ public class AdFragment extends Fragment implements Handler.Callback,
     private void generateAdData(AdInfo adInfo) {
         BaseItem baseItem = parseBaseItem(adInfo);
         if (mListData.contains(baseItem)) {
-            SampleLog.i(TAG, " data has exists " + adInfo.getTitle());
+            SampleLog.i(TAG, " data has exists " + adInfo.getUuid());
             return;
         }
         mListData.add(baseItem);
-        if(mListData.size() < 5) {
-            startPullAds();
-            return;
-        }
         SampleLog.i(TAG, " on success ads size is " + mListData.size());
         if (mListData.isEmpty()) {
             mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);

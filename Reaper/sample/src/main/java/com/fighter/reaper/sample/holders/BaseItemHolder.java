@@ -105,8 +105,14 @@ public class BaseItemHolder<T extends BaseItem> {
                 ViewUtils.setViewVisibility(adView, View.GONE);
             } else {
                 Glide.with(baseView.getContext())
-                    .load(imageUrl)
-                    .into(adView);
+                        .load(imageUrl)
+                        .asBitmap()
+                        .into(new SimpleTarget<Bitmap>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
+                            @Override
+                            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                                setImageSize(resource, false);
+                            }
+                        });
             }
         } else {
             final boolean isGif = imageFile.getName().endsWith(".gif");
