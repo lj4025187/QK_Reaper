@@ -22,7 +22,7 @@ public class ReaperApiTest {
         ReaperApi reaperApi = ReaperInit.init(context);
         Assert.assertNotNull(reaperApi);
 
-        reaperApi.init(context, "10010", "not_a_real_key");
+        reaperApi.init(context, "10010", "not_a_real_key", true);
     }
 
     @Test
@@ -31,17 +31,15 @@ public class ReaperApiTest {
         ReaperApi reaperApi = ReaperInit.init(context);
         Assert.assertNotNull(reaperApi);
 
-        reaperApi.init(context, "10010", "not_a_real_key");
+        reaperApi.init(context, "10010", "not_a_real_key", true);
 
         AdRequester adRequester =
                 reaperApi.getAdRequester("323232", new AdRequester.AdRequestCallback() {
                     @Override
-                    public void onSuccess(List<AdInfo> ads) {
-                        LoaderLog.i(TAG, "onSuccess " + ads);
-                        for (AdInfo adInfo : ads) {
-                            adInfo.onAdShow(null);
-                            adInfo.onAdClicked(null, null, -999, -999, -999, -999);
-                        }
+                    public void onSuccess(AdInfo adInfo) {
+                        LoaderLog.i(TAG, "onSuccess " + adInfo);
+                        adInfo.onAdShow(null);
+                        adInfo.onAdClicked(null, null, -999, -999, -999, -999);
                     }
 
                     @Override
@@ -50,7 +48,7 @@ public class ReaperApiTest {
                     }
                 });
 
-        adRequester.requestAd();
+        adRequester.requestAd(1);
 
         try {
             Thread.sleep(500

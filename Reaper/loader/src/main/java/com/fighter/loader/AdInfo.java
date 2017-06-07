@@ -57,7 +57,7 @@ public class AdInfo {
     public void onAdShow(View v) {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "view", v);
-        onEvent(AdEvent.EVENT_VIEW, params);
+        onEvent(v == null ? AdEvent.EVENT_VIEW_FAIL : AdEvent.EVENT_VIEW_SUCCESS, params);
     }
 
     /**

@@ -157,7 +157,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             mReaperApi.init(mContext, appId, appKey, true);
             adRequester = mReaperApi.getAdRequester(posId, this);
         }
-        adRequester.requestAd();
+        adRequester.requestAd(1);
     }
 
     @Override

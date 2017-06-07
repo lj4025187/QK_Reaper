@@ -220,7 +220,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
         }
         if(adRequester == null)
             return;
-        adRequester.requestAd();
+        adRequester.requestAd(1);
     }
 
     private String generateTencentPosId() {

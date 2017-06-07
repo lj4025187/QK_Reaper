@@ -6,9 +6,13 @@ package com.fighter.loader;
 
 class AdEvent {
     /**
+     * 广告曝光失败
+     */
+    public static final int EVENT_VIEW_FAIL = -1;
+    /**
      * 广告被曝光
      */
-    public static final int EVENT_VIEW = 0;
+    public static final int EVENT_VIEW_SUCCESS = 0;
     /**
      * 广告被点击
      */

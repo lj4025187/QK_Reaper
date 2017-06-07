@@ -16,8 +16,10 @@ public class AdRequester {
 
     /**
      * 开始请求广告
+     * @param adCount 请求广告的条数
      */
-    public void requestAd() {
+    public void requestAd(int adCount) {
+        mParams.put("adCount", String.valueOf(adCount));
         mReaperApi.invokeReaperApi("requestAd", mParams);
     }
 

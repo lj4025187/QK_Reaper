@@ -118,6 +118,7 @@ public class ReaperApi {
 
         String adPositionId = (String) params.get("adPositionId");
         Object adRequestCallback = params.get("adRequestCallback");
+        String adCount = (String) params.get("adCount");
 
         if (adRequestCallback == null) {
             ReaperLog.e(TAG, "[requestAd] AdRequestCallback is null");
