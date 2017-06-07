@@ -364,6 +364,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         @Override
         public Object doSomething() {
+            if(mAdResponse == null) return null;
             if (mAdResponse.isSucceed()) {
                 return mAdResponse.getAdInfo();
             }
@@ -395,24 +396,26 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         public Object doSomething() {
             AdInfo adInfo = null;
             AdResponse adResponse;
-            if(!updateConfig()) {
-                return null;
-            }
+//            if(!updateConfig()) {
+//                return null;
+//            }
             mAdSenseList = getWrapperConfig(mPosId);
             mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
-            if (mAdSenseList != null) {
-                updateWrapper(mAdSenseList);
-                do {
-                    AdRequestWrapperTask task = (AdRequestWrapperTask) getTask();
-                    adResponse = requestWrapperAdInner(mAdSenseList, mReaperAdvPos.adv_type, task);
-                } while (adResponse != null && !adResponse.isSucceed());
-
-                if (adResponse != null && adResponse.isSucceed())
-                    adInfo = adResponse.getAdInfo();
+            if (mAdSenseList == null) {
+                return null;
             }
+            updateWrapper(mAdSenseList);
+            do {
+                AdRequestWrapperTask task = (AdRequestWrapperTask) getTask();
+                adResponse = requestWrapperAdInner(mAdSenseList, mReaperAdvPos.adv_type, task);
+            } while (adResponse != null && !adResponse.isSucceed());
+
+            if (adResponse != null && adResponse.isSucceed())
+                adInfo = adResponse.getAdInfo();
             downloadAdResourceFile(adInfo);
-            if (!mAdSenseList.iterator().hasNext())
-                return "all the ads has not matter ad";
+            Iterator<ReaperAdSense> iterator = mAdSenseList.iterator();
+//            if (!iterator.hasNext())
+//                return "all the ads has not matter ad";
             return adInfo;
         }
     }
