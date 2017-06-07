@@ -48,13 +48,13 @@ public class MixAdxSDKWrapperTest {
                 AdInfo cacheAdInfo = AdInfo.convertFromString(cacheJson);
                 ReaperLog.i(TAG, "ad info cache obj " + cacheAdInfo);
                 Assert.assertNotNull(cacheAdInfo);
-                sdkWrapper.onEvent(AdEvent.EVENT_VIEW, adInfo);
-                sdkWrapper.onEvent(AdEvent.EVENT_CLICK, adInfo);
+                sdkWrapper.onEvent(AdEvent.EVENT_VIEW, cacheAdInfo);
+                sdkWrapper.onEvent(AdEvent.EVENT_CLICK, cacheAdInfo);
 
-                if (adInfo.getActionType() == AdInfo.ActionType.BROWSER) {
-                    ReaperLog.i(TAG, "Browser url " + sdkWrapper.requestWebUrl(adInfo));
+                if (cacheAdInfo.getActionType() == AdInfo.ActionType.BROWSER) {
+                    ReaperLog.i(TAG, "Browser url " + sdkWrapper.requestWebUrl(cacheAdInfo));
                 } else {
-                    ReaperLog.i(TAG, "App url " + sdkWrapper.requestDownloadUrl(adInfo));
+                    ReaperLog.i(TAG, "App url " + sdkWrapper.requestDownloadUrl(cacheAdInfo));
                 }
             }
         }

@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import okhttp3.HttpUrl;
@@ -557,54 +558,54 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
 
     @SuppressWarnings("unchecked")
     private void reportEvent(AdInfo adInfo, int adEvent) {
-        ArrayList<String> urls = null;
+        List<String> urls = null;
         switch (adEvent) {
             case AdEvent.EVENT_VIEW: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_VIEW);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_VIEW);
                 break;
             }
             case AdEvent.EVENT_CLICK: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_CLICK);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_CLICK);
                 break;
             }
             case AdEvent.EVENT_CLOSE: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_CLOSE);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_CLOSE);
                 break;
             }
             case AdEvent.EVENT_APP_START_DOWNLOAD: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_START_DOWNLOAD);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_START_DOWNLOAD);
                 break;
             }
             case AdEvent.EVENT_APP_DOWNLOAD_COMPLETE: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_DOWNLOAD);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_DOWNLOAD);
                 break;
             }
             case AdEvent.EVENT_APP_INSTALL: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_INSTALL);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_INSTALL);
                 break;
             }
             case AdEvent.EVENT_APP_ACTIVE: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_ACTIVE);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_APP_ACTIVE);
                 break;
             }
             case AdEvent.EVENT_VIDEO_CARD_CLICK: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_CARD_CLICK);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_CARD_CLICK);
                 break;
             }
             case AdEvent.EVENT_VIDEO_START_PLAY: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_PLAY);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_PLAY);
                 break;
             }
             case AdEvent.EVENT_VIDEO_PLAY_COMPLETE: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_PLAY_END);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_PLAY_END);
                 break;
             }
             case AdEvent.EVENT_VIDEO_FULLSCREEN: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_FULL_SCREEN);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_FULL_SCREEN);
                 break;
             }
             case AdEvent.EVENT_VIDEO_EXIT: {
-                urls = (ArrayList) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_VIDEO_CLOSE);
+                urls = (List) adInfo.getExtra(EXTRA_EVENT_TRACK_URL_VIDEO_CLOSE);
                 break;
             }
         }
