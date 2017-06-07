@@ -7,7 +7,7 @@ package com.fighter.reaper.sample.utils;
 public class ResponseGenerator {
 
 
-    public static String generate(String adType1, String adType2) {
+    public static String generate(String qihooType, String tencentType, String baiduType) {
         return "{" +
                     "\"result\": \"ok\"," +
                     "\"reason\": \"\"," +
@@ -16,7 +16,7 @@ public class ResponseGenerator {
                         "{" +
                             "\"pos_id\": \"1\"," +
 //                            "\"adv_type\":\"banner_adv\"," +
-                            "\"adv_type\":\"" + (adType1 == null ? "banner_adv" : adType1) + "\"," +
+                            "\"adv_type\":\"" + (qihooType == null ? "banner_adv" : qihooType) + "\"," +
                             "\"adv_exposure\": \"first\"," +
                             "\"adsenses\": [" +
                                 "{" +
@@ -30,17 +30,6 @@ public class ResponseGenerator {
                                     "\"adv_size_type\": \"pixel\"," +
                                     "\"adv_real_size\": \"640*100\"" +
                                 "}," +
-//                                "{" +
-//                                    "\"ads_name\": \"gdt\"," +
-//                                    "\"expire_time\": \"1800\"," +
-//                                    "\"priority\": \"3\"," +
-//                                    "\"ads_appid\": \"1104241296\"," +
-//                                    "\"ads_key\": \"adbsjmemsfm\"," +
-//                                    "\"ads_posid\": \"6050305154328807\"," +
-//                                    "\"max_adv_num\": \"10\"," +
-//                                    "\"adv_size_type\": \"pixel\"," +
-//                                    "\"adv_real_size\": \"640*100\"" +
-//                                "}," +
 //                                "{" +
 //                                    "\"ads_name\": \"baidu\"," +
 //                                    "\"expire_time\": \"1800\"," +
@@ -57,7 +46,7 @@ public class ResponseGenerator {
                         "{" +
                             "\"pos_id\": \"2\"," +
 //                            "\"adv_type\":\"insert_adv\"," +
-                            "\"adv_type\":\"" + (adType2 == null ? "insert_adv" : adType2) + "\"," +
+                            "\"adv_type\":\"" + (tencentType == null ? "insert_adv" : tencentType) + "\"," +
                             "\"adv_exposure\": \"first\"," +
                             "\"adsenses\": [" +
                                 "{" +
@@ -74,7 +63,7 @@ public class ResponseGenerator {
                                     "\"adv_real_size\": \"240*38\"" +
                                 "}" +
                             "]" +
-                        "}" +
+                        "}," +
                         "{" +
                             "\"pos_id\": \"3\"," +
                             "\"adv_type\":\"insert_adv\"," +
@@ -90,6 +79,24 @@ public class ResponseGenerator {
                                     "\"max_adv_num\": \"10\"," +
                                     "\"adv_size_type\": \"pixel\"," +
                                     "\"adv_real_size\": \"600*500\"" +
+                                "}" +
+                            "]" +
+                        "}," +
+                        "{" +
+                            "\"pos_id\": \"4\"," +
+                            "\"adv_type\":\"" + baiduType + "\"," +
+                            "\"adv_exposure\": \"first\"," +
+                            "\"adsenses\": [" +
+                                "{" +
+                                    "\"ads_name\": \"baidu\"," +
+                                    "\"expire_time\": \"1800\"," +
+                                    "\"priority\": \"10\"," +
+                                    "\"ads_appid\": \"0\"," +
+                                    "\"ads_key\": \"adbsjmemsfm\"," +
+                                    "\"ads_posid\": \"128\"," +
+                                    "\"max_adv_num\": \"10\"," +
+                                    "\"adv_size_type\": \"pixel\"," +
+                                    "\"adv_real_size\": \"600*300\"" +
                                 "}" +
                             "]" +
                         "}" +

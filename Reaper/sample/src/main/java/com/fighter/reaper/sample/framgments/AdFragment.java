@@ -177,7 +177,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
     }
 
     private void showEmptyView(boolean empty) {
-        SampleLog.i(TAG, " show empty view " + empty);
         mListView.setVisibility(empty ? View.GONE : View.VISIBLE);
         mEmptyView.setVisibility(empty ? View.VISIBLE : View.GONE);
     }
@@ -188,23 +187,31 @@ public class AdFragment extends Fragment implements Handler.Callback,
             return;
         AdRequester adRequester = null;
         switch (mSrcName) {
+            case SampleConfig.QIHOO_SRC_NAME:
+                mReaperApi.setTagetConfig(ResponseGenerator.generate(mCategory, null, null));
+                adRequester = mReaperApi.getAdRequester("1", this);
+                if(!TextUtils.equals(SampleConfig.TYPE_NATIVE, mCategory))
+                    isSupport = false;
+                break;
+
             case SampleConfig.TENCENT_SRC_NAME:
-                mReaperApi.setTagetConfig(ResponseGenerator.generate(null, mCategory));
+                mReaperApi.setTagetConfig(ResponseGenerator.generate(null, mCategory, null));
                 adRequester = mReaperApi.getAdRequester(generateTencentPosId(), this);
                 if(!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
                         && !TextUtils.equals(SampleConfig.TYPE_BANNER, mCategory))
                     isSupport = false;
                 break;
+
             case SampleConfig.BAIDU_SRC_NAME:
-                isSupport = false;
-                break;
-            case SampleConfig.QIHOO_SRC_NAME:
-                mReaperApi.setTagetConfig(ResponseGenerator.generate(mCategory, null));
-                adRequester = mReaperApi.getAdRequester("1", this);
-                if(!TextUtils.equals(SampleConfig.TYPE_NATIVE, mCategory))
+                mReaperApi.setTagetConfig(ResponseGenerator.generate(null, null, mCategory));
+                adRequester = mReaperApi.getAdRequester("4", this);
+                if(!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
+                        && !TextUtils.equals(SampleConfig.TYPE_BANNER, mCategory)
+                            && !TextUtils.equals(SampleConfig.TYPE_FULL_SCREEN, mCategory))
                     isSupport = false;
                 break;
         }
+
         if(!isSupport) {
             String toast = String.format(getResources().getString(R.string.toast_dis_support_ad), mSrcName, mCategory);
             ToastUtil.getInstance(mContext).showSingletonToast(toast);
@@ -325,7 +332,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
                 baseItem = new UnknownItem(adInfo);
                 break;
         }
-        SampleLog.i(TAG, " data should add " + adInfo.getTitle());
         return baseItem;
     }
 

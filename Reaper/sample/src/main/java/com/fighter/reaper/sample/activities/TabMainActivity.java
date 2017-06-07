@@ -1,5 +1,6 @@
 package com.fighter.reaper.sample.activities;
 
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -119,6 +120,7 @@ public class TabMainActivity extends BaseActivity {
                 this.view = getLayoutInflater().inflate(R.layout.view_tab_indicator, null);
                 this.imageView = (ImageView) this.view.findViewById(R.id.id_tab_view);
                 this.textView = (TextView) this.view.findViewById(R.id.id_tab_title);
+                imageView.setImageResource(imageSrc);
                 this.textView.setVisibility(View.VISIBLE);
                 this.textView.setText(getTitleString());
             }
@@ -128,14 +130,8 @@ public class TabMainActivity extends BaseActivity {
 
         public void setChecked(boolean isChecked) {
             if (textView != null) {
-                if (isChecked) {
-                    imageView.setVisibility(View.VISIBLE);
-                    imageView.setImageResource(imageSrc);
-                    textView.setTextColor(getResources().getColor(R.color.color_tab_indicator_pressed));
-                } else {
-                    imageView.setVisibility(View.GONE);
-                    textView.setTextColor(getResources().getColor(R.color.color_tab_indicator_normal));
-                }
+                textView.setTextColor(getResources().getColor( isChecked ? R.color.color_tab_indicator_pressed : R.color.color_tab_indicator_normal));
+                textView .setTypeface(Typeface.defaultFromStyle(isChecked ? Typeface.BOLD : Typeface.NORMAL));
             }
         }
 

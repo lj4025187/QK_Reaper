@@ -875,13 +875,12 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             return;
 
         String parent = apkFile.getParent();
-        ReaperLog.i(TAG, " parent string is " + parent);
 
         //handle the result file to apk file
         if(!fileName.endsWith(".apk")) {
             resultFile = new File(parent, reference+".apk");
             boolean rename = apkFile.renameTo(resultFile);
-            ReaperLog.i(TAG, resultFile.getAbsolutePath() + " rename " + rename);
+            ReaperLog.i(TAG, apkFile.getAbsolutePath() + " rename to " + resultFile.getAbsolutePath()+ " " + rename);
         } else {
             resultFile = apkFile;
         }
@@ -1060,7 +1059,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             case AdInfo.ActionType.APP_DOWNLOAD:
                 if(!iSdkWrapper.isDownloadOwn()) {
                     actionUrl = iSdkWrapper.requestDownloadUrl(adInfo);
-                    long id = mAdFileManager.requestDownload(actionUrl, null, null);
+                    long id = mAdFileManager.requestDownload(actionUrl, adInfo.getAppName(), null);
                     ReaperLog.i(TAG, "start download app " + id);
                 }
                 break;

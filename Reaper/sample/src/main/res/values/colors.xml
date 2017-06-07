@@ -9,6 +9,6 @@
 
     <color name="color_tab_image_normal">#1a000000</color>
     <color name="color_tab_image_pressed">#aa000000</color>
-    <color name="color_tab_indicator_normal">#1a000000</color>
+    <color name="color_tab_indicator_normal">#5a000000</color>
     <color name="color_tab_indicator_pressed">#aa000000</color>
 </resources>

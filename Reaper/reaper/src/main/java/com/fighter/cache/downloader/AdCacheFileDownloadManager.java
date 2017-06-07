@@ -7,10 +7,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.text.TextUtils;
 
 import com.fighter.cache.AdFileCacheUtil;
 import com.fighter.common.utils.CloseUtils;
+import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ReaperLog;
 
 import java.io.File;
@@ -116,12 +118,15 @@ public class AdCacheFileDownloadManager {
         }
         Uri uri = Uri.parse(url);
         DownloadManager.Request request = new DownloadManager.Request(uri);
+        String fileName = EncryptUtils.encryptMD5ToString(url).substring(25);
         if (!TextUtils.isEmpty(title)) {
+            fileName = title;
             request.setTitle(title);
         }
         if (!TextUtils.isEmpty(desc)) {
             request.setDescription(desc);
         }
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName + ".apk");
         return mDownloadManager.enqueue(request);
     }
 
