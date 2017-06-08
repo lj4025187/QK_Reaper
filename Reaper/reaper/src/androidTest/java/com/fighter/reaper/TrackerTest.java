@@ -104,7 +104,7 @@ public class TrackerTest {
         param3.ad_source = "gtk";
         param3.ad_type = "banner";
         param3.app_pkg = "com.fighter.test";
-        param3.act_type = TrackerEventType.AD_ACTION_TYPE_BEGIN;
+        param3.act_type = TrackerEventType.APP_ACTION_TYPE_BEGIN;
         ReaperLog.i(TAG, "EventActionParam = " + param3);
         tTracker.trackActionEvent(context, param3);
 
@@ -115,7 +115,7 @@ public class TrackerTest {
         param4.ad_source = "gtk";
         param4.ad_type = "banner";
         param4.app_pkg = "com.fighter.test";
-        param4.act_type = TrackerEventType.AD_ACTION_TYPE_END;
+        param4.act_type = TrackerEventType.APP_ACTION_TYPE_END;
         ReaperLog.i(TAG, "EventActionParam = " + param4);
         tTracker.trackActionEvent(context, param4);
 
@@ -126,7 +126,7 @@ public class TrackerTest {
         param5.ad_source = "gtk";
         param5.ad_type = "banner";
         param5.app_pkg = "com.fighter.test";
-        param5.act_type = TrackerEventType.AD_ACTION_TYPE_INSTALL;
+        param5.act_type = TrackerEventType.APP_ACTION_TYPE_INSTALL;
         ReaperLog.i(TAG, "EventActionParam = " + param5);
         tTracker.trackActionEvent(context, param5);
 

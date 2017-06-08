@@ -81,7 +81,7 @@ public class AdCacheTest {
                 ReaperLog.i(TAG, "cache map = " + cacheMap);
                 Assert.assertTrue(cacheMap.size() > 0);
 
-                adCacheManager.requestAdCache(1,"1", new TestCallBack() {
+                adCacheManager.requestAdCache(2,"1", new TestCallBack() {
                     @Override
                     public void onResponse(Map<String, Object> params) {
                         ReaperLog.i(TAG, "onResponse param = " + params);

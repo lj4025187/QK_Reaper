@@ -1,5 +1,7 @@
 package com.fighter.tracker;
 
+import android.text.TextUtils;
+
 import java.util.HashMap;
 
 /**
@@ -9,20 +11,25 @@ import java.util.HashMap;
  */
 
 public class EventActionParam extends AdParam {
-    /** tacker event action type*/
+    /** tracker event action type**/
     public String act_type;
+    /** tracker app down fail reason**/
+    public String reason;
 
     @Override
     HashMap<String, String> generateMap() {
         HashMap<String, String> map = super.generateMap();
         map.put("act_type", act_type);
+        map.put("reason", reason);
         return map;
     }
 
     @Override
     public String toString() {
         return "EventActionParam{" +
-                "act_type='" + act_type + '\'' + ", " + super.toString() +
+                "act_type='" + act_type + '\'' + ", " +
+                (!TextUtils.isEmpty(reason) ? ("reason='" + reason + '\'' + ", ") : "")+
+                super.toString() +
                 '}';
     }
 }

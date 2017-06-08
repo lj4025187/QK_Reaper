@@ -8,6 +8,10 @@ public class ResponseGenerator {
 
 
     public static String generate(String qihooType, String tencentType, String baiduType) {
+        //pos_id == 1 聚效广告
+        //pos_id == 2 广点通其他类型广告
+        //pos_id == 3 广点通insert类型广告
+        //pos_id == 4 百度广告（目前无数据返回）
         return "{" +
                     "\"result\": \"ok\"," +
                     "\"reason\": \"\"," +

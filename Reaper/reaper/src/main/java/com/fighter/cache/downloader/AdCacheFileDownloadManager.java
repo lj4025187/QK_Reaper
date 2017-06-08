@@ -5,15 +5,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
 import android.text.TextUtils;
 
+import com.fighter.ad.AdInfo;
 import com.fighter.cache.AdFileCacheUtil;
 import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.wrapper.ISDKWrapper;
 
 import java.io.File;
 import java.util.UUID;
@@ -91,7 +95,7 @@ public class AdCacheFileDownloadManager {
      * @return
      */
     public File cacheAdFile(String imageUrl) {
-        if(TextUtils.isEmpty(mDownloadPath)){
+        if (TextUtils.isEmpty(mDownloadPath)) {
             mDownloadPath = mContext.getCacheDir() + File.separator + CACHE_FILE_DIR;
         }
         mAdFileCacheUtil.clearCacheFile(new File(mDownloadPath));
@@ -112,7 +116,7 @@ public class AdCacheFileDownloadManager {
      * @return
      */
     public long requestDownload(String url, String title, String desc) {
-        if(TextUtils.isEmpty(url)) {
+        if (TextUtils.isEmpty(url)) {
             ReaperLog.e(TAG, " request download url is null");
             return -1;
         }
@@ -126,12 +130,20 @@ public class AdCacheFileDownloadManager {
         if (!TextUtils.isEmpty(desc)) {
             request.setDescription(desc);
         }
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName + ".apk");
+        try {
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName + ".apk");
+        } catch (IllegalStateException e) {
+            ReaperLog.e(TAG, " IllegalStateException from DownloadManager.Request " + e);
+        } catch (NullPointerException e) {
+            ReaperLog.e(TAG, " NullPointerException from DownloadManager.Request " + e);
+        }
         return mDownloadManager.enqueue(request);
     }
 
     public interface DownloadCallback {
         void onDownloadComplete(long reference, String fileName);
+
+        void onDownloadFailed(long reference, int reason);
     }
 
     /**
@@ -143,26 +155,37 @@ public class AdCacheFileDownloadManager {
         public void onReceive(Context context, Intent intent) {
             long reference = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
             String fileName = null;
+            int status = 0, reason = 0;
             if (mCallback == null)
                 return;
 
-            DownloadManager.Query query = new DownloadManager.Query();
-            query.setFilterById(reference);
-            Cursor cursor = null;
-            try {
-                cursor = mDownloadManager.query(query);
-                if (cursor != null && cursor.moveToFirst()) {
-                    int fileNameIdx =
-                            cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
-                    fileName = cursor.getString(fileNameIdx);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                CloseUtils.closeIOQuietly(cursor);
+            String action = intent.getAction();
+            if (TextUtils.isEmpty(action))
+                return;
+            switch (action) {
+                case DownloadManager.ACTION_DOWNLOAD_COMPLETE:
+                    DownloadManager.Query query = new DownloadManager.Query();
+                    query.setFilterById(reference);
+                    Cursor cursor = null;
+                    try {
+                        cursor = mDownloadManager.query(query);
+                        if (cursor != null && cursor.moveToFirst()) {
+                            fileName = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+                            status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+                            reason = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        CloseUtils.closeIOQuietly(cursor);
+                    }
+                    if(status == DownloadManager.STATUS_SUCCESSFUL) {
+                        mCallback.onDownloadComplete(reference, fileName);
+                    } else if(status == DownloadManager.STATUS_FAILED) {
+                        mCallback.onDownloadFailed(reference, reason);
+                    }
+                    break;
             }
-
-            mCallback.onDownloadComplete(reference, fileName);
         }
     }
 }
