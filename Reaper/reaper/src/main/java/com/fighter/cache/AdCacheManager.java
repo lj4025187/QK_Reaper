@@ -35,7 +35,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Reader;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,7 +84,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private Map<String, String> mSdkWrapperAdTypeSupport;
     private Map<String, Method> mMethodCall;
 
-    private List<ReaperAdSense> mAdSenseList;
+//    private List<ReaperAdSense> mAdSenseList;
     private ReaperAdvPos mReaperAdvPos;
 
     /**************************************************Init cache task start*****************************************************************/
@@ -301,6 +300,8 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         private String mPosId;
         private Object mCallBack;
         private boolean mCache;
+        private List<ReaperAdSense> mAdSenseList;
+
 
         public void setPosId(String mPosId) {
             this.mPosId = mPosId;
@@ -328,24 +329,27 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
         public AdRequestWrapperTask(int priority, PriorityTaskDaemon.TaskRunnable runnable,
                                     PriorityTaskDaemon.TaskNotify notify, String mPosId,
-                                    Object mCallBack, boolean mCache) {
+                                    Object mCallBack, boolean mCache, List<ReaperAdSense> list) {
             super(priority, runnable, notify);
             this.mPosId = mPosId;
             this.mCallBack = mCallBack;
             this.mCache = mCache;
+            this.mAdSenseList = list;
         }
 
         public AdRequestWrapperTask(PriorityTaskDaemon.NotifyPriorityTask task, String mPosId,
-                                    Object mCallBack, boolean mCache) {
+                                    Object mCallBack, boolean mCache, List<ReaperAdSense> list) {
             super(task);
             this.mPosId = mPosId;
             this.mCallBack = mCallBack;
             this.mCache = mCache;
+            this.mAdSenseList = list;
         }
 
         @Override
         public void onAdResponse(AdResponse adResponse) {
             mAdRequestWrapperAsyncRunner.setAdResponse(adResponse);
+            mAdRequestWrapperAsyncRunner.setAdSenseList(mAdSenseList);
             this.setRunnable(mAdRequestWrapperAsyncRunner);
             mWorkThread.postTaskInFront(this);
         }
@@ -353,9 +357,14 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
     private class AdRequestWrapperAsyncRunner extends PriorityTaskDaemon.TaskRunnable {
         private AdResponse mAdResponse;
+        private List<ReaperAdSense> mAdSenseList;
 
         public void setAdResponse(AdResponse mAdResponse) {
             this.mAdResponse = mAdResponse;
+        }
+
+        public void setAdSenseList(List<ReaperAdSense> mAdSenseList) {
+            this.mAdSenseList = mAdSenseList;
         }
 
         public AdRequestWrapperAsyncRunner() {
@@ -383,16 +392,22 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
     private class AdRequestWrapperRunner extends PriorityTaskDaemon.TaskRunnable {
         private String mPosId;
+        private List<ReaperAdSense> mAdSenseList;
 
         public void setPosId(String mPosId) {
             this.mPosId = mPosId;
         }
 
+        public void setmAdSenseList(List<ReaperAdSense> mAdSenseList) {
+            this.mAdSenseList = mAdSenseList;
+        }
+
         public AdRequestWrapperRunner() {
         }
 
-        public AdRequestWrapperRunner(String mPosId) {
+        public AdRequestWrapperRunner(String mPosId, List<ReaperAdSense> list) {
             this.mPosId = mPosId;
+            this.mAdSenseList = list;
         }
 
         @Override
@@ -420,7 +435,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 adInfo = adResponse.getAdInfo();
             downloadAdResourceFile(adInfo);
 //          if (mAdSenseList != null && !mAdSenseList.iterator().hasNext())
-//              return "all the ads has not matter ad";
+//              return generateHoldAd(mPosId);
             return adInfo;
         }
     }
@@ -497,6 +512,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private class AdRequestRunner extends PriorityTaskDaemon.TaskRunnable {
         private String mPosId;
         private Object mCallBack;
+        private List<ReaperAdSense> mAdSenseList;
 
         public void setPosId(String mPosId) {
             this.mPosId = mPosId;
@@ -522,7 +538,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 mAdSenseList = policy.generateList();
             }
             // 1.post a task to pull ad for cache
-            postAdRequestWrapperTask(mPosId, null, true, AdRequestRunner.this);
+            postAdRequestWrapperTask(mPosId, null, true, mAdSenseList, AdRequestRunner.this);
             // 2. if cache is full, back cache ad info
             Object info = getCacheAdInfo(mPosId);
             AdCacheInfo adCacheInfo;
@@ -554,7 +570,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 }
             }
             // 3. if cache is empty, post a task call wrapper get ad
-            postAdRequestWrapperTask(mPosId, mCallBack, false, AdRequestRunner.this);
+            postAdRequestWrapperTask(mPosId, mCallBack, false, mAdSenseList, AdRequestRunner.this);
             return null;
         }
     }
@@ -761,7 +777,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
      */
     private void fillAdCachePool(String[] posIds) {
         for (String posId : posIds) {
-            postAdRequestWrapperTask(posId, null, true, null);
+//            postAdRequestWrapperTask(posId, null, true, null);
         }
     }
 
@@ -793,6 +809,25 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         for(int i = 0; i < adCount; i++) {
             postAdRequestTask(mCacheId, mCallBack);
         }
+    }
+
+    private AdInfo generateHoldAd(String posId) {
+        ReaperLog.i(TAG, "generateHoldAd");
+        AdCacheInfo adCacheInfo;
+        AdInfo info = null;
+        ArrayMap<String, Object> cacheObjects = mAdCache.get(posId);
+        if (cacheObjects != null && cacheObjects.size() > 0) {
+            adCacheInfo = (AdCacheInfo) cacheObjects.get(cacheObjects.keyAt(0));
+            if (adCacheInfo != null) {
+                Object object = adCacheInfo.getCache();
+                if (object instanceof String) {
+                    info = AdInfo.convertFromString((String) object);
+                } else if (object instanceof AdInfo) {
+                    info =  (AdInfo)object;
+                }
+            }
+        }
+        return info;
     }
 
     private String generateCacheId(AdCacheInfo info) {
@@ -1217,18 +1252,18 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         mWorkThread.postTaskInFront(task);
     }
 
-    private void postAdRequestWrapperTask(String posId, Object callBack, boolean isCache,
+    private void postAdRequestWrapperTask(String posId, Object callBack, boolean isCache,List<ReaperAdSense> list,
                                           PriorityTaskDaemon.TaskRunnable ownerRunner) {
-        AdRequestWrapperRunner runner = new AdRequestWrapperRunner(posId);
+        AdRequestWrapperRunner runner = new AdRequestWrapperRunner(posId, list);
 //        AdRequestWrapperNotify notify = new AdRequestWrapperNotify();
         AdRequestWrapperTask task;
         if (ownerRunner == null) {
             task = new AdRequestWrapperTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
-                    runner, mAdRequestWrapperNotify, posId, callBack, isCache);
+                    runner, mAdRequestWrapperNotify, posId, callBack, isCache, list);
         } else {
             PriorityTaskDaemon.NotifyPriorityTask notifyPriorityTask = ownerRunner.createNewTask(
                     PriorityTaskDaemon.PriorityTask.PRI_FIRST, runner, mAdRequestWrapperNotify);
-            task = new AdRequestWrapperTask(notifyPriorityTask, posId, callBack, isCache);
+            task = new AdRequestWrapperTask(notifyPriorityTask, posId, callBack, isCache, list);
         }
         mWorkThread.postTaskInFront(task);
     }
@@ -1360,7 +1395,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         ReaperAdSense sense;
         if (iterator.hasNext()) {
             sense = iterator.next();
-//            iterator.remove();
+            iterator.remove();
         } else {
             return null;
         }
