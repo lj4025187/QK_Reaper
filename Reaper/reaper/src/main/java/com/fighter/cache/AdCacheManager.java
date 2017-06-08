@@ -530,6 +530,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             AdInfo adInfo = null;
             if (info != null && info instanceof AdCacheInfo) {
                 adCacheInfo = (AdCacheInfo)info;
+                ReaperLog.i(TAG, "ad cache info： " + adCacheInfo);
                 cache = adCacheInfo.getCache();
                 if (cache instanceof String) {
                     adInfo = AdInfo.convertFromString((String)cache);
@@ -575,6 +576,78 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
     private AdRequestTask mAdRequestTask = new AdRequestTask(
             PriorityTaskDaemon.PriorityTask.PRI_FIRST, mAdRequestRunner, mAdRequestNotify);
     /****************************************************AdRequestTask Task end**************************************************************************/
+
+//    /****************************************************AdRequestMultTask Task start**************************************************************************/
+//    private class AdRequestMultTask extends PriorityTaskDaemon.NotifyPriorityTask {
+//        private String mPosId;
+//        private Object mCallBack;
+//        private int mAdCount;
+//
+//        public int getAdCount() {
+//            return mAdCount;
+//        }
+//
+//        public void setAdCount(int mAdCount) {
+//            this.mAdCount = mAdCount;
+//        }
+//
+//        public String getPosId() {
+//            return mPosId;
+//        }
+//
+//        public void setPosId(String mPosId) {
+//            this.mPosId = mPosId;
+//        }
+//
+//        public Object getCallBack() {
+//            return mCallBack;
+//        }
+//
+//        public void setCallBack(Object mCallBack) {
+//            this.mCallBack = mCallBack;
+//        }
+//        public AdRequestMultTask(int priority, PriorityTaskDaemon.TaskRunnable runnable, PriorityTaskDaemon.TaskNotify notify) {
+//            super(priority, runnable, notify);
+//        }
+//    }
+//
+//    private class AdRequestMultRunner extends PriorityTaskDaemon.TaskRunnable {
+//        private String mPosId;
+//        private Object mCallBack;
+//        private int mAdCount;
+//
+//        public void setAdCount(int mAdCount) {
+//            this.mAdCount = mAdCount;
+//        }
+//
+//        public void setPosId(String mPosId) {
+//            this.mPosId = mPosId;
+//        }
+//
+//        public void setCallBack(Object mCallBack) {
+//            this.mCallBack = mCallBack;
+//        }
+//
+//        @Override
+//        public Object doSomething() {
+//            // get ad from cache
+//
+//            return null;
+//        }
+//    }
+//
+//    private class AdRequestMultNotify implements PriorityTaskDaemon.TaskNotify {
+//
+//        @Override
+//        public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+//
+//        }
+//    }
+//    private AdRequestMultRunner mAdRequestMultRunner = new AdRequestMultRunner();
+//    private AdRequestMultNotify mAdRequestMultNotify = new AdRequestMultNotify();
+//    private AdRequestMultTask mAdRequestMultTask = new AdRequestMultTask(
+//            PriorityTaskDaemon.PriorityTask.PRI_FIRST, mAdRequestMultRunner, mAdRequestMultNotify);
+//    /****************************************************AdRequestMultTask Task end**************************************************************************/
 
     /**
      * the memory cache object
@@ -861,6 +934,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 adInfo = (AdCacheInfo) getAdCacheFromFile(file);
                 if (adInfo != null &&
                         !adInfo.isCacheBackToUser()) {
+                    ReaperLog.i(TAG, "is cache back disk:" + adInfo.isCacheBackToUser());
                     break;
                 }
             }
@@ -932,8 +1006,10 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 adInfo = adInfoObjects.get(adInfoObjects.keyAt(i));
                 if (adInfo != null &&
                         adInfo instanceof AdCacheInfo &&
-                        !((AdCacheInfo) adInfo).isCacheBackToUser())
+                        !((AdCacheInfo) adInfo).isCacheBackToUser()) {
+                    ReaperLog.i(TAG, "is cache back memory:" + ((AdCacheInfo) adInfo).isCacheBackToUser());
                     break;
+                }
             }
         }
         /* 2. find ad cache in disk cache */
@@ -1119,16 +1195,26 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
     }
 
+//    private void postAdRequestMultTask(String posId, Object callBack, int adCount) {
+//        mAdRequestMultRunner.setPosId(posId);
+//        mAdRequestMultRunner.setCallBack(callBack);
+//        mAdRequestMultRunner.setAdCount(adCount);
+//        mAdRequestMultTask.setPosId(posId);
+//        mAdRequestMultTask.setCallBack(callBack);
+//        mAdRequestMultTask.setAdCount(adCount);
+//        mWorkThread.postTaskInFront(mAdRequestMultTask);
+//    }
+
     private void postAdRequestTask(String posId, Object callBack) {
-//        AdRequestRunner runner = new AdRequestRunner(posId, callBack);
-//        AdRequestNotify notify = new AdRequestNotify();
-//        AdRequestTask task = new AdRequestTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
-//                runner, notify, posId, callBack);
-        mAdRequestRunner.setPosId(posId);
-        mAdRequestRunner.setCallBack(callBack);
-        mAdRequestTask.setPosId(posId);
-        mAdRequestTask.setCallBack(callBack);
-        mWorkThread.postTaskInFront(mAdRequestTask);
+        AdRequestRunner runner = new AdRequestRunner(posId, callBack);
+        AdRequestNotify notify = new AdRequestNotify();
+        AdRequestTask task = new AdRequestTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
+                runner, notify, posId, callBack);
+//        mAdRequestRunner.setPosId(posId);
+//        mAdRequestRunner.setCallBack(callBack);
+//        mAdRequestTask.setPosId(posId);
+//        mAdRequestTask.setCallBack(callBack);
+        mWorkThread.postTaskInFront(task);
     }
 
     private void postAdRequestWrapperTask(String posId, Object callBack, boolean isCache,
@@ -1274,7 +1360,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         ReaperAdSense sense;
         if (iterator.hasNext()) {
             sense = iterator.next();
-            iterator.remove();
+//            iterator.remove();
         } else {
             return null;
         }

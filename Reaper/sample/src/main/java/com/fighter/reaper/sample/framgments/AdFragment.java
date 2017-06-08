@@ -284,6 +284,8 @@ public class AdFragment extends Fragment implements Handler.Callback,
         }
         mListData.add(baseItem);
         SampleLog.i(TAG, " on success ads size is " + mListData.size());
+        SampleLog.i(TAG, " on success ads uuid " + adInfo.getUuid());
+
         if (mListData.isEmpty()) {
             mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
         } else {

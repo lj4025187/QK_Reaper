@@ -108,10 +108,11 @@ public class AdCacheInfo implements Serializable {
                 "mCacheTime=" + mCacheTime +
                 ", mExpireTime='" + mExpireTime + '\'' +
                 ", mAdCacheId='" + mAdCacheId + '\'' +
-                ", mCache='" + mCache + '\'' +
+                ", mCache=" + mCache +
                 ", mCacheState=" + mCacheState +
                 ", mAdSource='" + mAdSource + '\'' +
                 ", mCachePath='" + mCachePath + '\'' +
+                ", mUuid='" + mUuid + '\'' +
                 '}';
     }
 
