@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import com.fighter.ad.AdInfo;
 import com.fighter.cache.AdCacheManager;
+import com.fighter.common.Device;
 import com.fighter.common.rc4.IRC4;
 import com.fighter.common.rc4.RC4Factory;
 import com.fighter.common.utils.ReaperLog;
@@ -139,6 +140,11 @@ public class ReaperApi {
         mAdCacheManager.requestAdCache(adCount, adPositionId, adRequestCallback);
     }
 
+    @NoProguard
+    public String getMacAddress(Map<String, Object> params) {
+        Context context = (Context) params.get("appContext");
+        return Device.getMacStable(context);
+    }
     /**
      * 广告事件
      *

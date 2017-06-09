@@ -105,6 +105,18 @@ public class ReaperApi {
         return adRequester;
     }
 
+    /**
+     * 获取设备wifi mac地址
+     *
+     * @param context  Context上下文
+     * @return
+     */
+    public String getMacAddress(Context context) {
+        Map<String, Object> params = new ArrayMap<>();
+        putParam(params, "appContext", context);
+        return (String)invokeReaperApi("getMacAddress", params);
+    }
+
     // ----------------------------------------------------
 
     Object invokeReaperApi(String methodName, Map<String, Object> params) {
