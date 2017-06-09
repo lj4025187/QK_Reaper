@@ -91,15 +91,18 @@ public class ReaperApi {
      *
      * @param adPositionId      360OS广告平台申请的广告位ID
      * @param adRequestCallback 广告请求回调
+     * @param needHoldAd 是否在无网络或其他异常情况下返回保底广告
      * @return
      */
     @SuppressWarnings("unchecked")
     public AdRequester getAdRequester(String adPositionId,
-                                      AdRequester.AdRequestCallback adRequestCallback) {
+                                      AdRequester.AdRequestCallback adRequestCallback, boolean needHoldAd) {
         Map<String, Object> params = new ArrayMap<>();
         putParam(params, "adPositionId", adPositionId);
         putParam(params, "adRequestCallback", new AdResponse(adRequestCallback));
+        putParam(params, "needHoldAd", needHoldAd);
 
+        invokeReaperApi("setNeedHoldAd", params);
         AdRequester adRequester = new AdRequester(this);
         adRequester.mParams = params;
         return adRequester;

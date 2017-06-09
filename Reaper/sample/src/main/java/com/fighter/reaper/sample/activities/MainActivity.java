@@ -151,11 +151,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 showEmptyView(true);
                 return;
             } else {
-                adRequester = mReaperApi.getAdRequester("1", this);
+                adRequester = mReaperApi.getAdRequester("1", this, true);
             }
         } else {
             mReaperApi.init(mContext, appId, appKey, true);
-            adRequester = mReaperApi.getAdRequester(posId, this);
+            adRequester = mReaperApi.getAdRequester(posId, this, true);
         }
         adRequester.requestAd(1);
     }

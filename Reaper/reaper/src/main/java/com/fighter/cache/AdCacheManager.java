@@ -625,9 +625,11 @@ public class AdCacheManager{
                 return mAdResponse.getAdInfo();
             }
             if (mAdResponse != null) {
-                return generateHoldAd(mAdResponse.getAdPosId());
+                if (needHoldAd) {
+                    return generateHoldAd(mAdResponse.getAdPosId());
+                }
             }
-            return "all the ads has not matter ad";
+            return "all ads not get ad";
         }
     }
 
@@ -677,8 +679,9 @@ public class AdCacheManager{
             if (adResponse != null && adResponse.isSucceed())
                 adInfo = adResponse.getAdInfo();
             downloadAdResourceFile(adInfo);
-          if (mAdSenseList != null && location > mAdSenseList.size())
-              return generateHoldAd(mPosId);
+          if (mAdSenseList != null && location > mAdSenseList.size()) {
+                return needHoldAd ? generateHoldAd(mPosId) : "all ads not get ad";
+          }
             return adInfo;
         }
     }
@@ -921,6 +924,7 @@ public class AdCacheManager{
     private String mAppKey;
     private Object mCallBack;
 
+    private boolean needHoldAd;
     private AdCacheFileDownloadManager mAdFileManager;
     private Tracker mReaperTracker;
 
@@ -1052,6 +1056,10 @@ public class AdCacheManager{
         for(int i = 0; i < adCount; i++) {
             postAdRequestTask(mCacheId, mCallBack);
         }
+    }
+
+    public void setNeedHoldAd(boolean needHoldAd) {
+        this.needHoldAd = needHoldAd;
     }
 
     private AdInfo generateHoldAd(String posId) {

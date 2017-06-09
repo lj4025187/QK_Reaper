@@ -185,14 +185,14 @@ public class AdFragment extends Fragment implements Handler.Callback,
         switch (mSrcName) {
             case SampleConfig.QIHOO_SRC_NAME:
                 mReaperApi.setTagetConfig(ResponseGenerator.generate(mCategory, null, null));
-                adRequester = mReaperApi.getAdRequester("1", this);
+                adRequester = mReaperApi.getAdRequester("1", this, true);
                 if (!TextUtils.equals(SampleConfig.TYPE_NATIVE, mCategory))
                     isSupport = false;
                 break;
 
             case SampleConfig.TENCENT_SRC_NAME:
                 mReaperApi.setTagetConfig(ResponseGenerator.generate(null, mCategory, null));
-                adRequester = mReaperApi.getAdRequester(generateTencentPosId(), this);
+                adRequester = mReaperApi.getAdRequester(generateTencentPosId(), this, true);
                 if (!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
                         && !TextUtils.equals(SampleConfig.TYPE_BANNER, mCategory))
                     isSupport = false;
@@ -200,7 +200,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
 
             case SampleConfig.BAIDU_SRC_NAME:
                 mReaperApi.setTagetConfig(ResponseGenerator.generate(null, null, mCategory));
-                adRequester = mReaperApi.getAdRequester("4", this);
+                adRequester = mReaperApi.getAdRequester("4", this, true);
                 if (!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
                         && !TextUtils.equals(SampleConfig.TYPE_BANNER, mCategory)
                         && !TextUtils.equals(SampleConfig.TYPE_FULL_SCREEN, mCategory))

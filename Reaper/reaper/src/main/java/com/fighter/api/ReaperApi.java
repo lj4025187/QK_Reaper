@@ -145,6 +145,17 @@ public class ReaperApi {
         Context context = (Context) params.get("appContext");
         return Device.getMacStable(context);
     }
+
+    @NoProguard
+    public void setNeedHoldAd(Map<String, Object> params) {
+        boolean needHoldAd = false;
+        if (params.containsKey("needHoldAd")) {
+            needHoldAd = (boolean) params.get("needHoldAd");
+        }
+        if (mAdCacheManager != null) {
+            mAdCacheManager.setNeedHoldAd(needHoldAd);
+        }
+    }
     /**
      * 广告事件
      *
