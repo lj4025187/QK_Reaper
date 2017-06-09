@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -517,8 +518,16 @@ public class AdCacheManager{
         private String mPosId;
         private Object mCallBack;
         private boolean mCache;
+        private int mLocation;
         private List<ReaperAdSense> mAdSenseList;
 
+        public int getLocation() {
+            return mLocation;
+        }
+
+        public void setLocation(int mLocation) {
+            this.mLocation = mLocation;
+        }
 
         public void setPosId(String mPosId) {
             this.mPosId = mPosId;
@@ -567,6 +576,7 @@ public class AdCacheManager{
         public void onAdResponse(AdResponse adResponse) {
             mAdRequestWrapperAsyncRunner.setAdResponse(adResponse);
             mAdRequestWrapperAsyncRunner.setAdSenseList(mAdSenseList);
+            mAdRequestWrapperAsyncRunner.setLocation(mLocation);
             this.setRunnable(mAdRequestWrapperAsyncRunner);
             mWorkThread.postTaskInFront(this);
         }
@@ -575,6 +585,15 @@ public class AdCacheManager{
     private class AdRequestWrapperAsyncRunner extends PriorityTaskDaemon.TaskRunnable {
         private AdResponse mAdResponse;
         private List<ReaperAdSense> mAdSenseList;
+        private int mLocation;
+
+        public int getLocation() {
+            return mLocation;
+        }
+
+        public void setLocation(int mLocation) {
+            this.mLocation = mLocation;
+        }
 
         public void setAdResponse(AdResponse mAdResponse) {
             this.mAdResponse = mAdResponse;
@@ -593,15 +612,20 @@ public class AdCacheManager{
 
         @Override
         public Object doSomething() {
+            AdRequestWrapperTask task = (AdRequestWrapperTask) getTask();
             if(mAdResponse == null) return null;
             if (mAdResponse.isSucceed()) {
                 return mAdResponse.getAdInfo();
             }
             while(mAdResponse != null && !mAdResponse.isSucceed()) {
-                mAdResponse = requestWrapperAdInner(mAdSenseList, mReaperAdvPos.adv_type, (AdRequestWrapperTask) getTask());
+                mAdResponse = requestWrapperAdInner(mAdSenseList, mLocation, mReaperAdvPos.adv_type, (AdRequestWrapperTask) getTask());
+                task.setLocation(mLocation++);
             }
             if (mAdResponse != null && mAdResponse.isSucceed()) {
                 return mAdResponse.getAdInfo();
+            }
+            if (mAdResponse != null) {
+                return generateHoldAd(mAdResponse.getAdPosId());
             }
             return "all the ads has not matter ad";
         }
@@ -631,6 +655,8 @@ public class AdCacheManager{
         public Object doSomething() {
             AdInfo adInfo = null;
             AdResponse adResponse;
+            AdRequestWrapperTask task = (AdRequestWrapperTask) getTask();
+            int location = task.getLocation();
             if (mAdSenseList == null) {
                 return null;
             }
@@ -644,15 +670,15 @@ public class AdCacheManager{
             ReaperLog.i(TAG, "Reaper advPos: " + mReaperAdvPos + ",Reaper adSenses:" + mAdSenseList);
             updateWrapper(mAdSenseList);
             do {
-                AdRequestWrapperTask task = (AdRequestWrapperTask) getTask();
-                adResponse = requestWrapperAdInner(mAdSenseList, mReaperAdvPos.adv_type, task);
+                adResponse = requestWrapperAdInner(mAdSenseList, location, mReaperAdvPos.adv_type, task);
+                task.setLocation(location++);
             } while (adResponse != null && !adResponse.isSucceed());
 
             if (adResponse != null && adResponse.isSucceed())
                 adInfo = adResponse.getAdInfo();
             downloadAdResourceFile(adInfo);
-//          if (mAdSenseList != null && !mAdSenseList.iterator().hasNext())
-//              return generateHoldAd(mPosId);
+          if (mAdSenseList != null && location > mAdSenseList.size())
+              return generateHoldAd(mPosId);
             return adInfo;
         }
     }
@@ -977,7 +1003,7 @@ public class AdCacheManager{
             try {
                 Object adInfo = getAdCacheFromFile(file);
                 AdCacheInfo adCacheInfo = (AdCacheInfo) adInfo;
-                if (adCacheInfo.isCacheDisPlayed() || isAdCacheTimeout(adInfo)) {
+                if ((adCacheInfo.isCacheDisPlayed() || isAdCacheTimeout(adInfo)) && adCacheObjects.size() > 1) {
                     cleanBeforeCache(adCacheInfo);
                 } else {
                     adCacheObjects.put(((AdCacheInfo) adInfo).getUuid(), adInfo);
@@ -1042,8 +1068,14 @@ public class AdCacheManager{
                 } else if (object instanceof AdInfo) {
                     info =  (AdInfo)object;
                 }
+                if (info != null) {
+                    info.setAdInfoAvailable(false);
+                    adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_HOLD_AD);
+                }
+                updateDiskCache(adCacheInfo);
             }
         }
+
         return info;
     }
 
@@ -1064,7 +1096,7 @@ public class AdCacheManager{
     private void updateDiskCache(AdCacheInfo adCacheInfo) {
         File cacheDir = new File(mCacheDir, adCacheInfo.getAdCacheId());
         if (cacheDir.isDirectory() && cacheDir.exists()) {
-            File cacheFile = new File(cacheDir, String.valueOf(adCacheInfo.getCacheTime()));
+            File cacheFile = new File(cacheDir, String.valueOf(adCacheInfo.getUuid()));
             if (cacheFile.isFile() && cacheFile.exists()) {
                 FileOutputStream fileOutputStream = null;
                 ObjectOutputStream objectOutputStream = null;
@@ -1146,7 +1178,6 @@ public class AdCacheManager{
                 adInfoFile.createNewFile();
             }
             adCacheInfo.setCachePath(adInfoFile.getAbsolutePath());
-            adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_GOOD);
             adCacheInfoObjects.put(adCacheInfo.getUuid(), adCacheInfo);
             mAdCache.put(cacheId, adCacheInfoObjects);
             FileOutputStream fileOutputStream = new FileOutputStream(adInfoFile);
@@ -1156,7 +1187,6 @@ public class AdCacheManager{
             fileOutputStream.close();
         } else if (cache instanceof AdInfo) {
             adCacheInfo.setCachePath(null);
-            adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_GOOD);
             adCacheInfoObjects.put(adCacheInfo.getUuid(), adCacheInfo);
             mAdCache.put(cacheId, adCacheInfoObjects);
         }
@@ -1185,7 +1215,9 @@ public class AdCacheManager{
             for (File file : cacheFileList) {
                 adInfo = (AdCacheInfo) getAdCacheFromFile(file);
                 if (adInfo != null &&
-                        !adInfo.isCacheBackToUser()) {
+                        !adInfo.isCacheBackToUser() &&
+                            !adInfo.isCacheDisPlayed() &&
+                                !adInfo.isHoldAd()) {
                     ReaperLog.i(TAG, "is cache back disk:" + adInfo.isCacheBackToUser());
                     break;
                 }
@@ -1221,7 +1253,9 @@ public class AdCacheManager{
                 adInfo = adInfoObjects.get(adInfoObjects.keyAt(i));
                 if (adInfo != null &&
                         adInfo instanceof AdCacheInfo &&
-                        !((AdCacheInfo) adInfo).isCacheBackToUser()) {
+                        !((AdCacheInfo) adInfo).isCacheBackToUser() &&
+                            !((AdCacheInfo) adInfo).isCacheDisPlayed() &&
+                            !((AdCacheInfo) adInfo).isHoldAd()) {
                     ReaperLog.i(TAG, "is cache back memory:" + ((AdCacheInfo) adInfo).isCacheBackToUser());
                     break;
                 }
@@ -1520,17 +1554,15 @@ public class AdCacheManager{
         return reaperAdSenses;
     }
 
-    private AdResponse requestWrapperAdInner(List<ReaperAdSense> reaperAdSenses, String advType, AdRequestWrapperTask task) {
+    private AdResponse requestWrapperAdInner(List<ReaperAdSense> reaperAdSenses, int location, String advType, AdRequestWrapperTask task) {
         if (reaperAdSenses == null)
             return null;
-        Iterator<ReaperAdSense> iterator = reaperAdSenses.iterator();
-        ReaperAdSense sense;
-        if (iterator.hasNext()) {
-            sense = iterator.next();
-            iterator.remove();
-        } else {
+        ReaperLog.i(TAG, "location is ：" + location);
+        if (location > reaperAdSenses.size() -1) {
             return null;
         }
+        ReaperAdSense sense = reaperAdSenses.get(location);
+        ReaperLog.i(TAG, "location = " + location + ",list = " + reaperAdSenses.hashCode());
         String adsName = sense.ads_name;
         ISDKWrapper sdkWrapper = mSdkWrapperSupport.get(adsName);
         if (sdkWrapper == null) {

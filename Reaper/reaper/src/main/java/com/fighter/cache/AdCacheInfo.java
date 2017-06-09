@@ -14,6 +14,7 @@ public class AdCacheInfo implements Serializable {
     public static final int CACHE_IS_GOOD = 1;
     public static final int CACHE_BACK_TO_USER = 1 << 1;
     public static final int CACHE_DISPLAY_BY_USER = 1 << 2;
+    public static final int CACHE_IS_HOLD_AD = 1 << 3;
 
     private long mCacheTime;
     private String mExpireTime;
@@ -100,6 +101,10 @@ public class AdCacheInfo implements Serializable {
      */
     public void setAdCacheId(String adCacheId) {
         this.mAdCacheId = adCacheId;
+    }
+
+    public boolean isHoldAd() {
+        return (mCacheState & ~CACHE_IS_HOLD_AD) == 0;
     }
 
     @Override

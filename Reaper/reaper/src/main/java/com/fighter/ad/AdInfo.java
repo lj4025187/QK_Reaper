@@ -135,6 +135,10 @@ public class AdInfo {
      */
     private static final String KEY_APP_NAME = "appName";
     /**
+     * 返回的广告是否可用
+     */
+    private static final String KEY_ADINFO_AVAIL = "isAvail";
+    /**
      * 广告目标APP的包名，
      * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
      */
@@ -306,6 +310,10 @@ public class AdInfo {
 
     public void setAppPackageName(String appPackageName) {
         putParam(KEY_APP_PACKAGE_NAME, appPackageName);
+    }
+
+    public void setAdInfoAvailable(boolean state) {
+        putParam(KEY_ADINFO_AVAIL, state);
     }
 
     public Object getExtra(String key) {

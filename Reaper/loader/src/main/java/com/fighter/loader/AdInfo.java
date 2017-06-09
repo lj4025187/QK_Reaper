@@ -287,6 +287,28 @@ public class AdInfo {
     }
 
     /**
+     *　广告的唯一标识
+     *
+     * @return 返回广告的唯一标识
+     */
+    public String getUuid() {
+        return (String)mParams.get("uuid");
+    }
+
+    /**
+     * 判断广告是否可用
+     *
+     * @return
+     */
+    public boolean isAvailable() {
+        if (mParams.containsKey("isAvail")) {
+            return (boolean) mParams.get("isAvail");
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * 对于不满足需求的业务，可通过此方法获取到更多信息。
      * 具体请于我们沟通。
      *
@@ -297,9 +319,7 @@ public class AdInfo {
         return mParams.get(key);
     }
 
-    public String getUuid() {
-        return (String)mParams.get("uuid");
-    }
+
 
     @Override
     public String toString() {
