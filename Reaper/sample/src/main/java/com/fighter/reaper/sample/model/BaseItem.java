@@ -38,13 +38,4 @@ public abstract class BaseItem {
         return mDetailType;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if(obj instanceof BaseItem){
-            BaseItem baseItem = (BaseItem) obj;
-            AdInfo adInfo = baseItem.getAdInfo();
-            return TextUtils.equals(mAdInfo.getUuid(), adInfo.getUuid());
-        }
-        return false;
-    }
 }

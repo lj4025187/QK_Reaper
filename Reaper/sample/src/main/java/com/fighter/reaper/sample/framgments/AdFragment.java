@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -261,12 +262,18 @@ public class AdFragment extends Fragment implements Handler.Callback,
             SampleLog.e(TAG, " on success ads but ad is null");
             return;
         }
+        if(Looper.getMainLooper() != Looper.myLooper()) {
+            SampleLog.e(TAG, " onSuccess is not in main thread");
+        }
         generateAdData(adInfo);
     }
 
     @Override
     public void onFailed(String s) {
         SampleLog.e(TAG, " on fail ads err msg is:" + s);
+        if(Looper.getMainLooper() != Looper.myLooper()) {
+            SampleLog.e(TAG, " onFailed is not in main thread");
+        }
         ToastUtil.getInstance(mContext).showSingletonToast(R.string.ad_load_failed_toast);
         mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
     }
@@ -278,10 +285,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
      */
     private void generateAdData(AdInfo adInfo) {
         BaseItem baseItem = parseBaseItem(adInfo);
-        if (mListData.contains(baseItem)) {
-            SampleLog.i(TAG, " data has exists " + adInfo.getUuid());
-            return;
-        }
         mListData.add(baseItem);
         SampleLog.i(TAG, " on success ads size is " + mListData.size());
         SampleLog.i(TAG, " on success ads uuid " + adInfo.getUuid());
