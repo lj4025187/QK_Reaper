@@ -200,7 +200,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
     private void notifyDownloadCallback(String key, int adEvent) {
         AdInfo adInfo = mDownloadMap.get(key);
         if (mDownloadCallback != null && adInfo != null) {
-            mDownloadCallback.onEvent(adInfo, adEvent);
+            mDownloadCallback.onDownloadEvent(adInfo, adEvent);
         }
     }
 

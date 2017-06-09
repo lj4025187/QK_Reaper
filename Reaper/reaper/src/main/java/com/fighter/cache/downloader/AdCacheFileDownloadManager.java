@@ -17,6 +17,7 @@ import com.fighter.cache.AdFileCacheUtil;
 import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.wrapper.DownloadCallback;
 import com.fighter.wrapper.ISDKWrapper;
 
 import java.io.File;
@@ -138,12 +139,6 @@ public class AdCacheFileDownloadManager {
             ReaperLog.e(TAG, " NullPointerException from DownloadManager.Request " + e);
         }
         return mDownloadManager.enqueue(request);
-    }
-
-    public interface DownloadCallback {
-        void onDownloadComplete(long reference, String fileName);
-
-        void onDownloadFailed(long reference, int reason);
     }
 
     /**

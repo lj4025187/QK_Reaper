@@ -29,6 +29,7 @@ import com.fighter.wrapper.AKAdSDKWrapper;
 import com.fighter.wrapper.AdRequest;
 import com.fighter.wrapper.AdResponse;
 import com.fighter.wrapper.AdResponseListener;
+import com.fighter.wrapper.DownloadCallback;
 import com.fighter.wrapper.ISDKWrapper;
 import com.fighter.wrapper.MixAdxSDKWrapper;
 import com.fighter.wrapper.TencentSDKWrapper;
@@ -74,7 +75,7 @@ import static com.fighter.ad.AdEvent.EVENT_VIEW_SUCCESS;
  * Created by lichen on 17-5-17.
  */
 
-public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallback {
+public class AdCacheManager{
 
     private static final String TAG = AdCacheManager.class.getSimpleName();
 
@@ -91,8 +92,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
 //    private List<ReaperAdSense> mAdSenseList;
     private ReaperAdvPos mReaperAdvPos;
-
-    private LongSparseArray<AdInfo> mDownloadApps;
 
     /**************************************************Init cache task start*****************************************************************/
     private boolean mInitCacheSuccess = false;
@@ -168,7 +167,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
     }
 
-    private class TrackerRunnable extends PriorityTaskDaemon.TaskRunnable {
+    private class TrackerRunnable extends PriorityTaskDaemon.TaskRunnable implements DownloadCallback{
 
         private final String TAG = TrackerRunnable.class.getSimpleName();
         private Context context;
@@ -194,7 +193,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         }
 
         public void setErrMsg(String errMsg) {
-            this.errMsg = errMsg;
+            this.errMsg = adInfo.getAdName() + " " + errMsg;
         }
 
         public TrackerRunnable() {
@@ -225,14 +224,60 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                 }
             }
 
-            String act_type = String.valueOf(actionEvent);
-            ReaperLog.i(TAG, "tracker runnable track action type " + act_type);
             //Tracker onEvent
-            trackerEvent(actionEvent, adInfo, errMsg);
+            trackActionEvent(actionEvent, errMsg);
             return adInfo;
         }
 
-        private void trackerEvent(int actionEvent, AdInfo adInfo, String errMsg) {
+        /**
+         * handle touch event such as click
+         *
+         * @param actionEvent
+         * @param adInfo
+         */
+        private void handleTouchEvent(int actionEvent, AdInfo adInfo) {
+            switch (actionEvent) {
+                case EVENT_CLICK:
+                    handleClickAction(adInfo);
+                    break;
+            }
+        }
+
+        /**
+         * handle action browse or download
+         *
+         * @param adInfo
+         */
+        private void handleClickAction(AdInfo adInfo) {
+            int actionType = adInfo.getActionType();
+            String adName = adInfo.getAdName();
+            ISDKWrapper iSdkWrapper = mSdkWrapperSupport.get(adName);
+            String actionUrl = null;
+            switch (actionType) {
+                case AdInfo.ActionType.APP_DOWNLOAD:
+                    if(iSdkWrapper.isDownloadOwn()) {
+                        iSdkWrapper.setDownloadCallback(this);
+                    } else {
+                        actionUrl = iSdkWrapper.requestDownloadUrl(adInfo);
+                        long id = mAdFileManager.requestDownload(actionUrl, adInfo.getAppName(), null);
+                        ReaperLog.i(TAG, "start download app " + id);
+                        trackActionEvent(EVENT_APP_START_DOWNLOAD, null);
+                    }
+                    break;
+                case AdInfo.ActionType.BROWSER:
+                    if(!iSdkWrapper.isOpenWebOwn()) {
+                        actionUrl = iSdkWrapper.requestWebUrl(adInfo);
+                        if (!TextUtils.isEmpty(actionUrl))
+                            OpenUtils.openWebUrl(mContext, actionUrl);
+                    }
+                    break;
+                default:
+                    ReaperLog.i(TAG, " click action type is undefine");
+                    break;
+            }
+        }
+
+        private void trackActionEvent(int actionEvent, String errMsg) {
             switch (actionEvent) {
                 case EVENT_VIEW_FAIL:
                 case EVENT_VIEW_SUCCESS:
@@ -245,7 +290,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                     disPlayParam.app_pkg = context.getPackageName();
                     disPlayParam.result = actionEvent == EVENT_VIEW_SUCCESS ? "ok" : "fail";
                     disPlayParam.reason = actionEvent == EVENT_VIEW_SUCCESS ? "" : "onAdShow fail view is null";
-                    ReaperLog.i(TAG, "EventDisPlayParam = " + disPlayParam);
                     tracker.trackDisplayEvent(context, disPlayParam);
                     break;
                 case EVENT_CLICK:
@@ -257,7 +301,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                     clickParam.ad_type = adInfo.getAdType();
                     clickParam.app_pkg = context.getPackageName();
                     clickParam.click_pos = "(100*100)";/*this value should rewrite*/
-                    ReaperLog.i(TAG, "EventClickParam = " + clickParam);
                     tracker.trackClickEvent(context, clickParam);
                     break;
                 case EVENT_CLOSE:
@@ -275,7 +318,9 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                     actionParam.app_pkg = context.getPackageName();
                     actionParam.act_type = loadAppActionType(actionEvent);
                     actionParam.reason = loadAppActReason(actionEvent, errMsg);
-                    ReaperLog.i(TAG, "EventActionParam = " + actionParam);
+                    actionParam.download_app_pkg = adInfo.getAppPackageName();
+                    actionParam.download_app_name = adInfo.getAppName();
+                    actionParam.download_url = loadAppDownloadUrl(adInfo);
                     tracker.trackActionEvent(context, actionParam);
                     break;
                 case EVENT_APP_INSTALL:
@@ -336,6 +381,121 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
                     break;
             }
             return actReason;
+        }
+
+        private String loadAppDownloadUrl(AdInfo adInfo){
+            String adName = adInfo.getAdName();
+            String actionUrl = "";
+            ISDKWrapper iSdkWrapper = mSdkWrapperSupport.get(adName);
+            if(iSdkWrapper.isDownloadOwn()) {
+
+            } else {
+                actionUrl = iSdkWrapper.requestDownloadUrl(adInfo);
+            }
+            return actionUrl;
+        }
+
+        @Override
+        public void onDownloadComplete(long reference, String fileName) {
+            if(adInfo == null)
+                return;
+            if(TextUtils.isEmpty(fileName)){
+                postTrackerTask(adInfo, EVENT_APP_DOWNLOAD_FAILED);
+                return;
+            }
+            //download app success
+            ReaperLog.i(TAG, reference + " on download complete " + fileName);
+            File resultFile;
+            File apkFile = new File(fileName);
+            if(!apkFile.exists()) {
+                return;
+            }
+            postTrackerTask(adInfo, EVENT_APP_DOWNLOAD_COMPLETE);
+            String parent = apkFile.getParent();
+            //handle the result file to apk file
+            if(!fileName.endsWith(".apk")) {
+                resultFile = new File(parent, reference+".apk");
+                boolean rename = apkFile.renameTo(resultFile);
+                ReaperLog.i(TAG, apkFile.getAbsolutePath() + " rename to " + resultFile.getAbsolutePath()+ " " + rename);
+            } else {
+                resultFile = apkFile;
+            }
+
+            //start install apk
+            if(resultFile.getName().endsWith(".apk")) {
+                installApk(resultFile);
+            }
+        }
+
+        /**
+         * Install apk when receive download complete
+         * @param apkFile
+         */
+        private  void installApk(File apkFile) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+            mContext.startActivity(intent);
+        }
+
+        @Override
+        public void onDownloadFailed(long reference, int reason) {
+            String errMsg;
+            switch (reason) {
+                case DownloadManager.ERROR_CANNOT_RESUME:
+                    errMsg = "DownloadManager.ERROR_CANNOT_RESUME";
+                    break;
+                case DownloadManager.ERROR_DEVICE_NOT_FOUND:
+                    errMsg = "DownloadManager.ERROR_DEVICE_NOT_FOUND";
+                    break;
+                case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
+                    errMsg = "DownloadManager.ERROR_FILE_ALREADY_EXISTS";
+                    break;
+                case DownloadManager.ERROR_FILE_ERROR:
+                    errMsg = "DownloadManager.ERROR_FILE_ERROR";
+                    break;
+                case DownloadManager.ERROR_HTTP_DATA_ERROR:
+                    errMsg = "DownloadManager.ERROR_HTTP_DATA_ERROR";
+                    break;
+                case DownloadManager.ERROR_INSUFFICIENT_SPACE:
+                    errMsg = "DownloadManager.ERROR_INSUFFICIENT_SPACE";
+                    break;
+                case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
+                    errMsg = "DownloadManager.ERROR_TOO_MANY_REDIRECTS";
+                    break;
+                case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
+                    errMsg = "DownloadManager.ERROR_UNHANDLED_HTTP_CODE";
+                    break;
+                case DownloadManager.ERROR_UNKNOWN:
+                default:
+                    errMsg = "DownloadManager.ERROR_UNKNOWN";
+                    break;
+            }
+            errMsg += " errCode:" + reason;
+            postTrackerTask(adInfo, EVENT_APP_DOWNLOAD_FAILED, errMsg);
+        }
+
+        /**
+         * this callback method is for ISDKWrapper handle download apk own（eg.AkAdSDKWrapper）
+         *
+         * @param adInfo           广告信息
+         * @param apkDownloadEvent 下载事件
+         *                         {@link com.fighter.ad.AdEvent#EVENT_APP_START_DOWNLOAD}
+         *                         {@link com.fighter.ad.AdEvent#EVENT_APP_DOWNLOAD_COMPLETE}
+         *                         {@link com.fighter.ad.AdEvent#EVENT_APP_DOWNLOAD_FAILED}
+         *                         {@link com.fighter.ad.AdEvent#EVENT_APP_DOWNLOAD_CANCELED}
+         *                         {@link com.fighter.ad.AdEvent#EVENT_APP_INSTALL}
+         *                         {@link com.fighter.ad.AdEvent#EVENT_APP_ACTIVE}
+         */
+        @Override
+        public void onDownloadEvent(AdInfo adInfo, int apkDownloadEvent) {
+            this.adInfo = adInfo;
+            if(apkDownloadEvent == EVENT_APP_DOWNLOAD_FAILED) {
+                String errMsg = "download app own does not return fail reason";
+                trackActionEvent(apkDownloadEvent, errMsg);
+            } else {
+                trackActionEvent(apkDownloadEvent, null);
+            }
         }
     }
     private TrackerRunnable mTrackerRunner  = new TrackerRunnable();
@@ -781,8 +941,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
             return mInitCacheSuccess;
         }
         mAdFileManager = AdCacheFileDownloadManager.getInstance(context);
-        mAdFileManager.setDownloadCallback(this);
-        mDownloadApps = new LongSparseArray<>();
+        mAdFileManager.setDownloadCallback(mTrackerRunner);
         String cacheId = null;
         ArrayMap<String, Object> adCacheObjects = new ArrayMap<>();
         File adCacheDir = new File(context.getCacheDir(), "ac");
@@ -1045,91 +1204,6 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         return mAdFileManager.cacheAdFile(imageUrl);
     }
 
-    @Override
-    public void onDownloadComplete(long reference, String fileName) {
-        AdInfo adInfo = mDownloadApps.get(reference);
-        if(adInfo == null)
-            return;
-        if(TextUtils.isEmpty(fileName)){
-            postTrackerTask(EVENT_APP_DOWNLOAD_FAILED, adInfo);
-            return;
-        }
-        //download app success
-        ReaperLog.i(TAG, reference + " on download complete " + fileName);
-        File resultFile;
-        File apkFile = new File(fileName);
-        if(!apkFile.exists()) {
-            return;
-        }
-        postTrackerTask(EVENT_APP_DOWNLOAD_COMPLETE, adInfo);
-        String parent = apkFile.getParent();
-        //handle the result file to apk file
-        if(!fileName.endsWith(".apk")) {
-            resultFile = new File(parent, reference+".apk");
-            boolean rename = apkFile.renameTo(resultFile);
-            ReaperLog.i(TAG, apkFile.getAbsolutePath() + " rename to " + resultFile.getAbsolutePath()+ " " + rename);
-        } else {
-            resultFile = apkFile;
-        }
-
-        //start install apk
-        if(resultFile.getName().endsWith(".apk")) {
-            installApk(resultFile);
-        }
-
-        mDownloadApps.remove(reference);
-    }
-
-    /**
-     * Install apk when receive download complete
-     * @param apkFile
-     */
-    private  void installApk(File apkFile) {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
-        mContext.startActivity(intent);
-    }
-
-    @Override
-    public void onDownloadFailed(long reference, int reason) {
-        String errMsg;
-        switch (reason) {
-            case DownloadManager.ERROR_CANNOT_RESUME:
-                errMsg = "DownloadManager.ERROR_CANNOT_RESUME";
-                break;
-            case DownloadManager.ERROR_DEVICE_NOT_FOUND:
-                errMsg = "DownloadManager.ERROR_DEVICE_NOT_FOUND";
-                break;
-            case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
-                errMsg = "DownloadManager.ERROR_FILE_ALREADY_EXISTS";
-                break;
-            case DownloadManager.ERROR_FILE_ERROR:
-                errMsg = "DownloadManager.ERROR_FILE_ERROR";
-                break;
-            case DownloadManager.ERROR_HTTP_DATA_ERROR:
-                errMsg = "DownloadManager.ERROR_HTTP_DATA_ERROR";
-                break;
-            case DownloadManager.ERROR_INSUFFICIENT_SPACE:
-                errMsg = "DownloadManager.ERROR_INSUFFICIENT_SPACE";
-                break;
-            case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
-                errMsg = "DownloadManager.ERROR_TOO_MANY_REDIRECTS";
-                break;
-            case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
-                errMsg = "DownloadManager.ERROR_UNHANDLED_HTTP_CODE";
-                break;
-            case DownloadManager.ERROR_UNKNOWN:
-            default:
-                errMsg = "DownloadManager.ERROR_UNKNOWN";
-                    break;
-        }
-        errMsg += " errCode:" + reason;
-        AdInfo adInfo = mDownloadApps.get(reference);
-        postTrackerTask(EVENT_APP_DOWNLOAD_FAILED, adInfo, errMsg);
-        mDownloadApps.remove(reference);
-    }
-
     /**
      * the method is used to get the ad cache information from sdcard.
      *
@@ -1209,21 +1283,21 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
 
     /**
      * post tracker event task in this method
-     * @param actionEvent
      * @param adInfo
+     * @param actionEvent
      */
-    private void postTrackerTask(int actionEvent, AdInfo adInfo) {
-        postTrackerTask(actionEvent, adInfo, null);
+    private void postTrackerTask(AdInfo adInfo, int actionEvent) {
+        postTrackerTask(adInfo, actionEvent, null);
     }
 
     /**
      * post tracker event task in this method
      *
-     * @param actionEvent
-     * @param adInfo
-     * @param errMsg     用来描述下载失败原因
+     * @param actionEvent 行为事件
+     * @param adInfo      广告信息
+     * @param errMsg      用来描述下载失败原因
      */
-    private void postTrackerTask(int actionEvent, final AdInfo adInfo, String errMsg) {
+    private void postTrackerTask(final AdInfo adInfo, int actionEvent, String errMsg) {
 //        TrackerRunnable trackerRunnable = new TrackerRunnable(context, tracker, actionEvent, adInfo, wrapper);
 //        TrackerTask trackerTask = new TrackerTask(
 //                PriorityTaskDaemon.PriorityTask.PRI_FIRST,
@@ -1259,55 +1333,7 @@ public class AdCacheManager implements AdCacheFileDownloadManager.DownloadCallba
         if (actionEvent == EVENT_VIEW_SUCCESS) {
             setCacheDisplayed(adInfo);
         }
-        postTrackerTask(actionEvent, adInfo);
-    }
-
-    /**
-     * handle touch event such as click
-     *
-     * @param adEvent
-     * @param adInfo
-     */
-    private void handleTouchEvent(int adEvent, AdInfo adInfo) {
-        switch (adEvent) {
-            case EVENT_CLICK:
-                handleAction(adInfo);
-                break;
-        }
-    }
-
-    /**
-     * handle action browse or download
-     *
-     * @param adInfo
-     */
-    private void handleAction(AdInfo adInfo) {
-        int actionType = adInfo.getActionType();
-        String adName = adInfo.getAdName();
-        ISDKWrapper iSdkWrapper = mSdkWrapperSupport.get(adName);
-        String actionUrl = null;
-        switch (actionType) {
-            case AdInfo.ActionType.APP_DOWNLOAD:
-                if(!iSdkWrapper.isDownloadOwn()) {
-                    actionUrl = iSdkWrapper.requestDownloadUrl(adInfo);
-                    long id = mAdFileManager.requestDownload(actionUrl, adInfo.getAppName(), null);
-                    ReaperLog.i(TAG, "start download app " + id);
-                    mDownloadApps.put(id, adInfo);
-                    postTrackerTask(EVENT_APP_START_DOWNLOAD, adInfo);
-                }
-                break;
-            case AdInfo.ActionType.BROWSER:
-                if(!iSdkWrapper.isOpenWebOwn()) {
-                    actionUrl = iSdkWrapper.requestWebUrl(adInfo);
-                    if (!TextUtils.isEmpty(actionUrl))
-                        OpenUtils.openWebUrl(mContext, actionUrl);
-                }
-                break;
-            default:
-                ReaperLog.i(TAG, " click action type is undefine");
-                break;
-        }
-        ReaperLog.i(TAG, actionType + " url " + actionUrl);
+        postTrackerTask(adInfo, actionEvent);
     }
 
     /**

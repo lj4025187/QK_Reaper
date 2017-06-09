@@ -15,8 +15,14 @@ public interface DownloadCallback {
      * @param apkDownloadEvent 下载事件
      *                         {@link com.fighter.ad.AdEvent#EVENT_APP_START_DOWNLOAD}
      *                         {@link com.fighter.ad.AdEvent#EVENT_APP_DOWNLOAD_COMPLETE}
+     *                         {@link com.fighter.ad.AdEvent#EVENT_APP_DOWNLOAD_FAILED}
+     *                         {@link com.fighter.ad.AdEvent#EVENT_APP_DOWNLOAD_CANCELED}
      *                         {@link com.fighter.ad.AdEvent#EVENT_APP_INSTALL}
      *                         {@link com.fighter.ad.AdEvent#EVENT_APP_ACTIVE}
      */
-    void onEvent(AdInfo adInfo, int apkDownloadEvent);
+    void onDownloadEvent(AdInfo adInfo, int apkDownloadEvent);
+
+    void onDownloadComplete(long reference, String fileName);
+
+    void onDownloadFailed(long reference, int reason);
 }
