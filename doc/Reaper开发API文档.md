@@ -32,7 +32,8 @@ public class MyApp extends ReaperApplication {
         // appContext 应用上下文
         // appId 360OS广告平台申请的APP id
         // appKey 360OS广告平台申请的APP key
-        mReaperApi.init(this, appid, appkey);
+        // testMode 是否是测试模式，测试模式支持设置配置文件
+        mReaperApi.init(this, appid, appkey, true);
     }
     
 }
@@ -77,7 +78,8 @@ public class MyActivity extends Activity {
         // appContext 应用上下文
         // appId 360OS广告平台申请的APP id
         // appKey 360OS广告平台申请的APP key
-        api.init(this, appid, appkey);
+        // testMode 是否是测试模式，测试模式支持设置配置文件
+        api.init(this, appid, appkey, true);
     }
 }
 ```
@@ -137,9 +139,10 @@ ReaperInit在初始化状态会自动缓存广告，并自动监管广告的有�
  * @param appContext 应用上下文
  * @param appId      360OS广告平台申请的APP id
  * @param appKey     360OS广告平台申请的APP key
+ * @param testMode 是否是测试模式，测试模式支持设置配置文件
  */
 public void init(Context appContext, String appId,
-                     String appKey);
+                     String appKey, boolean testMode);
 ```                     
 ```java                     
 /**
@@ -147,10 +150,28 @@ public void init(Context appContext, String appId,
  *
  * @param adPositionId      360OS广告平台申请的广告位ID
  * @param adRequestCallback 广告请求回调
+ * @param needHoldAd 是否在无网络或其他异常情况下返回保底广告
  * @return
  */               
 public AdRequester getAdRequester(String adPositionId,
-AdRequester.AdRequestCallback adRequestCallback);                     
+AdRequester.AdRequestCallback adRequestCallback, boolean needHoldAd);  
+```
+```java
+/**
+ * 设置测试模式使用的Json配置数据
+ *
+ * @param configJson 测试的目标测试数据
+ */
+public void setTagetConfig(String configJson);
+```
+```java
+/**
+ * 获取设备wifi mac地址
+ *
+ * @param context  Context上下文
+ * @return
+ */
+public String getMacAddress(Context context);
 ```                                      
 ### AdRequester     
 广告请求类，一个AdRequester对应一个360OS广告位ID，可通过此类请求对应广告
@@ -385,6 +406,22 @@ public String getAppName();
  * @return APP软件包名
  */
 public String getAppPackageName();
+```
+```java
+/**
+ *　广告的唯一标识
+ *
+ * @return 返回广告的唯一标识
+ */
+public String getUuid();
+```
+```java
+/**
+ * 判断广告是否可用
+ *
+ * @return
+ */
+public boolean isAvailable();
 ```
 ```java
 /**

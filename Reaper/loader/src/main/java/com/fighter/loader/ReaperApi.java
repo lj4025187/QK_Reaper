@@ -61,9 +61,10 @@ public class ReaperApi {
      * @param appContext 应用上下文
      * @param appId      360OS广告平台申请的APP id
      * @param appKey     360OS广告平台申请的APP key
+     * @param testMode 是否是测试模式，测试模式支持设置配置文件
      */
     public void init(Context appContext, String appId,
-                     String appKey, boolean isTestMode) {
+                     String appKey, boolean testMode) {
         Map<String, Object> params = new ArrayMap<>();
 
         if (appContext != null) {
@@ -71,7 +72,7 @@ public class ReaperApi {
         }
         putParam(params, "appId", appId);
         putParam(params, "appKey", appKey);
-        putParam(params, "testMode", isTestMode);
+        putParam(params, "testMode", testMode);
         invokeReaperApi("init", params);
     }
 
