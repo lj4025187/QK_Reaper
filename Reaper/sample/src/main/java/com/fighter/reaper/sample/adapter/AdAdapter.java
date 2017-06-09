@@ -29,7 +29,7 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
 
     private final static String TAG = Adapter.class.getSimpleName();
 
-    private int VIEW_TYPE_COUNT = 4;
+    private int VIEW_TYPE_COUNT = 8;
     private Context mContext;
     private ListView mListView;
     private List<? extends BaseItem> mList;
@@ -70,7 +70,7 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
 
     @Override
     public int getItemViewType(int position) {
-        return SampleConfig.DEBUG_VIDEO_MODE ? 2 : getItem(position).getViewType();
+        return getItem(position).getViewType();
     }
 
     @Override
@@ -78,9 +78,7 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
         BaseItem baseItem = mList.get(position);
         final AdInfo adInfo = baseItem.getAdInfo();
         BaseItemHolder baseItemHolder;
-        int detailType = SampleConfig.DEBUG_VIDEO_MODE ?
-                SampleConfig.VIDEO_AD_TYPE :
-                SampleConfig.getDetailType(adInfo);
+        int detailType = SampleConfig.getDetailType(adInfo);
         if (convertView == null) {
             baseItemHolder = ViewHolderFactory.buildViewHolder(parent, detailType);
             convertView = baseItemHolder.baseView;

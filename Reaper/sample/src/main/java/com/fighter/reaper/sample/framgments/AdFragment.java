@@ -8,7 +8,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +30,7 @@ import com.fighter.reaper.sample.model.FullScreenItem;
 import com.fighter.reaper.sample.model.NativeItem;
 import com.fighter.reaper.sample.model.PlugInItem;
 import com.fighter.reaper.sample.model.UnknownItem;
+import com.fighter.reaper.sample.model.VideoItem;
 import com.fighter.reaper.sample.utils.ResponseGenerator;
 import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.utils.ToastUtil;
@@ -45,7 +45,7 @@ import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_BANNER_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_FEED_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_FULL_SCREEN_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_NATIVE_TYPE;
-import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_NATIVE_VIDEO_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_VIDEO_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_PLUG_IN_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_UNKNOWN_TYPE;
 
@@ -58,7 +58,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
         View.OnClickListener {
 
     private final static String TAG = AdFragment.class.getSimpleName();
-    private final static int NOTIFY_DATA_CHANGED = 0x01, NOTIFY_EMPTY_VIEW = 0x02, NOTIFY_DATA_FAILED = 0x03;
+    private final static int NOTIFY_DATA_FAILED = 0x03;
 
     private ReaperApi mReaperApi;
     private String mCategory;
@@ -138,9 +138,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
     @Override
     public boolean handleMessage(Message msg) {
         switch (msg.what) {
-            case NOTIFY_DATA_CHANGED:
-                mAdAdapter.notifyDataSetChanged();
-                break;
             case NOTIFY_DATA_FAILED:
                 showFooterView(mListData.isEmpty());
                 break;
@@ -178,35 +175,14 @@ public class AdFragment extends Fragment implements Handler.Callback,
     }
 
     private void startPullAds() {
-        boolean isSupport = true;
         if (mReaperApi == null)
             return;
-        AdRequester adRequester = null;
-        switch (mSrcName) {
-            case SampleConfig.QIHOO_SRC_NAME:
-                mReaperApi.setTagetConfig(ResponseGenerator.generate(mCategory, null, null));
-                adRequester = mReaperApi.getAdRequester("1", this, true);
-                if (!TextUtils.equals(SampleConfig.TYPE_NATIVE, mCategory))
-                    isSupport = false;
-                break;
-
-            case SampleConfig.TENCENT_SRC_NAME:
-                mReaperApi.setTagetConfig(ResponseGenerator.generate(null, mCategory, null));
-                adRequester = mReaperApi.getAdRequester(generateTencentPosId(), this, true);
-                if (!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
-                        && !TextUtils.equals(SampleConfig.TYPE_BANNER, mCategory))
-                    isSupport = false;
-                break;
-
-            case SampleConfig.BAIDU_SRC_NAME:
-                mReaperApi.setTagetConfig(ResponseGenerator.generate(null, null, mCategory));
-                adRequester = mReaperApi.getAdRequester("4", this, true);
-                if (!TextUtils.equals(SampleConfig.TYPE_PLUG_IN, mCategory)
-                        && !TextUtils.equals(SampleConfig.TYPE_BANNER, mCategory)
-                        && !TextUtils.equals(SampleConfig.TYPE_FULL_SCREEN, mCategory))
-                    isSupport = false;
-                break;
-        }
+        String posId = generatePosId();
+        boolean isSupport = TextUtils.equals("5", posId)
+                        ||  TextUtils.equals("6", posId)
+                        ||  TextUtils.equals("7", posId)
+                        ||  TextUtils.equals("8", posId)
+                        ||  TextUtils.equals("12", posId);
 
         if (!isSupport) {
             String toast = String.format(getResources().getString(R.string.toast_dis_support_ad), mSrcName, mCategory);
@@ -214,20 +190,46 @@ public class AdFragment extends Fragment implements Handler.Callback,
             mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
             return;
         }
+        AdRequester adRequester = mReaperApi.getAdRequester(posId, this, true);
         if (adRequester == null)
             return;
         adRequester.requestAd(5);
     }
 
-    private String generateTencentPosId() {
-        String posId = "2";
+    private String generatePosId() {
+        String posId = "";
         switch (mCategory) {
-            case SampleConfig.TYPE_BANNER:
-                posId = "2";
-                break;
             case SampleConfig.TYPE_PLUG_IN:
-                posId = "3";
+                if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "1";
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = "7";
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "13";
                 break;
+            case SampleConfig.TYPE_BANNER:
+                if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "2";
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = "8";
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "14";
+                break;
+            case SampleConfig.TYPE_FULL_SCREEN:
+                if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "3";
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = "9";
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "15";
+                break;
+            case SampleConfig.TYPE_FEED:
+                if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "4";
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = "10";
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "16";
+                break;
+            case SampleConfig.TYPE_VIDEO:
+                if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "5";
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = "11";
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "17";
+                break;
+            case SampleConfig.TYPE_NATIVE:
+                if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "6";
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = "12";
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "18";
+                break;
+
         }
         return posId;
     }
@@ -262,7 +264,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
             SampleLog.e(TAG, " on success ads but ad is null");
             return;
         }
-        if(Looper.getMainLooper() != Looper.myLooper()) {
+        if (Looper.getMainLooper() != Looper.myLooper()) {
             SampleLog.e(TAG, " onSuccess is not in main thread");
         }
         generateAdData(adInfo);
@@ -271,7 +273,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
     @Override
     public void onFailed(String s) {
         SampleLog.e(TAG, " on fail ads err msg is:" + s);
-        if(Looper.getMainLooper() != Looper.myLooper()) {
+        if (Looper.getMainLooper() != Looper.myLooper()) {
             SampleLog.e(TAG, " onFailed is not in main thread");
         }
         ToastUtil.getInstance(mContext).showSingletonToast(R.string.ad_load_failed_toast);
@@ -293,7 +295,11 @@ public class AdFragment extends Fragment implements Handler.Callback,
         if (mListData.isEmpty()) {
             mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
         } else {
-            mMainHandler.sendEmptyMessage(NOTIFY_DATA_CHANGED);
+//            mMainHandler.sendEmptyMessage(NOTIFY_DATA_CHANGED);
+            mAdAdapter.notifyDataSetChanged();
+            showEmptyView(mListData.isEmpty());
+            showFooterView(false);
+            showLoadingView(false);
         }
     }
 
@@ -319,8 +325,8 @@ public class AdFragment extends Fragment implements Handler.Callback,
             case DETAIL_NATIVE_TYPE:
                 baseItem = new NativeItem(adInfo);
                 break;
-            case DETAIL_NATIVE_VIDEO_TYPE:
-                baseItem = new NativeItem(adInfo);
+            case DETAIL_VIDEO_TYPE:
+                baseItem = new VideoItem(adInfo);
                 break;
             case DETAIL_UNKNOWN_TYPE:
             default:

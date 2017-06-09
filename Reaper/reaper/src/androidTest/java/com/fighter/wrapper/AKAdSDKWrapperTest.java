@@ -66,7 +66,7 @@ public class AKAdSDKWrapperTest {
                 .adExpireTime(30 * 60 * 1000)
                 .adLocalAppId("1104241296")
                 .adLocalPositionId("5060504124524896")
-                .adType(AdType.TYPE_NATIVE_VIDEO)
+                .adType(AdType.TYPE_VIDEO)
                 .adCount(1)
                 .create();
         ReaperLog.i(TAG, "request " + adRequest);

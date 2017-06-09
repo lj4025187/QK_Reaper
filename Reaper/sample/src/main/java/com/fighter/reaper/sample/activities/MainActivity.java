@@ -39,7 +39,7 @@ import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_BANNER_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_FEED_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_FULL_SCREEN_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_NATIVE_TYPE;
-import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_NATIVE_VIDEO_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_VIDEO_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_PLUG_IN_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_UNKNOWN_TYPE;
 
@@ -218,7 +218,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             case DETAIL_NATIVE_TYPE:
                 baseItem = new NativeItem(adInfo);
                 break;
-            case DETAIL_NATIVE_VIDEO_TYPE:
+            case DETAIL_VIDEO_TYPE:
                 baseItem = new NativeItem(adInfo);
                 break;
             case DETAIL_UNKNOWN_TYPE:

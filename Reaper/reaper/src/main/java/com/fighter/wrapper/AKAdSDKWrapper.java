@@ -80,7 +80,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
         ReaperLog.i(TAG, "[init]");
-        mContext = appContext;
+        mContext = ReaperEnv.sContextProxy;
         mDownloadMap = new LruCache<>(200);
         AKAD.initSdk(ReaperEnv.sContextProxy, true, true);
         AKAD.setApkListener(ReaperEnv.sContextProxy, new ApkDownloadListener());
@@ -221,7 +221,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     requestNativeAd();
                     break;
                 }
-                case AdType.TYPE_NATIVE_VIDEO: {
+                case AdType.TYPE_VIDEO: {
                     requestNativeVideoAd();
                     break;
                 }

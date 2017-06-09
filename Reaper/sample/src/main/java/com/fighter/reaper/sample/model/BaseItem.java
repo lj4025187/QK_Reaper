@@ -1,8 +1,5 @@
 package com.fighter.reaper.sample.model;
 
-
-import android.text.TextUtils;
-
 import com.fighter.loader.AdInfo;
 import com.fighter.reaper.sample.config.SampleConfig;
 

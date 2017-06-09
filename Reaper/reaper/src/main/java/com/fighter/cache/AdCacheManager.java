@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.ArrayMap;
-import android.util.LongSparseArray;
 
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
@@ -219,7 +218,8 @@ public class AdCacheManager{
             if(!TextUtils.isEmpty(adName)) {
                 ISDKWrapper wrapper = mSdkWrapperSupport.get(adName);
                 if(wrapper != null) {
-                    wrapper.onEvent(actionEvent, adInfo);
+                    //TODO AkAdSdkWrapper will crash
+//                    wrapper.onEvent(actionEvent, adInfo);
                 } else {
                     ReaperLog.e("Reaper sdk can not support " + adName);
                 }
@@ -1500,7 +1500,7 @@ public class AdCacheManager{
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_FEED, AdType.TYPE_FEED);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_FULL_SCREEN, AdType.TYPE_FULL_SCREEN);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_NATIVE, AdType.TYPE_NATIVE);
-//        mSdkWrapperAdTypeSupport.put(AdType.TYPE_NATIVE_VIDEO, AdType.TYPE_NATIVE_VIDEO);
+        mSdkWrapperAdTypeSupport.put(AdType.TYPE_VIDEO, AdType.TYPE_VIDEO);
         mSdkWrapperAdTypeSupport.put(AdType.TYPE_PLUG_IN, AdType.TYPE_PLUG_IN);
 
         if (mMethodCall == null)

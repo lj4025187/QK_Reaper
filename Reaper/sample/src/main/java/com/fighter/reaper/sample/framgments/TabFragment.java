@@ -41,7 +41,7 @@ public class TabFragment extends Fragment implements ViewPager.OnPageChangeListe
     private com.fighter.reaper.sample.widget.ViewPager mViewPager;
     private TabViewPagerAdapter mAdapter;
     private List<AdFragment> mAdFragments = new ArrayList<>();
-    private AdFragment mInsert,mBanner,mOpenApp,mFeed,mOriginal;
+    private AdFragment mInsert,mBanner,mOpenApp,mFeed,mVideo,mOriginal;
 
     public static TabFragment newInstance(){
         if(sInstance == null)
@@ -95,11 +95,13 @@ public class TabFragment extends Fragment implements ViewPager.OnPageChangeListe
         mBanner = mBanner == null ? new AdFragment.Builder().setAdCategory(SampleConfig.TYPE_BANNER).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create() : mBanner;
         mOpenApp = mOpenApp == null ? new AdFragment.Builder().setAdCategory(SampleConfig.TYPE_FULL_SCREEN).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create() : mOpenApp;
         mFeed = mFeed == null ? new AdFragment.Builder().setAdCategory(SampleConfig.TYPE_FEED).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create() : mFeed;
+        mVideo = mVideo == null ? new AdFragment.Builder().setAdCategory(SampleConfig.TYPE_VIDEO).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create() : mVideo;
         mOriginal = mOriginal == null ? new AdFragment.Builder().setAdCategory(SampleConfig.TYPE_NATIVE).setReaperApi(mReaperApi).setReaperSrc(mSrcName).create() : mOriginal;
         if(!mAdFragments.contains(mInsert)) mAdFragments.add(mInsert);
         if(!mAdFragments.contains(mBanner)) mAdFragments.add(mBanner);
         if(!mAdFragments.contains(mOpenApp)) mAdFragments.add(mOpenApp);
         if(!mAdFragments.contains(mFeed)) mAdFragments.add(mFeed);
+        if(!mAdFragments.contains(mVideo)) mAdFragments.add(mVideo);
         if(!mAdFragments.contains(mOriginal)) mAdFragments.add(mOriginal);
     }
 

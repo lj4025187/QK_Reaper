@@ -38,7 +38,7 @@ public class SampleConfig {
     public final static int DETAIL_FULL_SCREEN_TYPE = 0x04;
     public final static int DETAIL_FEED_TYPE = 0x05;
     public final static int DETAIL_NATIVE_TYPE = 0x06;
-    public final static int DETAIL_NATIVE_VIDEO_TYPE = 0x07;
+    public final static int DETAIL_VIDEO_TYPE = 0x07;
     public final static int DETAIL_UNKNOWN_TYPE = -1;
 
     public static final String TYPE_BANNER = "banner_adv";
@@ -47,7 +47,7 @@ public class SampleConfig {
     public static final String TYPE_FULL_SCREEN = "openapp_adv";
     public static final String TYPE_FEED = "feed_adv";
     public static final String TYPE_NATIVE = "original_adv";
-    public static final String TYPE_NATIVE_VIDEO = "native_video";
+    public static final String TYPE_VIDEO = "video_adv";
 
     public static final String DETAIL_TYPE_KEY = "adType";
     public static final String DETAIL_SRC_KEY = "adName";
@@ -100,8 +100,8 @@ public class SampleConfig {
             case TYPE_NATIVE:
                 detailType = DETAIL_NATIVE_TYPE;
                 break;
-            case TYPE_NATIVE_VIDEO:
-                detailType = DETAIL_NATIVE_VIDEO_TYPE;
+            case TYPE_VIDEO:
+                detailType = DETAIL_VIDEO_TYPE;
                 break;
             default:
                 detailType = DETAIL_UNKNOWN_TYPE;

@@ -10,7 +10,7 @@ import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_BANNER_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_FEED_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_FULL_SCREEN_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_NATIVE_TYPE;
-import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_NATIVE_VIDEO_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_VIDEO_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_PLUG_IN_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_UNKNOWN_TYPE;
 
@@ -46,7 +46,7 @@ public class ViewHolderFactory {
                 baseItemHolder = new NativeItemHolder(LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.ad_item_layout, parent, false));
                 break;
-            case DETAIL_NATIVE_VIDEO_TYPE:
+            case DETAIL_VIDEO_TYPE:
                 baseItemHolder = new VideoItemHolder(LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.ad_item_video_layout, parent, false));
                 break;

@@ -28,7 +28,7 @@ public class AdType {
     /**
      * 视频
      */
-    public static final String TYPE_NATIVE_VIDEO = "native_video";
+    public static final String TYPE_VIDEO = "video_adv";
 
     // ----------------------------------------------------
 
