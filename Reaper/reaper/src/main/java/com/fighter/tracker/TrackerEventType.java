@@ -17,5 +17,6 @@ public class TrackerEventType {
     public static final String APP_ACTION_TYPE_END = "down_end";
     public static final String APP_ACTION_TYPE_INSTALL = "install";
     public static final String APP_ACTION_TYPE_FAILED = "down_failed";
+    public static final String APP_ACTIVE = "app_active";
 
 }

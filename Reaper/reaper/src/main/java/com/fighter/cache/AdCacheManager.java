@@ -1,11 +1,19 @@
 package com.fighter.cache;
 
 import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.ArrayMap;
+import android.util.LongSparseArray;
+import android.util.SparseArray;
+import android.util.SparseLongArray;
 
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
@@ -40,11 +48,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +84,7 @@ import static com.fighter.ad.AdEvent.EVENT_VIEW_SUCCESS;
 public class AdCacheManager{
 
     private static final String TAG = AdCacheManager.class.getSimpleName();
-
+    private static final long EFFECTIVE_TIME = 3*60*1000;
     private static final String SALT = "cf447fe3adac00476ee9244fd30fba74";
     private static final String METHOD_ON_RESPONSE = "onResponse";
 
@@ -90,6 +96,7 @@ public class AdCacheManager{
     private Map<String, String> mSdkWrapperAdTypeSupport;
     private Map<String, Method> mMethodCall;
 
+    private Map<String, Long> mInstallApps;
 //    private List<ReaperAdSense> mAdSenseList;
     private ReaperAdvPos mReaperAdvPos;
 
@@ -175,6 +182,7 @@ public class AdCacheManager{
         private int actionEvent;
         private AdInfo adInfo;
         private String errMsg;
+        private ApkInstallReceiver installReceiver;
 
         public void setContext(Context context) {
             this.context = context;
@@ -310,6 +318,8 @@ public class AdCacheManager{
                 case EVENT_APP_DOWNLOAD_COMPLETE:
                 case EVENT_APP_DOWNLOAD_FAILED:
                 case EVENT_APP_DOWNLOAD_CANCELED:
+                case EVENT_APP_INSTALL:
+                case EVENT_APP_ACTIVE:
                     EventActionParam actionParam = new EventActionParam();
                     actionParam.ad_num = 1;
                     actionParam.ad_appid = 12222;
@@ -323,10 +333,6 @@ public class AdCacheManager{
                     actionParam.download_app_name = adInfo.getAppName();
                     actionParam.download_url = loadAppDownloadUrl(adInfo);
                     tracker.trackActionEvent(context, actionParam);
-                    break;
-                case EVENT_APP_INSTALL:
-                    break;
-                case EVENT_APP_ACTIVE:
                     break;
                 case EVENT_VIDEO_CARD_CLICK:
                     break;
@@ -361,6 +367,12 @@ public class AdCacheManager{
                     break;
                 case EVENT_APP_DOWNLOAD_CANCELED:
                     actionType = TrackerEventType.APP_ACTION_TYPE_FAILED;
+                    break;
+                case EVENT_APP_INSTALL:
+                    actionType = TrackerEventType.APP_ACTION_TYPE_INSTALL;
+                    break;
+                case EVENT_APP_ACTIVE:
+                    actionType = TrackerEventType.APP_ACTIVE;
                     break;
             }
             return actionType;
@@ -401,7 +413,7 @@ public class AdCacheManager{
             if(adInfo == null)
                 return;
             if(TextUtils.isEmpty(fileName)){
-                postTrackerTask(adInfo, EVENT_APP_DOWNLOAD_FAILED);
+                postTrackerTask(adInfo, EVENT_APP_DOWNLOAD_FAILED, adInfo + " download app file name is null");
                 return;
             }
             //download app success
@@ -412,6 +424,7 @@ public class AdCacheManager{
                 return;
             }
             postTrackerTask(adInfo, EVENT_APP_DOWNLOAD_COMPLETE);
+            registerInstallReceiver();
             String parent = apkFile.getParent();
             //handle the result file to apk file
             if(!fileName.endsWith(".apk")) {
@@ -423,20 +436,38 @@ public class AdCacheManager{
             }
 
             //start install apk
-            if(resultFile.getName().endsWith(".apk")) {
-                installApk(resultFile);
-            }
+            if(!resultFile.getName().endsWith(".apk")) return;
+            PackageInfo packageInfo = getPackageInfo(resultFile);
+            if(packageInfo == null) return;
+            mInstallApps.put(packageInfo.packageName, System.currentTimeMillis());
+            installApk(resultFile);
+        }
+
+        private void registerInstallReceiver() {
+            if(installReceiver == null)
+                installReceiver = new ApkInstallReceiver();
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
+            intentFilter.addDataScheme("package");
+            context.registerReceiver(installReceiver, intentFilter);
         }
 
         /**
          * Install apk when receive download complete
          * @param apkFile
          */
-        private  void installApk(File apkFile) {
+        private void installApk(File apkFile) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
             mContext.startActivity(intent);
+        }
+
+        private PackageInfo getPackageInfo(File apkFile) {
+            String apkPath = apkFile.getAbsolutePath();
+            if(TextUtils.isEmpty(apkPath)) return null;
+            PackageManager packageManager = context.getPackageManager();
+            return packageManager.getPackageArchiveInfo(apkPath, PackageManager.GET_ACTIVITIES);
         }
 
         @Override
@@ -498,7 +529,30 @@ public class AdCacheManager{
                 trackActionEvent(apkDownloadEvent, null);
             }
         }
+
+        class ApkInstallReceiver extends BroadcastReceiver{
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intent == null)
+                    return;
+                String action = intent.getAction();
+                if(!TextUtils.equals(action, Intent.ACTION_PACKAGE_ADDED)) return;
+                String packageName = intent.getData().getSchemeSpecificPart();
+                if(TextUtils.isEmpty(packageName) || !mInstallApps.containsKey(packageName)) return;
+                long start = mInstallApps.get(packageName);
+                if(System.currentTimeMillis() - start < EFFECTIVE_TIME) {
+                    trackActionEvent(EVENT_APP_INSTALL, null);
+                    PackageManager packageManager = context.getPackageManager();
+                    Intent appIntent = packageManager.getLaunchIntentForPackage(packageName);
+                    context.startActivity(appIntent);
+                    trackActionEvent(EVENT_APP_ACTIVE, null);
+                    mInstallApps.remove(packageName);
+                }
+            }
+        }
     }
+
     private TrackerRunnable mTrackerRunner  = new TrackerRunnable();
     private PriorityTaskDaemon.TaskNotify mTrackerNotify = new PriorityTaskDaemon.TaskNotify() {
         @Override
@@ -972,6 +1026,7 @@ public class AdCacheManager{
         }
         mAdFileManager = AdCacheFileDownloadManager.getInstance(context);
         mAdFileManager.setDownloadCallback(mTrackerRunner);
+        mInstallApps = new HashMap<>();
         String cacheId = null;
         ArrayMap<String, Object> adCacheObjects = new ArrayMap<>();
         File adCacheDir = new File(context.getCacheDir(), "ac");
