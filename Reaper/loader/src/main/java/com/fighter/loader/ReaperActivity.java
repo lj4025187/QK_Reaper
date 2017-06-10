@@ -1,4 +1,4 @@
-package com.fighter.reaper;
+package com.fighter.loader;
 
 import android.app.Activity;
 import android.content.Intent;
