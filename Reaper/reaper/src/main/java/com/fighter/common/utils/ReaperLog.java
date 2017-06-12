@@ -140,4 +140,35 @@ public class ReaperLog {
         }
         return ret;
     }
+
+    public static void printStackTrace() {
+        if (DEBUG_LOG) {
+            try {
+                StackTraceElement[] sts = Thread.currentThread().getStackTrace();
+                for (StackTraceElement stackTraceElement : sts) {
+                    DEFAULT_LOGHANDLER.publish("Log_StackTrace", Log.ERROR, stackTraceElement.toString());
+                }
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+        }
+    }
+
+    public static void printException(String msg, Throwable e) {
+        if (DEBUG_LOG) {
+            DEFAULT_LOGHANDLER.publish("Log_StackTrace", Log.ERROR, msg + '\n' + Log.getStackTraceString(e));
+        }
+    }
+
+    public static LogHandler DEFAULT_LOGHANDLER = new LogHandler() {
+        @Override
+        public void publish(String tag, int level, String message) {
+            Log.println(level, tag, message);
+        }
+    };
+    public static interface LogHandler {
+
+        void publish(String tag, int level, String message);
+
+    }
 }

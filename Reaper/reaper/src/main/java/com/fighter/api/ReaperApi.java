@@ -1,5 +1,6 @@
 package com.fighter.api;
 
+import android.app.Application;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -9,12 +10,13 @@ import com.fighter.common.Device;
 import com.fighter.common.rc4.IRC4;
 import com.fighter.common.rc4.RC4Factory;
 import com.fighter.common.utils.ReaperLog;
-import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfig;
 import com.fighter.config.ReaperConfigHttpHelper;
 import com.fighter.config.db.ReaperConfigDB;
 import com.fighter.download.ReaperEnv;
+import com.fighter.hook.ReaperActivityThreadHook;
+import com.fighter.hook.ReaperGlobal;
 import com.fighter.reaper.R;
 import com.qiku.proguard.annotations.NoProguard;
 
@@ -76,6 +78,8 @@ public class ReaperApi {
         mAppKey = (String) params.get("appKey");
         isTestMode = (boolean)params.get("testMode");
 
+        ReaperGlobal.setApplication((Application) mContext);
+
         if (mContext == null) {
             ReaperLog.e(TAG, "[init] app context is null");
             return;
@@ -89,7 +93,7 @@ public class ReaperApi {
             ReaperLog.e(TAG, "[init] app key is null");
             return;
         }
-
+        ReaperActivityThreadHook.wrapInstrumentation();
         mAdCacheManager = AdCacheManager.getInstance();
         mAdCacheManager.init(mContext, mAppId, mAppKey);
 

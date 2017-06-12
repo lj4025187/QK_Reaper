@@ -1,5 +1,6 @@
 package com.fighter.loader;
 
+import android.app.Application;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.ArrayMap;

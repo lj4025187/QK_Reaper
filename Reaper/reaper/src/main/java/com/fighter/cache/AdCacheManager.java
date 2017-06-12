@@ -284,7 +284,6 @@ public class AdCacheManager{
                             }
                         }
                     } else {
-
                     }
                     break;
                 default:
@@ -724,11 +723,11 @@ public class AdCacheManager{
                 return null;
             }
 
-            if(!updateConfig()) {
-                return null;
-            } else {
-                ReaperLog.i(TAG, "config is update now");
-            }
+//            if(!updateConfig()) {
+//                return null;
+//            } else {
+//                ReaperLog.i(TAG, "config is update now");
+//            }
 
             ReaperLog.i(TAG, "Reaper advPos: " + mReaperAdvPos + ",Reaper adSenses:" + mAdSenseList);
             updateWrapper(mAdSenseList);

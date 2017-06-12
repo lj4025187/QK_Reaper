@@ -1,4 +1,4 @@
-package com.fighter.reaper;
+package com.fighter.hook;
 
 /**
  * Proxy activity name
@@ -6,7 +6,7 @@ package com.fighter.reaper;
  * Created by lichen on 17-6-10.
  */
 
-public class ProxyActivtyName {
-    public static final String ACTIVITY_NAME = "activity_name";
+public class ProxyActivityName {
+    public static final String PROXY_ACTIVITY = "com.fighter.loader.ReaperProxyActivity";
     public static final String AKAD_ACTIVITY = "com.ak.android.bridge.AKActivity";
 }

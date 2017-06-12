@@ -16,9 +16,9 @@
     <application
         android:allowBackup="false"
         android:supportsRtl="true">
-        <!--<activity-->
-            <!--android:name="com.ak.android.bridge.AKActivity"-->
-            <!--android:configChanges="orientation|screenSize|keyboardHidden"-->
-            <!--android:theme="@android:style/Theme.Black.NoTitleBar"/>-->
+        <activity
+            android:name="com.ak.android.bridge.AKActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@android:style/Theme.Black.NoTitleBar"/>
     </application>
 </manifest>

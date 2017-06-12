@@ -35,6 +35,10 @@
             </intent-filter>
         </activity>
         <activity android:name="com.fighter.loader.ReaperActivity"/>
+        <activity
+            android:name="com.fighter.loader.ReaperProxyActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@android:style/Theme.Black.NoTitleBar"/>
     </application>
 
 </manifest>
