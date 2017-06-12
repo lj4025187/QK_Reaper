@@ -31,7 +31,6 @@ import com.fighter.reaper.sample.model.NativeItem;
 import com.fighter.reaper.sample.model.PlugInItem;
 import com.fighter.reaper.sample.model.UnknownItem;
 import com.fighter.reaper.sample.model.VideoItem;
-import com.fighter.reaper.sample.utils.ResponseGenerator;
 import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.utils.ToastUtil;
 import com.fighter.reaper.sample.videolist.visibility.calculator.SingleListViewItemActiveCalculator;
@@ -45,9 +44,9 @@ import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_BANNER_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_FEED_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_FULL_SCREEN_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_NATIVE_TYPE;
-import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_VIDEO_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_PLUG_IN_TYPE;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_UNKNOWN_TYPE;
+import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_VIDEO_TYPE;
 
 /**
  * Created by liujia on 6/5/17.
@@ -127,7 +126,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
     private void initData() {
         mContext = getContext();
         mMainHandler = new Handler(Looper.getMainLooper(), this);
-        mAdAdapter = new AdAdapter(mContext);
+        mAdAdapter = new AdAdapter(getActivity());
         mAdAdapter.setData(mListData);
         mAdAdapter.setAttachView(mListView);
         mListView.setAdapter(mAdAdapter);
@@ -178,11 +177,13 @@ public class AdFragment extends Fragment implements Handler.Callback,
         if (mReaperApi == null)
             return;
         String posId = generatePosId();
-        boolean isSupport = TextUtils.equals("5", posId)
-                        ||  TextUtils.equals("6", posId)
-                        ||  TextUtils.equals("7", posId)
-                        ||  TextUtils.equals("8", posId)
-                        ||  TextUtils.equals("12", posId);
+        boolean isSupport = TextUtils.equals("5", posId)    //Qihoo video
+                        ||  TextUtils.equals("6", posId)    //Qihoo original
+                        ||  TextUtils.equals("7", posId)    //Tencent insert
+                        ||  TextUtils.equals("8", posId)    //Tencent banner
+                        ||  TextUtils.equals("9", posId)    //Tencent openapp
+                        ||  TextUtils.equals("10", posId)   //Tencent feed
+                        ||  TextUtils.equals("12", posId);  //Tencent original
 
         if (!isSupport) {
             String toast = String.format(getResources().getString(R.string.toast_dis_support_ad), mSrcName, mCategory);

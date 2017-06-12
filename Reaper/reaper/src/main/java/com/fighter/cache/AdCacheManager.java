@@ -8,12 +8,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.ArrayMap;
-import android.util.LongSparseArray;
-import android.util.SparseArray;
-import android.util.SparseLongArray;
 
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
@@ -276,8 +272,20 @@ public class AdCacheManager{
                 case AdInfo.ActionType.BROWSER:
                     if(!iSdkWrapper.isOpenWebOwn()) {
                         actionUrl = iSdkWrapper.requestWebUrl(adInfo);
-                        if (!TextUtils.isEmpty(actionUrl))
-                            OpenUtils.openWebUrl(mContext, actionUrl);
+                        if (!TextUtils.isEmpty(actionUrl)) {
+                            try {
+                                Class<?> reaperClass = Class.forName("com.fighter.loader.ReaperActivity");
+                                Intent intent = new Intent(context, reaperClass);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                intent.putExtra("url", actionUrl);
+                                context.startActivity(intent);
+                            } catch (ClassNotFoundException e) {
+                                OpenUtils.openWebUrl(mContext, actionUrl);
+                                e.printStackTrace();
+                            }
+                        }
+                    } else {
+
                     }
                     break;
                 default:
@@ -832,6 +840,11 @@ public class AdCacheManager{
 
         @Override
         public Object doSomething() {
+            if(!updateConfig()) {
+                return null;
+            } else {
+                ReaperLog.i(TAG, "config is update now");
+            }
             mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
             IAdRequestPolicy policy = AdRequestPolicyManager.getAdRequestPolicy(mContext, mPosId);
             if (policy != null) {

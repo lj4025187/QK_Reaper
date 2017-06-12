@@ -21,6 +21,7 @@ public class SampleApp extends ReaperApplication {
         if(mReaperApi == null) {
             SampleLog.e(TAG, "Sample app onCreate method mReaperApi is null");
             ToastUtil.getInstance(this).showSingletonToast(getString(R.string.ad_reaper_init_failed));
+            return;
         }
         mReaperApi.init(this, SampleConfig.APP_ID, SampleConfig.APP_KEY, true);
         mReaperApi.setTagetConfig(ResponseGenerator.generate());

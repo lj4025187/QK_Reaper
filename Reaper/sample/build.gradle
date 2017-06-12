@@ -22,13 +22,38 @@ android {
     }
 }
 
-//afterEvaluate {
-//    assembleRelease {
-//        doFirst {
-//            // copy reaper.rr to assets/
-//        }
-//    }
-//}
+afterEvaluate {
+    assembleRelease {
+        copyJarRrFile.execute()
+    }
+
+    assembleDebug {
+        copyJarRrFile.execute()
+    }
+}
+
+task copyJarRrFile {
+    doLast {
+        // copy reaper.rr to assets/
+        def rrDir = file("../bin/");
+        def assDir = file('./src/main/assets/')
+        def jarDir = file('./libs/')
+        if (!assDir.exists()) {
+            assDir.mkdirs()
+        }
+        rrDir.eachFileRecurse { f ->
+            if(f.getName().endsWith(".rr")) {
+                def rrFile = new File(assDir, "reaper.rr");
+                rrFile.delete();
+                f.withInputStream { rrFile << it }
+            } /*else if(f.getName().endsWith(".jar")) {
+                def jarFile = new File(jarDir, "reaper.jar");
+                jarFile.delete();
+                f.withInputStream {jarFile << it}
+            }*/
+        }
+    }
+}
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')

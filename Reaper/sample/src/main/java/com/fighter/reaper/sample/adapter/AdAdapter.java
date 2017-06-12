@@ -1,7 +1,7 @@
 package com.fighter.reaper.sample.adapter;
 
+import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.support.v4.util.ArrayMap;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +15,6 @@ import com.fighter.reaper.sample.holders.BaseItemHolder;
 import com.fighter.reaper.sample.holders.VideoItemHolder;
 import com.fighter.reaper.sample.holders.ViewHolderFactory;
 import com.fighter.reaper.sample.model.BaseItem;
-import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.videolist.visibility.items.ListItem;
 import com.fighter.reaper.sample.videolist.visibility.scroll.ItemsProvider;
 
@@ -30,6 +29,7 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
     private final static String TAG = Adapter.class.getSimpleName();
 
     private int VIEW_TYPE_COUNT = 8;
+    private Activity mActivity;
     private Context mContext;
     private ListView mListView;
     private List<? extends BaseItem> mList;
@@ -39,6 +39,12 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
         mContext = context;
         mHolderHelper = new ArrayMap<>();
     }
+
+    public AdAdapter(Activity activity) {
+        mActivity = activity;
+        mHolderHelper = new ArrayMap<>();
+    }
+
 
     public void setData(List<BaseItem> list) {
         mList = list;
@@ -89,7 +95,8 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                adInfo.onAdClicked(null, null, 0, 0, 0, 0);
+//                adInfo.onAdClicked(null, null, 0, 0, 0, 0);
+                adInfo.onAdClicked(mActivity, v, 0, 0, 0, 0);
             }
         });
         baseItemHolder.onAttachView(position, getItem(position));
