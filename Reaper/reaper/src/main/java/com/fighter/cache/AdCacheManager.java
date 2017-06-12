@@ -222,8 +222,7 @@ public class AdCacheManager{
             if(!TextUtils.isEmpty(adName)) {
                 ISDKWrapper wrapper = mSdkWrapperSupport.get(adName);
                 if(wrapper != null) {
-                    //TODO AkAdSdkWrapper will crash
-//                    wrapper.onEvent(actionEvent, adInfo);
+                    wrapper.onEvent(actionEvent, adInfo);
                 } else {
                     ReaperLog.e("Reaper sdk can not support " + adName);
                 }
@@ -725,11 +724,11 @@ public class AdCacheManager{
                 return null;
             }
 
-//            if(!updateConfig()) {
-//                return null;
-//            } else {
-//                ReaperLog.i(TAG, "config is update now");
-//            }
+            if(!updateConfig()) {
+                return null;
+            } else {
+                ReaperLog.i(TAG, "config is update now");
+            }
 
             ReaperLog.i(TAG, "Reaper advPos: " + mReaperAdvPos + ",Reaper adSenses:" + mAdSenseList);
             updateWrapper(mAdSenseList);
@@ -840,11 +839,11 @@ public class AdCacheManager{
 
         @Override
         public Object doSomething() {
-            if(!updateConfig()) {
-                return null;
-            } else {
-                ReaperLog.i(TAG, "config is update now");
-            }
+//            if(!updateConfig()) {
+//                return null;
+//            } else {
+//                ReaperLog.i(TAG, "config is update now");
+//            }
             mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
             IAdRequestPolicy policy = AdRequestPolicyManager.getAdRequestPolicy(mContext, mPosId);
             if (policy != null) {

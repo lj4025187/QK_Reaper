@@ -47,6 +47,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
     private static final String AK_AD_API_VER = "3.8.3031_0302";
 
     private static final String EXTRA_EVENT_NATIVE_AD = "akad_event_native_ad";
+    private static final String EXTRA_EVENT_NATIVE_VIDEO_AD = "akad_event_native_video_ad";
 
     private static final Map<Integer, Integer> VIDEO_STATUS_MAP = new ArrayMap<>();
 
@@ -82,6 +83,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         ReaperLog.i(TAG, "[init]");
         mContext = ReaperEnv.sContextProxy;
         mDownloadMap = new LruCache<>(200);
+        //if second param set true should see "AKAD" tag
         AKAD.initSdk(ReaperEnv.sContextProxy, true, true);
         AKAD.setApkListener(ReaperEnv.sContextProxy, new ApkDownloadListener());
     }
@@ -117,7 +119,13 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         ReaperLog.i(TAG, "[onEvent] " + adEvent +
                 "\nAdInfo " + adInfo);
         Map<String, Object> eventParams = adInfo.getAdAllParams();
-        NativeAd nativeAd = (NativeAd) adInfo.getExtra(EXTRA_EVENT_NATIVE_AD);
+        NativeAd nativeAd = null;
+        if(adInfo.getContentType() == AdInfo.ContentType.VIDEO) {
+            Object videoAd = adInfo.getExtra(EXTRA_EVENT_NATIVE_VIDEO_AD);
+            if(videoAd instanceof NativeVideoAd) nativeAd = (NativeAd) videoAd;
+        } else {
+            nativeAd = (NativeAd) adInfo.getExtra(EXTRA_EVENT_NATIVE_AD);
+        }
         switch (adEvent) {
             case AdEvent.EVENT_VIEW_SUCCESS: {
                 if (eventParams != null && eventParams.containsKey(PARAMS_KEY_VIEW)) {
@@ -538,7 +546,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);
                     }
-                    adInfo.setExtra(EXTRA_EVENT_NATIVE_AD, ad);
+//                    adInfo.setExtra(EXTRA_EVENT_NATIVE_AD, ad);
+                    adInfo.setExtra(EXTRA_EVENT_NATIVE_VIDEO_AD, ad);
                     adInfo.setImgUrl(akAdImgUrl);
                     adInfo.setTitle(akAdTitle);
                     adInfo.setDesc(akAdDesc);
