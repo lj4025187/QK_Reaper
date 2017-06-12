@@ -5,10 +5,67 @@
     android:layout_height="wrap_content"
     android:background="#FFFBFBFC">
 
+    <LinearLayout
+        android:id="@+id/id_ad_desc_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/id_ad_view_type"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp" />
+
+        <TextView
+            android:id="@+id/id_ad_detail_type"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp" />
+
+        <TextView
+            android:id="@+id/id_ad_src_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp" />
+    </LinearLayout>
+
     <TextView
-        android:id="@+id/id_video_ad_title"
+        android:id="@+id/id_ad_uuid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_desc_layout"
+        android:textSize="15dp" />
+
+    <LinearLayout
+        android:id="@+id/id_ad_extra_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_uuid"
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:id="@+id/id_ad_image_size"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp" />
+
+        <TextView
+            android:id="@+id/id_ad_extra2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/id_ad_custom_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_extra_layout"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginTop="16dp"
@@ -21,7 +78,7 @@
         android:id="@+id/id_video_main_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/id_video_ad_title"
+        android:layout_below="@+id/id_ad_custom_title"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginTop="16dp">
@@ -33,7 +90,7 @@
             app:scaleType="fitCenter" />
 
         <ImageView
-            android:id="@+id/id_video_thumb"
+            android:id="@+id/id_ad_image_view"
             android:layout_width="match_parent"
             android:layout_height="300dp"
             android:scaleType="centerCrop" />

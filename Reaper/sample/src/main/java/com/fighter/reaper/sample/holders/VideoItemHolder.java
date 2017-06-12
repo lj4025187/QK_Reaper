@@ -16,7 +16,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.fighter.loader.AdInfo;
 import com.fighter.reaper.sample.R;
-import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.model.VideoItem;
 import com.fighter.reaper.sample.model.VideoLoadMvpView;
 import com.fighter.reaper.sample.target.VideoListGlideModule;
@@ -29,9 +28,6 @@ import com.fighter.reaper.sample.videolist.widget.TextureVideoView;
 
 import java.io.File;
 import java.io.InputStream;
-
-import static com.fighter.reaper.sample.config.SampleConfig.TEST_VIDEO_COVER_URL;
-import static com.fighter.reaper.sample.config.SampleConfig.TEST_VIDEO_URL;
 
 /**
  * Created by Administrator on 2017/5/24.
@@ -67,9 +63,9 @@ public class VideoItemHolder extends BaseItemHolder<VideoItem>
     }
 
     private void initView(View view) {
-        adVideoTitle = (TextView) view.findViewById(R.id.id_video_ad_title);
+        adVideoTitle = (TextView) view.findViewById(R.id.id_ad_custom_title);
         adVideoTexture = (TextureVideoView) view.findViewById(R.id.id_video_texture_view);
-        adVideoThumb = (ImageView) view.findViewById(R.id.id_video_thumb);
+        adVideoThumb = (ImageView) view.findViewById(R.id.id_ad_image_view);
         adVideoProgress = (CircularProgressBar) view.findViewById(R.id.id_video_progress);
         adVideoDesc = (TextView) view.findViewById(R.id.id_ad_custom_desc);
         adVideoAction = (TextView) view.findViewById(R.id.id_ad_custom_action);
@@ -77,6 +73,7 @@ public class VideoItemHolder extends BaseItemHolder<VideoItem>
 
     @Override
     public void onAttachView(int position, VideoItem iItem) {
+        super.onAttachView(position, iItem);
         reset();
         final AdInfo adInfo = iItem.getAdInfo();
         String title = adInfo.getTitle();
@@ -86,6 +83,11 @@ public class VideoItemHolder extends BaseItemHolder<VideoItem>
         File imageFile = adInfo.getImgFile();
         if (imageFile != null) {
             Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+            Glide.with(baseView.getContext())
+                    .load(imageFile)
+                    .placeholder(new ColorDrawable(0xffdcdcdc))
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                    .into(adVideoThumb);
         }
         adVideoAction.setText(context.getString(R.string.ad_video_action));
         adVideoThumb.setOnClickListener(new View.OnClickListener() {
@@ -94,19 +96,14 @@ public class VideoItemHolder extends BaseItemHolder<VideoItem>
                 ToastUtil.getInstance(v.getContext()).showSingletonToast(R.string.ad_video_play_toast);
             }
         });
-        String videoUrl = SampleConfig.DEBUG_VIDEO_MODE ? TEST_VIDEO_URL : adInfo.getVideoUrl();
-        String imageUrl = SampleConfig.DEBUG_VIDEO_MODE ? TEST_VIDEO_COVER_URL : adInfo.getImgUrl();
+        String videoUrl = adInfo.getVideoUrl();
+        String imageUrl = adInfo.getImgUrl();
         Glide.with(baseView.getContext())
                 .using(VideoListGlideModule.getOkHttpUrlLoader(), InputStream.class)
                 .load(new GlideUrl(videoUrl))
                 .as(File.class)
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .into(progressTarget);
-        Glide.with(baseView.getContext())
-                .load(imageUrl)
-                .placeholder(new ColorDrawable(0xffdcdcdc))
-                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .into(adVideoThumb);
     }
 
     private void reset() {

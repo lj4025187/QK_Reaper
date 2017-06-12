@@ -117,10 +117,6 @@ public class SampleConfig {
         return srcName;
     }
 
-    public final static boolean DEBUG_VIDEO_MODE = /*true*/false;
-    public static final String TEST_VIDEO_URL = "http://techslides.com/demos/sample-videos/small.mp4";
-    public static final String TEST_VIDEO_COVER_URL = "http://img10.3lian.com/sc6/show02/67/27/04.jpg";
-
     public final static boolean DEBUG_DATA_BASE = true;
 
     public static String RESPONSE =

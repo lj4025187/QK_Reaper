@@ -19,14 +19,12 @@ import com.fighter.loader.AdInfo;
 import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.model.BaseItem;
-import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.utils.ViewUtils;
-
 
 import java.io.File;
 
-import static com.fighter.reaper.sample.config.SampleConfig.ACTION_TYPE_DOWNLOAD;
 import static com.fighter.reaper.sample.config.SampleConfig.ACTION_TYPE_BROWSER;
+import static com.fighter.reaper.sample.config.SampleConfig.ACTION_TYPE_DOWNLOAD;
 import static com.fighter.reaper.sample.config.SampleConfig.DETAIL_TYPE_KEY;
 
 /**
