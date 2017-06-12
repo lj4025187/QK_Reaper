@@ -82,7 +82,7 @@ public class ReaperInitTest {
         boolean hasDownloaded = false;
 
         try {
-            AssetFileDescriptor afd = assetManager.openFd("ads/reaper.rr");
+            AssetFileDescriptor afd = assetManager.openFd("reaper.rr");
             hasRR = afd != null;
         } catch (IOException e) {
             e.printStackTrace();

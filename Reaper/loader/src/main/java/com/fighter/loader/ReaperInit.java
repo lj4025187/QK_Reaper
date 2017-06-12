@@ -103,6 +103,7 @@ public class ReaperInit {
 
         if (DEBUG_REAPER_PATCH) {
             LoaderLog.i(TAG, "finally, we use : " + (reaperPatch.getReaperFile().hasFD() ? "assets/reaper.rr" : reaperPatch.getAbsolutePath() ));
+            LoaderLog.i(TAG, "version : " + reaperPatch.getVersion());
         }
 
         ReaperApi api = makeReaperApiFromPatch(context, reaperPatch);
