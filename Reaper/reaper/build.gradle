@@ -11,9 +11,20 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    signingConfigs {
+        sign {
+            keyAlias 'Reaper'
+            keyPassword 'fighter.reaper'
+            storeFile file('../Reaper.jks')
+            storePassword 'fighter.reaper'
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
+            signingConfig signingConfigs.sign
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
