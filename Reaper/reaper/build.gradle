@@ -27,6 +27,11 @@ android {
             signingConfig signingConfigs.sign
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.sign
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
     }
 
     lintOptions {
@@ -46,9 +51,9 @@ task generateReaperPatch(type: Exec) {
 }
 
 /**
- * publish dex as reaper.dex
+ * publish release dex as reaper.dex
  */
-task publishReaperDex {
+task publishReleaseReaperDex {
     doLast {
         def dexDir = file('./build/outputs/apk/')
         def targetDexDir = file('../bin/')
@@ -65,11 +70,37 @@ task publishReaperDex {
     }
 }
 
+/**
+ * publish dex dex as reaper.dex
+ */
+task publishDebugReaperDex {
+    doLast {
+        def dexDir = file('./build/outputs/apk/')
+        def targetDexDir = file('../bin/')
+        if (!targetDexDir.exists()) {
+            targetDexDir.mkdirs()
+        }
+        dexDir.eachFileRecurse { f ->
+            if (f.getName().startsWith('reaper-debug')) {
+                def targetDexFile = new File(targetDexDir, 'reaper.apk')
+                targetDexFile.delete();
+                f.withInputStream { targetDexFile << it }
+            }
+        }
+    }
+}
 
 afterEvaluate {
     assembleRelease {
         doLast {
-            publishReaperDex.execute()
+            publishReleaseReaperDex.execute()
+            generateReaperPatch.execute()
+        }
+    }
+
+    assembleDebug {
+        doLast {
+            publishDebugReaperDex.execute()
             generateReaperPatch.execute()
         }
     }

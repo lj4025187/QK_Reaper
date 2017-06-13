@@ -79,6 +79,7 @@ public class ReaperActivity extends Activity {
         private void loadUrl(WebView view, String url) {
             if (TextUtils.isEmpty(url))
                 return;
+            LoaderLog.i(TAG, " load url " + url);
             if (url.startsWith("tel:")) {
                 Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

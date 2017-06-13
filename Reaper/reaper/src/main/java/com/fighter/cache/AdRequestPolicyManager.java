@@ -22,6 +22,7 @@ public class AdRequestPolicyManager {
 
     public static IAdRequestPolicy getAdRequestPolicy(Context context, String posId) {
         ReaperAdvPos reaperAdvPos = ReaperConfigManager.getReaperAdvPos(context, posId);
+        if(reaperAdvPos == null) return null;
         String exposure = reaperAdvPos.adv_exposure;
         String mode = getMode(exposure);
         if (mode == null)

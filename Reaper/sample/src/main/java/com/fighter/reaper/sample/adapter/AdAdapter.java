@@ -92,6 +92,9 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
         } else {
             baseItemHolder = (BaseItemHolder) convertView.getTag();
         }
+        BaseItem item = getItem(position);
+        adInfo.onAdShow(convertView);
+        baseItemHolder.onAttachView(position, item);
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -99,7 +102,6 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
                 adInfo.onAdClicked(mActivity, v, 0, 0, 0, 0);
             }
         });
-        baseItemHolder.onAttachView(position, getItem(position));
         mHolderHelper.put(baseItemHolder, position);
         return convertView;
     }

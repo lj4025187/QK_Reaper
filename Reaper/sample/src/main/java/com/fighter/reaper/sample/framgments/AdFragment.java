@@ -305,7 +305,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
     }
 
     private BaseItem parseBaseItem(AdInfo adInfo) {
-        adInfo.onAdShow(null);
         BaseItem baseItem;
         switch (SampleConfig.getDetailType(adInfo)) {
             case DETAIL_BANNER_TYPE:

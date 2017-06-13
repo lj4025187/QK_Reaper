@@ -11,7 +11,7 @@ public class ResponseGenerator {
         return "{" +
                     "\"result\": \"ok\"," +
                     "\"reason\": \"\"," +
-                    "\"next_time\": \"100\"," +
+                    "\"next_time\": \"1\"," +
                     "\"pos_ids\": [" +
                         //pos_id == 1 聚效广告insert
                         //pos_id == 2 聚效广告banner

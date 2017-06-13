@@ -838,15 +838,17 @@ public class AdCacheManager{
 
         @Override
         public Object doSomething() {
-//            if(!updateConfig()) {
-//                return null;
-//            } else {
-//                ReaperLog.i(TAG, "config is update now");
-//            }
+            if(!updateConfig()) {
+                return null;
+            } else {
+                ReaperLog.i(TAG, "config is update now");
+            }
             mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
             IAdRequestPolicy policy = AdRequestPolicyManager.getAdRequestPolicy(mContext, mPosId);
             if (policy != null) {
                 mAdSenseList = policy.generateList();
+            } else {
+                return "AdRequestPolicyManager getAdRequestPolicy posId " + mPosId + " policy is null";
             }
             // 1.post a task to pull ad for cache
             postAdRequestWrapperTask(mPosId, null, true, mAdSenseList, AdRequestRunner.this);
@@ -895,6 +897,9 @@ public class AdCacheManager{
             }
             if (result != null && result instanceof AdInfo) {
                 onRequestAdSucceed(callBack, (AdInfo) result);
+            }
+            if (result != null && result instanceof String) {
+                onRequestAdError(callBack, (String)result);
             }
         }
     }
