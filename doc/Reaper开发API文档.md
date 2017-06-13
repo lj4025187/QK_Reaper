@@ -98,9 +98,9 @@ AdRequester adRequester =
                     public void onFailed(String errMsg) {
                     // 广告请求失败回调
                     }
-                });
+                }, true);
 // 请求广告
-adRequester.requestAd();
+adRequester.requestAd(1);
 ```
 
 > 展示/点击广告上报
@@ -178,8 +178,9 @@ public String getMacAddress(Context context);
 ```java
 /**
  * 开始请求广告
+ * @param num请求广告的数量
  */
-public void requestAd();
+public void requestAd(int num);
 ```
 ```java
 /**
