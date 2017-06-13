@@ -23,13 +23,13 @@ android {
 }
 
 afterEvaluate {
-    assembleRelease {
-        copyJarRrFile.execute()
-    }
-
-    assembleDebug {
-        copyJarRrFile.execute()
-    }
+//    assembleRelease {
+//        copyJarRrFile.execute()
+//    }
+//
+//    assembleDebug {
+//        copyJarRrFile.execute()
+//    }
 }
 
 task copyJarRrFile {
