@@ -1,21 +1,16 @@
-package com.fighter.reaper;
+package com.fighter.loader;
 
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.fighter.common.rc4.IRC4;
-import com.fighter.common.rc4.RC4Factory;
-import com.fighter.common.utils.SignUtil;
+import com.fighter.utils.SignUtil;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test RC4 encrypt and decrypt
