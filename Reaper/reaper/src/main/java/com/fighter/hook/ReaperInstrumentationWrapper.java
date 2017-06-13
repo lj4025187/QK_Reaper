@@ -43,13 +43,16 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
                         + ", Intent = " + intent + ", requestCode = " + requestCode + ", options = " + options);
         Intent proxyIntent = new Intent();
         proxyIntent = intent;
-        String className = intent.getComponent().getClassName();
-        if (className.equals(ProxyActivityName.AKAD_ACTIVITY)) {
-            proxyIntent.setFlags(intent.getFlags());
-            ComponentName componentName = new ComponentName(intent.getComponent().getPackageName(), ProxyActivityName.PROXY_ACTIVITY);
-            proxyIntent.setComponent(componentName);
-            proxyIntent.putExtras(intent.getExtras());
-            ReaperGlobal.setClassName(className);
+        ComponentName componentName = intent.getComponent();
+        if (componentName != null) {
+            String className = componentName.getClassName();
+            if (className.equals(ProxyActivityName.AKAD_ACTIVITY)) {
+                proxyIntent.setFlags(intent.getFlags());
+                ComponentName proxyComponent = new ComponentName(intent.getComponent().getPackageName(), ProxyActivityName.PROXY_ACTIVITY);
+                proxyIntent.setComponent(proxyComponent);
+                proxyIntent.putExtras(intent.getExtras());
+                ReaperGlobal.setClassName(className);
+            }
         }
         return hackInstrumentation.execStartActivity(who, contextThread, token, target,
                 proxyIntent, requestCode, options);

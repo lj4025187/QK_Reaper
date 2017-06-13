@@ -1,4 +1,4 @@
-package com.fighter.common.utils;
+package com.fighter.utils;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -48,7 +48,7 @@ public class SignUtil {
 
     private static String getSignMd5(byte[] sign) {
         String signString = EncryptUtils.encryptMD5ToString(sign);
-//        ReaperLog.i(TAG, "sign to string: " + signString);
+//        LoaderLog.i(TAG, "sign to string: " + signString);
         return signString;
     }
 }
