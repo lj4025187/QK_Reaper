@@ -24,7 +24,7 @@ public class SampleApp extends ReaperApplication {
             return;
         }
         mReaperApi.init(this, SampleConfig.APP_ID, SampleConfig.APP_KEY, true);
-        mReaperApi.setTagetConfig(ResponseGenerator.generate());
+        mReaperApi.setTargetConfig(ResponseGenerator.generate());
     }
 
 }

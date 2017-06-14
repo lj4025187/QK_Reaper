@@ -1,6 +1,5 @@
 package com.fighter.loader;
 
-import android.app.Application;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.ArrayMap;
@@ -82,7 +81,7 @@ public class ReaperApi {
      *
      * @param configJson 测试的目标测试数据
      */
-    public void setTagetConfig(String configJson) {
+    public void setTargetConfig(String configJson) {
         Map<String, Object> params = new ArrayMap<>();
         putParam(params, "config", configJson);
         invokeReaperApi("setTargetConfig", params);
