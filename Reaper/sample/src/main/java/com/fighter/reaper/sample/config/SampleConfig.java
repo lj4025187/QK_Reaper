@@ -14,7 +14,8 @@ public class SampleConfig {
 
     public final static boolean IS_FOR_SERVER = false;
 
-    public final static String APP_KEY = "52b039014f5ee11cf9865d66f0b8f23f";
+//    public final static String APP_KEY = "52b039014f5ee11cf9865d66f0b8f23f";
+    public final static String APP_KEY = "123";
     public final static String APP_ID = "100025";
 
     public final static int
