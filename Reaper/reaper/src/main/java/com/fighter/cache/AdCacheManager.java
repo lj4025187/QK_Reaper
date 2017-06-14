@@ -93,7 +93,6 @@ public class AdCacheManager{
     private Map<String, Method> mMethodCall;
 
     private Map<String, Long> mInstallApps;
-//    private List<ReaperAdSense> mAdSenseList;
     private ReaperAdvPos mReaperAdvPos;
 
     /**************************************************Init cache task start*****************************************************************/
@@ -106,26 +105,6 @@ public class AdCacheManager{
 
         public InitCacheTask(int priority, PriorityTaskDaemon.TaskRunnable runnable, PriorityTaskDaemon.TaskNotify notify) {
             super(priority, runnable, notify);
-        }
-    }
-
-    private class InitCacheRunnable extends PriorityTaskDaemon.TaskRunnable {
-
-        private Context context;
-
-        public InitCacheRunnable(Context context) {
-            this.context = context;
-        }
-
-        @Override
-        public Object doSomething() {
-            boolean initSuccess = initCache(this.context);
-            ReaperLog.i(TAG, "InitCacheRunnable do something init " + initSuccess);
-//            String[] posIds = getAllPosId(context);
-//            for (String posId : posIds) {
-//                postAdRequestWrapperTask(posId, null, true, InitCacheRunnable.this);
-//            }
-            return initSuccess;
         }
     }
 
@@ -634,10 +613,11 @@ public class AdCacheManager{
 
         @Override
         public void onAdResponse(AdResponse adResponse) {
-            mAdRequestWrapperAsyncRunner.setAdResponse(adResponse);
-            mAdRequestWrapperAsyncRunner.setAdSenseList(mAdSenseList);
-            mAdRequestWrapperAsyncRunner.setLocation(mLocation);
-            this.setRunnable(mAdRequestWrapperAsyncRunner);
+            AdRequestWrapperAsyncRunner runner = new AdRequestWrapperAsyncRunner();
+            runner.setAdResponse(adResponse);
+            runner.setAdSenseList(mAdSenseList);
+            runner.setLocation(mLocation);
+            this.setRunnable(runner);
             mWorkThread.postTaskInFront(this);
         }
     }
@@ -723,12 +703,6 @@ public class AdCacheManager{
                 return null;
             }
 
-//            if(!updateConfig()) {
-//                return null;
-//            } else {
-//                ReaperLog.i(TAG, "config is update now");
-//            }
-
             ReaperLog.i(TAG, "Reaper advPos: " + mReaperAdvPos + ",Reaper adSenses:" + mAdSenseList);
             updateWrapper(mAdSenseList);
             do {
@@ -773,7 +747,6 @@ public class AdCacheManager{
 
         }
     }
-    private AdRequestWrapperAsyncRunner mAdRequestWrapperAsyncRunner = new AdRequestWrapperAsyncRunner();
     private AdRequestWrapperNotify mAdRequestWrapperNotify = new AdRequestWrapperNotify();
 
     /****************************************************AdRequestWrapper Task end**************************************************************************/
@@ -869,7 +842,7 @@ public class AdCacheManager{
                 if (isAdCacheTimeout(adCacheInfo) && adInfo != null) {
                     EventDownLoadParam param = new EventDownLoadParam();
                     param.ad_num = 1;
-                    param.ad_appid = 12222;/*this value should rewrite*/
+                    param.ad_appid = Integer.parseInt(mAppId);
                     param.ad_posid = Integer.valueOf(adInfo.getAdPosId());
                     param.ad_source = adInfo.getAdName();
                     param.ad_type = adInfo.getAdType();
@@ -908,78 +881,6 @@ public class AdCacheManager{
     private AdRequestTask mAdRequestTask = new AdRequestTask(
             PriorityTaskDaemon.PriorityTask.PRI_FIRST, mAdRequestRunner, mAdRequestNotify);
     /****************************************************AdRequestTask Task end**************************************************************************/
-
-//    /****************************************************AdRequestMultTask Task start**************************************************************************/
-//    private class AdRequestMultTask extends PriorityTaskDaemon.NotifyPriorityTask {
-//        private String mPosId;
-//        private Object mCallBack;
-//        private int mAdCount;
-//
-//        public int getAdCount() {
-//            return mAdCount;
-//        }
-//
-//        public void setAdCount(int mAdCount) {
-//            this.mAdCount = mAdCount;
-//        }
-//
-//        public String getPosId() {
-//            return mPosId;
-//        }
-//
-//        public void setPosId(String mPosId) {
-//            this.mPosId = mPosId;
-//        }
-//
-//        public Object getCallBack() {
-//            return mCallBack;
-//        }
-//
-//        public void setCallBack(Object mCallBack) {
-//            this.mCallBack = mCallBack;
-//        }
-//        public AdRequestMultTask(int priority, PriorityTaskDaemon.TaskRunnable runnable, PriorityTaskDaemon.TaskNotify notify) {
-//            super(priority, runnable, notify);
-//        }
-//    }
-//
-//    private class AdRequestMultRunner extends PriorityTaskDaemon.TaskRunnable {
-//        private String mPosId;
-//        private Object mCallBack;
-//        private int mAdCount;
-//
-//        public void setAdCount(int mAdCount) {
-//            this.mAdCount = mAdCount;
-//        }
-//
-//        public void setPosId(String mPosId) {
-//            this.mPosId = mPosId;
-//        }
-//
-//        public void setCallBack(Object mCallBack) {
-//            this.mCallBack = mCallBack;
-//        }
-//
-//        @Override
-//        public Object doSomething() {
-//            // get ad from cache
-//
-//            return null;
-//        }
-//    }
-//
-//    private class AdRequestMultNotify implements PriorityTaskDaemon.TaskNotify {
-//
-//        @Override
-//        public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
-//
-//        }
-//    }
-//    private AdRequestMultRunner mAdRequestMultRunner = new AdRequestMultRunner();
-//    private AdRequestMultNotify mAdRequestMultNotify = new AdRequestMultNotify();
-//    private AdRequestMultTask mAdRequestMultTask = new AdRequestMultTask(
-//            PriorityTaskDaemon.PriorityTask.PRI_FIRST, mAdRequestMultRunner, mAdRequestMultNotify);
-//    /****************************************************AdRequestMultTask Task end**************************************************************************/
 
     /**
      * the memory cache object
@@ -1087,15 +988,6 @@ public class AdCacheManager{
                 e.printStackTrace();
             }
 
-        }
-    }
-
-    /**
-     * fill ad cache pool when cache init fill it.
-     */
-    private void fillAdCachePool(String[] posIds) {
-        for (String posId : posIds) {
-//            postAdRequestWrapperTask(posId, null, true, null);
         }
     }
 
@@ -1475,16 +1367,6 @@ public class AdCacheManager{
         }
     }
 
-//    private void postAdRequestMultTask(String posId, Object callBack, int adCount) {
-//        mAdRequestMultRunner.setPosId(posId);
-//        mAdRequestMultRunner.setCallBack(callBack);
-//        mAdRequestMultRunner.setAdCount(adCount);
-//        mAdRequestMultTask.setPosId(posId);
-//        mAdRequestMultTask.setCallBack(callBack);
-//        mAdRequestMultTask.setAdCount(adCount);
-//        mWorkThread.postTaskInFront(mAdRequestMultTask);
-//    }
-
     private void postAdRequestTask(String posId, Object callBack) {
         AdRequestRunner runner = new AdRequestRunner(posId, callBack);
         AdRequestNotify notify = new AdRequestNotify();
@@ -1553,7 +1435,6 @@ public class AdCacheManager{
                 mContext.getPackageName(), SALT, mAppKey, mAppId);
 
         if (!fetchSucceed) {
-//            onRequestAdError(mCallback, "Can not fetch reaper config from server");
             ReaperLog.e(TAG, "Can not fetch reaper config from server");
         }
 
@@ -1600,37 +1481,6 @@ public class AdCacheManager{
                 }
             }
         }
-    }
-
-    private List<ReaperAdSense> getWrapperConfig(String posId) {
-        ReaperAdvPos reaperAdvPos =
-                ReaperConfigManager.getReaperAdvPos(mContext, posId);
-        if (reaperAdvPos == null) {
-            ReaperLog.e(TAG, "Can not find config info with ad position id [" + posId + "]");
-            return null;
-        }
-
-        List<ReaperAdSense> reaperAdSenses = ReaperConfigManager.getReaperAdSenses(mContext, posId);
-
-        if (reaperAdSenses == null || reaperAdSenses.size() == 0) {
-            ReaperLog.e(TAG, "Config get 0 ad sense with ad position id [" + posId + "]");
-            return null;
-        }
-        
-        switch (reaperAdvPos.adv_exposure) {
-            case "first":
-                Collections.sort(reaperAdSenses);
-                break;
-            case "loop":
-                //TODO
-                break;
-            case "weight":
-                // TODO
-                break;
-            default:
-        }
-
-        return reaperAdSenses;
     }
 
     private AdResponse requestWrapperAdInner(List<ReaperAdSense> reaperAdSenses, int location, String advType, AdRequestWrapperTask task) {

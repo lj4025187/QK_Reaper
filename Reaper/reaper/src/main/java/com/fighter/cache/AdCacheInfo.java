@@ -9,9 +9,10 @@ import java.io.Serializable;
  */
 
 public class AdCacheInfo implements Serializable {
+    private static final String TAG = AdCacheInfo.class.getSimpleName();
     private static final long serialVersionUID = -4242968385056676005L;
 
-    public static final int CACHE_IS_GOOD = 1;
+    public static final int CACHE_IS_GOOD = 0;
     public static final int CACHE_BACK_TO_USER = 1 << 1;
     public static final int CACHE_DISPLAY_BY_USER = 1 << 2;
     public static final int CACHE_IS_HOLD_AD = 1 << 3;
@@ -34,11 +35,11 @@ public class AdCacheInfo implements Serializable {
     }
 
     public void setCacheState(int mCacheState) {
-        this.mCacheState = mCacheState;
+        this.mCacheState |= mCacheState;
     }
 
     public boolean isCacheBackToUser() {
-        return (mCacheState & ~CACHE_BACK_TO_USER) == 0;
+        return (mCacheState & CACHE_BACK_TO_USER) == CACHE_BACK_TO_USER;
     }
 
     public String getCachePath() {
@@ -58,7 +59,7 @@ public class AdCacheInfo implements Serializable {
     }
 
     public boolean isCacheDisPlayed() {
-        return (mCacheState & ~CACHE_DISPLAY_BY_USER) == 0;
+        return (mCacheState & CACHE_DISPLAY_BY_USER) == CACHE_DISPLAY_BY_USER;
     }
 
     public AdCacheInfo() {
@@ -104,7 +105,7 @@ public class AdCacheInfo implements Serializable {
     }
 
     public boolean isHoldAd() {
-        return (mCacheState & ~CACHE_IS_HOLD_AD) == 0;
+        return (mCacheState & CACHE_IS_HOLD_AD) == CACHE_IS_HOLD_AD;
     }
 
     @Override
