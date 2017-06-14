@@ -106,8 +106,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        showLoadingView(true);
-        showEmptyView(false);
         startPullAds();
     }
 
@@ -176,14 +174,22 @@ public class AdFragment extends Fragment implements Handler.Callback,
     private void startPullAds() {
         if (mReaperApi == null)
             return;
+        if (mListData.isEmpty()) {
+            showLoadingView(true);
+            showEmptyView(false);
+        }
         String posId = generatePosId();
         boolean isSupport = TextUtils.equals("1045"/*"5"*/, posId)    //Qihoo video
                         ||  TextUtils.equals("1046"/*"6"*/, posId)    //Qihoo original
                         ||  TextUtils.equals("1040"/*"7"*/, posId)    //Tencent insert
-                        ||  TextUtils.equals("1041"/*8*/, posId)    //Tencent banner
-                        ||  TextUtils.equals("1042"/*9*/, posId)    //Tencent openapp
-                        ||  TextUtils.equals("1043"/*10*/, posId)   //Tencent feed
-                        ||  TextUtils.equals("1044"/*11*/, posId);  //Tencent original
+                        ||  TextUtils.equals("1041"/*"8"*/, posId)      //Tencent banner
+                        ||  TextUtils.equals("1042"/*"9"*/, posId)      //Tencent openapp
+                        ||  TextUtils.equals("1043"/*"10"*/, posId)     //Tencent feed
+                        ||  TextUtils.equals("1044"/*"11"*/, posId)     //Tencent original
+                        ||  TextUtils.equals("1048"/*"13"*/, posId)     //Baidu insert
+                        ||  TextUtils.equals("1049"/*"14"*/, posId)     //Baidu banner
+                        ||  TextUtils.equals("1050"/*"15"*/, posId);    //Baidu openapp
+
 
         if (!isSupport) {
             String toast = String.format(getResources().getString(R.string.toast_dis_support_ad), mSrcName, mCategory);
@@ -203,17 +209,17 @@ public class AdFragment extends Fragment implements Handler.Callback,
             case SampleConfig.TYPE_PLUG_IN:
                 if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "1";
                 if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = "1040"/*"7"*/;
-                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "13";
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "1048"/*"13"*/;
                 break;
             case SampleConfig.TYPE_BANNER:
                 if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "2";
                 if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = "1041"/*"8"*/;
-                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "14";
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "1049"/*"14"*/;
                 break;
             case SampleConfig.TYPE_FULL_SCREEN:
                 if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "3";
                 if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = "1042"/*"9"*/;
-                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "15";
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "1050"/*"15"*/;
                 break;
             case SampleConfig.TYPE_FEED:
                 if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "4";
@@ -295,7 +301,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
 
         if (mListData.isEmpty()) {
             mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
-        } else {
+        } else if (mListData.size() >= 5){
 //            mMainHandler.sendEmptyMessage(NOTIFY_DATA_CHANGED);
             mAdAdapter.notifyDataSetChanged();
             showEmptyView(mListData.isEmpty());
@@ -341,8 +347,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
         int id = v.getId();
         switch (id) {
             case R.id.id_ad_fragment_empty:
-                showLoadingView(true);
-                showEmptyView(false);
                 startPullAds();
                 break;
         }

@@ -47,4 +47,10 @@
     <string name="detail_video_type">视频</string>
     <string name="detail_unknown_type">未知类型</string>
     <string name="toast_dis_support_ad">目前不支持广告源%1$s的广告类型%2$s的获取</string>
+
+    <string name="download_dialog_title">温馨提示</string>
+    <string name="download_dialog_message">是否确认下载该应用(来自sample的问候)?</string>
+    <string name="toast_start_download">开始应用的下载</string>
+    <string name="toast_cancel_download">已经取消该应用的下载</string>
+
 </resources>

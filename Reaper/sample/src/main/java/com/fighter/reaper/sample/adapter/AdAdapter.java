@@ -1,7 +1,9 @@
 package com.fighter.reaper.sample.adapter;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.support.v4.util.ArrayMap;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +12,13 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 
 import com.fighter.loader.AdInfo;
+import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.holders.BaseItemHolder;
 import com.fighter.reaper.sample.holders.VideoItemHolder;
 import com.fighter.reaper.sample.holders.ViewHolderFactory;
 import com.fighter.reaper.sample.model.BaseItem;
+import com.fighter.reaper.sample.utils.ToastUtil;
 import com.fighter.reaper.sample.videolist.visibility.items.ListItem;
 import com.fighter.reaper.sample.videolist.visibility.scroll.ItemsProvider;
 
@@ -42,6 +46,7 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
 
     public AdAdapter(Activity activity) {
         mActivity = activity;
+        mContext = activity;
         mHolderHelper = new ArrayMap<>();
     }
 
@@ -99,12 +104,37 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
             @Override
             public void onClick(View v) {
 //                adInfo.onAdClicked(null, null, 0, 0, 0, 0);
-                adInfo.onAdClicked(mActivity, v, 0, 0, 0, 0);
+                if (adInfo.getActionType() == 2) {
+                    showDownloadDialog(adInfo, v);
+                } else {
+                    adInfo.onAdClicked(mActivity, v, 0, 0, 0, 0);
+                }
             }
         });
         mHolderHelper.put(baseItemHolder, position);
         return convertView;
     }
+
+    private void showDownloadDialog(final AdInfo adInfo, final View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle(R.string.download_dialog_title)
+                .setMessage(R.string.download_dialog_message)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ToastUtil.getInstance(mContext).showSingletonToast(R.string.toast_start_download);
+                        adInfo.onAdClicked(mActivity, view, 0, 0, 0, 0);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ToastUtil.getInstance(mContext).showSingletonToast(R.string.toast_cancel_download);
+                    }
+                });
+        builder.create().show();
+    }
+
 
     @Override
     public ListItem getListItem(int position) {
