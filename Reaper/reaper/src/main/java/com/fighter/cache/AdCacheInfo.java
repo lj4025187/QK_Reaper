@@ -35,7 +35,11 @@ public class AdCacheInfo implements Serializable {
     }
 
     public void setCacheState(int mCacheState) {
-        this.mCacheState |= mCacheState;
+        this.mCacheState = mCacheState;
+    }
+
+    public int getCacheState() {
+        return mCacheState;
     }
 
     public boolean isCacheBackToUser() {
@@ -131,23 +135,29 @@ public class AdCacheInfo implements Serializable {
 
         if (mCacheTime != that.mCacheTime) return false;
         if (mCacheState != that.mCacheState) return false;
-        if (!mExpireTime.equals(that.mExpireTime)) return false;
-        if (!mAdCacheId.equals(that.mAdCacheId)) return false;
-        if (!mCache.equals(that.mCache)) return false;
-        if (!mAdSource.equals(that.mAdSource)) return false;
-        return mCachePath.equals(that.mCachePath);
+        if (mExpireTime != null ? !mExpireTime.equals(that.mExpireTime) : that.mExpireTime != null)
+            return false;
+        if (mAdCacheId != null ? !mAdCacheId.equals(that.mAdCacheId) : that.mAdCacheId != null)
+            return false;
+        if (mCache != null ? !mCache.equals(that.mCache) : that.mCache != null) return false;
+        if (mAdSource != null ? !mAdSource.equals(that.mAdSource) : that.mAdSource != null)
+            return false;
+        if (mCachePath != null ? !mCachePath.equals(that.mCachePath) : that.mCachePath != null)
+            return false;
+        return mUuid != null ? mUuid.equals(that.mUuid) : that.mUuid == null;
 
     }
 
     @Override
     public int hashCode() {
         int result = (int) (mCacheTime ^ (mCacheTime >>> 32));
-        result = 31 * result + mExpireTime.hashCode();
-        result = 31 * result + mAdCacheId.hashCode();
-        result = 31 * result + mCache.hashCode();
+        result = 31 * result + (mExpireTime != null ? mExpireTime.hashCode() : 0);
+        result = 31 * result + (mAdCacheId != null ? mAdCacheId.hashCode() : 0);
+        result = 31 * result + (mCache != null ? mCache.hashCode() : 0);
         result = 31 * result + mCacheState;
-        result = 31 * result + mAdSource.hashCode();
-        result = 31 * result + mCachePath.hashCode();
+        result = 31 * result + (mAdSource != null ? mAdSource.hashCode() : 0);
+        result = 31 * result + (mCachePath != null ? mCachePath.hashCode() : 0);
+        result = 31 * result + (mUuid != null ? mUuid.hashCode() : 0);
         return result;
     }
 }

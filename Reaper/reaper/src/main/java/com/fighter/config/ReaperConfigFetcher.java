@@ -44,6 +44,7 @@ public class ReaperConfigFetcher {
                                          String salt, String appKey, String appId) {
         boolean result = fetch(context, pkg, salt, appKey, appId);
         if (result) {
+            ReaperLog.i(TAG, "fetch success update config");
             return true;
         }
         // retry
@@ -51,6 +52,7 @@ public class ReaperConfigFetcher {
             ReaperLog.i(TAG, "fetch . ================= start retry =======================");
             result = fetch(context, pkg, salt, appKey, appId);
             if (result) {
+                ReaperLog.i(TAG, "fetch success update config");
                 return true;
             }
         }

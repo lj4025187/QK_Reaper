@@ -75,7 +75,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initView();
-        mReaperApi.setTagetConfig(SampleConfig.RESPONSE);
+        mReaperApi.setTargetConfig(SampleConfig.RESPONSE);
     }
 
     public void initView() {

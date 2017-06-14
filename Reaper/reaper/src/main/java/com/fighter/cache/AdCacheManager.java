@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.ArrayMap;
+import android.util.Log;
 
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
@@ -45,7 +46,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -548,7 +548,27 @@ public class AdCacheManager{
     private TrackerTask mTrackerTask = new TrackerTask(
             PriorityTaskDaemon.PriorityTask.PRI_FIRST, mTrackerRunner, mTrackerNotify);
     /****************************************************Tracker Task end**************************************************************************/
+    /****************************************************update config Task start**************************************************************************/
+    private PriorityTaskDaemon.TaskRunnable mUpdateConfigRunner = new PriorityTaskDaemon.TaskRunnable() {
+        @Override
+        public Object doSomething() {
+            return updateConfig();
+        }
+    };
 
+    private PriorityTaskDaemon.TaskNotify mUpdateConfigNotify = new PriorityTaskDaemon.TaskNotify() {
+        @Override
+        public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+            if (result instanceof Boolean) {
+                if (!(boolean)result)
+                    onRequestAdError(mCallBack, "update config failed");
+            }
+        }
+    };
+
+    private PriorityTaskDaemon.NotifyPriorityTask mUpdateConfigTask = new PriorityTaskDaemon.NotifyPriorityTask(
+            PriorityTaskDaemon.PriorityTask.PRI_FIRST, mUpdateConfigRunner, mUpdateConfigNotify);
+    /****************************************************update config Task start**************************************************************************/
     /****************************************************AdRequestWrapper Task start**************************************************************************/
     /**
      * request wrapper task for callback cache and notify user
@@ -658,8 +678,12 @@ public class AdCacheManager{
                 return mAdResponse.getAdInfo();
             }
             while(mAdResponse != null && !mAdResponse.isSucceed()) {
-                mAdResponse = requestWrapperAdInner(mAdSenseList, mLocation, mReaperAdvPos.adv_type, (AdRequestWrapperTask) getTask());
-                task.setLocation(mLocation++);
+                ReaperLog.i(TAG, "Async runner task: " + task);
+                if (task != null) {
+                    mAdResponse = requestWrapperAdInner(mAdSenseList, mLocation, mReaperAdvPos.adv_type,
+                            (AdRequestWrapperTask) getTask());
+                    task.setLocation(mLocation++);
+                }
             }
             if (mAdResponse != null && mAdResponse.isSucceed()) {
                 return mAdResponse.getAdInfo();
@@ -710,12 +734,14 @@ public class AdCacheManager{
                 task.setLocation(location++);
             } while (adResponse != null && !adResponse.isSucceed());
 
-            if (adResponse != null && adResponse.isSucceed())
+            if (adResponse != null && adResponse.isSucceed()) {
                 adInfo = adResponse.getAdInfo();
+                ReaperLog.i(TAG, "wrapper runner adInfo: " + adInfo.getUUID() + ", hash: " + adInfo.hashCode());
+            }
             downloadAdResourceFile(adInfo);
-          if (mAdSenseList != null && location > mAdSenseList.size()) {
-                return needHoldAd ? generateHoldAd(mPosId) : "all ads not get ad";
-          }
+            if (mAdSenseList != null && location > mAdSenseList.size()) {
+                  return needHoldAd ? generateHoldAd(mPosId) : "all ads not get ad";
+            }
             return adInfo;
         }
     }
@@ -734,10 +760,14 @@ public class AdCacheManager{
             }
             if (result != null && result instanceof AdInfo) {
                 adInfo = (AdInfo)result;
-                ReaperLog.i(TAG, "request wrapper ad info: " + adInfo);
+                ReaperLog.i(TAG, "request wrapper ad info: " + adInfo.getUUID());
+//                Log.i(TAG, "request wrapper ad info: " + adInfo.getUUID());
+//                Log.i(TAG, "\n");
                 if (isCache) {
                     cacheAdInfo(adInfo);
                 } else {
+//                    Log.i(TAG, "AdRequestWrapperNotify task: " + task.hashCode());
+//                    Log.i(TAG, "\n");
                     onRequestAdSucceed(callBack, adInfo);
                 }
             }
@@ -747,8 +777,8 @@ public class AdCacheManager{
 
         }
     }
+    private AdRequestWrapperAsyncRunner mAdRequestWrapperAsyncRunner = new AdRequestWrapperAsyncRunner();
     private AdRequestWrapperNotify mAdRequestWrapperNotify = new AdRequestWrapperNotify();
-
     /****************************************************AdRequestWrapper Task end**************************************************************************/
 
     /****************************************************AdRequestTask Task start**************************************************************************/
@@ -811,11 +841,6 @@ public class AdCacheManager{
 
         @Override
         public Object doSomething() {
-            if(!updateConfig()) {
-                return null;
-            } else {
-                ReaperLog.i(TAG, "config is update now");
-            }
             mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
             IAdRequestPolicy policy = AdRequestPolicyManager.getAdRequestPolicy(mContext, mPosId);
             if (policy != null) {
@@ -832,7 +857,9 @@ public class AdCacheManager{
             AdInfo adInfo = null;
             if (info != null && info instanceof AdCacheInfo) {
                 adCacheInfo = (AdCacheInfo)info;
-                ReaperLog.i(TAG, "ad cache info： " + adCacheInfo);
+                ReaperLog.i(TAG, "ad cache info： " + adCacheInfo.getUuid() + "; mState: " + adCacheInfo.getCacheState() +
+                        "; hash: " + adCacheInfo.hashCode());
+                ReaperLog.i(TAG, "\n");
                 cache = adCacheInfo.getCache();
                 if (cache instanceof String) {
                     adInfo = AdInfo.convertFromString((String)cache);
@@ -848,7 +875,6 @@ public class AdCacheManager{
                     param.ad_type = adInfo.getAdType();
                     param.app_pkg = mContext.getPackageName();
                     param.reason = "timeout";
-                    ReaperLog.i(TAG, "EventDownLoadParam = " + param);
                     mReaperTracker.trackDownloadEvent(mContext, param);
                 } else {
                     setCacheUsed(adCacheInfo);
@@ -876,10 +902,6 @@ public class AdCacheManager{
             }
         }
     }
-    private AdRequestRunner mAdRequestRunner = new AdRequestRunner();
-    private AdRequestNotify mAdRequestNotify = new AdRequestNotify();
-    private AdRequestTask mAdRequestTask = new AdRequestTask(
-            PriorityTaskDaemon.PriorityTask.PRI_FIRST, mAdRequestRunner, mAdRequestNotify);
     /****************************************************AdRequestTask Task end**************************************************************************/
 
     /**
@@ -914,20 +936,15 @@ public class AdCacheManager{
      * @param context
      */
     private void postInitCacheTask(Context context) {
-//        InitCacheRunnable initCacheRunnable = new InitCacheRunnable(context);
-//        InitCacheTask initCacheTask = new InitCacheTask(
-//                PriorityTaskDaemon.PriorityTask.PRI_FIRST,
-//                initCacheRunnable,
-//                new PriorityTaskDaemon.TaskNotify() {
-//                    @Override
-//                    public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
-//                        boolean init = false;
-//                        if (result instanceof Boolean)
-//                            init = (boolean) result;
-//                        ReaperLog.i(TAG, " init cache task on result method is called and init " + init);
-//                    }
-//                });
         mWorkThread.postTaskInFront(mInitTask);
+    }
+
+    /**
+     * update config from server
+     *
+     */
+    private void postUpdateConfigTask() {
+        mWorkThread.postTaskInFront(mUpdateConfigTask);
     }
 
     /**
@@ -1016,11 +1033,17 @@ public class AdCacheManager{
     public void requestAdCache(int adCount, String cacheId, Object callBack) {
         mCacheId = cacheId;
         mCallBack = callBack;
+        postUpdateConfigTask();
         for(int i = 0; i < adCount; i++) {
             postAdRequestTask(mCacheId, mCallBack);
         }
     }
 
+    /**
+     * the flags need hold ad
+     *
+     * @param needHoldAd
+     */
     public void setNeedHoldAd(boolean needHoldAd) {
         this.needHoldAd = needHoldAd;
     }
@@ -1048,11 +1071,6 @@ public class AdCacheManager{
         }
 
         return info;
-    }
-
-    private String generateCacheId(AdCacheInfo info) {
-        long cacheTime = info.getCacheTime();
-        return String.valueOf(cacheTime);
     }
 
     private String[] getAllPosId(Context context) {
@@ -1098,10 +1116,14 @@ public class AdCacheManager{
     }
 
     private void setCacheUsed(AdCacheInfo adCacheInfo) {
+//        Log.i(TAG, "setCacheUsd");
+//        Log.i(TAG, "\n\n");
         if (adCacheInfo == null)
             return;
         adCacheInfo.setCacheState(AdCacheInfo.CACHE_BACK_TO_USER);
         updateDiskCache(adCacheInfo);
+//        Log.i(TAG, "setCacheUsed adCacheInfo : " + adCacheInfo.getUuid() + ", mState: " + adCacheInfo.getCacheState());
+//        Log.i(TAG, "\n\n");
     }
 
     private void setCacheDisplayed(AdInfo adInfo) {
@@ -1114,7 +1136,6 @@ public class AdCacheManager{
         if (object instanceof AdCacheInfo) {
             AdCacheInfo adCacheInfo = (AdCacheInfo) object;
             adCacheInfo.setCacheState(AdCacheInfo.CACHE_DISPLAY_BY_USER);
-            //updateDiskCache(adCacheInfo);
             cacheObjects.remove(adCacheInfo.getUuid());
             cleanBeforeCache(adCacheInfo);
         }
@@ -1189,11 +1210,14 @@ public class AdCacheManager{
                         !adInfo.isCacheBackToUser() &&
                             !adInfo.isCacheDisPlayed() &&
                                 !adInfo.isHoldAd()) {
-                    ReaperLog.i(TAG, "is cache back disk:" + adInfo.isCacheBackToUser());
                     break;
+                } else {
+                    adInfo = null;
                 }
             }
         }
+//        Log.i(TAG, "getCacheInfo memory: " + adInfo);
+//        Log.i(TAG, "\n\n");
         return adInfo;
     }
 
@@ -1227,11 +1251,14 @@ public class AdCacheManager{
                         !((AdCacheInfo) adInfo).isCacheBackToUser() &&
                             !((AdCacheInfo) adInfo).isCacheDisPlayed() &&
                             !((AdCacheInfo) adInfo).isHoldAd()) {
-                    ReaperLog.i(TAG, "is cache back memory:" + ((AdCacheInfo) adInfo).isCacheBackToUser());
                     break;
+                } else {
+                    adInfo = null;
                 }
             }
         }
+//        Log.i(TAG, "getCacheInfo memory: " + adInfo);
+//        Log.i(TAG, "\n\n");
         /* 2. find ad cache in disk cache */
         if (adInfo == null) {
             try {
@@ -1276,6 +1303,8 @@ public class AdCacheManager{
 
     private void onRequestAdSucceed(Object receiver, AdInfo adInfo) {
         ReaperLog.i(TAG, "on success ad info: " + adInfo);
+//        Log.i(TAG, "on success ad info: " + adInfo.getUUID()+ ", hash: " + adInfo.hashCode());
+//        Log.i(TAG, "\n\n");
         ArrayMap<String, Object> params = new ArrayMap<>();
         if (adInfo != null) {
             params.put("isSucceed", true);
@@ -1372,10 +1401,6 @@ public class AdCacheManager{
         AdRequestNotify notify = new AdRequestNotify();
         AdRequestTask task = new AdRequestTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
                 runner, notify, posId, callBack);
-//        mAdRequestRunner.setPosId(posId);
-//        mAdRequestRunner.setCallBack(callBack);
-//        mAdRequestTask.setPosId(posId);
-//        mAdRequestTask.setCallBack(callBack);
         mWorkThread.postTaskInFront(task);
     }
 
