@@ -205,7 +205,8 @@ public class ReaperConfigDB {
                 return pos;
             }
         } finally {
-            cursor.close();
+            if(cursor != null)
+                cursor.close();
             //db.close();
         }
         return null;
