@@ -683,6 +683,8 @@ public class AdCacheManager{
                     mAdResponse = requestWrapperAdInner(mAdSenseList, mLocation, mReaperAdvPos.adv_type,
                             (AdRequestWrapperTask) getTask());
                     task.setLocation(mLocation++);
+                } else {
+                    break;
                 }
             }
             if (mAdResponse != null && mAdResponse.isSucceed()) {
