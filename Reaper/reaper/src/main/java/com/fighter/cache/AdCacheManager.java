@@ -672,7 +672,7 @@ public class AdCacheManager{
         @Override
         public Object doSomething() {
             AdRequestWrapperTask task = (AdRequestWrapperTask) getTask();
-            if(mAdResponse == null) return null;
+            if(mAdResponse == null || mReaperAdvPos == null) return null;
             if (mAdResponse.isSucceed()) {
                 return mAdResponse.getAdInfo();
             }
@@ -724,7 +724,7 @@ public class AdCacheManager{
             AdResponse adResponse;
             AdRequestWrapperTask task = (AdRequestWrapperTask) getTask();
             int location = task.getLocation();
-            if (mAdSenseList == null) {
+            if (mAdSenseList == null || mReaperAdvPos == null) {
                 return null;
             }
 
@@ -1231,7 +1231,7 @@ public class AdCacheManager{
      * @param imageUrl
      * @return cache file instance
      */
-    private File cacheAdFile(String imageUrl) {
+    private File cacheAdFile(String imageUrl) throws Exception {
         return mAdFileManager.cacheAdFile(imageUrl);
     }
 
@@ -1597,7 +1597,21 @@ public class AdCacheManager{
         if (TextUtils.isEmpty(imageUrl)) {
             return;
         }
-        File imageFile = cacheAdFile(imageUrl);
+        File imageFile = null;
+        try {
+            imageFile = cacheAdFile(imageUrl);
+        } catch (Exception e) {
+            EventDownLoadParam param = new EventDownLoadParam();
+            param.ad_num = 1;
+            param.ad_appid = Integer.parseInt(mAppId);
+            param.ad_posid = Integer.parseInt(adInfo.getAdPosId());
+            param.ad_source = adInfo.getAdName();
+            param.ad_type = adInfo.getAdType();
+            param.app_pkg = mContext.getPackageName();
+            param.reason = "OkHttpDownloader exception in sdk " + e.toString();
+            mReaperTracker.trackDownloadEvent(mContext, param);
+            e.printStackTrace();
+        }
         if (imageFile != null && imageFile.exists()) {
             adInfo.setImgFile(imageFile.getAbsolutePath());
         }
