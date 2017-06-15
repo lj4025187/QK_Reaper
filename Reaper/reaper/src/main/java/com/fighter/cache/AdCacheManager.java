@@ -559,7 +559,7 @@ public class AdCacheManager{
         @Override
         public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
             if (result instanceof Boolean) {
-                if (!(boolean)result)
+                if (!(boolean)result && !needHoldAd)
                     onRequestAdError(mCallBack, "update config failed");
             }
         }
@@ -637,7 +637,7 @@ public class AdCacheManager{
             runner.setAdSenseList(mAdSenseList);
             runner.setLocation(mLocation);
             this.setRunnable(runner);
-            mWorkThread.postTaskInFront(this);
+            mWorkThread.postTaskInFront(AdRequestWrapperTask.this);
         }
     }
 
@@ -680,7 +680,7 @@ public class AdCacheManager{
                 ReaperLog.i(TAG, "Async runner task: " + task);
                 if (task != null) {
                     mAdResponse = requestWrapperAdInner(mAdSenseList, mLocation, mReaperAdvPos.adv_type,
-                            (AdRequestWrapperTask) getTask());
+                            task);
                     task.setLocation(mLocation++);
                 } else {
                     break;
@@ -691,7 +691,7 @@ public class AdCacheManager{
             }
             if (mAdResponse != null) {
                 if (needHoldAd) {
-                    return generateHoldAd(mAdResponse.getAdPosId());
+                    return generateHoldAd(mCacheId);
                 }
             }
             return "all ads not get ad";
@@ -868,15 +868,16 @@ public class AdCacheManager{
                     adInfo = (AdInfo) cache;
                 }
                 if (isAdCacheTimeout(adCacheInfo) && adInfo != null) {
-                    EventDownLoadParam param = new EventDownLoadParam();
+                    EventDisPlayParam param = new EventDisPlayParam();
                     param.ad_num = 1;
                     param.ad_appid = Integer.parseInt(mAppId);
                     param.ad_posid = Integer.parseInt(adInfo.getAdPosId());
                     param.ad_source = adInfo.getAdName();
                     param.ad_type = adInfo.getAdType();
                     param.app_pkg = mContext.getPackageName();
+                    param.result = "failed";
                     param.reason = "timeout";
-                    mReaperTracker.trackDownloadEvent(mContext, param);
+                    mReaperTracker.trackDisplayEvent(mContext, param);
                 } else {
                     setCacheUsed(adCacheInfo);
                     return adInfo;
@@ -1137,8 +1138,10 @@ public class AdCacheManager{
         if (object instanceof AdCacheInfo) {
             AdCacheInfo adCacheInfo = (AdCacheInfo) object;
             adCacheInfo.setCacheState(AdCacheInfo.CACHE_DISPLAY_BY_USER);
-            cacheObjects.remove(adCacheInfo.getUuid());
-            cleanBeforeCache(adCacheInfo);
+            if (cacheObjects.size() > 1) {
+                cacheObjects.remove(adCacheInfo.getUuid());
+                cleanBeforeCache(adCacheInfo);
+            }
         }
     }
 
