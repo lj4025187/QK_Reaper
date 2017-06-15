@@ -18,6 +18,19 @@ public class SampleConfig {
     public final static String APP_KEY = "123";
     public final static String APP_ID = "100025";
 
+    public final static int REQUEST_COUNT_PER_TIME = 5;
+
+    public final static String QIHOO_VIDEO_ADV = "1045";  //Qihoo video
+    public final static String QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original
+    public final static String TENCENT_INSERT_ADV = "1040";  //Tencent insert
+    public final static String TENCENT_BANNER_ADV = "1041";  //Tencent banner
+    public final static String TENCENT_OPEN_ADV = "1042";  //Tencent openapp
+    public final static String TENCENT_FEED_ADV = "1043";  //Tencent feed
+    public final static String TENCENT_ORIGINAL_ADV = "1044";  //Tencent original
+    public final static String BAIDU_INSERT_ADV = "1048";  //Baidu insert
+    public final static String BAIDU_BANNER_ADV = "1049";  //Baidu banner
+    public final static String BAIDU_OPEN_ADV = "1050";  //Baidu openapp
+
     public final static int
             TEXT_AD_TYPE = 0x01,    /*文字类型*/
             PICTURE_AD_TYPE = 0x02,                 /*图片类型*/

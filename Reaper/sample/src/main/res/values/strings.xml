@@ -53,4 +53,6 @@
     <string name="toast_start_download">开始应用的下载</string>
     <string name="toast_cancel_download">已经取消该应用的下载</string>
 
+    <string name="toast_quest_ad_begin">开始第%d次请求广告</string>
+    <string name="toast_quest_ad_end">第%1$d次请求开始返回第%2$d条数据</string>
 </resources>

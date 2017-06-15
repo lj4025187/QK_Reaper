@@ -2,6 +2,8 @@ package com.fighter.reaper.sample.holders;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +40,7 @@ public class BaseItemHolder<T extends BaseItem> {
     public View baseView;
     protected Context context;
 
+    protected TextView indexView;
     protected TextView viewType;
     protected TextView detailType;
     protected TextView srcName;
@@ -60,6 +63,7 @@ public class BaseItemHolder<T extends BaseItem> {
     }
 
     private void initView(View itemView) {
+        indexView = (TextView) itemView.findViewById(R.id.id_ad_item_index);
         viewType = (TextView) itemView.findViewById(R.id.id_ad_view_type);
         detailType = (TextView) itemView.findViewById(R.id.id_ad_detail_type);
         srcName = (TextView) itemView.findViewById(R.id.id_ad_src_name);
@@ -76,6 +80,15 @@ public class BaseItemHolder<T extends BaseItem> {
     }
 
     public void onAttachView(int position, T iItem) {
+        int index = position / SampleConfig.REQUEST_COUNT_PER_TIME;
+        indexView.setText(String.valueOf(index + 1));
+        if(index % 2 != 0) {
+            baseView.setBackgroundColor(Color.CYAN);
+            adDesParent.setBackground(new ColorDrawable(Color.CYAN));
+        } else {
+            baseView.setBackgroundColor(Color.parseColor("#FFFBFBFC"));
+            adDesParent.setBackgroundColor(Color.parseColor("#FFFBFBFC"));
+        }
         AdInfo adInfo = iItem.getAdInfo();
         viewType.setText(SampleConfig.getViewTypeString(context, iItem.getViewType()));
         detailType.setText((String) adInfo.getExtra(DETAIL_TYPE_KEY));
