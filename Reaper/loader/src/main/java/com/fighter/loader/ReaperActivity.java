@@ -3,16 +3,20 @@ package com.fighter.loader;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
@@ -23,6 +27,9 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.fighter.utils.LoaderLog;
@@ -35,10 +42,14 @@ import com.fighter.utils.LoaderLog;
  */
 
 public class ReaperActivity extends Activity {
+
     private final static String TAG = ReaperActivity.class.getSimpleName();
 
-    private ViewGroup mRootView;
+    private Context mContext;
+    private RelativeLayout mRootView;
+    private ProgressBar mProgressBar;
     private WebView mWebView;
+    private LinearLayout mBottomBar;
     private WebViewClient mClient = new WebViewClient() {
 
         @Override
@@ -89,6 +100,7 @@ public class ReaperActivity extends Activity {
             }
         }
     };
+
     private WebChromeClient mChromeClient = new WebChromeClient() {
         @Override
         public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
@@ -107,6 +119,16 @@ public class ReaperActivity extends Activity {
         }
 
         @Override
+        public void onProgressChanged(WebView view, int newProgress) {
+            if (newProgress == 100) {
+                mProgressBar.setVisibility(View.GONE);
+            } else {
+                mProgressBar.setProgress(newProgress);
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
         public boolean onJsConfirm(WebView view, String url, String message, JsResult result) {
             return super.onJsConfirm(view, url, message, result);
         }
@@ -116,12 +138,15 @@ public class ReaperActivity extends Activity {
             return super.onJsPrompt(view, url, message, defaultValue, result);
         }
     };
+
     private WebSettings mSettings;
     private String mUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LoaderLog.i(TAG, "onCreate method exc");
+        mContext = getApplicationContext();
         initView();
         Intent intent = getIntent();
         if (intent != null) {
@@ -134,20 +159,70 @@ public class ReaperActivity extends Activity {
     }
 
     private void initView() {
-        mRootView = new RelativeLayout(getApplication());
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        mRootView = new RelativeLayout(mContext);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
         mRootView.setBackground(new ColorDrawable(Color.parseColor("#f9f9f9")));
         mRootView.setLayoutParams(params);
 
-        mWebView = new WebView(getApplication());
+        mProgressBar = new ProgressBar(mContext, null, android.R.attr.progressBarStyleHorizontal);
+        RelativeLayout.LayoutParams proParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 12);
+        params.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+        mProgressBar.setLayoutParams(proParams);
+        mProgressBar.setIndeterminate(false);
+        mProgressBar.setMax(100);
+        mProgressBar.setId(View.generateViewId());
+        mRootView.addView(mProgressBar);
+
+        mWebView = new WebView(mContext);
+        RelativeLayout.LayoutParams webParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        webParam.addRule(RelativeLayout.BELOW, mProgressBar.getId());
+        mWebView.setLayoutParams(webParam);
         initWebView();
         mRootView.addView(mWebView);
+
+        mBottomBar = new LinearLayout(mContext);
+        RelativeLayout.LayoutParams bottomParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        bottomParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        mBottomBar.setOrientation(LinearLayout.HORIZONTAL);
+        GradientDrawable bottomBack =
+                new GradientDrawable(
+                        GradientDrawable.Orientation.TOP_BOTTOM,
+                        new int[]{0x1F000000, 0xFFFFFFFF});
+        bottomBack.setGradientType(GradientDrawable.LINEAR_GRADIENT);
+        mBottomBar.setBackground(bottomBack);
+        mBottomBar.setLayoutParams(bottomParams);
+        mBottomBar.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+
+        ImageView refresh = new ImageView(mContext);
+        refresh.setPadding(9, 9, 9, 9);
+        refresh.setImageResource(android.R.drawable.stat_notify_sync_noanim);
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reloadUrl();
+            }
+        });
+
+        ImageView close = new ImageView(mContext);
+        close.setPadding(9, 9, 9, 9);
+        close.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        mBottomBar.addView(refresh);
+        mBottomBar.addView(close);
+        mRootView.addView(mBottomBar);
+
         setContentView(mRootView);
     }
 
     private void initWebView() {
         mWebView.setWebViewClient(mClient);
         mWebView.setWebChromeClient(mChromeClient);
+        mWebView.requestFocusFromTouch();
         initWebSettings();
     }
 
@@ -167,6 +242,10 @@ public class ReaperActivity extends Activity {
         mSettings.setBuiltInZoomControls(true);
         //隐藏原生的缩放控件
         mSettings.setDisplayZoomControls(false);
+        //支持内容重新布局
+        mSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        //设置支持多窗口
+        mSettings.supportMultipleWindows();
         //关闭webview中缓存
         mSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
         // 开启 DOM storage API 功能
@@ -198,6 +277,8 @@ public class ReaperActivity extends Activity {
         }
         //如果访问的页面中要与Javascript交互，则webview必须设置支持Javascript
         mSettings.setJavaScriptEnabled(!mUrl.startsWith("file://"));
+        //支持通过JS打开新窗口
+        mSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         mWebView.loadUrl(mUrl);
     }
 
