@@ -26,14 +26,18 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
     // Override newActivity　method to proxy Activity, such as AkAdActivity
     @Override
     public Activity newActivity(ClassLoader cl, String className, Intent intent) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        ReaperLog.i(TAG, "classLoader = " + cl + ", className = " + className + ", Intent = " + intent);
+        ReaperLog.i(TAG, "className = " + className + ", Intent = " + intent);
+        ReaperLog.i(TAG, "\n");
         Intent akadIntent = intent;
         ClassLoader akadClassLoader = cl;
         if (className.equals(ProxyActivityName.PROXY_ACTIVITY)) {
             className = ReaperGlobal.getClassName();
             akadClassLoader = ReaperInstrumentationWrapper.class.getClassLoader();
+            ReaperLog.i(TAG, "new wrapper activity");
+            ReaperLog.i(TAG, "\n");
         }
-        ReaperLog.i(TAG, "fix classLoader = " + cl + ", className = " + className + ", Intent = " + intent + ", akadIntent = " + akadIntent);
+        ReaperLog.i(TAG, "fix className = " + className + ", Intent = " + intent + ", akadIntent = " + akadIntent);
+        ReaperLog.i(TAG, "\n");
         return super.newActivity(akadClassLoader, className, akadIntent);
     }
 
@@ -41,6 +45,7 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
                                             Intent intent, int requestCode, Bundle options) {
         ReaperLog.i(TAG, "who = " + who + ", IBinder = " + contextThread + ", token = " + token + ", target = " + target
                         + ", Intent = " + intent + ", requestCode = " + requestCode + ", options = " + options);
+        ReaperLog.i(TAG, "\n");
         Intent proxyIntent = new Intent();
         proxyIntent = intent;
         ComponentName componentName = intent.getComponent();
@@ -52,6 +57,8 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
                 proxyIntent.setComponent(proxyComponent);
                 proxyIntent.putExtras(intent.getExtras());
                 ReaperGlobal.setClassName(className);
+                ReaperLog.i(TAG, "start proxy activity");
+                ReaperLog.i(TAG, "\n");
             }
         }
         return hackInstrumentation.execStartActivity(who, contextThread, token, target,
