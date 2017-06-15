@@ -23,9 +23,8 @@ public class OkHttpDownloader {
     }
 
     public File downloadSync(Request request, String destFileDir, String destFileName,
-                             boolean keepExtension) {
+                             boolean keepExtension) throws Exception{
         Response response = null;
-
         try {
             // Clear cache
             mAdFileCacheUtil.clearCacheFile(new File(destFileDir));
@@ -34,12 +33,8 @@ public class OkHttpDownloader {
             response = mClient.newCall(request).execute();
             FileConvert convert = new FileConvert(destFileDir, destFileName, keepExtension);
             return convert.convert(response);
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             CloseUtils.closeIOQuietly(response);
         }
-
-        return null;
     }
 }

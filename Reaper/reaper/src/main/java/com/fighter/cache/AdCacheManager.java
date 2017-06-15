@@ -275,11 +275,9 @@ public class AdCacheManager{
                 case EVENT_VIEW_FAIL:
                 case EVENT_VIEW_SUCCESS:
                     EventDisPlayParam disPlayParam = new EventDisPlayParam();
+                    disPlayParam.ad_info = adInfo;
                     disPlayParam.ad_num = 1;
                     disPlayParam.ad_appid = Integer.parseInt(mAppId);
-                    disPlayParam.ad_posid = Integer.parseInt(adInfo.getAdPosId());
-                    disPlayParam.ad_source = adInfo.getAdName();
-                    disPlayParam.ad_type = adInfo.getAdType();
                     disPlayParam.app_pkg = context.getPackageName();
                     disPlayParam.result = actionEvent == EVENT_VIEW_SUCCESS ? "ok" : "fail";
                     disPlayParam.reason = actionEvent == EVENT_VIEW_SUCCESS ? "" : "onAdShow fail view is null";
@@ -287,11 +285,9 @@ public class AdCacheManager{
                     break;
                 case EVENT_CLICK:
                     EventClickParam clickParam = new EventClickParam();
+                    clickParam.ad_info = adInfo;
                     clickParam.ad_num = 1;
                     clickParam.ad_appid = Integer.parseInt(mAppId);
-                    clickParam.ad_posid = Integer.parseInt(adInfo.getAdPosId());
-                    clickParam.ad_source = adInfo.getAdName();
-                    clickParam.ad_type = adInfo.getAdType();
                     clickParam.app_pkg = context.getPackageName();
                     clickParam.click_pos = "(100*100)";/*this value should rewrite*/
                     tracker.trackClickEvent(context, clickParam);
@@ -305,11 +301,9 @@ public class AdCacheManager{
                 case EVENT_APP_INSTALL:
                 case EVENT_APP_ACTIVE:
                     EventActionParam actionParam = new EventActionParam();
+                    actionParam.ad_info = adInfo;
                     actionParam.ad_num = 1;
                     actionParam.ad_appid = Integer.parseInt(mAppId);
-                    actionParam.ad_posid = Integer.parseInt(adInfo.getAdPosId());
-                    actionParam.ad_source = adInfo.getAdName();
-                    actionParam.ad_type = adInfo.getAdType();
                     actionParam.app_pkg = context.getPackageName();
                     actionParam.act_type = loadAppActionType(actionEvent);
                     actionParam.reason = loadAppActReason(actionEvent, errMsg);
@@ -869,11 +863,10 @@ public class AdCacheManager{
                 }
                 if (isAdCacheTimeout(adCacheInfo) && adInfo != null) {
                     EventDisPlayParam param = new EventDisPlayParam();
+                    param.ad_info = adInfo;
                     param.ad_num = 1;
                     param.ad_appid = Integer.parseInt(mAppId);
-                    param.ad_posid = Integer.parseInt(adInfo.getAdPosId());
-                    param.ad_source = adInfo.getAdName();
-                    param.ad_type = adInfo.getAdType();
+                    param.ad_info = adInfo;
                     param.app_pkg = mContext.getPackageName();
                     param.result = "failed";
                     param.reason = "timeout";
@@ -1602,11 +1595,9 @@ public class AdCacheManager{
             imageFile = cacheAdFile(imageUrl);
         } catch (Exception e) {
             EventDownLoadParam param = new EventDownLoadParam();
+            param.ad_info = adInfo;
             param.ad_num = 1;
             param.ad_appid = Integer.parseInt(mAppId);
-            param.ad_posid = Integer.parseInt(adInfo.getAdPosId());
-            param.ad_source = adInfo.getAdName();
-            param.ad_type = adInfo.getAdType();
             param.app_pkg = mContext.getPackageName();
             param.reason = "OkHttpDownloader exception in sdk " + e.toString();
             mReaperTracker.trackDownloadEvent(mContext, param);

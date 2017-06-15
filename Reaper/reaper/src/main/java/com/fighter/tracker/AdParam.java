@@ -1,7 +1,8 @@
 package com.fighter.tracker;
 
+import com.fighter.ad.AdInfo;
+
 import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * THe common ad param for tracker
@@ -10,6 +11,10 @@ import java.util.HashSet;
  */
 
 class AdParam {
+
+    /** AdInfo for getting value **/
+    public AdInfo ad_info;
+
     /** ad package name */
     public String app_pkg;
 
@@ -17,13 +22,13 @@ class AdParam {
     public int ad_appid;
 
     /** ad position id */
-    public int ad_posid;
+//    public int ad_posid;
 
     /** ad source */
-    public String ad_source;
+//    public String ad_source;
 
     /** ad support type */
-    public String ad_type;
+//    public String ad_type;
 
     /** ad number */
     public int ad_num;
@@ -38,10 +43,16 @@ class AdParam {
         HashMap<String, String> map = new HashMap<>();
         map.put("app_pkg", app_pkg);
         map.put("ad_appid", String.valueOf(ad_appid));
-        map.put("ad_posid", String.valueOf(ad_posid));
-        map.put("ad_source", ad_source);
-        map.put("ad_type", ad_type);
+        map.put("ad_posid", ad_info.getAdPosId());
+        map.put("ad_source", ad_info.getAdName());
+        map.put("ad_type", ad_info.getAdType());
         map.put("ad_num", String.valueOf(ad_num));
+        map.put("title", ad_info.getTitle());
+        map.put("desc", ad_info.getDesc());
+        map.put("text", (String)ad_info.getExtra("text"));
+        map.put("imgurl", ad_info.getImgUrl());
+        map.put("btntext", (String)ad_info.getExtra("btntext"));
+        map.put("brandName", (String)ad_info.getExtra("brandName"));
         map.put("reserved1", reserved1 == null? "" : reserved1);
         map.put("reserved2", reserved2 == null? "" : reserved2);
         return map;
@@ -52,10 +63,16 @@ class AdParam {
         return "AdParam{" +
                 "app_pkg='" + app_pkg + '\'' +
                 ", ad_appid=" + ad_appid +
-                ", ad_posid=" + ad_posid +
-                ", ad_source='" + ad_source + '\'' +
-                ", ad_type='" + ad_type + '\'' +
-                ", ad_num=" + ad_num +
+                ", ad_posid=" + ad_info.getAdPosId() +
+                ", ad_source='" + ad_info.getAdName() + '\'' +
+                ", ad_type='" + ad_info.getAdType() + '\'' +
+                ", ad_num='" + ad_num + '\'' +
+                ", title='" + ad_info.getTitle() + '\'' +
+                ", desc='" + ad_info.getDesc() + '\'' +
+                ", text='" + (String)ad_info.getExtra("text") + '\'' +
+                ", imgurl='" + ad_info.getImgUrl() + '\'' +
+                ", btntext='" + (String)ad_info.getExtra("btntext") + '\'' +
+                ", brandName='" + (String)ad_info.getExtra("brandName") + '\'' +
                 ", reserved1='" + reserved1 + '\'' +
                 ", reserved2='" + reserved2 + '\'' +
                 '}';

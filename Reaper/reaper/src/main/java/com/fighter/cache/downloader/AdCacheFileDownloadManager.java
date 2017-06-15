@@ -5,20 +5,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
-import android.os.Handler;
 import android.text.TextUtils;
 
-import com.fighter.ad.AdInfo;
 import com.fighter.cache.AdFileCacheUtil;
 import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.wrapper.DownloadCallback;
-import com.fighter.wrapper.ISDKWrapper;
 
 import java.io.File;
 import java.util.UUID;
@@ -95,7 +91,7 @@ public class AdCacheFileDownloadManager {
      * @param imageUrl
      * @return
      */
-    public File cacheAdFile(String imageUrl) {
+    public File cacheAdFile(String imageUrl) throws Exception {
         if (TextUtils.isEmpty(mDownloadPath)) {
             mDownloadPath = mContext.getCacheDir() + File.separator + CACHE_FILE_DIR;
         }

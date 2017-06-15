@@ -3,7 +3,6 @@ package com.fighter.reaper.sample;
 
 import com.fighter.loader.ReaperApplication;
 import com.fighter.reaper.sample.config.SampleConfig;
-import com.fighter.reaper.sample.utils.ResponseGenerator;
 import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.utils.ToastUtil;
 
