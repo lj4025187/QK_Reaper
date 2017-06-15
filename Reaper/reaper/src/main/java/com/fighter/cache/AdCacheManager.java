@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.ArrayMap;
-import android.util.Log;
 
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
@@ -277,8 +276,8 @@ public class AdCacheManager{
                 case EVENT_VIEW_SUCCESS:
                     EventDisPlayParam disPlayParam = new EventDisPlayParam();
                     disPlayParam.ad_num = 1;
-                    disPlayParam.ad_appid = 12222;/*this value should rewrite*/
-                    disPlayParam.ad_posid = Integer.valueOf(adInfo.getAdPosId());
+                    disPlayParam.ad_appid = Integer.parseInt(mAppId);
+                    disPlayParam.ad_posid = Integer.parseInt(adInfo.getAdPosId());
                     disPlayParam.ad_source = adInfo.getAdName();
                     disPlayParam.ad_type = adInfo.getAdType();
                     disPlayParam.app_pkg = context.getPackageName();
@@ -289,8 +288,8 @@ public class AdCacheManager{
                 case EVENT_CLICK:
                     EventClickParam clickParam = new EventClickParam();
                     clickParam.ad_num = 1;
-                    clickParam.ad_appid = 12222;/*this value should rewrite*/
-                    clickParam.ad_posid = Integer.valueOf(adInfo.getAdPosId());
+                    clickParam.ad_appid = Integer.parseInt(mAppId);
+                    clickParam.ad_posid = Integer.parseInt(adInfo.getAdPosId());
                     clickParam.ad_source = adInfo.getAdName();
                     clickParam.ad_type = adInfo.getAdType();
                     clickParam.app_pkg = context.getPackageName();
@@ -307,8 +306,8 @@ public class AdCacheManager{
                 case EVENT_APP_ACTIVE:
                     EventActionParam actionParam = new EventActionParam();
                     actionParam.ad_num = 1;
-                    actionParam.ad_appid = 12222;
-                    actionParam.ad_posid = 10003;
+                    actionParam.ad_appid = Integer.parseInt(mAppId);
+                    actionParam.ad_posid = Integer.parseInt(adInfo.getAdPosId());
                     actionParam.ad_source = adInfo.getAdName();
                     actionParam.ad_type = adInfo.getAdType();
                     actionParam.app_pkg = context.getPackageName();
@@ -872,7 +871,7 @@ public class AdCacheManager{
                     EventDownLoadParam param = new EventDownLoadParam();
                     param.ad_num = 1;
                     param.ad_appid = Integer.parseInt(mAppId);
-                    param.ad_posid = Integer.valueOf(adInfo.getAdPosId());
+                    param.ad_posid = Integer.parseInt(adInfo.getAdPosId());
                     param.ad_source = adInfo.getAdName();
                     param.ad_type = adInfo.getAdType();
                     param.app_pkg = mContext.getPackageName();
