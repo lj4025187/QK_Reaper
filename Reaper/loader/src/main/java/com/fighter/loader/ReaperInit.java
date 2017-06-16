@@ -310,16 +310,13 @@ public class ReaperInit {
             reaperFiles.add(reaperFile);
         }
 
-        if (reaperFiles.size() <= 0) {
-            LoaderLog.e(TAG, "getPatchForHighestVersion, cant find ReaperFile .");
-            return null;
-        }
-
         List<ReaperPatch> patches =
                 ReaperPatchManager.getInstance()
                         .unpackPatches(context, reaperFiles, context.getApplicationContext().getClassLoader());
         ReaperPatch sdReaperPatch = loadReaperFileByPath(REAPER_DIR_SDCARD);
         if (sdReaperPatch != null) {
+            if (patches == null)
+                patches = new ArrayList<>();
             patches.add(sdReaperPatch);
         }
 

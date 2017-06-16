@@ -282,6 +282,7 @@ public class ReaperNetwork {
             params.put("time", versionTime);
             ReaperLog.e(TAG, "versionTime : " + versionTime);
             JSONObject result = ac.getAppConfSyncCustom(params);
+            ReaperLog.e(TAG, "queryVersion ：　" + result);
             if (result == null) {
                 if (DEBUG_DOWNLOAD)
                     ReaperLog.e(TAG, "getAppConfSyncCustom == null");
