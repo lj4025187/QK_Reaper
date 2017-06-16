@@ -89,7 +89,7 @@ public class BaseItemHolder<T extends BaseItem> {
             baseView.setBackgroundColor(Color.parseColor("#FFFBFBFC"));
             adDesParent.setBackgroundColor(Color.parseColor("#FFFBFBFC"));
         }
-        AdInfo adInfo = iItem.getAdInfo();
+        final AdInfo adInfo = iItem.getAdInfo();
         viewType.setText(SampleConfig.getViewTypeString(context, iItem.getViewType()));
         detailType.setText((String) adInfo.getExtra(DETAIL_TYPE_KEY));
         srcName.setText(SampleConfig.getAdSrcName(context, adInfo));
@@ -109,6 +109,7 @@ public class BaseItemHolder<T extends BaseItem> {
             adDesc.setText(desc);
         }
 
+        final String localId = (String) adInfo.getExtra("adLocalPosId");
         final File imageFile = adInfo.getImgFile();
         String imageUrl = adInfo.getImgUrl();
         if(imageFile == null) {
@@ -121,7 +122,7 @@ public class BaseItemHolder<T extends BaseItem> {
                         .into(new SimpleTarget<Bitmap>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
                             @Override
                             public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                                setImageSize(resource, false);
+                                setImageSize(resource, false, localId);
                             }
                         });
             }
@@ -141,7 +142,7 @@ public class BaseItemHolder<T extends BaseItem> {
                             @Override
                             public boolean onResourceReady(GifDrawable gifDrawable, File file, Target<GifDrawable> target, boolean b, boolean b1) {
                                 Bitmap resource = gifDrawable.getFirstFrame();
-                                setImageSize(resource, isGif);
+                                setImageSize(resource, isGif, localId);
                                 return false;
                             }
                         })
@@ -154,7 +155,7 @@ public class BaseItemHolder<T extends BaseItem> {
                         .into(new SimpleTarget<Bitmap>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
                             @Override
                             public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                                setImageSize(resource, isGif);
+                                setImageSize(resource, isGif, localId);
                             }
                         });
 //                Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
@@ -182,12 +183,13 @@ public class BaseItemHolder<T extends BaseItem> {
      * @param resource
      * @param isGif
      */
-    private void setImageSize(Bitmap resource, boolean isGif){
+    private void setImageSize(Bitmap resource, boolean isGif, String localId){
         int imageWidth = resource.getWidth();
         int imageHeight = resource.getHeight();
         if(!isGif) {
             adView.setImageBitmap(resource);
         }
-        imageSize.setText((isGif ? "gif-" : "jpg-") + "W:H---" + imageWidth + "*" + imageHeight);
+
+        imageSize.setText((isGif ? "gif-" : "jpg-") + "W:H---" + imageWidth + "*" + imageHeight + "\n" + localId);
     }
 }
