@@ -52,6 +52,7 @@ class AdParam {
         map.put("text", (String)ad_info.getExtra("text"));
         map.put("imgurl", ad_info.getImgUrl());
         map.put("btntext", (String)ad_info.getExtra("btntext"));
+        map.put("btnurl", (String)ad_info.getExtra("btnurl"));
         map.put("brandName", (String)ad_info.getExtra("brandName"));
         map.put("reserved1", reserved1 == null? "" : reserved1);
         map.put("reserved2", reserved2 == null? "" : reserved2);
