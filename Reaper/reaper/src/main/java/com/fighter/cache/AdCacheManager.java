@@ -81,6 +81,11 @@ import static com.fighter.ad.AdEvent.EVENT_VIEW_SUCCESS;
 public class AdCacheManager implements DownloadCallback{
 
     private static final String TAG = AdCacheManager.class.getSimpleName();
+    private static final String EXTRA_EVENT_DOWN_X = "downX";
+    private static final String EXTRA_EVENT_DOWN_Y = "downY";
+    private static final String EXTRA_EVENT_UP_X = "upX";
+    private static final String EXTRA_EVENT_UP_Y = "upY";
+
     private static final long EFFECTIVE_TIME = 3*60*1000;
     private static final String SALT = "cf447fe3adac00476ee9244fd30fba74";
     private static final String METHOD_ON_RESPONSE = "onResponse";
@@ -1086,7 +1091,7 @@ public class AdCacheManager implements DownloadCallback{
                 clickParam.ad_num = 1;
                 clickParam.ad_appid = Integer.parseInt(mAppId);
                 clickParam.app_pkg = mContext.getPackageName();
-                clickParam.click_pos = "(100*100)";/*this value should rewrite*/
+                clickParam.click_pos = loadCoordinate(adInfo);
                 mReaperTracker.trackClickEvent(mContext, clickParam);
                 break;
             case EVENT_CLOSE:
@@ -1223,6 +1228,29 @@ public class AdCacheManager implements DownloadCallback{
             actionUrl = iSdkWrapper.requestDownloadUrl(adInfo);
         }
         return actionUrl;
+    }
+
+    private String loadCoordinate(AdInfo adInfo) {
+        Map<String, Object> eventParams = adInfo.getAdAllParams();
+        int downX = -999;
+        int downY = -999;
+        int upX = -999;
+        int upY = -999;
+        if (eventParams != null) {
+            if (eventParams.containsKey(EXTRA_EVENT_DOWN_X)) {
+                downX = (int) eventParams.get(EXTRA_EVENT_DOWN_X);
+            }
+            if (eventParams.containsKey(EXTRA_EVENT_DOWN_Y)) {
+                downY = (int) eventParams.get(EXTRA_EVENT_DOWN_Y);
+            }
+            if (eventParams.containsKey(EXTRA_EVENT_UP_X)) {
+                upX = (int) eventParams.get(EXTRA_EVENT_UP_X);
+            }
+            if (eventParams.containsKey(EXTRA_EVENT_UP_Y)) {
+                upY = (int) eventParams.get(EXTRA_EVENT_UP_Y);
+            }
+        }
+        return "downX:" + downX + " dowY:" + downY + " upX:" + upX + " upY:" + upY;
     }
 
     @Override

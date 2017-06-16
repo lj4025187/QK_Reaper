@@ -107,7 +107,7 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
                 if (adInfo.getActionType() == 2) {
                     showDownloadDialog(adInfo, v);
                 } else {
-                    adInfo.onAdClicked(mActivity, v, 0, 0, 0, 0);
+                    adInfo.onAdClicked(mActivity, v, (int)v.getX(), (int)v.getY(), (int)v.getX(), (int)v.getY());
                 }
             }
         });
@@ -123,7 +123,7 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         ToastUtil.getInstance(mContext).showSingletonToast(R.string.toast_start_download);
-                        adInfo.onAdClicked(mActivity, view, 0, 0, 0, 0);
+                        adInfo.onAdClicked(mActivity, view, (int)view.getX(), (int)view.getY(), (int)view.getX(), (int)view.getY());
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {

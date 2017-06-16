@@ -15,14 +15,14 @@ public class EventDownLoadParam extends AdParam {
     @Override
     HashMap<String, String> generateMap() {
         HashMap<String, String> map = super.generateMap();
-        map.put("reason", reason);
+        map.put(TrackerConfig.DOWN_LAOD_REASON_KEY, reason);
         return map;
     }
 
     @Override
     public String toString() {
         return "EventDownLoadParam{" +
-                "reason='" + reason + '\'' + ", "
+                TrackerConfig.DOWN_LAOD_REASON_KEY + "='" + reason + '\'' + ", "
                  + super.toString() + '}';
     }
 }

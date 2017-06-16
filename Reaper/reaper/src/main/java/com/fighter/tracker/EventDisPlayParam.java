@@ -19,16 +19,16 @@ public class EventDisPlayParam extends AdParam {
     @Override
     HashMap<String, String> generateMap() {
         HashMap<String, String> map = super.generateMap();
-        map.put("result", result);
-        map.put("reason", reason == null ? "" : reason);
+        map.put(TrackerConfig.DISPLAY_RESULT_KEY, result);
+        map.put(TrackerConfig.DISPLAY_REASON_KEY, reason == null ? "" : reason);
         return map;
     }
 
     @Override
     public String toString() {
         return "EventDisPlayParam{" +
-                "result='" + result + '\'' +
-                ", reason='" + reason + '\'' +
+                TrackerConfig.DISPLAY_RESULT_KEY + "='" + result + '\'' +
+                TrackerConfig.DISPLAY_REASON_KEY + "='" + reason + '\'' +
                 ", " + super.toString() + '}';
     }
 }

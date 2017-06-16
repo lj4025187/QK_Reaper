@@ -23,22 +23,22 @@ public class EventActionParam extends AdParam {
     @Override
     HashMap<String, String> generateMap() {
         HashMap<String, String> map = super.generateMap();
-        map.put("act_type", act_type);
-        map.put("reason", reason);
-        map.put("download_app_pkg", download_app_pkg);
-        map.put("download_app_name", download_app_name);
-        map.put("download_url", download_url);
+        map.put(TrackerConfig.ACTION_ACT_TYPE_KEY,      act_type);
+        map.put(TrackerConfig.ACTION_REASON_KEY,        reason);
+        map.put(TrackerConfig.ACTION_APP_PKG_KEY,       download_app_pkg);
+        map.put(TrackerConfig.ACTION_DOWNLOAD_APP_KEY,  download_app_name);
+        map.put(TrackerConfig.ACTION_DOWNLOAD_URL_KEY,  download_url);
         return map;
     }
 
     @Override
     public String toString() {
         return "EventActionParam{" +
-                "act_type='" + act_type + '\'' + ", " +
-                (!TextUtils.isEmpty(reason) ? ("reason='" + reason + '\'' + ", ") : "")+
-                (!TextUtils.isEmpty(download_app_pkg) ? ("download_app_pkg='" + download_app_pkg + '\'' + ", ") : "")+
-                (!TextUtils.isEmpty(download_url) ? ("download_url='" + download_url + '\'' + ", ") : "")+
-                (!TextUtils.isEmpty(download_app_name) ? ("download_app_name='" + download_app_name + '\'' + ", ") : "")+
+                TrackerConfig.ACTION_ACT_TYPE_KEY + "='" + act_type + '\'' + ", " +
+                (!TextUtils.isEmpty(reason) ? (TrackerConfig.ACTION_REASON_KEY + "='" + reason + '\'' + ", ") : "")+
+                (!TextUtils.isEmpty(download_app_pkg) ? (TrackerConfig.ACTION_APP_PKG_KEY + "='" + download_app_pkg + '\'' + ", ") : "")+
+                (!TextUtils.isEmpty(download_url) ? (TrackerConfig.ACTION_DOWNLOAD_URL_KEY + "='" + download_url + '\'' + ", ") : "")+
+                (!TextUtils.isEmpty(download_app_name) ? (TrackerConfig.ACTION_DOWNLOAD_APP_KEY + "='" + download_app_name + '\'' + ", ") : "")+
                 super.toString() +
                 '}';
     }
