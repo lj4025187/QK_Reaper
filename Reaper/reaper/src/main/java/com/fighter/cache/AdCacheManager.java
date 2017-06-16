@@ -1074,15 +1074,24 @@ public class AdCacheManager implements DownloadCallback{
     private void trackActionEvent(int actionEvent, AdInfo adInfo, String errMsg) {
         switch (actionEvent) {
             case EVENT_VIEW_FAIL:
-            case EVENT_VIEW_SUCCESS:
                 EventDisPlayParam disPlayParam = new EventDisPlayParam();
                 disPlayParam.ad_info = adInfo;
                 disPlayParam.ad_num = 1;
                 disPlayParam.ad_appid = Integer.parseInt(mAppId);
                 disPlayParam.app_pkg = mContext.getPackageName();
-                disPlayParam.result = actionEvent == EVENT_VIEW_SUCCESS ? "ok" : "fail";
-                disPlayParam.reason = actionEvent == EVENT_VIEW_SUCCESS ? "" : "onAdShow fail view is null";
+                disPlayParam.result = "fail";
+                disPlayParam.reason = "onAdShow fail view is null";
                 mReaperTracker.trackDisplayEvent(mContext, disPlayParam);
+                break;
+            case EVENT_VIEW_SUCCESS:
+                EventDisPlayParam successParam = new EventDisPlayParam();
+                successParam.ad_info = adInfo;
+                successParam.ad_num = 1;
+                successParam.ad_appid = Integer.parseInt(mAppId);
+                successParam.app_pkg = mContext.getPackageName();
+                successParam.result = "ok";
+                successParam.reason = "";
+                mReaperTracker.trackDisplayEvent(mContext, successParam);
                 break;
             case EVENT_CLICK:
                 handleClickAction(adInfo);

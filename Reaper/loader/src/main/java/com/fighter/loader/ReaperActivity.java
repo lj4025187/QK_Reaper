@@ -52,12 +52,6 @@ public class ReaperActivity extends Activity {
     private LinearLayout mBottomBar;
     private WebViewClient mClient = new WebViewClient() {
 
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            loadUrl(view, url);
-            return true;
-        }
-
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {

@@ -103,10 +103,9 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                adInfo.onAdClicked(null, null, 0, 0, 0, 0);
                 if (adInfo.getActionType() == 2) {
                     showDownloadDialog(adInfo, v);
-                } else {
+                } else if (adInfo.getActionType() == 1) {
                     adInfo.onAdClicked(mActivity, v, (int)v.getX(), (int)v.getY(), (int)v.getX(), (int)v.getY());
                 }
             }

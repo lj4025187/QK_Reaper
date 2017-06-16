@@ -114,6 +114,7 @@ public class BaseItemHolder<T extends BaseItem> {
         String imageUrl = adInfo.getImgUrl();
         if(imageFile == null) {
             if(TextUtils.isEmpty(imageUrl)) {
+                setImageSize(null, false, localId);
                 ViewUtils.setViewVisibility(adView, View.GONE);
             } else {
                 Glide.with(baseView.getContext())
@@ -184,6 +185,10 @@ public class BaseItemHolder<T extends BaseItem> {
      * @param isGif
      */
     private void setImageSize(Bitmap resource, boolean isGif, String localId){
+        if(resource == null){
+            imageSize.setText(localId);
+            return;
+        }
         int imageWidth = resource.getWidth();
         int imageHeight = resource.getHeight();
         if(!isGif) {
