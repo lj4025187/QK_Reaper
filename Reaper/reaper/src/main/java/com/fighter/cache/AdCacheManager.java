@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.ArrayMap;
+import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 
 import com.fighter.ad.AdInfo;
@@ -1065,7 +1066,8 @@ public class AdCacheManager implements DownloadCallback{
                 clickParam.ad_appid = Integer.parseInt(mAppId);
                 clickParam.app_pkg = mContext.getPackageName();
                 clickParam.click_pos = loadCoordinate(adInfo);
-                mReaperTracker.trackClickEvent(mContext, clickParam);
+                if(checkCoordinateValid(adInfo))
+                    mReaperTracker.trackClickEvent(mContext, clickParam);
                 break;
             case EVENT_CLOSE:
                 break;
@@ -1225,6 +1227,35 @@ public class AdCacheManager implements DownloadCallback{
             }
         }
         return "downX:" + downX + " dowY:" + downY + " upX:" + upX + " upY:" + upY;
+    }
+
+    private boolean checkCoordinateValid(AdInfo adInfo){
+        Map<String, Object> eventParams = adInfo.getAdAllParams();
+        if (eventParams == null) return false;
+        int downX = -999;
+        int downY = -999;
+        int upX = -999;
+        int upY = -999;
+        if (eventParams.containsKey(EXTRA_EVENT_DOWN_X)) {
+            downX = (int) eventParams.get(EXTRA_EVENT_DOWN_X);
+        }
+        if (eventParams.containsKey(EXTRA_EVENT_DOWN_Y)) {
+            downY = (int) eventParams.get(EXTRA_EVENT_DOWN_Y);
+        }
+        if (eventParams.containsKey(EXTRA_EVENT_UP_X)) {
+            upX = (int) eventParams.get(EXTRA_EVENT_UP_X);
+        }
+        if (eventParams.containsKey(EXTRA_EVENT_UP_Y)) {
+            upY = (int) eventParams.get(EXTRA_EVENT_UP_Y);
+        }
+        if(downX < 0 || downY < 0 || upX < 0 || upY < 0) {
+            return false;
+        } else {
+            DisplayMetrics displayMetrics = mContext.getResources().getDisplayMetrics();
+            int maxX = displayMetrics.widthPixels;
+            int maxY = displayMetrics.heightPixels;
+            return !(downX > maxX || upX > maxX || downY > maxY || upY > maxY);
+        }
     }
 
     @Override
