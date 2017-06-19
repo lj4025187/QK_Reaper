@@ -88,11 +88,18 @@ public class ReaperApi {
             ReaperLog.e(TAG, "[init] app id is null");
             return;
         }
-
+        try {
+            Integer integer = Integer.valueOf(mAppId);
+        } catch (NumberFormatException nfe) {
+            ReaperLog.e(TAG, "[init] app id is Illegal");
+            nfe.printStackTrace();
+            return;
+        }
         if (TextUtils.isEmpty(mAppKey)) {
             ReaperLog.e(TAG, "[init] app key is null");
             return;
         }
+        
         ReaperActivityThreadHook.wrapInstrumentation();
         mAdCacheManager = AdCacheManager.getInstance();
         mAdCacheManager.init(mContext, mAppId, mAppKey);
