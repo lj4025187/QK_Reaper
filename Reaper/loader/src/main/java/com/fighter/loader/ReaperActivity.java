@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
@@ -44,6 +45,7 @@ import com.fighter.utils.LoaderLog;
 public class ReaperActivity extends Activity {
 
     private final static String TAG = ReaperActivity.class.getSimpleName();
+    private final static int REQUEST_CODE = 6666;
 
     private Context mContext;
     private RelativeLayout mRootView;
@@ -140,18 +142,50 @@ public class ReaperActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = getApplicationContext();
-        initView();
         Intent intent = getIntent();
-        if (intent != null) {
-            String url = intent.getStringExtra("url");
-            if (!TextUtils.isEmpty(url)) {
-                mUrl = url;
-                reloadUrl();
+        if (intent == null) return;
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        int requestCode = intent.getIntExtra("requestCode", -1);
+        switch (requestCode) {
+            case 8888://value in RuntimePermissionManager
+                String[] needPermissions = intent.getStringArrayExtra("needPermissions");
+                initTransparentView(needPermissions);
+                break;
+            case 9999://value in AdCacheManager
+                initWebRootView();
+                String url = intent.getStringExtra("url");
+                if (!TextUtils.isEmpty(url)) {
+                    mUrl = url;
+                    reloadUrl();
+                }
+            default:
+                break;
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void initTransparentView(String[] needPermissions) {
+        setTheme(android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
+        requestPermissions(needPermissions, REQUEST_CODE);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode != REQUEST_CODE || permissions == null || permissions.length == 0) return;
+        int length = permissions.length;
+        for (int i = 0; i < length; i++) {
+            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{permissions[i]}, REQUEST_CODE);
             }
         }
     }
 
-    private void initView() {
+    private void initWebRootView() {
+        setTheme(android.R.style.Theme_Black_NoTitleBar);
         mRootView = new RelativeLayout(mContext);
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
         mRootView.setBackground(new ColorDrawable(Color.parseColor("#f9f9f9")));
@@ -309,6 +343,8 @@ public class ReaperActivity extends Activity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(mWebView == null)
+            return super.onKeyDown(keyCode, event);
         if ((keyCode == KeyEvent.KEYCODE_BACK) && mWebView.canGoBack()) {
             mWebView.goBack();
             return true;

@@ -49,11 +49,11 @@ class AdParam {
         map.put(TrackerConfig.AD_NUM_KEY,          String.valueOf(ad_num));
         map.put(TrackerConfig.TITLE_KEY,           ad_info.getTitle());
         map.put(TrackerConfig.DESC_KEY,            ad_info.getDesc());
-        map.put(TrackerConfig.TEXT_KEY,            (String)ad_info.getExtra("text"));
+        map.put(TrackerConfig.TEXT_KEY,            ad_info.getText());
         map.put(TrackerConfig.IMG_URL_KEY,         ad_info.getImgUrl());
-        map.put(TrackerConfig.BTN_TEXT_KEY,        (String)ad_info.getExtra("btntext"));
-        map.put(TrackerConfig.BTN_URL_KEY,         (String)ad_info.getExtra("btnurl"));
-        map.put(TrackerConfig.BRAND_NAME_KEY,      (String)ad_info.getExtra("brandName"));
+        map.put(TrackerConfig.BTN_TEXT_KEY,        ad_info.getBtnText());
+        map.put(TrackerConfig.BTN_URL_KEY,         ad_info.getBtnUrl());
+        map.put(TrackerConfig.BRAND_NAME_KEY,      ad_info.getBrandName());
         map.put(TrackerConfig.RESERVER_ONE_KEY,    reserved1 == null? "" : reserved1);
         map.put(TrackerConfig.RESERVER_TWO_KEY,    reserved2 == null? "" : reserved2);
         return map;

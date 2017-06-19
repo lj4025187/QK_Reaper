@@ -87,6 +87,7 @@ public class AdCacheManager implements DownloadCallback{
     private static final String EXTRA_EVENT_UP_Y = "upY";
 
     private static final long EFFECTIVE_TIME = 3*60*1000;
+    private static final int REQUEST_CODE = 9999;
     private static final String SALT = "cf447fe3adac00476ee9244fd30fba74";
     private static final String METHOD_ON_RESPONSE = "onResponse";
 
@@ -1128,8 +1129,9 @@ public class AdCacheManager implements DownloadCallback{
                         try {
                             Class<?> reaperClass = Class.forName("com.fighter.loader.ReaperActivity");
                             Intent intent = new Intent(mContext, reaperClass);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             intent.putExtra("url", actionUrl);
+                            intent.putExtra("requestCode", REQUEST_CODE);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             mContext.startActivity(intent);
                         } catch (ClassNotFoundException e) {
                             OpenUtils.openWebUrl(mContext, actionUrl);

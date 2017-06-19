@@ -449,7 +449,6 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     adInfo.setImgUrl(akAdImgUrl);
                     adInfo.setTitle(akAdTitle);
                     adInfo.setDesc(akAdDesc);
-
                     break;
                 }
                 if (adInfo != null) {

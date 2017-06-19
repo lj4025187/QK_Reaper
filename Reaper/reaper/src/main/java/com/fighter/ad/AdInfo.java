@@ -125,6 +125,22 @@ public class AdInfo {
      */
     private static final String KEY_DESC = "desc";
     /**
+     * 广告文字内容
+     */
+    private static final String KEY_TEXT = "text";
+    /**
+     * 广告按钮文字
+     */
+    private static final String KEY_BTN_TEXT = "btntext";
+    /**
+     * 广告按钮url
+     */
+    private static final String KEY_BTN_URL = "btnurl";
+    /**
+     * 广告品牌名称
+     */
+    private static final String KEY_BRAND_NAME = "brandName";
+    /**
      * 广告目标APP的logo链接，
      * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
      */
@@ -286,6 +302,38 @@ public class AdInfo {
 
     public void setDesc(String desc) {
         putParam(KEY_DESC, desc);
+    }
+
+    public String getText() {
+        return (String) mAdParams.get(KEY_TEXT);
+    }
+
+    public void setText(String text) {
+        putParam(KEY_TEXT, text);
+    }
+
+    public String getBtnText(){
+        return (String) mAdParams.get(KEY_BTN_TEXT);
+    }
+
+    public void setBtnText(String btnText) {
+        putParam(KEY_BTN_TEXT, btnText);
+    }
+
+    public String getBtnUrl(){
+        return (String) mAdParams.get(KEY_BTN_URL);
+    }
+
+    public void setBtnUrl(String btnUrl) {
+        putParam(KEY_BTN_TEXT, btnUrl);
+    }
+
+    public String getBrandName(){
+        return (String) mAdParams.get(KEY_BRAND_NAME);
+    }
+
+    public void setBrandName(String brandName) {
+        putParam(KEY_BRAND_NAME, brandName);
     }
 
     public String getAppIconUrl() {
