@@ -88,6 +88,7 @@ public class AdCacheManager implements DownloadCallback{
 
     private static final long EFFECTIVE_TIME = 3*60*1000;
     private static final int REQUEST_CODE = 9999;
+    private static final int MAX_REQUEST_AD_COUNT = 5;
     private static final String SALT = "cf447fe3adac00476ee9244fd30fba74";
     private static final String METHOD_ON_RESPONSE = "onResponse";
 
@@ -695,7 +696,8 @@ public class AdCacheManager implements DownloadCallback{
         mCacheId = cacheId;
         mCallBack = callBack;
         postUpdateConfigTask();
-        for(int i = 0; i < adCount; i++) {
+        int count = adCount > MAX_REQUEST_AD_COUNT ? MAX_REQUEST_AD_COUNT : adCount;
+        for(int i = 0; i < count; i++) {
             postAdRequestTask(mCacheId, mCallBack);
         }
     }
