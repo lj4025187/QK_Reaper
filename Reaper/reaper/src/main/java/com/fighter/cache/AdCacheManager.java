@@ -161,35 +161,11 @@ public class AdCacheManager implements DownloadCallback{
 
     private class TrackerRunnable extends PriorityTaskDaemon.TaskRunnable{
 
-        private final String TAG = TrackerRunnable.class.getSimpleName();
-//        private Context context;
-//        private Tracker tracker;
         private int actionEvent;
         private AdInfo adInfo;
-//        private String errMsg;
-//        private ApkInstallReceiver installReceiver;
-
-//        public void setContext(Context context) {
-//            this.context = context;
-//        }
-
-//        public void setTracker(Tracker tracker) {
-//            this.tracker = tracker;
-//        }
-
-        public void setActionEvent(int actionEvent) {
-            this.actionEvent = actionEvent;
-        }
-
-        public void setAdInfo(AdInfo adInfo) {
-            this.adInfo = adInfo;
-        }
-
-//        public void setErrMsg(String errMsg) {
-//            this.errMsg = adInfo.getAdName() + " " + errMsg;
-//        }
 
         public TrackerRunnable() {
+
         }
 
         public TrackerRunnable(int actionEvent, AdInfo adInfo) {
@@ -197,15 +173,12 @@ public class AdCacheManager implements DownloadCallback{
             this.adInfo = adInfo;
         }
 
+        public void setAdInfo(AdInfo adInfo) {
+            this.adInfo = adInfo;
+        }
+
         @Override
         public Object doSomething() {
-//            if (context == null) {
-//                ReaperLog.e(TAG, "tracker runnable init context is null");
-//                return null;
-//            }
-            //open web url or download app
-//            handleTouchEvent(actionEvent, adInfo);
-
             //ISdkWrapper onEvent
             String adName = adInfo.getAdName();
             if(!TextUtils.isEmpty(adName)) {
@@ -216,9 +189,6 @@ public class AdCacheManager implements DownloadCallback{
                     ReaperLog.e("Reaper sdk can not support " + adName);
                 }
             }
-
-            //Tracker onEvent
-//            trackActionEvent(actionEvent, errMsg, adInfo);
             return adInfo;
         }
 
@@ -1009,44 +979,35 @@ public class AdCacheManager implements DownloadCallback{
 
     /**
      * post tracker event task in this method
-     * @param adInfo
-     * @param actionEvent
-     */
-    private void postTrackerTask(AdInfo adInfo, int actionEvent) {
-        postTrackerTask(adInfo, actionEvent, null);
-    }
-
-    /**
-     * post tracker event task in this method
      *
      * @param actionEvent 行为事件
      * @param adInfo      广告信息
-     * @param errMsg      用来描述下载失败原因
      */
-    private void postTrackerTask(final AdInfo adInfo, int actionEvent, String errMsg) {
-//        TrackerRunnable trackerRunnable = new TrackerRunnable(context, tracker, actionEvent, adInfo, wrapper);
-//        TrackerTask trackerTask = new TrackerTask(
-//                PriorityTaskDaemon.PriorityTask.PRI_FIRST,
-//                trackerRunnable,
-//                new PriorityTaskDaemon.TaskNotify() {
-//                    @Override
-//                    public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
-//                        ReaperLog.i(TAG, "tracker task onResult method is called");
-//                        if (result.equals(adInfo)) {
-//                            ReaperLog.i(TAG, "tracker ad info " + adInfo.getAdPosId() + "tracker event has handled");
-//                        }
-//                    }
-//                }
-//        );
+    private void postTrackerTask(final AdInfo adInfo, int actionEvent) {
         if(adInfo == null)
             return;
+        TrackerRunnable trackerRunnable = new TrackerRunnable(actionEvent, adInfo);
+        TrackerTask trackerTask = new TrackerTask(
+                PriorityTaskDaemon.PriorityTask.PRI_FIRST,
+                trackerRunnable,
+                new PriorityTaskDaemon.TaskNotify() {
+                    @Override
+                    public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+                        ReaperLog.i(TAG, "tracker task onResult method is called");
+                        if (result.equals(adInfo)) {
+                            ReaperLog.i(TAG, "tracker ad info " + adInfo.getAdPosId() + "tracker event has handled");
+                        }
+                    }
+                }
+        );
+        mWorkThread.postTaskInFront(trackerTask);
 //        mTrackerRunner.setContext(mContext);
 //        mTrackerRunner.setTracker(mReaperTracker);
-        mTrackerRunner.setActionEvent(actionEvent);
-        mTrackerRunner.setAdInfo(adInfo);
+//        mTrackerRunner.setActionEvent(actionEvent);
+//        mTrackerRunner.setAdInfo(adInfo);
 //        if(!TextUtils.isEmpty(errMsg))
 //            mTrackerRunner.setErrMsg(errMsg);
-        mWorkThread.postTask(mTrackerTask);
+//        mWorkThread.postTask(mTrackerTask);
     }
 
     /**

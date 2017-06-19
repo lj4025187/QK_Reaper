@@ -139,7 +139,6 @@ public class ReaperActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LoaderLog.i(TAG, "onCreate method exc");
         mContext = getApplicationContext();
         initView();
         Intent intent = getIntent();
