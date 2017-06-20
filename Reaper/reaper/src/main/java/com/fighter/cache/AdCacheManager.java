@@ -537,6 +537,7 @@ public class AdCacheManager implements DownloadCallback{
                     param.result = "failed";
                     param.reason = "timeout";
                     mReaperTracker.trackDisplayEvent(mContext, param);
+                    setCacheTimeout(adCacheInfo);
                 } else {
                     setCacheUsed(adCacheInfo);
                     return adInfo;
@@ -779,12 +780,26 @@ public class AdCacheManager implements DownloadCallback{
         }
     }
 
+    private void setCacheTimeout(AdCacheInfo adCacheInfo) {
+        if (adCacheInfo == null)
+            return;
+        adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_TIMEOUT);
+        updateDiskCache(adCacheInfo);
+        ArrayMap<String, Object> cacheObjects = mAdCache.get(adCacheInfo.getAdCacheId());
+        if (cacheObjects == null)
+            return;
+        if (cacheObjects.size() > 1) {
+            cacheObjects.remove(adCacheInfo.getUuid());
+            cleanBeforeCache(adCacheInfo);
+        }
+    }
+
     private void setCacheUsed(AdCacheInfo adCacheInfo) {
 //        Log.i(TAG, "setCacheUsd");
 //        Log.i(TAG, "\n\n");
         if (adCacheInfo == null)
             return;
-        adCacheInfo.setCacheState(AdCacheInfo.CACHE_BACK_TO_USER);
+        adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_RETURN);
         updateDiskCache(adCacheInfo);
 //        Log.i(TAG, "setCacheUsed adCacheInfo : " + adCacheInfo.getUuid() + ", mState: " + adCacheInfo.getCacheState());
 //        Log.i(TAG, "\n\n");
@@ -797,9 +812,9 @@ public class AdCacheManager implements DownloadCallback{
         if (cacheObjects == null)
             return;
         Object object = cacheObjects.get(adInfo.getUUID());
-        if (object instanceof AdCacheInfo) {
+        if (object instanceof AdCacheInfo && !((AdCacheInfo) object).isHoldAd()) {
             AdCacheInfo adCacheInfo = (AdCacheInfo) object;
-            adCacheInfo.setCacheState(AdCacheInfo.CACHE_DISPLAY_BY_USER);
+            adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_DISPLAY);
             if (cacheObjects.size() > 1) {
                 cacheObjects.remove(adCacheInfo.getUuid());
                 cleanBeforeCache(adCacheInfo);
@@ -875,7 +890,8 @@ public class AdCacheManager implements DownloadCallback{
                 if (adInfo != null &&
                         !adInfo.isCacheBackToUser() &&
                             !adInfo.isCacheDisPlayed() &&
-                                !adInfo.isHoldAd()) {
+                                !adInfo.isHoldAd() &&
+                                    adInfo.isCacheTimeOut()) {
                     break;
                 } else {
                     adInfo = null;
@@ -916,7 +932,8 @@ public class AdCacheManager implements DownloadCallback{
                         adInfo instanceof AdCacheInfo &&
                         !((AdCacheInfo) adInfo).isCacheBackToUser() &&
                             !((AdCacheInfo) adInfo).isCacheDisPlayed() &&
-                            !((AdCacheInfo) adInfo).isHoldAd()) {
+                                !((AdCacheInfo) adInfo).isHoldAd() &&
+                                    !((AdCacheInfo) adInfo).isCacheTimeOut()) {
                     break;
                 } else {
                     adInfo = null;
