@@ -178,7 +178,7 @@ public String getMacAddress(Context context);
 ```java
 /**
  * 开始请求广告
- * @param num请求广告的数量
+ * @param num请求广告的数量，最多支持一次请求5条广告，大于5条返回5条。
  */
 public void requestAd(int num);
 ```
