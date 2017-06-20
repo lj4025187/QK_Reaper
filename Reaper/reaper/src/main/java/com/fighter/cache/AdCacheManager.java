@@ -660,7 +660,8 @@ public class AdCacheManager implements DownloadCallback{
             try {
                 Object adInfo = getAdCacheFromFile(file);
                 AdCacheInfo adCacheInfo = (AdCacheInfo) adInfo;
-                if ((adCacheInfo.isCacheDisPlayed() || isAdCacheTimeout(adInfo)) && adCacheObjects.size() > 1) {
+                if ((adCacheInfo.isCacheDisPlayed() || adCacheInfo.isCacheTimeOut() || isAdCacheTimeout(adInfo)) &&
+                    adCacheInfo.isHoldAd()) {
                     cleanBeforeCache(adCacheInfo);
                 } else {
                     adCacheObjects.put(((AdCacheInfo) adInfo).getUuid(), adInfo);
