@@ -43,7 +43,7 @@ public class BaseActivity extends FragmentActivity implements Handler.Callback {
             Manifest.permission.CHANGE_WIFI_STATE
     };
 
-    private final static int REQUEST_CODE = 8888;
+    private final static int REQUEST_CODE = 5555;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,11 +76,11 @@ public class BaseActivity extends FragmentActivity implements Handler.Callback {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode != REQUEST_CODE || permissions.length == 0) return;
         int length = permissions.length;
-        for (int i = 0; i < length; i++) {
-            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{permissions[i]}, REQUEST_CODE);
-            }
-        }
+//        for (int i = 0; i < length; i++) {
+//            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+//                checkPermission();
+//            }
+//        }
     }
 
     @Override
