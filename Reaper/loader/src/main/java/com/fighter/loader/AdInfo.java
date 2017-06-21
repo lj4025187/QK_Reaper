@@ -76,7 +76,8 @@ public class AdInfo {
                             int downX, int downY,
                             int upX, int upY) {
         if(downX < 0 || downY < 0 || upX < 0 || upY < 0){
-            LoaderLog.e("onAdClicked coordinate has negative number is invalid");
+            LoaderLog.e("onAdClicked coordinate has negative number is invalid " +
+                            "downX: " + downX + " downY: " + downY + " upX: " + upX + " upY: " + upY);
             return;
         }
         Map<String, Object> params = new ArrayMap<>();

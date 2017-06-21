@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fighter.cache.AdCacheInfo;
 
 import java.io.File;
 import java.util.Map;
@@ -164,6 +165,11 @@ public class AdInfo {
      * App下载路径
      */
     private static final String KEY_APP_DOWNLOAD_FILE = "appDownloadFile";
+
+    /**
+     * AdInfo 对应的CacheInfo
+     */
+    private static final String KEY_ADINFO_CACHE_INFO = "adCacheInfo";
 
     private Map<String, Object> mAdParams;
 
@@ -360,6 +366,10 @@ public class AdInfo {
         putParam(KEY_APP_PACKAGE_NAME, appPackageName);
     }
 
+    public boolean getAdInfoAvailable() {
+        return (boolean) mAdParams.get(KEY_ADINFO_AVAIL);
+    }
+
     public void setAdInfoAvailable(boolean state) {
         putParam(KEY_ADINFO_AVAIL, state);
     }
@@ -388,6 +398,16 @@ public class AdInfo {
 
     public void setAppDownloadFile(String path) {
         putParam(KEY_APP_DOWNLOAD_FILE, path);
+    }
+
+    public AdCacheInfo getAdCacheInfo() {
+        Object cacheInfo = mAdParams.get(KEY_ADINFO_CACHE_INFO);
+        if(cacheInfo == null || !(cacheInfo instanceof AdCacheInfo)) return null;
+        return (AdCacheInfo)cacheInfo;
+    }
+
+    public void setAdCacheInfo(AdCacheInfo adCacheInfo) {
+        putParam(KEY_ADINFO_CACHE_INFO, adCacheInfo);
     }
 
 //    public void deleteImgFile() {

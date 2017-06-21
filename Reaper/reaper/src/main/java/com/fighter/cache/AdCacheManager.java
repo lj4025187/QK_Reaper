@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.LongSparseArray;
 
 import com.fighter.ad.AdInfo;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -425,10 +427,24 @@ public class AdCacheManager implements DownloadCallback{
 //                Log.i(TAG, "request wrapper ad info: " + adInfo.getUUID());
 //                Log.i(TAG, "\n");
                 if (isCache) {
+                    //TODO DELETE
+                    Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+                            + " posId: " + adInfo.getAdPosId()
+                            + " localPosId: " + adInfo.getExtra("adLocalPosId")
+                            + " uuid: " + adInfo.getUUID().substring(30)
+                            + " come from server used for cache into sdcard" );
+                    //TODO END DELETE
                     cacheAdInfo(adInfo);
                 } else {
 //                    Log.i(TAG, "AdRequestWrapperNotify task: " + task.hashCode());
 //                    Log.i(TAG, "\n");
+                    //TODO DELETE
+                    Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+                            + " posId: " + adInfo.getAdPosId()
+                            + " localPosId: " + adInfo.getExtra("adLocalPosId")
+                            + " uuid: " + adInfo.getUUID().substring(30)
+                            + " come from server will show show show show show show show show show show show show in sample" );
+                    //TODO END DELETE
                     onRequestAdSucceed(callBack, adInfo);
                 }
             }
@@ -518,7 +534,7 @@ public class AdCacheManager implements DownloadCallback{
             AdInfo adInfo = null;
             if (info != null && info instanceof AdCacheInfo) {
                 adCacheInfo = (AdCacheInfo)info;
-                ReaperLog.i(TAG, "ad cache info： " + adCacheInfo.getUuid() + "; mState: " + adCacheInfo.getCacheState() +
+                ReaperLog.i(TAG, "uuid： " + adCacheInfo.getUuid() + "; mState: " + adCacheInfo.getCacheState() +
                         "; hash: " + adCacheInfo.hashCode());
                 ReaperLog.i(TAG, "\n");
                 cache = adCacheInfo.getCache();
@@ -528,6 +544,13 @@ public class AdCacheManager implements DownloadCallback{
                     adInfo = (AdInfo) cache;
                 }
                 if (isAdCacheTimeout(adCacheInfo) && adInfo != null) {
+                    //TODO DELETE
+                    Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+                            + " posId: " + adInfo.getAdPosId()
+                            + " localPosId: " + adInfo.getExtra("adLocalPosId")
+                            + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
+                            + " is invalid in cache will not show unless no net and needHold");
+                    //TODO END DELETE
                     EventDisPlayParam param = new EventDisPlayParam();
                     param.ad_info = adInfo;
                     param.ad_num = 1;
@@ -540,6 +563,14 @@ public class AdCacheManager implements DownloadCallback{
                     setCacheTimeout(adCacheInfo);
                 } else {
                     setCacheUsed(adCacheInfo);
+                    //TODO DELETE
+                    Log.i("ForTest", "srcName: " + adInfo.getExtra("adName") + " posId: "
+                            + adInfo.getAdPosId() + " localPosId: "
+                            + adInfo.getExtra("adLocalPosId")
+                            + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
+                            + " state " + adCacheInfo.getCacheState() + " has deleted from sdcard"
+                            + " deleted because valid show success in Sample");
+                    //TODO END DELETE
                     return adInfo;
                 }
             }
@@ -915,7 +946,7 @@ public class AdCacheManager implements DownloadCallback{
     }
 
     /**
-     * the method is used to get the ad cache information from sdcard.
+     * the method is used to get the uuidrmation from sdcard.
      *
      * @param cacheId the ad unique id..
      * @return the object about ad information
@@ -1043,6 +1074,12 @@ public class AdCacheManager implements DownloadCallback{
             setCacheDisplayed(adInfo);
         }
         //jump to webView and download app here
+        if (actionEvent == EVENT_CLICK) {
+            handleClickAction(adInfo);
+        }
+        AdCacheInfo adCacheInfo = adInfo.getAdCacheInfo();
+        if (adCacheInfo != null && adCacheInfo.isCacheTimeOut()) return;
+        if (!adInfo.getAdInfoAvailable()) return;
         trackActionEvent(actionEvent, adInfo);
         postTrackerTask(adInfo, actionEvent);
     }
@@ -1077,7 +1114,6 @@ public class AdCacheManager implements DownloadCallback{
                 mReaperTracker.trackDisplayEvent(mContext, successParam);
                 break;
             case EVENT_CLICK:
-                handleClickAction(adInfo);
                 EventClickParam clickParam = new EventClickParam();
                 clickParam.ad_info = adInfo;
                 clickParam.ad_num = 1;
@@ -1464,7 +1500,7 @@ public class AdCacheManager implements DownloadCallback{
     /**
      * check the ad cache is available.
      *
-     * @param info the ad cache info
+     * @param info the uuid
      * @return if available return true
      */
     private boolean isAdCacheTimeout(Object info) {
@@ -1718,7 +1754,18 @@ public class AdCacheManager implements DownloadCallback{
         info.setAdCacheId(adInfo.getAdPosId());
         ReaperLog.i(TAG, "cache ad info: " + adInfo);
         try {
+            //TODO DELETE
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String dateStr = format.format(info.getCacheTime());
+            Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+                    + " posId: " + adInfo.getAdPosId()
+                    + " localPosId: " + adInfo.getExtra("adLocalPosId")
+                    + " uuid: " + adInfo.getUUID().substring(30)
+                    + " cache into sdcard time start: " + dateStr
+                    + " state " + info.getCacheState());
+            //TODO END DELETE
             cacheAdInfo(adInfo.getAdPosId(), info);
+            adInfo.setAdCacheInfo(info);
             collateAdCache(adInfo.getAdPosId());
         } catch (IOException e) {
             e.printStackTrace();

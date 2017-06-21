@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.ArrayMap;
+import android.util.Log;
 import android.util.LruCache;
 import android.view.View;
 
@@ -158,6 +159,9 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     }
 
                     int status = VIDEO_STATUS_MAP.get(adEvent);
+                    Log.i("ForTest", " video status comment START = 81,PAUSE = 82,CONTINUE = 83,EXIT = 84,COMPLETE = 85");
+                    Log.i("ForTest", "srcName: " + adInfo.getExtra("adName") + " posId: " + adInfo.getAdPosId() + " localPosId: " + adInfo.getExtra("adLocalPosId")
+                            + " uuid: " + adInfo.getUUID().substring(30) + " status " + status );
                     eventAdVideoChanged((NativeVideoAd) nativeAd,
                             status,
                             position);
