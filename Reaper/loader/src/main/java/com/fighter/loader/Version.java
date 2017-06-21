@@ -6,6 +6,6 @@ package com.fighter.loader;
 
 public class Version {
 
-    public static String VERSION = "1.0.0";
+    public static String VERSION = "1.0.1";
 
 }
