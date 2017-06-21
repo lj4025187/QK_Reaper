@@ -1,18 +1,21 @@
 # Reaper API开发文档
-`Version 1.0.0`<p/>
-`Created By wanghaiteng@360.cn`<p/>
+`Version 1.0.0`
+`Created By wanghaiteng@360.cn`
 `Published by FighterTeam`
 
 ### Reaper SDK集成方式
 > 配置AndroidManifest.xml
 
 ```xml
+<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+<uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-<uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_UPDATES" />
 ```
 
 > 集成reaper.jar
@@ -98,9 +101,9 @@ AdRequester adRequester =
                     public void onFailed(String errMsg) {
                     // 广告请求失败回调
                     }
-                }, true);
+                }, true/*是否返回保底广告*/);
 // 请求广告
-adRequester.requestAd(1);
+adRequester.requestAd(1/*请求广告的个数，最大个数为5*/);
 ```
 
 > 展示/点击广告上报
@@ -193,17 +196,21 @@ public interface AdRequestCallback {
  	 * @param adInfo 广告
  	 */
 	void onSuccess(AdInfo adInfo);
-    /**
-     * 广告请求失败
-     *
-     * @param errMsg 失败原因
-     */
-    void onFailed(String errMsg);
+	
+	/**
+	 * 广告请求失败
+	 *
+	 * @param errMsg 失败原因
+	 */
+	 void onFailed(String errMsg);
 }
 ``` 
 ### AdInfo
 广告信息
 ```java
+//contentType 有如下四种类型，调用如下：
+int contentType = adInfo.getContentType();
+
 /**
  * 文字类型
  */
@@ -222,6 +229,8 @@ public static final int CONTENT_TYPE_PICTURE_WITH_TEXT = 3;
 public static final int CONTENT_TYPE_VIDEO = 4;
 ```
 ```java
+//actionType 有如下两种类型，调用如下：
+int actionType = adInfo.getActionType();
 /**
  * 点击跳转浏览器
  */
@@ -232,16 +241,22 @@ public static final int ACTION_TYPE_BROWSER = 1;
 public static final int ACTION_TYPE_APP_DOWNLOAD = 2;
 ```
 ```java
+//广告曝光成功后上报，调用如下：
+adInfo.onAdShow(view);
 /**
  * 广告被展示
  *
- * @param v 展示广告所使用的view (不传时聚效广告源将无法上报)
+ * @param v 展示广告所使用的view (不传时聚效广告源将无法上报)，目前该view
+ *          若传null，会打点广告曝光失败
  */
 public void onAdShow(View v);
 ```
 ```java
+//广告被点击后上报，并打开浏览器或下载APP，调用如下：
+adInfo.onAdClick(activity, view, downX, downY, upX, upY);
 /**
  * 广告被点击，点击后，由SDK处理点击事件(打开浏览器或是开始下载APP)
+ * 若 activity，v传为null，不能配置聚效的广告位。
  *
  * @param activity 广告所在activity (不传时聚效无法正常处理点击)
  * @param v        广告展示所在view (不传时聚效无法正常处理点击)
@@ -255,6 +270,7 @@ public void onAdClicked(Activity activity, View v,
                             int upX, int upY);
 ```
 ```java
+adInfo.onAdClose();
 /**
  * 广告被用户关闭
  */   
@@ -427,7 +443,7 @@ public boolean isAvailable();
 ```java
 /**
  * 对于不满足需求的业务，可通过此方法获取到更多信息。
- * 具体请于我们沟通。
+ * 具体请与我们沟通。
  *
  * @param key 属性key值
  * @return 属性value值
