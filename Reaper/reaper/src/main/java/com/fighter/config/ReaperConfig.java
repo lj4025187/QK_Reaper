@@ -11,8 +11,8 @@ public final class ReaperConfig {
     /**
      * Url
      */
-    public static final String URL_HTTPS = "https://cn.adv.os.qiku.com/new_cfg";
-    public static final String URL_HTTP  = "http://cn.adv.os.qiku.com/new_cfg";
+    public static final String URL_HTTPS = "https://comp.360os.com/new_cfg";
+    public static final String URL_HTTP  = "http://comp.360os.com/new_cfg";
 
 
     // TODO set this false when publish

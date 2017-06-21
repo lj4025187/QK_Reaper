@@ -29,6 +29,8 @@ import javax.net.ssl.X509TrustManager;
 
 import okhttp3.OkHttpClient;
 
+import static android.provider.CalendarContract.Instances.BEGIN;
+
 /**
  * Utils for http request
  *
@@ -411,9 +413,105 @@ public final class ReaperConfigHttpHelper {
             "eLmNzJkEN0k=\n" +
             "-----END CERTIFICATE-----";
 
+    //change to comp.360os.com
+    private static final String CERT_1 =
+            "-----BEGIN CERTIFICATE-----\n"+
+            "MIIFwzCCBKugAwIBAgIQMWBMPW8Zads0KYExPGj+pDANBgkqhkiG9w0BAQsFADBE\n"+
+            "MQswCQYDVQQGEwJDTjEaMBgGA1UECgwRV29TaWduIENBIExpbWl0ZWQxGTAXBgNV\n"+
+            "BAMMEFdvU2lnbiBPViBTU0wgQ0EwHhcNMTcwMzE4MDczMDI2WhcNMjAwMzE2MDcz\n"+
+            "MDI2WjB0MQswCQYDVQQGEwJDTjEnMCUGA1UECgwe5YyX5Lqs5aWH6JmO56eR5oqA\n"+
+            "5pyJ6ZmQ5YWs5Y+4MRIwEAYDVQQHDAnljJfkuqzluIIxEjAQBgNVBAgMCeWMl+S6\n"+
+            "rOW4gjEUMBIGA1UEAwwLKi4zNjBvcy5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IB\n"+
+            "DwAwggEKAoIBAQCkoCOwqjk3mmSQNkN0CFTGdqXQFcKidM2m9ToUR38KAFsHXTCO\n"+
+            "MNsxLTkTVxmXz97MZ/JAUN/fX6rzgH1F37hqDBTYV82f/kdscSuthTiLw43xC/tu\n"+
+            "4zkAbkfLlUmCXDGcbbOTNAzq4zg4uind/VHZWJYnsBnJdvy/Ftg78+NN4f4dmNNX\n"+
+            "QEfZjr8Zg60BO0uZtqXdY6OWLNqRcCiRCQsiUjGQ2Pb3Tgf/YVCFfiWLieCYczAW\n"+
+            "n08XoajDsQeQkyTRKQ7arc9y5Zlyson3AqBfYzq/rJHcg2rbh7aozHIPubAEhEhv\n"+
+            "n7IUnFW99gOqisFO0Kg5tGG3dDe0bK8M28gfAgMBAAGjggJ/MIICezAMBgNVHRMB\n"+
+            "Af8EAjAAMDwGA1UdHwQ1MDMwMaAvoC2GK2h0dHA6Ly93b3NpZ24uY3JsLmNlcnR1\n"+
+            "bS5wbC93b3NpZ24tb3ZjYS5jcmwwdwYIKwYBBQUHAQEEazBpMC4GCCsGAQUFBzAB\n"+
+            "hiJodHRwOi8vd29zaWduLW92Y2Eub2NzcC1jZXJ0dW0uY29tMDcGCCsGAQUFBzAC\n"+
+            "hitodHRwOi8vcmVwb3NpdG9yeS5jZXJ0dW0ucGwvd29zaWduLW92Y2EuY2VyMB8G\n"+
+            "A1UdIwQYMBaAFKETVNxWcywngsrIhO/uvwD9X6tWMB0GA1UdDgQWBBSk62wgrKKL\n"+
+            "4HSJqm4C10YGCORdajAOBgNVHQ8BAf8EBAMCBaAwggEgBgNVHSAEggEXMIIBEzAI\n"+
+            "BgZngQwBAgIwggEFBgwqhGgBhvZ3AgUBDAIwgfQwgfEGCCsGAQUFBwICMIHkMB8W\n"+
+            "GEFzc2VjbyBEYXRhIFN5c3RlbXMgUy5BLjADAgEBGoHAVXNhZ2Ugb2YgdGhpcyBj\n"+
+            "ZXJ0aWZpY2F0ZSBpcyBzdHJpY3RseSBzdWJqZWN0ZWQgdG8gdGhlIENFUlRVTSBD\n"+
+            "ZXJ0aWZpY2F0aW9uIFByYWN0aWNlIFN0YXRlbWVudCAoQ1BTKSBpbmNvcnBvcmF0\n"+
+            "ZWQgYnkgcmVmZXJlbmNlIGhlcmVpbiBhbmQgaW4gdGhlIHJlcG9zaXRvcnkgYXQg\n"+
+            "aHR0cHM6Ly93d3cuY2VydHVtLnBsL3JlcG9zaXRvcnkuMB0GA1UdJQQWMBQGCCsG\n"+
+            "AQUFBwMBBggrBgEFBQcDAjAhBgNVHREEGjAYggsqLjM2MG9zLmNvbYIJMzYwb3Mu\n"+
+            "Y29tMA0GCSqGSIb3DQEBCwUAA4IBAQBhMTEeUc6zdkdtochE7RZ7yfjslE5f+wCk\n"+
+            "N6yEHiK2gGJnSAEXxWWbxqMf6iqYBrCf1c3JiyY+t6TpKfceypgZXFKxoWichnEj\n"+
+            "suFC09R9hRjC9UQVBEteY3DY638BpRgoaPIh+v1ggtVSHnLu5fApzyV8B/fRMgNa\n"+
+            "IHw5PragV3PQiVbJlPqiMF/KWI5C18mQJqPhPNXIAvQWAvYaRZD1nRTURV041+x4\n"+
+            "/qlo8upnMhIfwkdfkcfU36Eg6CwS/YRg3WXfWdwQ3V0QH7bNxI4aZzJDsksTLM0p\n"+
+            "XRHg29006kz2E/cpIVyPeguZ17DDTM6rEZxSNwy8klmgMmyJ+a3T\n"+
+            "-----END CERTIFICATE-----";
+
+    private static final String CERT_2 =
+            "-----BEGIN CERTIFICATE-----\n"+
+            "MIIEtTCCA52gAwIBAgIRAO8FGnQaHZQJ/KXkZA+NPJswDQYJKoZIhvcNAQELBQAw\n" +
+            "fjELMAkGA1UEBhMCUEwxIjAgBgNVBAoTGVVuaXpldG8gVGVjaG5vbG9naWVzIFMu\n" +
+            "QS4xJzAlBgNVBAsTHkNlcnR1bSBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTEiMCAG\n" +
+            "A1UEAxMZQ2VydHVtIFRydXN0ZWQgTmV0d29yayBDQTAeFw0xNjExMDkwODMzNDRa\n" +
+            "Fw0yNjExMDkwODMzNDRaMEQxCzAJBgNVBAYTAkNOMRowGAYDVQQKDBFXb1NpZ24g\n" +
+            "Q0EgTGltaXRlZDEZMBcGA1UEAwwQV29TaWduIE9WIFNTTCBDQTCCASIwDQYJKoZI\n" +
+            "hvcNAQEBBQADggEPADCCAQoCggEBAKRzU7QtbSdi6uUiqewzx81eEdrg0RROHTs1\n" +
+            "eXndSwxxUAVDC+FPYvpgWc+bYMVjUJQEIP+SNzsIGvB/YoabRoN7cLBDzPTgYnW8\n" +
+            "Pl/wYWXuGNyr1E7bV9Fec37HlvhE39Ntwp31gjMFwTOZ7Zw0QzS7w9PjO4A4anwb\n" +
+            "maBJgrRa3GFSgoJ+WIr5brQ6hEgm7rKRNPx6L9Sj2aSl/EWRPPv73j5xeWGcgOPp\n" +
+            "U+8eZmqpX+XfCl34o5OQJWi/F7bACetVhvFtWGuLNcZ0eYwU13jOEx3NNsILzIYP\n" +
+            "oWJztxd3aPkQOX6cNbJGTvLRcfmGDM0ASq3/BsCrR0o/ruCcd6cCAwEAAaOCAWYw\n" +
+            "ggFiMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFKETVNxWcywngsrIhO/u\n" +
+            "vwD9X6tWMB8GA1UdIwQYMBaAFAh2zcsH/yT2xc3tu5C84oQ3RnX3MA4GA1UdDwEB\n" +
+            "/wQEAwIBBjAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwNQYDVR0fBC4w\n" +
+            "LDAqoCigJoYkaHR0cDovL3N1YmNhLmNybC5jZXJ0dW0ucGwvY3RuY2EuY3JsMGsG\n" +
+            "CCsGAQUFBwEBBF8wXTAoBggrBgEFBQcwAYYcaHR0cDovL3N1YmNhLm9jc3AtY2Vy\n" +
+            "dHVtLmNvbTAxBggrBgEFBQcwAoYlaHR0cDovL3JlcG9zaXRvcnkuY2VydHVtLnBs\n" +
+            "L2N0bmNhLmNlcjA5BgNVHSAEMjAwMC4GBFUdIAAwJjAkBggrBgEFBQcCARYYaHR0\n" +
+            "cDovL3d3dy5jZXJ0dW0ucGwvQ1BTMA0GCSqGSIb3DQEBCwUAA4IBAQCLBeq0MMgd\n" +
+            "qULSuAua1YwHNgbFAAnMXd9iiSxbIKoSfYKsrFggNCFX73ex4b64iIhQ2BBr82/B\n" +
+            "MNpC4rEvnr1x0oFv8DBO1GYimQaq8E9hjnO1UYYEPelVsykOpnDLklTsBZ4vhhq/\n" +
+            "hq1mbs+6G+vsAjO9jVnuxP6toOTNBqvURRumMF0P165MoFdh0kzSjUts+1d8Llnb\n" +
+            "DJaZht0O19k1ZdBBmPD3cwbTI+tChOELAVt4Nb5dDGPWqSxc5Nl2j95T3aK1KL2d\n" +
+            "2vV16DSVShJIz04QHatcJlNZLJDbSu70c5fPU8YiJdRpfkubANAmwcDB+uNhtYz+\n" +
+            "zEji0KnE2oNA\n" +
+            "-----END CERTIFICATE-----";
+
+    private static final String CERT_3 =
+            "-----BEGIN CERTIFICATE-----\n" +
+            "MIIEtDCCA5ygAwIBAgIRAJOShUABZXFflH8oj+/JmygwDQYJKoZIhvcNAQELBQAw\n" +
+            "PjELMAkGA1UEBhMCUEwxGzAZBgNVBAoTElVuaXpldG8gU3AuIHogby5vLjESMBAG\n" +
+            "A1UEAxMJQ2VydHVtIENBMB4XDTA4MTAyMjEyMDczN1oXDTI3MDYxMDEwNDYzOVow\n" +
+            "fjELMAkGA1UEBhMCUEwxIjAgBgNVBAoTGVVuaXpldG8gVGVjaG5vbG9naWVzIFMu\n" +
+            "QS4xJzAlBgNVBAsTHkNlcnR1bSBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTEiMCAG\n" +
+            "A1UEAxMZQ2VydHVtIFRydXN0ZWQgTmV0d29yayBDQTCCASIwDQYJKoZIhvcNAQEB\n" +
+            "BQADggEPADCCAQoCggEBAOP7faNyusLwyRSH9WsBTuFuQAe6bSddf/dbLbNax1Ff\n" +
+            "q6QypmGHtm4PhtIwApf412lXoRg5XWpkecYBWaw8MUo4fNIE0kso6CBfOweizE1z\n" +
+            "2/OuT8dW1Vqnlon686to1COGWSfPCSe8rG5ygxwwct/gounS4XR1Gb0qnnsVVAQb\n" +
+            "10M5rVUoxeIau/TA5K44STPMdoWfOUXSpJ7yEoxR+HzkLX/1rF/rFp+xLdG6zJFC\n" +
+            "d0wlyZA4b9vwzPuOHpdZPtVgTuYFKO1JeRNLukjbL/ly0znK/h/YNHL1tEDPMQHD\n" +
+            "7N4RLRddH7hQ0V4Zp2neBzMoylCV+adUy1SGUEWp+UkCAwEAAaOCAWswggFnMA8G\n" +
+            "A1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFAh2zcsH/yT2xc3tu5C84oQ3RnX3MFIG\n" +
+            "A1UdIwRLMEmhQqRAMD4xCzAJBgNVBAYTAlBMMRswGQYDVQQKExJVbml6ZXRvIFNw\n" +
+            "LiB6IG8uby4xEjAQBgNVBAMTCUNlcnR1bSBDQYIDAQAgMA4GA1UdDwEB/wQEAwIB\n" +
+            "BjAsBgNVHR8EJTAjMCGgH6AdhhtodHRwOi8vY3JsLmNlcnR1bS5wbC9jYS5jcmww\n" +
+            "aAYIKwYBBQUHAQEEXDBaMCgGCCsGAQUFBzABhhxodHRwOi8vc3ViY2Eub2NzcC1j\n" +
+            "ZXJ0dW0uY29tMC4GCCsGAQUFBzAChiJodHRwOi8vcmVwb3NpdG9yeS5jZXJ0dW0u\n" +
+            "cGwvY2EuY2VyMDkGA1UdIAQyMDAwLgYEVR0gADAmMCQGCCsGAQUFBwIBFhhodHRw\n" +
+            "Oi8vd3d3LmNlcnR1bS5wbC9DUFMwDQYJKoZIhvcNAQELBQADggEBAI3m/UBmo0yc\n" +
+            "p6uh2oTdHDAH5tvHLeyDoVbkHTwmoaUJK+h9Yr6ydZTdCPJ/KEHkgGcCToqPwzXQ\n" +
+            "1aknKOrS9KsGhkOujOP5iH3g271CgYACEnWy6BdxqyGVMUZCDYgQOdNv7C9C6kBT\n" +
+            "Yr/rynieq6LVLgXqM6vp1peUQl4E7Sztapx6lX0FKgV/CF1mrWHUdqx1lpdzY70a\n" +
+            "QVkppV4ig8OLWfqaova9ML9yHRyZhpzyhTwd9yaWLy75ArG1qVDoOPqbCl60BMDO\n" +
+            "TjksygtbYvBNWFA0meaaLNKQ1wmB1sCqXs7+0vehukvZ1oaOGR+mBkdCcuBWCgAc\n" +
+            "eLmNzJkEN0k=\n" +
+            "-----END CERTIFICATE-----";
     /**
      * Server SSL certificates
      */
-    private static final String[] CERTS = {CERT1, CERT2, CERT3};
+//    private static final String[] CERTS = {CERT1, CERT2, CERT3};
+    private static final String[] CERTS = {CERT_1, CERT_2, CERT_3};
 
 }
