@@ -550,15 +550,7 @@ public class AdCacheManager implements DownloadCallback{
                             + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
                             + " is invalid in cache will not show unless no net and needHold");
                     //TODO END DELETE
-                    EventDisPlayParam param = new EventDisPlayParam();
-                    param.ad_info = adInfo;
-                    param.ad_num = 1;
-                    param.ad_appid = Integer.parseInt(mAppId);
-                    param.ad_info = adInfo;
-                    param.app_pkg = mContext.getPackageName();
-                    param.result = "failed";
-                    param.reason = "timeout";
-                    mReaperTracker.trackDisplayEvent(mContext, param);
+                    trackActionEvent(EVENT_VIEW_FAIL, adInfo, "timeout");
                     setCacheTimeout(adCacheInfo);
                 } else {
                     setCacheUsed(adCacheInfo);
@@ -1105,6 +1097,7 @@ public class AdCacheManager implements DownloadCallback{
             handleClickAction(adInfo);
         }
         AdCacheInfo adCacheInfo = adInfo.getAdCacheInfo();
+        //TODO 上报超时广告，需要打哪种点：展示失败or展示成功
         if (adCacheInfo != null && adCacheInfo.isCacheTimeOut()) return;
         if (!adInfo.getAdInfoAvailable()) return;
         trackActionEvent(actionEvent, adInfo);
@@ -1126,8 +1119,8 @@ public class AdCacheManager implements DownloadCallback{
                 disPlayParam.ad_num = 1;
                 disPlayParam.ad_appid = Integer.parseInt(mAppId);
                 disPlayParam.app_pkg = mContext.getPackageName();
-                disPlayParam.result = "fail";
-                disPlayParam.reason = "onAdShow fail view is null";
+                disPlayParam.result = "failed";
+                disPlayParam.reason = TextUtils.isEmpty(errMsg) ? "onAdShow fail view is null" : errMsg;
                 mReaperTracker.trackDisplayEvent(mContext, disPlayParam);
                 break;
             case EVENT_VIEW_SUCCESS:

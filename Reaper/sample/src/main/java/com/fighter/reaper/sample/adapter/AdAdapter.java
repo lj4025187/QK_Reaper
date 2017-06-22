@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v4.util.ArrayMap;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
@@ -100,21 +101,37 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
         BaseItem item = getItem(position);
         adInfo.onAdShow(convertView);
         baseItemHolder.onAttachView(position, item);
-        convertView.setOnClickListener(new View.OnClickListener() {
+        convertView.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                if (adInfo.getActionType() == 2) {
-                    showDownloadDialog(adInfo, v);
-                } else if (adInfo.getActionType() == 1) {
-                    adInfo.onAdClicked(mActivity, v, (int)v.getX(), (int)v.getY(), (int)v.getX(), (int)v.getY());
+            public boolean onTouch(View v, MotionEvent event) {
+                int downX = 0, downY = 0, upX = 0, upY = 0;
+                long downtime = 0, uptime = 0;
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    downX = (int) event.getX();
+                    downY = (int) event.getY();
+                    downtime = event.getEventTime();
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    upX = (int) event.getX();
+                    upY = (int) event.getY();
+                    uptime = event.getEventTime();
                 }
+                if (adInfo.getActionType() == 2) {
+                    if(uptime - downtime > 1000)
+                        showDownloadDialog(adInfo, v, downX, downY,upX, upY);
+                } else if (adInfo.getActionType() == 1) {
+                    if(uptime - downtime > 1000)
+                        adInfo.onAdClicked(mActivity, v, downX, downY,upX, upY);
+                }
+                return true;
             }
         });
         mHolderHelper.put(baseItemHolder, position);
         return convertView;
     }
 
-    private void showDownloadDialog(final AdInfo adInfo, final View view) {
+    private void showDownloadDialog(final AdInfo adInfo, final View view,
+                                    final int downX, final int downY,
+                                    final int upX, final int upY) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.download_dialog_title)
                 .setMessage(R.string.download_dialog_message)
@@ -122,7 +139,7 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         ToastUtil.getInstance(mContext).showSingletonToast(R.string.toast_start_download);
-                        adInfo.onAdClicked(mActivity, view, (int)view.getX(), (int)view.getY(), (int)view.getX(), (int)view.getY());
+                        adInfo.onAdClicked(mActivity, view, downX, downY,upX, upY);
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
