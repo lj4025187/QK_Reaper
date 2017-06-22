@@ -155,12 +155,22 @@ public class AdInfo {
      * 返回的广告是否可用
      */
     private static final String KEY_ADINFO_AVAIL = "isAvail";
+
     /**
-     * 广告目标APP的包名，
+     * 广告目标APP的包名
      * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
      */
-    private static final String KEY_APP_PACKAGE_NAME = "appPackageName";
-
+    private static final String KEY_DOWN_PKG_NAME = "download_app_pkg";
+    /**
+     * 广告目标APP的应用名称
+     * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
+     */
+    private static final String KEY_DOWN_APP_NAME = "download_app_name";
+    /**
+     * 广告目标APP的应用名称
+     * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
+     */
+    private static final String KEY_DOWN_APP_URL = "download_url";
     /**
      * App下载路径
      */
@@ -358,16 +368,34 @@ public class AdInfo {
         putParam(KEY_APP_NAME, appName);
     }
 
-    public String getAppPackageName() {
-        return (String) mAdParams.get(KEY_APP_PACKAGE_NAME);
+    public String getDownPkgName() {
+        return (String) mAdParams.get(KEY_DOWN_PKG_NAME);
     }
 
-    public void setAppPackageName(String appPackageName) {
-        putParam(KEY_APP_PACKAGE_NAME, appPackageName);
+    public void setDownPkgName(String appPackageName) {
+        putParam(KEY_DOWN_PKG_NAME, appPackageName);
+    }
+
+    public String getDownAppName() {
+        return (String) mAdParams.get(KEY_DOWN_APP_NAME);
+    }
+
+    public void setDownAppName(String downAppName) {
+        putParam(KEY_DOWN_APP_NAME, downAppName);
+    }
+
+    public String getDownAppUrl() {
+        return (String) mAdParams.get(KEY_DOWN_APP_URL);
+    }
+
+    public void setDownAppUrl(String downAppUrl) {
+        putParam(KEY_DOWN_APP_URL, downAppUrl);
     }
 
     public boolean getAdInfoAvailable() {
-        return (boolean) mAdParams.get(KEY_ADINFO_AVAIL);
+        Object available = mAdParams.get(KEY_ADINFO_AVAIL);
+        if(available == null) return true;
+        return (boolean) available;
     }
 
     public void setAdInfoAvailable(boolean state) {
@@ -447,7 +475,7 @@ public class AdInfo {
                 ", mDesc='" + getDesc() + '\'' +
                 ", mAppIconUrl='" + getAppIconUrl() + '\'' +
                 ", mAppName='" + getAppName() + '\'' +
-                ", mAppPackageName='" + getAppPackageName() + '\'' +
+                ", mAppPackageName='" + getDownPkgName() + '\'' +
                 '}';
     }
 

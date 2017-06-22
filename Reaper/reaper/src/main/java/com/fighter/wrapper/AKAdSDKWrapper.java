@@ -444,7 +444,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                             String akAppName = akAppJson.getString("app_name");
                             adInfo.setAppIconUrl(akAppLogo);
                             adInfo.setAppName(akAppName);
-                            adInfo.setAppPackageName(akAppPkgName);
+                            adInfo.setDownPkgName(akAppPkgName);
                         }
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);
@@ -544,7 +544,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                             String akAppName = akAppJson.getString("app_name");
                             adInfo.setAppIconUrl(akAppLogo);
                             adInfo.setAppName(akAppName);
-                            adInfo.setAppPackageName(akAppPkgName);
+                            adInfo.setDownPkgName(akAppPkgName);
                         }
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);

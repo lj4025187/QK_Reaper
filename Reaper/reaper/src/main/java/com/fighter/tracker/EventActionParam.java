@@ -15,19 +15,16 @@ public class EventActionParam extends AdParam {
     public String act_type;
     /** tracker app down fail reason**/
     public String reason;
-    /** tracker app downloaded info**/
-    public String download_app_pkg;
-    public String download_app_name;
-    public String download_url;
 
+    public String down_app_url;
     @Override
     HashMap<String, String> generateMap() {
         HashMap<String, String> map = super.generateMap();
         map.put(TrackerConfig.ACTION_ACT_TYPE_KEY,      act_type);
         map.put(TrackerConfig.ACTION_REASON_KEY,        reason);
-        map.put(TrackerConfig.ACTION_APP_PKG_KEY,       download_app_pkg);
-        map.put(TrackerConfig.ACTION_DOWNLOAD_APP_KEY,  download_app_name);
-        map.put(TrackerConfig.ACTION_DOWNLOAD_URL_KEY,  download_url);
+        map.put(TrackerConfig.ACTION_APP_PKG_KEY,       ad_info.getDownPkgName());
+        map.put(TrackerConfig.ACTION_DOWNLOAD_APP_KEY,  ad_info.getDownAppName());
+        map.put(TrackerConfig.ACTION_DOWNLOAD_URL_KEY,  down_app_url);
         return map;
     }
 
@@ -36,9 +33,9 @@ public class EventActionParam extends AdParam {
         return "EventActionParam{" +
                 TrackerConfig.ACTION_ACT_TYPE_KEY + "='" + act_type + '\'' + ", " +
                 (!TextUtils.isEmpty(reason) ? (TrackerConfig.ACTION_REASON_KEY + "='" + reason + '\'' + ", ") : "")+
-                (!TextUtils.isEmpty(download_app_pkg) ? (TrackerConfig.ACTION_APP_PKG_KEY + "='" + download_app_pkg + '\'' + ", ") : "")+
-                (!TextUtils.isEmpty(download_url) ? (TrackerConfig.ACTION_DOWNLOAD_URL_KEY + "='" + download_url + '\'' + ", ") : "")+
-                (!TextUtils.isEmpty(download_app_name) ? (TrackerConfig.ACTION_DOWNLOAD_APP_KEY + "='" + download_app_name + '\'' + ", ") : "")+
+                TrackerConfig.ACTION_APP_PKG_KEY + "='" + ad_info.getDownPkgName() + '\'' +", "+
+                (!TextUtils.isEmpty(down_app_url) ? (TrackerConfig.ACTION_DOWNLOAD_URL_KEY + "='" + down_app_url + '\'' + ", ") : "")+
+                TrackerConfig.ACTION_DOWNLOAD_APP_KEY + "='" + ad_info.getDownAppName() + '\'' + ", "+
                 super.toString() +
                 '}';
     }

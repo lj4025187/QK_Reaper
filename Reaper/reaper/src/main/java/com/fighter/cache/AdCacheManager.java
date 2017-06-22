@@ -1158,9 +1158,7 @@ public class AdCacheManager implements DownloadCallback{
                 actionParam.app_pkg = mContext.getPackageName();
                 actionParam.act_type = loadAppActionType(actionEvent);
                 actionParam.reason = loadAppActReason(actionEvent, errMsg);
-                actionParam.download_app_pkg = adInfo.getAppPackageName();
-                actionParam.download_app_name = adInfo.getAppName();
-                actionParam.download_url = loadAppDownloadUrl(adInfo);
+                actionParam.down_app_url = loadAppDownloadUrl(adInfo);
                 mReaperTracker.trackActionEvent(mContext, actionParam);
                 break;
             case EVENT_VIDEO_CARD_CLICK:

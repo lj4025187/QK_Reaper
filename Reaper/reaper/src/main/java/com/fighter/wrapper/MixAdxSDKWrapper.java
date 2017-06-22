@@ -486,7 +486,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                         adInfo.setAppIconUrl(iconUrlsJson.getString(0));
                     }
                     adInfo.setAppName(metaInfoJson.getString("brandName"));
-                    adInfo.setAppPackageName(metaInfoJson.getString("appPackage"));
+                    adInfo.setDownPkgName(metaInfoJson.getString("appPackage"));
 
                     JSONArray trackingEventsJson = creativeJson.getJSONArray("trackingEvents");
                     if (trackingEventsJson != null) {
