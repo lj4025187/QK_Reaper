@@ -13,6 +13,7 @@ import com.fighter.reaper.sample.R;
 public class SampleConfig {
 
     public final static boolean IS_FOR_SERVER = false;
+    public final static boolean LOCAL_CONFIG = false;
 
 //    public final static String APP_KEY = "52b039014f5ee11cf9865d66f0b8f23f";
     public final static String APP_KEY = "123";
@@ -20,16 +21,43 @@ public class SampleConfig {
 
     public final static int REQUEST_COUNT_PER_TIME = 5;
 
-    public final static String QIHOO_VIDEO_ADV = "1045";  //Qihoo video
-    public final static String QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original
-    public final static String TENCENT_INSERT_ADV = "1040";  //Tencent insert
-    public final static String TENCENT_BANNER_ADV = "1041";  //Tencent banner
-    public final static String TENCENT_OPEN_ADV = "1042";  //Tencent openapp
-    public final static String TENCENT_FEED_ADV = "1043";  //Tencent feed
-    public final static String TENCENT_ORIGINAL_ADV = "1044";  //Tencent original
-    public final static String BAIDU_INSERT_ADV = "1048";  //Baidu insert
-    public final static String BAIDU_BANNER_ADV = "1049";  //Baidu banner
-    public final static String BAIDU_OPEN_ADV = "1050";  //Baidu openapp
+    public static String QIHOO_VIDEO_ADV = "1045";  //Qihoo video
+    public static String QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original
+    public static String TENCENT_INSERT_ADV = "1040";  //Tencent insert
+    public static String TENCENT_BANNER_ADV = "1041";  //Tencent banner
+    public static String TENCENT_OPEN_ADV = "1042";  //Tencent openapp
+    public static String TENCENT_FEED_ADV = "1043";  //Tencent feed
+    public static String TENCENT_ORIGINAL_ADV = "1044";  //Tencent original
+    public static String BAIDU_INSERT_ADV = "1048";  //Baidu insert
+    public static String BAIDU_BANNER_ADV = "1049";  //Baidu banner
+    public static String BAIDU_OPEN_ADV = "1050";  //Baidu openapp
+
+    static {
+
+        if(LOCAL_CONFIG) {
+            QIHOO_VIDEO_ADV = "5";  //Qihoo video
+            QIHOO_ORIGINAL_ADV = "6"; //Qihoo original
+            TENCENT_INSERT_ADV = "7";  //Tencent insert
+            TENCENT_BANNER_ADV = "8";  //Tencent banner
+            TENCENT_OPEN_ADV = "9";  //Tencent openapp
+            TENCENT_FEED_ADV = "10";  //Tencent feed
+            TENCENT_ORIGINAL_ADV = "11";  //Tencent original
+            BAIDU_INSERT_ADV = "13";  //Baidu insert
+            BAIDU_BANNER_ADV = "14";  //Baidu banner
+            BAIDU_OPEN_ADV = "15";  //Baidu openapp
+        } else {
+            QIHOO_VIDEO_ADV = "1045";  //Qihoo video
+            QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original
+            TENCENT_INSERT_ADV = "1040";  //Tencent insert
+            TENCENT_BANNER_ADV = "1041";  //Tencent banner
+            TENCENT_OPEN_ADV = "1042";  //Tencent openapp
+            TENCENT_FEED_ADV = "1043";  //Tencent feed
+            TENCENT_ORIGINAL_ADV = "1044";  //Tencent original
+            BAIDU_INSERT_ADV = "1048";  //Baidu insert
+            BAIDU_BANNER_ADV = "1049";  //Baidu banner
+            BAIDU_OPEN_ADV = "1050";  //Baidu openapp
+        }
+    }
 
     public final static int
             TEXT_AD_TYPE = 0x01,    /*文字类型*/

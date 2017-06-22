@@ -253,9 +253,9 @@ public class ResponseGenerator {
                             "]" +
                         "}," +
 
-                        //pos_id == 13 百度广告insert（目前无数据返回）
-                        //pos_id == 14 百度广告banner（目前无数据返回）
-                        //pos_id == 15 百度广告openapp（目前无数据返回）
+                        //pos_id == 13 百度广告insert
+                        //pos_id == 14 百度广告banner
+                        //pos_id == 15 百度广告openapp
                         //pos_id == 16 百度广告feed（目前无数据返回）
                         //pos_id == 17 百度广告video（目前无数据返回）
                         //pos_id == 18 百度广告original（目前无数据返回）
