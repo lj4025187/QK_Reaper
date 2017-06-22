@@ -1,12 +1,12 @@
 package com.fighter.loader;
 
 import android.content.Context;
-import android.content.Loader;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.os.Environment;
+import android.os.Process;
 import android.text.TextUtils;
 
 import com.fighter.patch.ReaperClassLoader;
@@ -85,6 +85,10 @@ public class ReaperInit {
      * @param context
      */
     public static ReaperApi init(Context context) {
+        if(Process.myUid() != context.getApplicationInfo().uid){
+            LoaderLog.e("can not init ReaperApi in uid different from context");
+            return null;
+        }
         context = context.getApplicationContext();
         sContext = context;
 
