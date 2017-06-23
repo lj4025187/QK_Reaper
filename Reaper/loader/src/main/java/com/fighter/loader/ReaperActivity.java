@@ -6,7 +6,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
@@ -70,17 +69,14 @@ public class ReaperActivity extends Activity {
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             super.onReceivedError(view, request, error);
-            view.stopLoading();
+            LoaderLog.i(TAG, "WebViewClient onReceivedError");
+            view.reload();
         }
 
         @Override
         public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+            LoaderLog.i(TAG, "WebViewClient onReceivedSslError");
             handler.proceed();
-        }
-
-        @Override
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            super.onReceivedError(view, errorCode, description, failingUrl);
         }
 
         private void loadUrl(WebView view, String url) {
@@ -98,6 +94,7 @@ public class ReaperActivity extends Activity {
     };
 
     private WebChromeClient mChromeClient = new WebChromeClient() {
+
         @Override
         public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
             AlertDialog.Builder builder = new AlertDialog.Builder(ReaperActivity.this);
@@ -132,6 +129,11 @@ public class ReaperActivity extends Activity {
         @Override
         public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
             return super.onJsPrompt(view, url, message, defaultValue, result);
+        }
+
+        @Override
+        public void onRequestFocus(WebView view) {
+            super.onRequestFocus(view);
         }
     };
 
@@ -177,11 +179,6 @@ public class ReaperActivity extends Activity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode != REQUEST_CODE || permissions == null || permissions.length == 0) return;
         int length = permissions.length;
-        for (int i = 0; i < length; i++) {
-            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{permissions[i]}, REQUEST_CODE);
-            }
-        }
     }
 
     private void initWebRootView() {
