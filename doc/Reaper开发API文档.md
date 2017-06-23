@@ -449,14 +449,19 @@ public boolean isAvailable();
  */
 public Object getExtra(String key);
 ```
+
+- 聚效：jx
+- 百度联盟：baidu
+- 广点通：gdt
+
 key|返回值类型 | 返回值 | 描述 | 有效广告商
 ---|---|---|---|---
-adPosId |String||超盟分配的广告位|聚效（jx）/百度联盟（baidu）/广点通（gdt）
-adLocalAppId|String||对应广告商的真实AppId|聚效（jx）/百度联盟（baidu）/广点通（gdt）
-adPosId |String||“超盟”分配广告位|聚效（jx）/百度联盟（baidu）/广点通（gdt）
-adLocalPosId|String||真实广告商分配广告位|聚效（jx）/百度联盟（baidu）/广点通（gdt）
-text    |String||扩展字段（用来作副标题）|聚效（jx）
-adName  |String|jx/gdt/baidu|对应的广告源|聚效（jx）/百度联盟（baidu）/广点通（gdt）
-btnText |String||预留按钮文字|聚效（jx）
-download_app_pkg|String||下载app包名|聚效（jx）/百度联盟（baidu）
-download_app_name|String||下载应用名称|聚效（jx）/百度联盟（baidu）/广点通（gdt）
+adPosId |String||超盟分配的广告位|jx / baidu / gdt
+adLocalAppId|String||对应广告商的真实AppId|jx / baidu / gdt
+adPosId |String||“超盟”分配广告位|jx / baidu / gdt 
+adLocalPosId|String||真实广告商分配广告位|jx / baidu / gdt
+text    |String||扩展字段(副标题)|jx
+adName  |String|jx/gdt/baidu|对应的广告源|jx / baidu / gdt
+btnText |String||预留按钮文字|jx
+download_app_pkg|String||下载app包名|jx / baidu
+download_app_name|String||下载应用名称|jx / baidu / gdt
