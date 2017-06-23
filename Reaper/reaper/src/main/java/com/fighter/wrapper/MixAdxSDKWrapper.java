@@ -257,7 +257,6 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
             Iterator<String> iterator = params.keySet().iterator();
             while (iterator.hasNext()) {
                 String key = iterator.next();
-                ReaperLog.i(TAG, "key " + params.get(key));
                 tempParams.append(pos == 0 ? "?" : "&");
                 tempParams.append(String.format("%s=%s", key, URLEncoder.encode(params.get(key), "utf-8")));
                 pos++;
@@ -269,7 +268,6 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
 //                pos++;
 //            }
             String bodyString = tempParams.toString();
-            ReaperLog.i(TAG, "generatePostData: " + bodyString);
             MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
             requestBody = RequestBody.create(mediaType, bodyString);
         } catch (UnsupportedEncodingException e) {
@@ -422,16 +420,20 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
         }
 
         if (adJson != null) {
-            JSONArray creativesJson = adJson.getJSONArray("creatives");
-            if (creativesJson != null && creativesJson.size() > 0) {
-                int size = creativesJson.size();
+            ReaperLog.i(TAG, " bai du json string is " + adJson.toJSONString());
+            String adSystem = adJson.getString("adSystem");                     //广告系统
+            String adTitle = adJson.getString("adTitle");                       //广告投放名称
+            JSONArray creativeJsonArray = adJson.getJSONArray("creatives");     //创意数组，通常只有一个
+            String createString = adJson.getString("Creatives");                //投放创意信息
+            if (creativeJsonArray != null && creativeJsonArray.size() > 0) {
+                int size = creativeJsonArray.size();
                 AdInfo adInfo = null;
                 for (int i = 0; i < size; i++) {
-                    JSONObject creativeJson = creativesJson.getJSONObject(i);
+                    JSONObject creativeJson = creativeJsonArray.getJSONObject(i);
                     if (creativeJson == null) {
                         continue;
                     }
-                    JSONObject metaInfoJson = creativeJson.getJSONObject("metaInfo");
+                    JSONObject metaInfoJson = creativeJson.getJSONObject("metaInfo");   //元数据信息
                     if (metaInfoJson == null) {
                         continue;
                     }
@@ -447,7 +449,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                     adInfo.setAdLocalPosId(adLocalPositionId);
 
                     int contentType = AdInfo.ContentType.PICTURE;
-                    String creativeType = metaInfoJson.getString("creativeType");
+                    String creativeType = metaInfoJson.getString("creativeType");      //创意类型
                     switch (creativeType) {
                         case "TEXT": {
                             contentType = AdInfo.ContentType.TEXT;
@@ -469,26 +471,33 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                     adInfo.setContentType(contentType);
 
                     int actionType = AdInfo.ActionType.BROWSER;
-                    String interactionType = metaInfoJson.getString("interactionType");
+                    String interactionType = metaInfoJson.getString("interactionType"); //交互类型
                     if ("DOWNLOAD".equalsIgnoreCase(interactionType)) {
                         actionType = AdInfo.ActionType.APP_DOWNLOAD;
+                    } else if("SURFING".equalsIgnoreCase(interactionType)) {
+                        actionType = AdInfo.ActionType.BROWSER;
                     }
                     adInfo.setActionType(actionType);
-                    String ldpUrl = metaInfoJson.getString("ldp");
+                    String ldpUrl = metaInfoJson.getString("ldp");                      //落地页
                     adInfo.setExtra(EXTRA_EVENT_CLICK_LDP, ldpUrl);
 
-                    adInfo.setImgUrl(metaInfoJson.getString("imageUrl"));
-                    adInfo.setVideoUrl(metaInfoJson.getString("videoUrl"));
-                    adInfo.setTitle(metaInfoJson.getString("title"));
-                    adInfo.setDesc(metaInfoJson.getString("description"));
-                    JSONArray iconUrlsJson = metaInfoJson.getJSONArray("iconUrls");
+                    adInfo.setTitle(metaInfoJson.getString("title"));                   //创意标题
+                    adInfo.setDesc(metaInfoJson.getString("description"));              //创意描述信息
+                    int duration = metaInfoJson.getIntValue("duration");                //广告时长
+                    int width = metaInfoJson.getIntValue("width");                      //素材宽
+                    int height = metaInfoJson.getIntValue("height");                    //素材高
+                    adInfo.setImgUrl(metaInfoJson.getString("imageUrl"));               //图片地址
+                    adInfo.setVideoUrl(metaInfoJson.getString("videoUrl"));             //视频地址
+                    JSONArray iconUrlsJson = metaInfoJson.getJSONArray("iconUrls");     //icon图标地址
                     if (iconUrlsJson != null && iconUrlsJson.size() > 0) {
                         adInfo.setAppIconUrl(iconUrlsJson.getString(0));
                     }
-                    adInfo.setAppName(metaInfoJson.getString("brandName"));
-                    adInfo.setDownPkgName(metaInfoJson.getString("appPackage"));
-
-                    JSONArray trackingEventsJson = creativeJson.getJSONArray("trackingEvents");
+                    adInfo.setDownPkgName(metaInfoJson.getString("appPackage"));        //APP包名
+                    int appSize = metaInfoJson.getIntValue("appSize");                  //APP文件大小
+                    String downAppName = metaInfoJson.getString("brandName");           //APP或品牌名称
+                    adInfo.setDownAppName(downAppName);
+                    adInfo.setBrandName(downAppName);
+                    JSONArray trackingEventsJson = creativeJson.getJSONArray("trackingEvents");//事件跟踪组
                     if (trackingEventsJson != null) {
                         for (int trackingIndex = 0; trackingIndex < trackingEventsJson.size(); trackingIndex++) {
                             JSONObject eventJson = trackingEventsJson.getJSONObject(trackingIndex);
@@ -500,51 +509,51 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                             }
                             if (!TextUtils.isEmpty(event) && urls.size() > 0) {
                                 switch (event) {
-                                    case "VIEW": {
+                                    case "VIEW": {//爆光
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_VIEW, urls);
                                         break;
                                     }
-                                    case "PLAY_END": {
+                                    case "PLAY_END": {//广告播放完成
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_PLAY_END, urls);
                                         break;
                                     }
-                                    case "CLICK": {
+                                    case "CLICK": {//点击
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_CLICK, urls);
                                         break;
                                     }
-                                    case "CLOSE": {
+                                    case "CLOSE": {//广告关闭
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_CLOSE, urls);
                                         break;
                                     }
-                                    case "PLAY": {
+                                    case "PLAY": {//广告播放
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_PLAY, urls);
                                         break;
                                     }
-                                    case "FULL_SCREEN": {
+                                    case "FULL_SCREEN": {//视频广告全屏
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_FULL_SCREEN, urls);
                                         break;
                                     }
-                                    case "CARD_CLICK": {
+                                    case "CARD_CLICK": {//点击预览图播放视频
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_CARD_CLICK, urls);
                                         break;
                                     }
-                                    case "VIDEO_CLOSE": {
+                                    case "VIDEO_CLOSE": {//视频播放被中途关闭
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_VIDEO_CLOSE, urls);
                                         break;
                                     }
-                                    case "APP_DOWNLOAD": {
+                                    case "APP_DOWNLOAD": {//下载推广APP（下载完成）
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_APP_DOWNLOAD, urls);
                                         break;
                                     }
-                                    case "APP_START_DOWNLOAD": {
+                                    case "APP_START_DOWNLOAD": {//开始下载APP
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_APP_START_DOWNLOAD, urls);
                                         break;
                                     }
-                                    case "APP_INSTALL": {
+                                    case "APP_INSTALL": {//安装推广APP
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_APP_INSTALL, urls);
                                         break;
                                     }
-                                    case "APP_ACTIVE": {
+                                    case "APP_ACTIVE": {//激活推广APP
                                         adInfo.setExtra(EXTRA_EVENT_TRACK_URL_APP_ACTIVE, urls);
                                         break;
                                     }

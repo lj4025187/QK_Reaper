@@ -70,11 +70,11 @@ class AdParam {
                 "," + TrackerConfig.AD_NUM_KEY      + "=" + "\'" + ad_num                         + '\'' +
                 "," + TrackerConfig.TITLE_KEY       + "=" + "\'"  + ad_info.getTitle()            + '\'' +
                 "," + TrackerConfig.DESC_KEY        + "=" + "\'" + ad_info.getDesc()              + '\'' +
-                "," + TrackerConfig.TEXT_KEY        + "=" + "\'" + ad_info.getExtra("text")       + '\'' +
+                "," + TrackerConfig.TEXT_KEY        + "=" + "\'" + ad_info.getText()              + '\'' +
                 "," + TrackerConfig.IMG_URL_KEY     + "=" + "\'" + ad_info.getImgUrl()            + '\'' +
-                "," + TrackerConfig.BTN_TEXT_KEY    + "=" + "\'" + ad_info.getExtra("btntext")    + '\'' +
-                "," + TrackerConfig.BTN_URL_KEY     + "=" + "\'" + ad_info.getExtra("btnurl")     + '\'' +
-                "," + TrackerConfig.BRAND_NAME_KEY  + "=" + "\'" + ad_info.getExtra("brandName")  + '\'' +
+                "," + TrackerConfig.BTN_TEXT_KEY    + "=" + "\'" + ad_info.getBtnText()           + '\'' +
+                "," + TrackerConfig.BTN_URL_KEY     + "=" + "\'" + ad_info.getBtnUrl()            + '\'' +
+                "," + TrackerConfig.BRAND_NAME_KEY  + "=" + "\'" + ad_info.getBrandName()         + '\'' +
                 "," + TrackerConfig.RESERVER_ONE_KEY+ "=" + "\'" + reserved1                      + '\'' +
                 "," + TrackerConfig.RESERVER_TWO_KEY+ "=" + "\'" + reserved2                      + '\'' +
                 '}';

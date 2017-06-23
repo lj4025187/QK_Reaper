@@ -10,8 +10,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.List;
-
 @RunWith(AndroidJUnit4.class)
 public class ReaperApiTest {
     private static final String TAG = ReaperApiTest.class.getSimpleName();
@@ -46,7 +44,7 @@ public class ReaperApiTest {
                     public void onFailed(String errMsg) {
                         LoaderLog.i(TAG, "onFailed " + errMsg);
                     }
-                });
+                }, true);
 
         adRequester.requestAd(1);
 

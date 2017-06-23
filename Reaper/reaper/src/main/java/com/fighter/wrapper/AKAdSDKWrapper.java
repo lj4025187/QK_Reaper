@@ -85,8 +85,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         mContext = ReaperEnv.sContextProxy;
         mDownloadMap = new LruCache<>(200);
         //if second param set true should see "AKAD" tag
-        AKAD.initSdk(ReaperEnv.sContextProxy, true, true);
-        AKAD.setApkListener(ReaperEnv.sContextProxy, new ApkDownloadListener());
+        AKAD.initSdk(mContext, true, true);
+        AKAD.setApkListener(mContext, new ApkDownloadListener());
     }
 
     @Override
@@ -411,9 +411,14 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     if (akAdJson == null) {
                         continue;
                     }
-                    String akAdTitle = akAdJson.getString("title");
-                    String akAdDesc = akAdJson.getString("desc");
-                    String akAdImgUrl = akAdJson.getString("contentimg");
+                    String akAdTitle = akAdJson.getString("title");                 //标题
+                    String akAdExtText = akAdJson.getString("ext_text");            //扩展字段，多为副标题
+                    String akAdDesc = akAdJson.getString("desc");                   //描述
+                    String akAdBtnText = akAdJson.getString("btntext");             //按钮文案
+                    String akAdImgUrl = akAdJson.getString("contentimg");           //大图URL
+                    String akAdLogo = akAdJson.getString("logo");                   //图标URL
+                    String akAdWidth = String.valueOf(akAdJson.getIntValue("w"));   //素材宽
+                    String akAdHeight = String.valueOf(akAdJson.getIntValue("h"));  //素材高
 
                     adInfo = new AdInfo();
                     adInfo.generateUUID();
@@ -439,20 +444,23 @@ public class AKAdSDKWrapper extends ISDKWrapper {
 
                         JSONObject akAppJson = JSONObject.parseObject(ad.getAPPInfo().toString());
                         if (akAppJson != null) {
-                            String akAppLogo = akAdJson.getString("logo");
                             String akAppPkgName = akAppJson.getString("app_pkg");
                             String akAppName = akAppJson.getString("app_name");
-                            adInfo.setAppIconUrl(akAppLogo);
-                            adInfo.setAppName(akAppName);
+                            adInfo.setDownAppName(akAppName);
                             adInfo.setDownPkgName(akAppPkgName);
+                            adInfo.setBrandName(akAppName);
                         }
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);
                     }
                     adInfo.setExtra(EXTRA_EVENT_NATIVE_AD, ad);
-                    adInfo.setImgUrl(akAdImgUrl);
+
                     adInfo.setTitle(akAdTitle);
+                    adInfo.setText(akAdExtText);
                     adInfo.setDesc(akAdDesc);
+                    adInfo.setBtnText(akAdBtnText);
+                    adInfo.setImgUrl(akAdImgUrl);
+                    adInfo.setAppIconUrl(akAdLogo);
                     break;
                 }
                 if (adInfo != null) {
@@ -508,10 +516,16 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     if (akAdJson == null) {
                         continue;
                     }
-                    String akAdTitle = akAdJson.getString("title");
-                    String akAdDesc = akAdJson.getString("desc");
-                    String akAdImgUrl = akAdJson.getString("contentimg");
-                    String akVideoUrl = akAdJson.getString("video");
+                    String akAdTitle = akAdJson.getString("title");                 //标题
+                    String akAdExtText = akAdJson.getString("ext_text");            //扩展字段，多为副标题
+                    String akAdDesc = akAdJson.getString("desc");                   //描述
+                    String akAdBtnText = akAdJson.getString("btntext");             //按钮文案
+                    String akAdImgUrl = akAdJson.getString("contentimg");           //大图URL
+                    String akAdIconUrl = akAdJson.getString("logo");                //图标URL
+                    String akVideoUrl = akAdJson.getString("video");                //视频URL
+                    String akAdDuration = akAdJson.getString("duration");           //视频时长
+                    String akAdWidth = String.valueOf(akAdJson.getIntValue("w"));   //素材宽
+                    String akAdHeight = String.valueOf(akAdJson.getIntValue("h"));  //素材高
 
                     adInfo = new AdInfo();
                     adInfo.generateUUID();
@@ -543,17 +557,21 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                             String akAppPkgName = akAppJson.getString("app_pkg");
                             String akAppName = akAppJson.getString("app_name");
                             adInfo.setAppIconUrl(akAppLogo);
-                            adInfo.setAppName(akAppName);
+                            adInfo.setDownAppName(akAppName);
                             adInfo.setDownPkgName(akAppPkgName);
+                            adInfo.setBrandName(akAppName);
                         }
                     } else {
                         adInfo.setActionType(AdInfo.ActionType.BROWSER);
                     }
 //                    adInfo.setExtra(EXTRA_EVENT_NATIVE_AD, ad);
                     adInfo.setExtra(EXTRA_EVENT_NATIVE_VIDEO_AD, ad);
-                    adInfo.setImgUrl(akAdImgUrl);
                     adInfo.setTitle(akAdTitle);
+                    adInfo.setText(akAdExtText);
                     adInfo.setDesc(akAdDesc);
+                    adInfo.setBtnText(akAdBtnText);
+                    adInfo.setImgUrl(akAdImgUrl);
+                    adInfo.setAppIconUrl(akAdIconUrl);
                     adInfo.setVideoUrl(akVideoUrl);
 
                     break;

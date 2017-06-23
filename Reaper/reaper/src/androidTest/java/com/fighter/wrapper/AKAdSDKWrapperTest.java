@@ -23,9 +23,11 @@ public class AKAdSDKWrapperTest {
         AdRequest adRequest = new AdRequest.Builder()
                 .adPosId("1")
                 .adExpireTime(30 * 60 * 1000)
-                .adLocalAppId("1104241296")
+//                .adLocalAppId("1104241296")   //原生广告
+                .adLocalAppId("338122")         //视频广告
                 .adLocalPositionId("5060504124524896")
-                .adType(AdType.TYPE_NATIVE)
+//                .adType(AdType.TYPE_NATIVE)
+                .adType(AdType.TYPE_VIDEO)
                 .adCount(1)
                 .adWidth(640)
                 .adHeight(100)

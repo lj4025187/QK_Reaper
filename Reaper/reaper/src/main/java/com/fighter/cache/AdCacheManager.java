@@ -186,15 +186,15 @@ public class AdCacheManager implements DownloadCallback{
         public Object doSomething() {
             //ISdkWrapper onEvent
             String adName = adInfo.getAdName();
-            if(!TextUtils.isEmpty(adName)) {
-                ISDKWrapper wrapper = mSdkWrapperSupport.get(adName);
-                if(wrapper != null) {
-                    wrapper.onEvent(actionEvent, adInfo);
-                } else {
-                    ReaperLog.e("Reaper sdk can not support " + adName);
-                }
+            if(TextUtils.isEmpty(adName)) return null;
+            ISDKWrapper wrapper = mSdkWrapperSupport.get(adName);
+            if(wrapper != null) {
+                wrapper.onEvent(actionEvent, adInfo);
+                return adInfo;
+            } else {
+                ReaperLog.e("Reaper sdk can not support " + adName);
+                return null;
             }
-            return adInfo;
         }
 
     }
@@ -1065,10 +1065,8 @@ public class AdCacheManager implements DownloadCallback{
                 new PriorityTaskDaemon.TaskNotify() {
                     @Override
                     public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
-                        ReaperLog.i(TAG, "tracker task onResult method is called");
-                        if (result.equals(adInfo)) {
-                            ReaperLog.i(TAG, "tracker ad info " + adInfo.getAdPosId() + "tracker event has handled");
-                        }
+                        if(result == null || !result.equals(adInfo))
+                            ReaperLog.i(TAG, "this ISDKWrapper does not exec onEvent method");
                     }
                 }
         );
@@ -1506,7 +1504,7 @@ public class AdCacheManager implements DownloadCallback{
                 ReaperLog.i(TAG, errMsg);
                 trackActionEvent(EVENT_APP_DOWNLOAD_FAILED, adInfo, errMsg);
             }
-            long id = mAdFileManager.requestDownload(actionUrl, adInfo.getAppName(), null);
+            long id = mAdFileManager.requestDownload(actionUrl, adInfo.getDownAppName(), null);
             ReaperLog.i(TAG, "start download app " + id);
             trackActionEvent(EVENT_APP_START_DOWNLOAD, adInfo, null);
             mDownloadApps.put(id, adInfo);

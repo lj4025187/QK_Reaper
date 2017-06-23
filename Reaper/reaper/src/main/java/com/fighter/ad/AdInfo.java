@@ -147,11 +147,6 @@ public class AdInfo {
      */
     private static final String KEY_APP_ICON_URL = "appIconUrl";
     /**
-     * 广告目标APP的名称，
-     * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
-     */
-    private static final String KEY_APP_NAME = "appName";
-    /**
      * 返回的广告是否可用
      */
     private static final String KEY_ADINFO_AVAIL = "isAvail";
@@ -360,14 +355,6 @@ public class AdInfo {
         putParam(KEY_APP_ICON_URL, appIconUrl);
     }
 
-    public String getAppName() {
-        return (String) mAdParams.get(KEY_APP_NAME);
-    }
-
-    public void setAppName(String appName) {
-        putParam(KEY_APP_NAME, appName);
-    }
-
     public String getDownPkgName() {
         return (String) mAdParams.get(KEY_DOWN_PKG_NAME);
     }
@@ -473,8 +460,12 @@ public class AdInfo {
                 ", mVideoUrl='" + getVideoUrl() + '\'' +
                 ", mTitle='" + getTitle() + '\'' +
                 ", mDesc='" + getDesc() + '\'' +
+                ", mExtText='" + getText() + '\'' +
+                ", mBtnText='" + getBtnText() + '\'' +
+                ", mBtnUrl='" + getBtnUrl() + '\'' +
+                ", mBrandName='" + getBrandName() + '\'' +
                 ", mAppIconUrl='" + getAppIconUrl() + '\'' +
-                ", mAppName='" + getAppName() + '\'' +
+                ", mAppName='" + getDownAppName() + '\'' +
                 ", mAppPackageName='" + getDownPkgName() + '\'' +
                 '}';
     }

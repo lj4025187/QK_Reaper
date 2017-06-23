@@ -234,7 +234,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 .addQueryParameter("count",
                         String.valueOf(adCounts))               // 广告位广告个数
                 .addQueryParameter("posid",
-                        adRequest.getAdLocalPositionId())            // 广告位 id，由腾讯广告联盟平台生成
+                        adRequest.getAdLocalPositionId())       // 广告位 id，由腾讯广告联盟平台生成
 
                 .addQueryParameter("charset", "utf8")           // 广告内容的数据编码。只能填 utf8
                 .addQueryParameter("datafmt", "json")           // html或json
@@ -249,9 +249,9 @@ public class TencentSDKWrapper extends ISDKWrapper {
         // 原生广告不填写宽高
         if (localAdType != TYPE_REF_MAP.get(AdType.TYPE_NATIVE)) {
             builder.addQueryParameter("posw", String.valueOf(
-                    adRequest.getAdWidth()))                // 广告位宽
+                    adRequest.getAdWidth()))                    // 广告位宽
                     .addQueryParameter("posh", String.valueOf(
-                            adRequest.getAdHeight()));      // 广告位高
+                            adRequest.getAdHeight()));          // 广告位高
         }
 
         return builder.build();
@@ -278,20 +278,20 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 .toLowerCase();
 
         JSONObject jsonReq = new JSONObject();
-        jsonReq.put("apiver", TENCENT_AD_API_VER);          // api 版本
-        jsonReq.put("appid", adRequest.getAdLocalAppId());         // 广点通分配的 appid
-        jsonReq.put("c_os", "android");                     // ios android
-        jsonReq.put("muidtype", !TextUtils.isEmpty(strImeiMd5) ? 1 : 3); // 1:imei 2:ifa 3:mac
+        jsonReq.put("apiver", TENCENT_AD_API_VER);                              // api 版本
+        jsonReq.put("appid", adRequest.getAdLocalAppId());                      // 广点通分配的 appid
+        jsonReq.put("c_os", "android");                                         // ios android
+        jsonReq.put("muidtype", !TextUtils.isEmpty(strImeiMd5) ? 1 : 3);        // 1:imei 2:ifa 3:mac
         String strMuid = !TextUtils.isEmpty(strImeiMd5) ? strImeiMd5 : strMacMd5;
-        jsonReq.put("muid", strMuid);         // 移动终端标识
-        jsonReq.put("c_device", Device.getBuildModel());               // 设备品牌和型号
-        jsonReq.put("c_pkgname", mContext.getPackageName()); // app 包名
+        jsonReq.put("muid", strMuid);                                           // 移动终端标识
+        jsonReq.put("c_device", Device.getBuildModel());                        // 设备品牌和型号
+        jsonReq.put("c_pkgname", mContext.getPackageName());                    // app 包名
 
         int localAdType = 0;
         if (TYPE_REF_MAP.containsKey(adRequest.getAdType())) {
             localAdType = TYPE_REF_MAP.get(adRequest.getAdType());
         }
-        jsonReq.put("postype", localAdType);   // 广告位类型
+        jsonReq.put("postype", localAdType);                                    // 广告位类型
 
         Device.NetworkType networkType = Device.getNetworkType(mContext);
         int iNetType = 0;
@@ -313,7 +313,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 break;
             }
         }
-        jsonReq.put("conn", iNetType);        // 联网方式
+        jsonReq.put("conn", iNetType);                                         // 联网方式
         Device.SimOperator simOperator = Device.getSimOperatorByMnc(mContext);
         int iSimOperator = 0;
         switch (simOperator) {
@@ -330,7 +330,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 break;
             }
         }
-        jsonReq.put("carrier", iSimOperator);     // 运营商
+        jsonReq.put("carrier", iSimOperator);                                  // 运营商
         int screenWidth = Device.getScreenWidth(mContext);
         int screenHeight = Device.getScreenHeight(mContext);
         // 屏幕宽高，取设备物理像素。高度始终大于宽度
@@ -341,8 +341,8 @@ public class TencentSDKWrapper extends ISDKWrapper {
             jsonReq.put("c_w", screenHeight);
             jsonReq.put("c_h", screenWidth);
         }
-        jsonReq.put("inline_full_screen", false); // 这个字段仅用于请求插屏大规格广告，请求其他类型广告时不填
-        jsonReq.put("c_ori", Device.isPortrait(mContext) ? 0 : 90); // 设备横竖屏 0 90 180 270
+        jsonReq.put("inline_full_screen", false);                              // 这个字段仅用于请求插屏大规格广告，请求其他类型广告时不填
+        jsonReq.put("c_ori", Device.isPortrait(mContext) ? 0 : 90);            // 设备横竖屏 0 90 180 270
         // 公网IP无法获取，不填写
         // 经纬度及时间戳
         if (allParams.containsKey(EXTRA_LAT)) {
@@ -361,10 +361,10 @@ public class TencentSDKWrapper extends ISDKWrapper {
             jsonReq.put("useragent", userAgent);
         }
         // 终端用户 HTTP 请求头中的 referer字段 (直接请求，没有来源页 不填写)
-        jsonReq.put("c_osver", Device.getBuildRelease());   // os 版本
-        jsonReq.put("screen_density", String.valueOf(Device.getScreenDensity())); // 屏幕密度
-        jsonReq.put("imei", strImeiMd5);    // 设备 imei 的md5sum 摘要,摘要小写
-        jsonReq.put("mac", strMacMd5);      // 用户设备的 MAC，去除分隔符":"后转为大写,并取 md5sum 摘要
+        jsonReq.put("c_osver", Device.getBuildRelease());                           // os 版本
+        jsonReq.put("screen_density", String.valueOf(Device.getScreenDensity()));   // 屏幕密度
+        jsonReq.put("imei", strImeiMd5);                                            // 设备 imei 的md5sum 摘要,摘要小写
+        jsonReq.put("mac", strMacMd5);                                              // 用户设备的 MAC，去除分隔符":"后转为大写,并取 md5sum 摘要
         // android 用户终端的 AndroidID,取md5sum 摘要
         String androidId = Device.getAndroidID(mContext);
         if (!TextUtils.isEmpty(androidId)) {
@@ -484,7 +484,11 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 JSONObject adExtJson = adInfoJson.getJSONObject("ext");
                 if (adExtJson != null) {
                     adInfo.setAppIconUrl(adExtJson.getString("iconurl"));
-                    adInfo.setAppName(adExtJson.getString("appname"));
+                    String downAppName = adExtJson.getString("appname");
+                    adInfo.setDownAppName(downAppName);
+                    adInfo.setBrandName(downAppName);
+                    int appScore = adExtJson.getIntValue("appscore");
+                    int usersNum = adExtJson.getIntValue("num_app_users");
                 }
 
                 break;
