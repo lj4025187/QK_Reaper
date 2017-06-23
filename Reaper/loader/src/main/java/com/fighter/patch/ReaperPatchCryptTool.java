@@ -1,5 +1,7 @@
 package com.fighter.patch;
 
+import com.fighter.utils.LoaderLog;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,8 +32,14 @@ public class ReaperPatchCryptTool {
         }
 
         File dexFile = new File(dexPath);
-        if (!dexFile.exists())
-            dexFile.createNewFile();
+        if (!dexFile.exists()) {
+            if(dexFile.getParentFile().canWrite()) {
+                dexFile.getParentFile().mkdirs();
+                dexFile.createNewFile();
+            } else {
+                LoaderLog.e("create dex file fail because no permission");
+            }
+        }
 
         Header header = new Header();
         header.read(fis);

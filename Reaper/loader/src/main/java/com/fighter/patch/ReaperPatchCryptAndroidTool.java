@@ -31,14 +31,24 @@ public class ReaperPatchCryptAndroidTool {
         String optPath = "/data/data/" + context.getPackageName()
                 + "/" + PATCH_OPT_DIR;
         File optFile = new File(optPath);
-        if (!optFile.exists())
-            optFile.mkdirs();
+        if (!optFile.exists()) {
+            if(optFile.canWrite()) {
+                optFile.mkdirs();
+            } else {
+                LoaderLog.e(TAG, "create optPath fail because no permission");
+            }
+        }
 
         String libPath = "/data/data/" + context.getPackageName()
                 + "/" + PATCH_LIB_DIR;
         File libFile = new File(libPath);
-        if (!libFile.exists())
-            libFile.mkdirs();
+        if (!libFile.exists()) {
+            if(optFile.canWrite()) {
+                libFile.mkdirs();
+            } else {
+                LoaderLog.e(TAG, "create libFile fail because no permission");
+            }
+        }
 
         String dexPath = "/data/data/" + context.getPackageName() + "/" + PATCH_DIR + "/" + System.currentTimeMillis() + ".dex";
         try {
