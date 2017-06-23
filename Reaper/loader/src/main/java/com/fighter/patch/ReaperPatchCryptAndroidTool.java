@@ -7,8 +7,6 @@ import com.fighter.utils.LoaderLog;
 import com.fighter.utils.SignUtil;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Created by haitengwang on 17/05/2017.
@@ -32,22 +30,16 @@ public class ReaperPatchCryptAndroidTool {
                 + "/" + PATCH_OPT_DIR;
         File optFile = new File(optPath);
         if (!optFile.exists()) {
-            if(optFile.canWrite()) {
-                optFile.mkdirs();
-            } else {
+            if(!optFile.mkdirs())
                 LoaderLog.e(TAG, "create optPath fail because no permission");
-            }
         }
 
         String libPath = "/data/data/" + context.getPackageName()
                 + "/" + PATCH_LIB_DIR;
         File libFile = new File(libPath);
         if (!libFile.exists()) {
-            if(optFile.canWrite()) {
-                libFile.mkdirs();
-            } else {
+            if(!libFile.mkdirs())
                 LoaderLog.e(TAG, "create libFile fail because no permission");
-            }
         }
 
         String dexPath = "/data/data/" + context.getPackageName() + "/" + PATCH_DIR + "/" + System.currentTimeMillis() + ".dex";

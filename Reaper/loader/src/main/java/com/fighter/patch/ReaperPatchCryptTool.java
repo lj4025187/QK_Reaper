@@ -33,12 +33,10 @@ public class ReaperPatchCryptTool {
 
         File dexFile = new File(dexPath);
         if (!dexFile.exists()) {
-            if(dexFile.getParentFile().canWrite()) {
-                dexFile.getParentFile().mkdirs();
-                dexFile.createNewFile();
-            } else {
+            if(!dexFile.getParentFile().mkdirs()) {
                 LoaderLog.e("create dex file fail because no permission");
             }
+            dexFile.createNewFile();
         }
 
         Header header = new Header();

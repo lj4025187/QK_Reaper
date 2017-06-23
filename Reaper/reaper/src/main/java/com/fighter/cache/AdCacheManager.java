@@ -1091,7 +1091,7 @@ public class AdCacheManager implements DownloadCallback{
             setCacheDisplayed(adInfo);
         }
         //jump to webView and download app here
-        if (actionEvent == EVENT_CLICK) {
+        if (actionEvent == EVENT_CLICK && checkCoordinateValid(adInfo)) {
             handleClickAction(adInfo);
         }
         AdCacheInfo adCacheInfo = adInfo.getAdCacheInfo();
