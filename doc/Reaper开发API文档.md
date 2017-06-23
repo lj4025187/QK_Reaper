@@ -260,10 +260,10 @@ adInfo.onAdClick(activity, view, downX, downY, upX, upY);
  *
  * @param activity 广告所在activity (不传时聚效无法正常处理点击)
  * @param v        广告展示所在view (不传时聚效无法正常处理点击)
- * @param downX    广告所在view按下时的x坐标，获取不到填-999
- * @param downY    广告所在view按下时的y坐标，获取不到填-999
- * @param upX      广告所在view抬起时的x坐标，获取不到填-999
- * @param upY      广告所在view抬起时的y坐标，获取不到填-999
+ * @param downX    按下广告所在view时手指所在的横坐标，若填写负值或超过屏幕横坐标最大值，点击事件、打点事件会出现问题
+ * @param downY    按下广告所在view时手指所在的纵坐标，若填写负值或超过屏幕纵坐标最大值，点击事件、打点事件会出现问题
+ * @param upX      离开广告所在view时手指所在的横坐标，若填写负值或超过屏幕横坐标最大值，点击事件、打点事件会出现问题
+ * @param upY      离开广告所在view时手指所在的纵坐标，若填写负值或超过屏幕纵坐标最大值，点击事件、打点事件会出现问题
  */
 public void onAdClicked(Activity activity, View v,
                             int downX, int downY,
@@ -444,9 +444,19 @@ public boolean isAvailable();
 /**
  * 对于不满足需求的业务，可通过此方法获取到更多信息。
  * 具体请与我们沟通。
- *
- * @param key 属性key值
+ * 
  * @return 属性value值
  */
 public Object getExtra(String key);
 ```
+key|返回值类型 | 返回值 | 描述 | 有效广告商
+---|---|---|---|---
+adPosId |String||超盟分配的广告位|聚效（jx）/百度联盟（baidu）/广点通（gdt）
+adLocalAppId|String||对应广告商的真实AppId|聚效（jx）/百度联盟（baidu）/广点通（gdt）
+adPosId |String||“超盟”分配广告位|聚效（jx）/百度联盟（baidu）/广点通（gdt）
+adLocalPosId|String||真实广告商分配广告位|聚效（jx）/百度联盟（baidu）/广点通（gdt）
+text    |String||扩展字段（用来作副标题）|聚效（jx）
+adName  |String|jx/gdt/baidu|对应的广告源|聚效（jx）/百度联盟（baidu）/广点通（gdt）
+btnText |String||预留按钮文字|聚效（jx）
+download_app_pkg|String||下载app包名|聚效（jx）/百度联盟（baidu）
+download_app_name|String||下载应用名称|聚效（jx）/百度联盟（baidu）/广点通（gdt）
