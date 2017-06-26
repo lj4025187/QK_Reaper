@@ -86,8 +86,7 @@ public class ReaperInit {
      */
     public static ReaperApi init(Context context) {
         if(Process.myUid() != context.getApplicationInfo().uid){
-            LoaderLog.e("can not init ReaperApi in uid different from context");
-            return null;
+            LoaderLog.e("Init ReaperApi in uid different from context will cause some problems");
         }
         context = context.getApplicationContext();
         sContext = context;
