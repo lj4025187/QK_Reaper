@@ -144,7 +144,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
         }
         showEmptyView(mListData.isEmpty());
         showFooterView(false);
-        showLoadingView(false);
+        showLoadingView(mListData.isEmpty());
         return true;
     }
 
@@ -287,7 +287,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
             SampleLog.e(TAG, " onFailed is not in main thread");
         }
         ToastUtil.getInstance(mContext).showSingletonToast(R.string.ad_load_failed_toast);
-        mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
+        if(!mListData.isEmpty()) mAdAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -304,7 +304,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
 
         if (mListData.isEmpty()) {
             mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
-        } else if (mListData.size() >= SampleConfig.REQUEST_COUNT_PER_TIME){
+        } else /*if (mListData.size() >= SampleConfig.REQUEST_COUNT_PER_TIME)*/{
 //            mMainHandler.sendEmptyMessage(NOTIFY_DATA_CHANGED);
             mAdAdapter.notifyDataSetChanged();
             showFooterView(false);
