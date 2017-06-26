@@ -31,9 +31,13 @@ public class AdRequestFirst implements IAdRequestPolicy {
     }
 
     @Override
-    public List<ReaperAdSense> generateList() {
+    public ReaperAdSense next(int tryTime) {
         List<ReaperAdSense> list = ReaperConfigManager.getReaperAdSenses(mContext, mPosId);
+        ReaperAdSense adSense = null;
         Collections.sort(list);
-        return list;
+        if (tryTime < list.size()) {
+            adSense = list.get(tryTime);
+        }
+        return adSense;
     }
 }

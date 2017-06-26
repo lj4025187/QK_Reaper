@@ -40,8 +40,9 @@ public class AdRequestWeight implements IAdRequestPolicy {
     public static AdRequestWeight getInstance() {
         return INSTANCE;
     }
+
     @Override
-    public List<ReaperAdSense> generateList() {
+    public ReaperAdSense next(int tryTime) {
         List<ReaperAdSense> list = ReaperConfigManager.getReaperAdSenses(mContext, mPosId);
 
         if (isListChanged(list)) {
@@ -49,22 +50,16 @@ public class AdRequestWeight implements IAdRequestPolicy {
         }
 
         list = expandList(list);
-        List<ReaperAdSense> localList = new ArrayList<>();
-        localList.addAll(list);
 
+        ReaperAdSense adSense = list.get(mLocation);
 
-        for (int i = 0; i < mLocation; i ++) {
-            localList.remove(0);
-            ReaperAdSense adSense = list.get(i);
-            localList.add(adSense);
-        }
-        ReaperLog.i(TAG, "list ==> " + list + "; localList ==> " + localList);
         if (mLocation == list.size() -1) {
             mLocation = 0;
         } else {
             mLocation++;
         }
-        return localList;
+
+        return adSense;
     }
 
     private List<ReaperAdSense> expandList(List<ReaperAdSense> list) {

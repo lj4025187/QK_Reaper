@@ -7,6 +7,7 @@ import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperConfigManager;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -38,10 +39,8 @@ public class AdRequestLoop implements IAdRequestPolicy {
     }
 
     @Override
-    public List<ReaperAdSense> generateList() {
+    public ReaperAdSense next(int tryTime) {
         List<ReaperAdSense> list = ReaperConfigManager.getReaperAdSenses(mContext, mPosId);
-        List<ReaperAdSense> locationList = new ArrayList<>();
-        locationList.addAll(list);
 
         if (isListChanged(list)) {
             mLocation = 0;
@@ -49,19 +48,15 @@ public class AdRequestLoop implements IAdRequestPolicy {
             mBeforeList.addAll(list);
         }
 
-        for (int i = 0; i < mLocation; i ++) {
-            locationList.remove(0);
-            ReaperAdSense adSense = list.get(i);
-            locationList.add(adSense);
-        }
-        ReaperLog.i(TAG, "list ==> " + list + "; locationList ==> " + locationList);
-        if (mLocation == list.size() -1) {
+        ReaperAdSense adSense = list.get(mLocation);
+
+        if (mLocation == list.size() - 1) {
             mLocation = 0;
         } else {
             mLocation++;
         }
 
-        return locationList;
+        return adSense;
     }
 
     private boolean isListChanged(List<ReaperAdSense> list) {
