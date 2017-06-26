@@ -37,14 +37,14 @@ import com.fighter.utils.LoaderLog;
 
 /**
  * Reaper Activity
- *
+ * 
  * Created by lichen on 17-6-10.
  */
-
 public class ReaperActivity extends Activity {
 
     private final static String TAG = ReaperActivity.class.getSimpleName();
     private final static int REQUEST_CODE = 6666;
+    private final static int RETRY_LOAD_TIMES = 3;
 
     private Context mContext;
     private RelativeLayout mRootView;
@@ -52,6 +52,8 @@ public class ReaperActivity extends Activity {
     private WebView mWebView;
     private LinearLayout mBottomBar;
     private WebViewClient mClient = new WebViewClient() {
+
+        int errTime = 0;
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
@@ -66,11 +68,23 @@ public class ReaperActivity extends Activity {
             return super.shouldOverrideKeyEvent(view, event);
         }
 
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             super.onReceivedError(view, request, error);
-            LoaderLog.i(TAG, "WebViewClient onReceivedError");
-            view.reload();
+            if (errTime < RETRY_LOAD_TIMES) {
+                LoaderLog.i(TAG, "onReceivedError retry three times");
+                view.reload();
+            } else {
+                Uri uri = request.getUrl();
+                if (!TextUtils.isEmpty(uri.toString())) {
+                    boolean openWebUrl = openWebUrl(uri);
+                    LoaderLog.i(TAG, "onReceivedError open in browser " + openWebUrl);
+                }
+                view.stopLoading();
+                finish();
+            }
+            errTime++;
         }
 
         @Override
@@ -82,7 +96,6 @@ public class ReaperActivity extends Activity {
         private void loadUrl(WebView view, String url) {
             if (TextUtils.isEmpty(url))
                 return;
-            LoaderLog.i(TAG, " load url " + url);
             if (url.startsWith("tel:")) {
                 Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -340,12 +353,29 @@ public class ReaperActivity extends Activity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(mWebView == null)
+        if (mWebView == null)
             return super.onKeyDown(keyCode, event);
         if ((keyCode == KeyEvent.KEYCODE_BACK) && mWebView.canGoBack()) {
             mWebView.goBack();
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    public boolean openWebUrl(Uri uri) {
+        boolean startSuccess = false;
+        try {
+            Intent intent = new Intent();
+            intent.setAction("android.intent.action.VIEW");
+            intent.addCategory("android.intent.category.BROWSABLE");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setData(uri);
+            startActivity(intent);
+            startSuccess = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return startSuccess;
     }
 }

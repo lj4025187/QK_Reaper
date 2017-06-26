@@ -5,7 +5,6 @@ import android.annotation.TargetApi;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,6 +23,8 @@ import com.fighter.reaper.sample.SampleApp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
 
 /**
  * Created by Administrator on 2017/5/19.
@@ -64,7 +65,7 @@ public class BaseActivity extends FragmentActivity implements Handler.Callback {
         int length = REQUESTED_PERMISSIONS.length;
         for (int i = 0; i < length; i++) {
             String permission = REQUESTED_PERMISSIONS[i];
-            if(ContextCompat.checkSelfPermission(getApplicationContext(), permission) == PackageManager.PERMISSION_DENIED)
+            if(ContextCompat.checkSelfPermission(getApplicationContext(), permission) == PERMISSION_DENIED)
                 noGrantedPermission.add(permission);
         }
         if(noGrantedPermission.isEmpty()) return;
@@ -78,8 +79,9 @@ public class BaseActivity extends FragmentActivity implements Handler.Callback {
         if (requestCode != REQUEST_CODE || permissions.length == 0) return;
         if(Arrays.asList(permissions).contains(Manifest.permission.WRITE_SETTINGS))
                 checkWriteSettings();
-        if(Arrays.asList(grantResults).contains(PackageManager.PERMISSION_DENIED))
-                startPermissionSettings();
+        if(Arrays.asList(grantResults).contains(PERMISSION_DENIED)) {
+            startPermissionSettings();
+        }
     }
 
     private void startPermissionSettings() {

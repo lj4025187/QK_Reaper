@@ -6,6 +6,7 @@
 ### Reaper SDK集成方式
 > 配置AndroidManifest.xml
 
+- 添加权限声明（动态权限检测需开发者自行适配）
 ```xml
 <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 <uses-permission android:name="android.permission.INTERNET" />
@@ -16,6 +17,15 @@
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_UPDATES" />
+```
+-添加相关组件
+```xml
+<activity android:name="com.fighter.loader.ReaperActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"/>
+<activity
+            android:name="com.fighter.loader.ReaperProxyActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@android:style/Theme.Black.NoTitleBar"/>
 ```
 
 > 集成reaper.jar
