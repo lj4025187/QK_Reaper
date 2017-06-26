@@ -404,7 +404,7 @@ public class AdCacheManager implements DownloadCallback{
             downloadAdResourceFile(adInfo);
             if (mAdSenseList != null
                     && location > mAdSenseList.size()
-                    && adInfo != null) {
+                    && adInfo == null) {
                 if(needHoldAd) {
                     AdInfo holdAd = generateHoldAd(mPosId);
                     if(holdAd == null) return "hold ad is null";

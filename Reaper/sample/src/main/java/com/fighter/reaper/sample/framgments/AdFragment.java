@@ -68,6 +68,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
     private ListView mListView;
     private AdAdapter mAdAdapter;
     private List<BaseItem> mListData = new ArrayList<>();
+    private List<String> mFailedData = new ArrayList<>();
 
     private int mRequestCount;
     /**
@@ -287,7 +288,13 @@ public class AdFragment extends Fragment implements Handler.Callback,
             SampleLog.e(TAG, " onFailed is not in main thread");
         }
         ToastUtil.getInstance(mContext).showSingletonToast(R.string.ad_load_failed_toast);
-        if(!mListData.isEmpty()) mAdAdapter.notifyDataSetChanged();
+        mFailedData.add(s);
+        if (mListData.size() + mFailedData.size() >= SampleConfig.REQUEST_COUNT_PER_TIME){
+            mAdAdapter.notifyDataSetChanged();
+            showFooterView(false);
+            showLoadingView(false);
+            showEmptyView(mListData.isEmpty());
+        }
     }
 
     /**
@@ -302,10 +309,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
         SampleLog.i(TAG, " on success ads uuid " + adInfo.getUuid());
         SampleLog.i(TAG, " on success ads isAvailable " + adInfo.isAvailable());
 
-        if (mListData.isEmpty()) {
-            mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
-        } else /*if (mListData.size() >= SampleConfig.REQUEST_COUNT_PER_TIME)*/{
-//            mMainHandler.sendEmptyMessage(NOTIFY_DATA_CHANGED);
+        if (mListData.size() + mFailedData.size() >= SampleConfig.REQUEST_COUNT_PER_TIME){
             mAdAdapter.notifyDataSetChanged();
             showFooterView(false);
             showLoadingView(false);
