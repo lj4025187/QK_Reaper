@@ -1,11 +1,9 @@
 package com.fighter.patch;
 
 import android.content.Context;
-import android.os.Environment;
 
 import com.fighter.helper.ReaperPatchHelper;
 
-import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
 
 /**
@@ -37,8 +35,9 @@ public class ReaperPatch {
     /**
      * Constructor
      * A lot of initializes must been done in here
-     *
-     * @param file
+     * @param context context
+     * @param file file
+     * @param appClassLoader classLoader
      */
     private ReaperPatch(Context context, ReaperFile file, ClassLoader appClassLoader) {
 
@@ -63,7 +62,7 @@ public class ReaperPatch {
     /**
      * Check this patch is validate, don't use if not validate
      *
-     * @return
+     * @return whether valid
      */
     public boolean isValid() {
         return mFile != null && mLoader != null && mVersion.isValid();
@@ -72,7 +71,7 @@ public class ReaperPatch {
     /**
      * Get the patch name
      *
-     * @return
+     * @return patch name
      */
     public String getName() {
         return isValid() ? mFile.getName() : null;
@@ -81,7 +80,7 @@ public class ReaperPatch {
     /**
      * Get the absolute path of the patch
      *
-     * @return
+     * @return AbsolutePath
      */
     public String getAbsolutePath() {
         return isValid() ? mFile.getAbsolutePath() : null;
@@ -90,7 +89,7 @@ public class ReaperPatch {
     /**
      * Get the class loader from this patch, it's patch entrance
      *
-     * @return
+     * @return PatchLoader
      */
     public ClassLoader getPatchLoader() {
         return mLoader;
@@ -99,7 +98,7 @@ public class ReaperPatch {
     /**
      * Get the version of this patch, must check version before use it
      *
-     * @return
+     * @return Version
      */
     public ReaperPatchVersion getVersion() {
         return mVersion;
@@ -108,7 +107,7 @@ public class ReaperPatch {
     /**
      * Get the reaper file of this patch, it's a pair
      *
-     * @return
+     * @return ReaperFile
      */
     public ReaperFile getReaperFile() {
         return mFile;

@@ -74,7 +74,7 @@ public class ReaperPatchVersion {
     /**
      * Check the version string is validate or not
      *
-     * @return
+     * @return boolean
      */
     public boolean isValid() {
         return mVersionStr != null && !mVersionStr.equals(BAD_VERSION)

@@ -28,7 +28,7 @@ public class ReaperApplication extends Application {
 
     /**
      * If you extends ReaperApplication, you can get ReaperApi by this.
-     * @return
+     * @return ReaperApi
      */
     public ReaperApi getReaperApi() {
         return mReaperApi;

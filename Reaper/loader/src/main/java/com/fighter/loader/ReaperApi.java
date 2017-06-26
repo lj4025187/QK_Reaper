@@ -93,7 +93,7 @@ public class ReaperApi {
      * @param adPositionId      360OS广告平台申请的广告位ID
      * @param adRequestCallback 广告请求回调
      * @param needHoldAd 是否在无网络或其他异常情况下返回保底广告
-     * @return
+     * @return AdRequester
      */
     @SuppressWarnings("unchecked")
     public AdRequester getAdRequester(String adPositionId,
@@ -113,7 +113,7 @@ public class ReaperApi {
      * 获取设备wifi mac地址
      *
      * @param context  Context上下文
-     * @return
+     * @return getMacAddress
      */
     public String getMacAddress(Context context) {
         Map<String, Object> params = new ArrayMap<>();

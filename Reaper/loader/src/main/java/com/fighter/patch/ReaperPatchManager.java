@@ -38,7 +38,7 @@ public class ReaperPatchManager {
     /**
      * Get ReaperPatchManager instance, it's singleton
      *
-     * @return
+     * @return ReaperPatchManager
      */
     public static ReaperPatchManager getInstance() {
         ReaperPatchManager mgr;
@@ -66,8 +66,10 @@ public class ReaperPatchManager {
      * Use patch after unpackPatches() with ClassLoader of patch
      * Good luck !
      *
-     * @param files
-     * @return
+     * @param context context
+     * @param files ReaperFiles
+     * @param appClassLoader classLoader
+     * @return ReaperPatch list
      */
     public List<ReaperPatch> unpackPatches(Context context, List<ReaperFile> files, ClassLoader appClassLoader) {
         List<ReaperPatch> patches = null;

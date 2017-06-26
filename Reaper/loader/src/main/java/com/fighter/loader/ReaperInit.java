@@ -82,7 +82,8 @@ public class ReaperInit {
 
     /**
      * Get highest version of ReaperApi
-     * @param context
+     * @param context Application context
+     * @return ReaperApi
      */
     public static ReaperApi init(Context context) {
         if(Process.myUid() != context.getApplicationInfo().uid){

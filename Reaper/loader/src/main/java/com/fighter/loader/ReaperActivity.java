@@ -37,7 +37,7 @@ import com.fighter.utils.LoaderLog;
 
 /**
  * Reaper Activity
- * <p/>
+ *
  * Created by lichen on 17-6-10.
  */
 

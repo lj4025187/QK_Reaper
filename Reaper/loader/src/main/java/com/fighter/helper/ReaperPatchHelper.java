@@ -21,8 +21,8 @@ public class ReaperPatchHelper {
     /**
      * Check whether file is a dex
      *
-     * @param file
-     * @return
+     * @param file dexFile
+     * @return whether is dex
      */
     public static boolean isDexFile(File file) {
         if (file == null)
@@ -35,8 +35,8 @@ public class ReaperPatchHelper {
     /**
      * Check whether file is a apk
      *
-     * @param file
-     * @return
+     * @param file ReaperFile
+     * @return whether is apk
      */
     public static boolean isApkFile(ReaperFile file) {
         if (file == null)
@@ -60,8 +60,8 @@ public class ReaperPatchHelper {
     /**
      * Must ends with .rr, it's a reaper format
      *
-     * @param file
-     * @return
+     * @param file ReaperFile
+     * @return whether is rr file
      */
     public static boolean isReaperFile(ReaperFile file) {
         if (file == null)
@@ -75,9 +75,9 @@ public class ReaperPatchHelper {
     /**
      * Just copy a file input dest path, must be a file
      *
-     * @param file
-     * @param dstPath
-     * @return
+     * @param file file
+     * @param dstPath dstPath
+     * @return whether copy success
      */
     public static boolean copyFileTo(File file, String dstPath) {
         if (!file.isFile())
@@ -123,9 +123,9 @@ public class ReaperPatchHelper {
     /**
      * Just copy a file input dest path, must be a file
      *
-     * @param srcPath
-     * @param dstPath
-     * @return
+     * @param srcPath srcPath
+     * @param dstPath dstPath
+     * @return whether copy success
      */
     public static boolean copyFileTo(String srcPath, String dstPath) {
         return copyFileTo(new File(srcPath), dstPath);
@@ -134,9 +134,9 @@ public class ReaperPatchHelper {
     /**
      * Write byte buffer(offset - position) into dest file
      *
-     * @param buffer
-     * @param dstPath
-     * @return
+     * @param buffer buffer
+     * @param dstPath dstPath
+     * @return whether write success
      */
     public static boolean writeBufferTo(ByteBuffer buffer, String dstPath) {
         return writeBufferTo(buffer, new File(dstPath));
@@ -145,9 +145,9 @@ public class ReaperPatchHelper {
     /**
      * Write byte buffer(offset - position) into dest file
      *
-     * @param buffer
-     * @param dstFile
-     * @return
+     * @param buffer buffer
+     * @param dstFile dstFile
+     * @return whether success
      */
     public static boolean writeBufferTo(ByteBuffer buffer, File dstFile) {
         BufferedOutputStream bos = null;

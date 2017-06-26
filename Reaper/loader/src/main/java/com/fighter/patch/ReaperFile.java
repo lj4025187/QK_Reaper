@@ -36,7 +36,7 @@ public class ReaperFile {
     /**
      * Must close stream after use finished
      *
-     * @return
+     * @return FileInputStream
      */
     public FileInputStream openFileInputStream() {
         FileInputStream fis = null;
@@ -61,7 +61,7 @@ public class ReaperFile {
     /**
      * Must close stream after use finished
      *
-     * @return
+     * @return InputStream
      */
     public InputStream openInputStream() {
         return openFileInputStream();
@@ -70,7 +70,7 @@ public class ReaperFile {
     /**
      * Get the absolute path of this file
      *
-     * @return
+     * @return AbsolutePath
      */
     public String getAbsolutePath() {
         return mFile != null ? mFile.getAbsolutePath() : null;
@@ -79,7 +79,7 @@ public class ReaperFile {
     /**
      * Get the name of this file
      *
-     * @return
+     * @return file name
      */
     public String getName() {
         return mFile != null ? mFile.getName() : null;
@@ -88,7 +88,7 @@ public class ReaperFile {
     /**
      * Check whether this reaper file represents a FileDescriptor
      *
-     * @return
+     * @return FileDescriptor
      */
     public boolean hasFD() {
         return mAfd != null && mFile == null;
@@ -97,7 +97,7 @@ public class ReaperFile {
     /**
      * Get the raw file of this reaper file
      *
-     * @return
+     * @return mFile
      */
     public File getRawFile() {
         return mFile;

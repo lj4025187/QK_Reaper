@@ -193,7 +193,7 @@ public class AdInfo {
     /**
      * 获取广告点击后的表现，如跳转浏览器展示网页，或者开始下载APP
      *
-     * @return
+     * @return ActionType
      * @see #ACTION_TYPE_BROWSER
      * @see #ACTION_TYPE_APP_DOWNLOAD
      */
@@ -299,7 +299,7 @@ public class AdInfo {
     /**
      * 判断广告是否可用
      *
-     * @return
+     * @return adInfo is available or not
      */
     public boolean isAvailable() {
         if (mParams.containsKey("isAvail")) {
