@@ -27,6 +27,39 @@ android {
         abortOnError false
     }
 }
+task publishSDKRealeaseAar {
+    doLast {
+        def dexDir = file('./build/outputs/aar')
+        def targetDexDir = file('../bin/')
+        if (!targetDexDir.exists()) {
+            targetDexDir.mkdirs()
+        }
+        dexDir.eachFileRecurse { f ->
+            if (f.getName().startsWith('loader-release')) {
+                def targetDexFile = new File(targetDexDir, 'reaper.aar')
+                targetDexFile.delete();
+                f.withInputStream { targetDexFile << it }
+            }
+        }
+    }
+}
+
+task publishSDKDebugAar {
+    doLast {
+        def dexDir = file('./build/outputs/aar')
+        def targetDexDir = file('../bin/')
+        if (!targetDexDir.exists()) {
+            targetDexDir.mkdirs()
+        }
+        dexDir.eachFileRecurse { f ->
+            if (f.getName().startsWith('loader-debug')) {
+                def targetDexFile = new File(targetDexDir, 'reaper.aar')
+                targetDexFile.delete();
+                f.withInputStream { targetDexFile << it }
+            }
+        }
+    }
+}
 
 task publishSDKJar(type: Jar) {
     archiveName 'reaper.jar'
@@ -102,6 +135,15 @@ afterEvaluate {
         doLast {
             makeGeneratorJar.execute()
             publishSDKJar.execute()
+            publishSDKRealeaseAar.execute();
+            javadoc.execute()
+        }
+    }
+    assembleDebug {
+        doLast {
+            makeGeneratorJar.execute()
+            publishSDKJar.execute()
+            publishSDKDebugAar.execute();
             javadoc.execute()
         }
     }
