@@ -68,7 +68,7 @@ class AdParam {
                 "," + TrackerConfig.AD_SOURCE_KEY   + "=" + "\'" + ad_info.getAdName()            + '\'' +
                 "," + TrackerConfig.AD_TYPE_KEY     + "=" + "\'" + ad_info.getAdType()            + '\'' +
                 "," + TrackerConfig.AD_NUM_KEY      + "=" + "\'" + ad_num                         + '\'' +
-                "," + TrackerConfig.TITLE_KEY       + "=" + "\'"  + ad_info.getTitle()            + '\'' +
+                "," + TrackerConfig.TITLE_KEY       + "=" + "\'" + ad_info.getTitle()             + '\'' +
                 "," + TrackerConfig.DESC_KEY        + "=" + "\'" + ad_info.getDesc()              + '\'' +
                 "," + TrackerConfig.TEXT_KEY        + "=" + "\'" + ad_info.getText()              + '\'' +
                 "," + TrackerConfig.IMG_URL_KEY     + "=" + "\'" + ad_info.getImgUrl()            + '\'' +

@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
@@ -53,7 +54,7 @@ public class ReaperActivity extends Activity {
     private LinearLayout mBottomBar;
     private WebViewClient mClient = new WebViewClient() {
 
-        int errTime = 0;
+        boolean visible = false;
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
@@ -68,23 +69,42 @@ public class ReaperActivity extends Activity {
             return super.shouldOverrideKeyEvent(view, event);
         }
 
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
+            LoaderLog.i(TAG, "onPageStarted");
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            LoaderLog.i(TAG, "onPageFinished");
+            if(!visible && !TextUtils.isEmpty(url))
+                startInBrowser(Uri.parse(url));
+        }
+
+        @Override
+        public void onPageCommitVisible(WebView view, String url) {
+            super.onPageCommitVisible(view, url);
+            LoaderLog.i(TAG, "onPageCommitVisible");
+            visible = true;
+        }
+
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             super.onReceivedError(view, request, error);
-            if (errTime < RETRY_LOAD_TIMES) {
-                LoaderLog.i(TAG, "onReceivedError retry three times");
-                view.reload();
-            } else {
-                Uri uri = request.getUrl();
-                if (!TextUtils.isEmpty(uri.toString())) {
-                    boolean openWebUrl = openWebUrl(uri);
-                    LoaderLog.i(TAG, "onReceivedError open in browser " + openWebUrl);
-                }
-                view.stopLoading();
-                finish();
+            Uri uri = request.getUrl();
+            view.stopLoading();
+            startInBrowser(uri);
+        }
+
+        private void startInBrowser(Uri uri) {
+            if (!TextUtils.isEmpty(uri.toString())) {
+                boolean openWebUrl = openWebUrl(uri);
+                LoaderLog.i(TAG, "onReceivedError open in browser " + openWebUrl);
             }
-            errTime++;
+            finish();
         }
 
         @Override
