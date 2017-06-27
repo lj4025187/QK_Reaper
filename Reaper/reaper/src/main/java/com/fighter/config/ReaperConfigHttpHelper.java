@@ -60,7 +60,7 @@ public final class ReaperConfigHttpHelper {
      */
     public static OkHttpClient getHttpsClient() {
         try {
-            String[] certs = ReaperConfig.TEST ? new String[] {TEST_CERT} : CERTS;
+            String[] certs = ReaperConfig.TEST_MODE ? new String[] {TEST_CERT} : CERTS;
             X509TrustManager tm = trustManagerForCertificates(certs);
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{tm}, null);

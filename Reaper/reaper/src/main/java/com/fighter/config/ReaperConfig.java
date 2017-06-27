@@ -16,7 +16,7 @@ public final class ReaperConfig {
 
 
     // TODO set this false when publish
-    public static final boolean TEST = true;
+    public static boolean TEST_MODE = true;
 
     /**
      * For test

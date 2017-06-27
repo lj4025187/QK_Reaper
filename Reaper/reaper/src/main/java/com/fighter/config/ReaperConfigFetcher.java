@@ -74,8 +74,8 @@ public class ReaperConfigFetcher {
     public static boolean fetch(Context context, String pkg,
                                 String salt, String appKey, String appId) {
 
-        String baseUrl = ReaperConfig.TEST ? ReaperConfig.TEST_URL_HTTPS : ReaperConfig.URL_HTTPS;
-        String sdkVersion = ReaperConfig.TEST ? ReaperConfig.TEST_SDK_VERSION : BumpVersion.value();
+        String baseUrl = ReaperConfig.TEST_MODE ? ReaperConfig.TEST_URL_HTTPS : ReaperConfig.URL_HTTPS;
+        String sdkVersion = ReaperConfig.TEST_MODE ? ReaperConfig.TEST_SDK_VERSION : BumpVersion.value();
         String url = baseUrl +
                 "?" + ReaperConfig.KEY_URL_PARAM_SDK_VERSION + "=" + sdkVersion +
                 "&" + ReaperConfig.KEY_URL_PARAM_ID + "=" + appId;

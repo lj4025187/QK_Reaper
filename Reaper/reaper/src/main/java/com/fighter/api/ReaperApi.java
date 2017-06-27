@@ -77,6 +77,7 @@ public class ReaperApi {
         mAppId = (String) params.get("appId");
         mAppKey = (String) params.get("appKey");
         isTestMode = (boolean)params.get("testMode");
+        ReaperConfig.TEST_MODE = isTestMode;
 
         ReaperGlobal.setApplication((Application) mContext);
 

@@ -35,7 +35,6 @@
 
 ##### 有2种方式初始化
 1.直接继承ReaperApplication，然后用getReaperApi()方法得到ReaperApi请求广告
-
 ```java
 //init 
 public class MyApp extends ReaperApplication {
@@ -65,8 +64,12 @@ public class MyActivity extends Activity {
 ```
 
 2.Application已经继承了其他Application，使用ReaperInit初始化后，得到ReaperApi请求广告。
-```java
+> 测试模式下移动设备需要配置hosts：**10.139.232.146 t.adv.os.qiku.com**，确保可以ping通该网段后在配置中心申请相关广告位。
+> 配置中心地址：http://test.partner.360os.com/html/entrance/allApplications.html
 
+>权限申请及配置流程请咨询服务器开发人员：**张鑫润，高轩，安三星**
+
+```java
 //init
 public class MyApp extends AnotherApplicaiton {
 	
