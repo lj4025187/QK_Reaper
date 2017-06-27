@@ -1,13 +1,13 @@
 package com.fighter.reaper.sample.activities;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTabHost;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TabHost;
 import android.widget.TextView;
@@ -29,6 +29,7 @@ public class TabMainActivity extends BaseActivity {
 
     private FragmentTabHost mTabHost;
     private List<TabItem> mTabList;
+    private TextView mVersionName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,6 +40,13 @@ public class TabMainActivity extends BaseActivity {
     public void initView() {
         setContentView(R.layout.layout_activity_tab_main);
         mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
+        mVersionName = (TextView) findViewById(R.id.id_version_name);
+        try {
+            PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            mVersionName.setText("version:" + packageInfo.versionName);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         mTabHost.getTabWidget().setDividerDrawable(null);
         initTabData();

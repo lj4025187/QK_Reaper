@@ -57,7 +57,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
         View.OnClickListener {
 
     private final static String TAG = AdFragment.class.getSimpleName();
-    private final static int NOTIFY_DATA_FAILED = 0x03;
 
     private ReaperApi mReaperApi;
     private String mCategory;
@@ -138,14 +137,6 @@ public class AdFragment extends Fragment implements Handler.Callback,
 
     @Override
     public boolean handleMessage(Message msg) {
-        switch (msg.what) {
-            case NOTIFY_DATA_FAILED:
-                showFooterView(mListData.isEmpty());
-                break;
-        }
-        showEmptyView(mListData.isEmpty());
-        showFooterView(false);
-        showLoadingView(mListData.isEmpty());
         return true;
     }
 
@@ -172,7 +163,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
 
     private void showEmptyView(boolean empty) {
         mListView.setVisibility(empty ? View.GONE : View.VISIBLE);
-        mEmptyView.setVisibility(empty ? View.VISIBLE : View.GONE);
+        mEmptyView.setVisibility(empty ? View.VISIBLE : View.INVISIBLE);
     }
 
     private void startPullAds() {
@@ -198,7 +189,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
         if (!isSupport) {
             String toast = String.format(getResources().getString(R.string.toast_dis_support_ad), mSrcName, mCategory);
             ToastUtil.getInstance(mContext).showSingletonToast(toast);
-            mMainHandler.sendEmptyMessage(NOTIFY_DATA_FAILED);
+            showEmptyView(true);
             return;
         }
         AdRequester adRequester = mReaperApi.getAdRequester(posId, this, true);
@@ -310,9 +301,10 @@ public class AdFragment extends Fragment implements Handler.Callback,
         SampleLog.i(TAG, " on success ads isAvailable " + adInfo.isAvailable());
 
         if (mListData.size() + mFailedData.size() >= SampleConfig.REQUEST_COUNT_PER_TIME){
-            mAdAdapter.notifyDataSetChanged();
             showFooterView(false);
             showLoadingView(false);
+            showEmptyView(false);
+            mAdAdapter.notifyDataSetChanged();
         }
     }
 

@@ -22,9 +22,9 @@ public class EventActionParam extends AdParam {
         HashMap<String, String> map = super.generateMap();
         map.put(TrackerConfig.ACTION_ACT_TYPE_KEY,      act_type);
         map.put(TrackerConfig.ACTION_REASON_KEY,        reason);
-        map.put(TrackerConfig.ACTION_APP_PKG_KEY,       ad_info.getDownPkgName());
-        map.put(TrackerConfig.ACTION_DOWNLOAD_APP_KEY,  ad_info.getDownAppName());
-        map.put(TrackerConfig.ACTION_DOWNLOAD_URL_KEY,  down_app_url);
+        map.put(TrackerConfig.ACTION_APP_PKG_KEY,       ad_info.getDownPkgName() == null ? "" : ad_info.getDownPkgName());
+        map.put(TrackerConfig.ACTION_DOWNLOAD_APP_KEY,  ad_info.getDownAppName() == null ? "" : ad_info.getDownAppName());
+        map.put(TrackerConfig.ACTION_DOWNLOAD_URL_KEY,  down_app_url == null ? "" : down_app_url);
         return map;
     }
 
