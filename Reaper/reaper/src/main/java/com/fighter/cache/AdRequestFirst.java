@@ -40,4 +40,10 @@ public class AdRequestFirst implements IAdRequestPolicy {
         }
         return adSense;
     }
+
+    @Override
+    public int size() {
+        List<ReaperAdSense> list = ReaperConfigManager.getReaperAdSenses(mContext, mPosId);
+        return list.size();
+    }
 }

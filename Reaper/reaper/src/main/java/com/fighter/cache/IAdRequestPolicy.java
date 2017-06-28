@@ -9,5 +9,6 @@ import com.fighter.config.ReaperAdSense;
 
 public interface IAdRequestPolicy {
     ReaperAdSense next(int tryTime);
+    int size();
 }
 

@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 
 import com.fighter.utils.LoaderLog;
+import com.qiku.proguard.annotations.KeepAll;
+import com.qiku.proguard.annotations.NoProguard;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,7 +15,7 @@ import java.util.Map;
 /**
  * 广告SDK API接口类
  */
-
+@NoProguard
 public class ReaperApi {
 
     private static final java.lang.String TAG = ReaperApi.class.getSimpleName();
@@ -63,6 +65,7 @@ public class ReaperApi {
      * @param appKey     360OS广告平台申请的APP key
      * @param testMode 是否是测试模式，测试模式支持设置配置文件
      */
+    @NoProguard
     public void init(Context appContext, String appId,
                      String appKey, boolean testMode) {
         Map<String, Object> params = new ArrayMap<>();
@@ -81,6 +84,7 @@ public class ReaperApi {
      *
      * @param configJson 测试的目标测试数据
      */
+    @NoProguard
     public void setTargetConfig(String configJson) {
         Map<String, Object> params = new ArrayMap<>();
         putParam(params, "config", configJson);
@@ -96,6 +100,7 @@ public class ReaperApi {
      * @return AdRequester
      */
     @SuppressWarnings("unchecked")
+    @NoProguard
     public AdRequester getAdRequester(String adPositionId,
                                       AdRequester.AdRequestCallback adRequestCallback, boolean needHoldAd) {
         Map<String, Object> params = new ArrayMap<>();
@@ -115,6 +120,7 @@ public class ReaperApi {
      * @param context  Context上下文
      * @return getMacAddress
      */
+    @NoProguard
     public String getMacAddress(Context context) {
         Map<String, Object> params = new ArrayMap<>();
         putParam(params, "appContext", context);
@@ -166,6 +172,7 @@ public class ReaperApi {
         }
 
         @SuppressWarnings("unchecked")
+        @NoProguard
         public void onResponse(Map<String, Object> params) {
             if (mAdRequestCallback == null) {
                 return;

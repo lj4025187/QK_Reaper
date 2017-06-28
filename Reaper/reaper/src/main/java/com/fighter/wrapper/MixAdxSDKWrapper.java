@@ -39,7 +39,7 @@ import okhttp3.Response;
 
 public class MixAdxSDKWrapper extends ISDKWrapper {
 
-    private static final String TAG = MixAdxSDKWrapper.class.getSimpleName();
+    private static final String TAG = "MixAdxSDKWrapper";
 
     /**
      * 媒体标识

@@ -40,6 +40,7 @@ import com.fighter.wrapper.DownloadCallback;
 import com.fighter.wrapper.ISDKWrapper;
 import com.fighter.wrapper.MixAdxSDKWrapper;
 import com.fighter.wrapper.TencentSDKWrapper;
+import com.qiku.proguard.annotations.NoProguard;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -83,7 +84,7 @@ import static com.fighter.ad.AdEvent.EVENT_VIEW_SUCCESS;
 
 public class AdCacheManager implements DownloadCallback{
 
-    private static final String TAG = AdCacheManager.class.getSimpleName();
+    private static final String TAG = "AdCacheManager";
     private static final String EXTRA_EVENT_DOWN_X = "downX";
     private static final String EXTRA_EVENT_DOWN_Y = "downY";
     private static final String EXTRA_EVENT_UP_X = "upX";
@@ -311,6 +312,7 @@ public class AdCacheManager implements DownloadCallback{
             this.mCache = mCache;
         }
 
+        @NoProguard
         @Override
         public void onAdResponse(AdResponse adResponse) {
             AdRequestWrapperAsyncRunner runner = new AdRequestWrapperAsyncRunner();
@@ -501,15 +503,12 @@ public class AdCacheManager implements DownloadCallback{
         @Override
         public Object doSomething() {
             mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
-            List<ReaperAdSense> adSenses = ReaperConfigManager.getReaperAdSenses(mContext, mPosId);
             int adSenseSize = 0;
-            if (adSenses != null) {
-                adSenseSize = adSenses.size();
-            }
             IAdRequestPolicy policy = AdRequestPolicyManager.getAdRequestPolicy(mContext, mPosId);
             if (policy == null) {
                 return "AdRequestPolicyManager getAdRequestPolicy posId " + mPosId + " policy is null";
             }
+            adSenseSize = policy.size();
             // 1. if cache is full, back cache ad info
             Object info = getCacheAdInfo(mPosId);
             AdCacheInfo adCacheInfo;

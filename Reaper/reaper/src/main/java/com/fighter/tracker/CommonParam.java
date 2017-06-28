@@ -5,6 +5,7 @@ import android.content.Context;
 import com.fighter.common.Device;
 import com.fighter.common.utils.EncryptUtils;
 import com.fighter.reaper.BumpVersion;
+import com.qiku.proguard.annotations.NoProguard;
 
 import java.util.HashMap;
 
@@ -13,7 +14,7 @@ import java.util.HashMap;
  *
  * Created by lichen on 17-5-10.
  */
-
+@NoProguard
 final class CommonParam {
     private static final String TAG = CommonParam.class.getSimpleName();
     private static Context mContext;
@@ -56,7 +57,7 @@ final class CommonParam {
 
     private CommonParam() {
     }
-
+    @NoProguard
     static void init(Context context) {
         if (context == null)
             return;

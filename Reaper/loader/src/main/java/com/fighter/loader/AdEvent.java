@@ -1,9 +1,11 @@
 package com.fighter.loader;
 
+import com.qiku.proguard.annotations.KeepAll;
+
 /**
  * 广告事件
  */
-
+@KeepAll
 class AdEvent {
     /**
      * 广告曝光失败

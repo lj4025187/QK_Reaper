@@ -3,10 +3,12 @@ package com.fighter.hook;
 import android.app.Application;
 import android.content.Intent;
 
+import com.qiku.proguard.annotations.NoProguard;
+
 /**
  * Created by lichen on 17-6-12.
  */
-
+@NoProguard
 public class ReaperGlobal {
     private static Application sApplication;
     private static Intent sIntent;

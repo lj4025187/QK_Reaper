@@ -59,6 +59,12 @@ public class AdRequestLoop implements IAdRequestPolicy {
         return adSense;
     }
 
+    @Override
+    public int size() {
+        List<ReaperAdSense> list = ReaperConfigManager.getReaperAdSenses(mContext, mPosId);
+        return list.size();
+    }
+
     private boolean isListChanged(List<ReaperAdSense> list) {
         if (mBeforeList.size() == 0) {
             mBeforeList.addAll(list);

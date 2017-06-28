@@ -34,7 +34,7 @@ import java.util.Map;
  * 360 聚效广告SDK Wrapper
  */
 public class AKAdSDKWrapper extends ISDKWrapper {
-    private static final String TAG = AKAdSDKWrapper.class.getSimpleName();
+    private static final String TAG = "AKAdSDKWrapper";
 
     public static final String PARAMS_KEY_VIEW = "view";
     public static final String PARAMS_KEY_ACTIVITY = "activity";

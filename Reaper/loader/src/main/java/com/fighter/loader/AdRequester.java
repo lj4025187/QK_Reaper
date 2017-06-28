@@ -1,11 +1,13 @@
 package com.fighter.loader;
 
+import com.qiku.proguard.annotations.KeepAll;
+import com.qiku.proguard.annotations.NoProguard;
+
 import java.util.Map;
 
 /**
  * 广告请求类，一个AdRequester对应一个360OS广告位ID，可通过此类请求对应广告。
  */
-
 public class AdRequester {
     private ReaperApi mReaperApi;
     Map<String, Object> mParams;
@@ -18,6 +20,7 @@ public class AdRequester {
      * 开始请求广告
      * @param adCount 请求广告的条数
      */
+    @NoProguard
     public void requestAd(int adCount) {
         mParams.put("adCount", adCount);
         mReaperApi.invokeReaperApi("requestAd", mParams);
@@ -28,6 +31,7 @@ public class AdRequester {
     /**
      * 广告请求回调
      */
+    @KeepAll
     public interface AdRequestCallback {
         /**
          * 广告请求成功

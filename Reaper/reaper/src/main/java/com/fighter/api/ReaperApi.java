@@ -18,6 +18,7 @@ import com.fighter.download.ReaperEnv;
 import com.fighter.hook.ReaperActivityThreadHook;
 import com.fighter.hook.ReaperGlobal;
 import com.fighter.reaper.R;
+import com.qiku.proguard.annotations.KeepAll;
 import com.qiku.proguard.annotations.NoProguard;
 
 import java.util.List;
@@ -28,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Created by wxthon on 5/5/17.
  */
 
-@NoProguard
+@KeepAll
 public class ReaperApi {
     private static final String TAG = ReaperApi.class.getSimpleName();
 

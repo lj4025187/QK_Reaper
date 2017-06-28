@@ -15,6 +15,7 @@ import com.fighter.patch.ReaperPatch;
 import com.fighter.patch.ReaperPatchManager;
 import com.fighter.patch.ReaperPatchVersion;
 import com.fighter.utils.LoaderLog;
+import com.qiku.proguard.annotations.NoProguard;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +51,7 @@ import java.util.List;
  * }
  *
  */
-
+@NoProguard
 /**
  * Created by huayang on 17-5-5.
  */
@@ -85,6 +86,7 @@ public class ReaperInit {
      * @param context Application context
      * @return ReaperApi
      */
+    @NoProguard
     public static ReaperApi init(Context context) {
         if(Process.myUid() != context.getApplicationInfo().uid){
             LoaderLog.e("Init ReaperApi in uid different from context will cause some problems");

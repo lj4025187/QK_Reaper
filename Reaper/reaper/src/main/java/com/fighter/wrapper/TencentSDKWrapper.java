@@ -30,7 +30,7 @@ import okhttp3.internal.Version;
  * 腾讯广点通Wrapper。
  */
 public class TencentSDKWrapper extends ISDKWrapper {
-    private static final String TAG = TencentSDKWrapper.class.getSimpleName();
+    private static final String TAG = "TencentSDKWrapper";
 
     /**
      * 经度
@@ -143,8 +143,10 @@ public class TencentSDKWrapper extends ISDKWrapper {
 
         AdResponse adResponse = null;
         Response response = null;
+        ReaperLog.i(TAG, "request: " + request);
         try {
             response = mClient.newCall(request).execute();
+            ReaperLog.i(TAG, "response: " + response);
             if (response != null) {
                 if (response.isSuccessful()) {
                     adResponse = convertResponse(
