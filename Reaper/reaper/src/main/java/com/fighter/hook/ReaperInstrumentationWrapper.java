@@ -9,13 +9,14 @@ import android.os.Bundle;
 import android.os.IBinder;
 
 import com.fighter.common.utils.ReaperLog;
+import com.qiku.proguard.annotations.NoProguard;
 
 /**
  * Created by lichen on 17-6-12.
  */
 
 public class ReaperInstrumentationWrapper extends Instrumentation {
-    private static final String TAG = ReaperInstrumentationWrapper.class.getSimpleName();
+    private static final String TAG = "ReaperInstrumentationWrapper";
 
     private final ReaperInstrumentationHook hackInstrumentation;
 
@@ -41,6 +42,7 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
         return super.newActivity(akadClassLoader, className, akadIntent);
     }
 
+    @NoProguard
     public ActivityResult execStartActivity(Context who, IBinder contextThread, IBinder token, Activity target,
                                             Intent intent, int requestCode, Bundle options) {
         ReaperLog.i(TAG, "who = " + who + ", IBinder = " + contextThread + ", token = " + token + ", target = " + target

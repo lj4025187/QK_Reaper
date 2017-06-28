@@ -34,6 +34,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.fighter.utils.LoaderLog;
+import com.qiku.proguard.annotations.NoProguard;
 
 
 /**
@@ -41,6 +42,7 @@ import com.fighter.utils.LoaderLog;
  * 
  * Created by lichen on 17-6-10.
  */
+@NoProguard
 public class ReaperActivity extends Activity {
 
     private final static String TAG = ReaperActivity.class.getSimpleName();

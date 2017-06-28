@@ -1206,7 +1206,7 @@ public class AdCacheManager implements DownloadCallback{
                     actionUrl = iSdkWrapper.requestWebUrl(adInfo);
                     if (!TextUtils.isEmpty(actionUrl)) {
                         try {
-                            Class<?> reaperClass = Class.forName("com.fighter.loader.ReaperActivity");
+                            Class<?> reaperClass = Class.forName("com.fighter.loader.ReaperActivity", true, mContext.getClassLoader());
                             Intent intent = new Intent(mContext, reaperClass);
                             intent.putExtra("url", actionUrl);
                             intent.putExtra("requestCode", REQUEST_CODE);

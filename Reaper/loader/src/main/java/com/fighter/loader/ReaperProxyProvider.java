@@ -5,12 +5,14 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 
+import com.qiku.proguard.annotations.NoProguard;
+
 /**
  * reaper proxy provider
  *
  * Created by lichen on 17-6-27.
  */
-
+@NoProguard
 public class ReaperProxyProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
