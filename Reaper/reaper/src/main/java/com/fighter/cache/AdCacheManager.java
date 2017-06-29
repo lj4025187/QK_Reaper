@@ -319,8 +319,13 @@ public class AdCacheManager implements DownloadCallback{
         public void onAdResponse(AdResponse adResponse) {
             AdRequestWrapperAsyncRunner runner = new AdRequestWrapperAsyncRunner();
             runner.setAdResponse(adResponse);
-            this.setRunnable(runner);
-            mWorkThread.postTaskInFront(AdRequestWrapperTask.this);
+            AdRequestWrapperNotify notify = new AdRequestWrapperNotify();
+            AdRequestWrapperTask task = new AdRequestWrapperTask(createNewTask(PRI_FIRST, runner, notify),
+                    getPosId(), getCallBack(), isCache());
+            task.setPolicy(getPolicy());
+            task.setTryTime(getTryTime());
+            task.setAdSenseSize(getAdSenseSize());
+            mWorkThread.postTaskInFront(task);
         }
     }
 
@@ -1582,7 +1587,6 @@ public class AdCacheManager implements DownloadCallback{
 
     private void postAdRequestWrapperTask(String posId, Object callBack, boolean isCache, IAdRequestPolicy policy, ReaperAdSense adSense,
                                           int tryTime, int adSenseSize, PriorityTaskDaemon.TaskRunnable ownerRunner) {
-        ReaperLog.i(TAG, "postAdRequestWrapperTask");
         AdRequestWrapperRunner runner = new AdRequestWrapperRunner(posId);
         runner.setReaperAdsense(adSense);
         AdRequestWrapperNotify notify = new AdRequestWrapperNotify();
