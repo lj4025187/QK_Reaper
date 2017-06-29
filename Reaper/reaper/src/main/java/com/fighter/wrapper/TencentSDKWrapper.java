@@ -143,10 +143,8 @@ public class TencentSDKWrapper extends ISDKWrapper {
 
         AdResponse adResponse = null;
         Response response = null;
-        ReaperLog.i(TAG, "request: " + request);
         try {
             response = mClient.newCall(request).execute();
-            ReaperLog.i(TAG, "response: " + response);
             if (response != null) {
                 if (response.isSuccessful()) {
                     adResponse = convertResponse(

@@ -180,7 +180,7 @@ public class AdInfo {
 
     public AdInfo() {
         mAdParams = new ArrayMap<>();
-        setConstructTime(SystemClock.currentThreadTimeMillis());
+        setConstructTime(System.currentTimeMillis());
     }
 
     public String getUUID() {

@@ -439,6 +439,7 @@ public class AdCacheManager implements DownloadCallback{
                         if (tryCount < adSenseSize - 1) {
                             tryCount++;
                             postAdRequestWrapperTask(posId, callBack, isCache, policy, policy.next(tryCount), tryCount, adSenseSize, null);
+                            ReaperLog.i(TAG, "tryCount = " + tryCount + ", adSensesSize - 1 = " + (adSenseSize - 1) + ", isCache = " + isCache);
                         } else {
                             if (!isCache) {
                                 if (needHoldAd) {
@@ -527,6 +528,7 @@ public class AdCacheManager implements DownloadCallback{
                 } else if (cache instanceof AdInfo) {
                     adInfo = (AdInfo) cache;
                 }
+                // judge the get cache is timeout or not
                 if (isAdCacheTimeout(adCacheInfo) && adInfo != null) {
                     //TODO DELETE
                     Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
@@ -538,6 +540,7 @@ public class AdCacheManager implements DownloadCallback{
                     trackActionEvent(EVENT_VIEW_FAIL, adInfo, "timeout");
                     setCacheTimeout(adCacheInfo);
                     isGetCache = true;
+                    adInfo = null;
                 } else {
                     isGetCache = true;
                     setCacheUsed(adCacheInfo);
@@ -679,7 +682,7 @@ public class AdCacheManager implements DownloadCallback{
                 Object adInfo = getAdCacheFromFile(file);
                 AdCacheInfo adCacheInfo = (AdCacheInfo) adInfo;
                 if ((adCacheInfo.isCacheDisPlayed() || adCacheInfo.isCacheTimeOut() || isAdCacheTimeout(adInfo)) &&
-                    adCacheInfo.isHoldAd()) {
+                    !adCacheInfo.isHoldAd()) {
                     cleanBeforeCache(adCacheInfo);
                 } else {
                     adCacheObjects.put(((AdCacheInfo) adInfo).getUuid(), adInfo);
@@ -1106,7 +1109,7 @@ public class AdCacheManager implements DownloadCallback{
         ReaperLog.i(TAG, " ad info " + adInfo.getUUID() + " is adInfoAvailable " + adInfoAvailable);
         if (!adInfoAvailable) return;
         //TODO 上报超时广告，需要打哪种点：展示失败or展示成功
-        if(SystemClock.currentThreadTimeMillis()
+        if(System.currentTimeMillis()
                 - adConstructTime
                 > (adInfo.getExpireTime() * 1000)) {
             trackActionEvent(EVENT_VIEW_FAIL, adInfo, "timeout");
@@ -1579,18 +1582,20 @@ public class AdCacheManager implements DownloadCallback{
 
     private void postAdRequestWrapperTask(String posId, Object callBack, boolean isCache, IAdRequestPolicy policy, ReaperAdSense adSense,
                                           int tryTime, int adSenseSize, PriorityTaskDaemon.TaskRunnable ownerRunner) {
+        ReaperLog.i(TAG, "postAdRequestWrapperTask");
         AdRequestWrapperRunner runner = new AdRequestWrapperRunner(posId);
         runner.setReaperAdsense(adSense);
+        AdRequestWrapperNotify notify = new AdRequestWrapperNotify();
         AdRequestWrapperTask task;
         if (ownerRunner == null) {
             task = new AdRequestWrapperTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
-                    runner, mAdRequestWrapperNotify, posId, callBack, isCache);
+                    runner, notify, posId, callBack, isCache);
             task.setPolicy(policy);
             task.setTryTime(tryTime);
             task.setAdSenseSize(adSenseSize);
         } else {
             PriorityTaskDaemon.NotifyPriorityTask notifyPriorityTask = ownerRunner.createNewTask(
-                    PriorityTaskDaemon.PriorityTask.PRI_FIRST, runner, mAdRequestWrapperNotify);
+                    PriorityTaskDaemon.PriorityTask.PRI_FIRST, runner, notify);
             task = new AdRequestWrapperTask(notifyPriorityTask, posId, callBack, isCache);
             task.setPolicy(policy);
             task.setTryTime(tryTime);

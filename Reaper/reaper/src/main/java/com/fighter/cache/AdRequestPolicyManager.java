@@ -62,6 +62,10 @@ public class AdRequestPolicyManager {
         if (exposure == null)
             return null;
         String [] weights = exposure.split(":");
+        if (weights.length < 1) {
+            ReaperLog.e(TAG, "policy format err");
+            return null;
+        }
         List<String> weightList = new ArrayList<>();
         for (int i =0; i < weights.length; i++) {
             if (i == 0)

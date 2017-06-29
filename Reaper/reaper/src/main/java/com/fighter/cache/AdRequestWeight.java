@@ -51,6 +51,9 @@ public class AdRequestWeight implements IAdRequestPolicy {
 
         list = expandList(list);
 
+        if (list == null)
+            return null;
+
         ReaperAdSense adSense = list.get(mLocation);
 
         if (mLocation == list.size() -1) {
@@ -65,7 +68,11 @@ public class AdRequestWeight implements IAdRequestPolicy {
     @Override
     public int size() {
         List<ReaperAdSense> list = ReaperConfigManager.getReaperAdSenses(mContext, mPosId);
-        return expandList(list).size();
+        list = expandList(list);
+        if (list != null) {
+            return list.size();
+        }
+        return 0;
     }
 
     private List<ReaperAdSense> expandList(List<ReaperAdSense> list) {
