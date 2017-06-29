@@ -189,6 +189,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
         if (!isSupport) {
             String toast = String.format(getResources().getString(R.string.toast_dis_support_ad), mSrcName, mCategory);
             ToastUtil.getInstance(mContext).showSingletonToast(toast);
+            showLoadingView(false);
             showEmptyView(true);
             return;
         }
