@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.DisplayMetrics;
@@ -1099,10 +1100,17 @@ public class AdCacheManager implements DownloadCallback{
         if (actionEvent == EVENT_CLICK && checkCoordinateValid(adInfo)) {
             handleClickAction(adInfo);
         }
-        AdCacheInfo adCacheInfo = adInfo.getAdCacheInfo();
+        long adConstructTime = adInfo.getConstructTime();
+        boolean adInfoAvailable = adInfo.getAdInfoAvailable();
+        ReaperLog.i(TAG, " ad info " + adInfo.getUUID() + " is adInfoAvailable " + adInfoAvailable);
+        if (!adInfoAvailable) return;
         //TODO 上报超时广告，需要打哪种点：展示失败or展示成功
-        if (adCacheInfo != null && adCacheInfo.isCacheTimeOut()) return;
-        if (!adInfo.getAdInfoAvailable()) return;
+        if(SystemClock.currentThreadTimeMillis()
+                - adConstructTime
+                > adInfo.getExpireTime()) {
+            trackActionEvent(EVENT_VIEW_FAIL, adInfo, "timeout");
+            return;
+        }
         trackActionEvent(actionEvent, adInfo);
         postTrackerTask(adInfo, actionEvent);
     }
@@ -1117,14 +1125,14 @@ public class AdCacheManager implements DownloadCallback{
     private void trackActionEvent(int actionEvent, AdInfo adInfo, String errMsg) {
         switch (actionEvent) {
             case EVENT_VIEW_FAIL:
-                EventDisPlayParam disPlayParam = new EventDisPlayParam();
-                disPlayParam.ad_info = adInfo;
-                disPlayParam.ad_num = 1;
-                disPlayParam.ad_appid = Integer.parseInt(mAppId);
-                disPlayParam.app_pkg = mContext.getPackageName();
-                disPlayParam.result = "failed";
-                disPlayParam.reason = TextUtils.isEmpty(errMsg) ? "onAdShow fail view is null" : errMsg;
-                mReaperTracker.trackDisplayEvent(mContext, disPlayParam);
+                EventDisPlayParam failPlayParam = new EventDisPlayParam();
+                failPlayParam.ad_info = adInfo;
+                failPlayParam.ad_num = 1;
+                failPlayParam.ad_appid = Integer.parseInt(mAppId);
+                failPlayParam.app_pkg = mContext.getPackageName();
+                failPlayParam.result = "failed";
+                failPlayParam.reason = TextUtils.isEmpty(errMsg) ? "onAdShow fail view is null" : errMsg;
+                mReaperTracker.trackDisplayEvent(mContext, failPlayParam);
                 break;
             case EVENT_VIEW_SUCCESS:
                 EventDisPlayParam successParam = new EventDisPlayParam();
@@ -1895,6 +1903,7 @@ public class AdCacheManager implements DownloadCallback{
             return;
         AdCacheInfo info = new AdCacheInfo();
         info.setAdSource(adInfo.getAdName());
+        info.setCacheTime(adInfo.getConstructTime());
         if (adInfo.canCache()) {
             info.setCache(AdInfo.convertToString(adInfo));
         } else {
@@ -1917,7 +1926,6 @@ public class AdCacheManager implements DownloadCallback{
                     + " state " + info.getCacheState());
             //TODO END DELETE
             cacheAdInfo(adInfo.getAdPosId(), info);
-            adInfo.setAdCacheInfo(info);
             collateAdCache(adInfo.getAdPosId());
         } catch (IOException e) {
             e.printStackTrace();

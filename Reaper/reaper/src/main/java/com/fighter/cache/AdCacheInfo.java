@@ -68,7 +68,6 @@ public class AdCacheInfo implements Serializable {
     }
 
     public AdCacheInfo() {
-        mCacheTime = System.currentTimeMillis();
     }
 
     public String getExpireTime() {
@@ -82,6 +81,8 @@ public class AdCacheInfo implements Serializable {
     public long getCacheTime() {
         return mCacheTime;
     }
+
+    public void setCacheTime(long cacheTime) { mCacheTime = cacheTime; }
 
     public Object getCache() {
         return mCache;

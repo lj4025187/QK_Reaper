@@ -1,10 +1,10 @@
 package com.fighter.ad;
 
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fighter.cache.AdCacheInfo;
 
 import java.io.File;
 import java.util.Map;
@@ -174,12 +174,13 @@ public class AdInfo {
     /**
      * AdInfo 对应的CacheInfo
      */
-    private static final String KEY_ADINFO_CACHE_INFO = "adCacheInfo";
+    private static final String KEY_CACHE_START_TIME = "adCacheStartTime";
 
     private Map<String, Object> mAdParams;
 
     public AdInfo() {
         mAdParams = new ArrayMap<>();
+        setConstructTime(SystemClock.currentThreadTimeMillis());
     }
 
     public String getUUID() {
@@ -415,14 +416,14 @@ public class AdInfo {
         putParam(KEY_APP_DOWNLOAD_FILE, path);
     }
 
-    public AdCacheInfo getAdCacheInfo() {
-        Object cacheInfo = mAdParams.get(KEY_ADINFO_CACHE_INFO);
-        if(cacheInfo == null || !(cacheInfo instanceof AdCacheInfo)) return null;
-        return (AdCacheInfo)cacheInfo;
+    public long getConstructTime() {
+        Object object = mAdParams.get(KEY_CACHE_START_TIME);
+        if(object == null) return 0;
+        return (long) object;
     }
 
-    public void setAdCacheInfo(AdCacheInfo adCacheInfo) {
-        putParam(KEY_ADINFO_CACHE_INFO, adCacheInfo);
+    public void setConstructTime(long startMillions) {
+        putParam(KEY_CACHE_START_TIME, startMillions);
     }
 
 //    public void deleteImgFile() {
