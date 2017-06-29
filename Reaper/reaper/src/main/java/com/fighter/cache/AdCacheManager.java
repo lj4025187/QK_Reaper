@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -1107,7 +1108,7 @@ public class AdCacheManager implements DownloadCallback{
         //TODO 上报超时广告，需要打哪种点：展示失败or展示成功
         if(SystemClock.currentThreadTimeMillis()
                 - adConstructTime
-                > adInfo.getExpireTime()) {
+                > (adInfo.getExpireTime() * 1000)) {
             trackActionEvent(EVENT_VIEW_FAIL, adInfo, "timeout");
             return;
         }
@@ -1357,7 +1358,6 @@ public class AdCacheManager implements DownloadCallback{
         if(!apkFile.exists()) {
             return;
         }
-        trackActionEvent(EVENT_APP_DOWNLOAD_COMPLETE, adInfo);
         registerInstallReceiver();
         String parent = apkFile.getParent();
         //handle the result file to apk file
@@ -1373,8 +1373,14 @@ public class AdCacheManager implements DownloadCallback{
         if(!resultFile.getName().endsWith(".apk")) return;
         PackageInfo packageInfo = getPackageInfo(resultFile);
         if(packageInfo == null) return;
+        packageInfo.applicationInfo.sourceDir = resultFile.getAbsolutePath();
+        packageInfo.applicationInfo.publicSourceDir = resultFile.getAbsolutePath();
+        String appLabel = getPackageAppLabel(packageInfo);
+        adInfo.setDownAppName(appLabel);
+        adInfo.setDownPkgName(packageInfo.packageName);
         mInstallApps.put(packageInfo.packageName, System.currentTimeMillis());
         mInstallAds.put(packageInfo.packageName, adInfo);
+        trackActionEvent(EVENT_APP_DOWNLOAD_COMPLETE, adInfo);
         installApk(resultFile);
         //down complete should remove this adInfo
         mDownloadApps.remove(reference);
@@ -1405,6 +1411,16 @@ public class AdCacheManager implements DownloadCallback{
         if(TextUtils.isEmpty(apkPath)) return null;
         PackageManager packageManager = mContext.getPackageManager();
         return packageManager.getPackageArchiveInfo(apkPath, PackageManager.GET_ACTIVITIES);
+    }
+
+    private String getPackageAppLabel(PackageInfo packageInfo){
+        if(packageInfo == null) return "package info is null";
+        PackageManager packageManager = mContext.getPackageManager();
+        ApplicationInfo info = packageInfo.applicationInfo;
+        ReaperLog.i(TAG, " getPackageAppLabel " + info.toString());
+        String appLabel = (String) packageInfo.applicationInfo.loadLabel(packageManager);
+        if(TextUtils.isEmpty(appLabel)) return "";
+        return appLabel;
     }
 
     @Override
