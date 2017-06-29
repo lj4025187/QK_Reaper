@@ -316,9 +316,10 @@ public class ReaperInit {
             reaperFiles.add(reaperFile);
         }
 
+        ClassLoader parent = context.getClassLoader().getParent();
         List<ReaperPatch> patches =
                 ReaperPatchManager.getInstance()
-                        .unpackPatches(context, reaperFiles, ClassLoader.getSystemClassLoader());
+                        .unpackPatches(context, reaperFiles, parent != null ? parent : ClassLoader.getSystemClassLoader());
         ReaperPatch sdReaperPatch = loadReaperFileByPath(REAPER_DIR_SDCARD);
         if (sdReaperPatch != null) {
             if (patches == null)

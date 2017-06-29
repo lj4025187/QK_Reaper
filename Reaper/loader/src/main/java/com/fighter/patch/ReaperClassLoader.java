@@ -1,5 +1,9 @@
 package com.fighter.patch;
 
+import android.text.TextUtils;
+
+import com.fighter.utils.LoaderLog;
+
 import dalvik.system.DexClassLoader;
 
 /**
@@ -18,6 +22,20 @@ public class ReaperClassLoader extends DexClassLoader {
                              ClassLoader parent) {
         super(dexPath, optimizedDirectory, librarySearchPath, parent);
         mRawDexPath = dexPath;
+    }
+
+    @Override
+    protected Class<?> loadClass(String name, boolean resolve)
+            throws ClassNotFoundException {
+        if (TextUtils.isEmpty(name)) {
+            return null;
+        }
+        if (name.startsWith("okio") || name.startsWith("okhttp3")) {
+            LoaderLog.i("load " + name + " by ReaperClassloader, do not delegate to parent");
+            return findClass(name);
+        } else {
+            return super.loadClass(name, resolve);
+        }
     }
 
     public String getRawDexPath() {
