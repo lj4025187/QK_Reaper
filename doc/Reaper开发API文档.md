@@ -2,11 +2,11 @@
 `Version 1.0.0`
 `Created By wanghaiteng@360.cn`
 `Published by FighterTeam`
+`Android Studio`
 
 ### Reaper SDK集成方式
-> 配置AndroidManifest.xml
+> Reaper SDK需要如下权限
 
-- 添加权限声明（动态权限检测需开发者自行适配）
 ```xml
 <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 <uses-permission android:name="android.permission.INTERNET" />
@@ -18,36 +18,40 @@
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_UPDATES" />
 ```
--添加相关组件
+- 应用程序无需修改AndroidManifest.xml（动态权限检测需开发者自行适配）
+
+> 集成reaper.aar
+
+- 在集成模块中修改build.gradle，添加依赖
+
 ```xml
-<activity android:name="com.fighter.loader.ReaperActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"/>
-<activity
-            android:name="com.fighter.loader.ReaperProxyActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@android:style/Theme.Black.NoTitleBar"/>
+dependencies {
+    compile (name: 'reaper', ext: 'aar')
+}
 ```
 
-> 集成reaper.jar
+> 确保所有权限被授权后，初始化Reaper
 
-> 初始化Reaper
+##### 有2种方式初始化（前提：权限均已授权）
 
-
-##### 有2种方式初始化
 1.直接继承ReaperApplication，然后用getReaperApi()方法得到ReaperApi请求广告
+> 测试模式下移动设备需要配置hosts：**10.139.232.146 t.adv.os.qiku.com**，确保可以ping通该网段后在配置中心申请相关广告位。
+> 配置中心地址：http://test.partner.360os.com/html/entrance/allApplications.html
+
+>权限申请及配置流程请咨询服务器开发人员：**张鑫润，高轩，安三星**
+
 ```java
 //init 
 public class MyApp extends ReaperApplication {
 	
     public void onCreate() {
     	super.onCreate();
-        // appContext 应用上下文
-        // appId 360OS广告平台申请的APP id
-        // appKey 360OS广告平台申请的APP key
-        // testMode 是否是测试模式，测试模式支持设置配置文件
+        // appContext   应用上下文
+        // appId        360OS广告平台申请的APP id
+        // appKey       360OS广告平台申请的APP key
+        // testMode     是否是测试模式，测试模式支持设置配置文件
         mReaperApi.init(this, appid, appkey, true);
     }
-    
 }
 
 //use
@@ -64,11 +68,6 @@ public class MyActivity extends Activity {
 ```
 
 2.Application已经继承了其他Application，使用ReaperInit初始化后，得到ReaperApi请求广告。
-> 测试模式下移动设备需要配置hosts：**10.139.232.146 t.adv.os.qiku.com**，确保可以ping通该网段后在配置中心申请相关广告位。
-> 配置中心地址：http://test.partner.360os.com/html/entrance/allApplications.html
-
->权限申请及配置流程请咨询服务器开发人员：**张鑫润，高轩，安三星**
-
 ```java
 //init
 public class MyApp extends AnotherApplicaiton {
@@ -91,10 +90,10 @@ public class MyActivity extends Activity {
     	MyApp app = (MyApp)getApplication();
         ReaperApi api = app.getReaperApi();
         //使用api
-        // appContext 应用上下文
-        // appId 360OS广告平台申请的APP id
-        // appKey 360OS广告平台申请的APP key
-        // testMode 是否是测试模式，测试模式支持设置配置文件
+        // appContext  应用上下文
+        // appId       360OS广告平台申请的APP id
+        // appKey      360OS广告平台申请的APP key
+        // testMode    是否是测试模式，测试模式支持设置配置文件
         api.init(this, appid, appkey, true);
     }
 }
@@ -122,14 +121,14 @@ adRequester.requestAd(1/*请求广告的个数，最大个数为5*/);
 > 展示/点击广告上报
 
 ```java
-// v 展示广告所使用的view (不传时聚效广告源将无法上报)
+// v               展示广告所使用的view (不传时聚效广告源将无法上报)
 adInfo.onAdShow(v);
-// activity 广告所在activity (不传时聚效无法正常处理点击)
-// v        广告展示所在view (不传时聚效无法正常处理点击)
-// downX    广告所在view按下时的x坐标，获取不到填-999
-// downY    广告所在view按下时的y坐标，获取不到填-999
-// upX      广告所在view抬起时的x坐标，获取不到填-999
-// upY      广告所在view抬起时的y坐标，获取不到填-999
+// @param activity 广告所在activity (不传时聚效无法正常处理点击)
+// @param v        广告展示所在view (不传时聚效无法正常处理点击)
+// @param downX    按下广告所在view时手指所在的横坐标，若填写负值或超过屏幕横坐标最大值，点击事件、打点事件会出现问题
+// @param downY    按下广告所在view时手指所在的纵坐标，若填写负值或超过屏幕纵坐标最大值，点击事件、打点事件会出现问题
+// @param upX      离开广告所在view时手指所在的横坐标，若填写负值或超过屏幕横坐标最大值，点击事件、打点事件会出现问题
+// @param upY      离开广告所在view时手指所在的纵坐标，若填写负值或超过屏幕纵坐标最大值，点击事件、打点事件会出现问题
 adInfo.onAdClicked(activity, v, downX, downY, upX, upY)
 ```
 
@@ -142,7 +141,27 @@ ReaperInit在初始化状态会自动缓存广告，并自动监管广告的有�
 如果在没网的状态下请求广告，Reaper会保证返回一个广告，而该广告是否有效无法保证，如果缓存依然在有效期内则App可如实上报展示或点击事件，如果由于网络问题且缓存失效，Reaper仍然会返回一条广告，理论上该广告只是用于填充广告位，所以App可根据自身逻辑进行支配该广告（展示/丢掉）。
 
 ### Reaper使用注意事项
-....
+>- **Q：为什么调用ReaperInit.init(this)后一直返回null呢？**
+>- *A：必须保证应用有WRITE/READ_EXTERNAL_STORAGE等权限，最好确保可以在Context对应的应用目录下成功读写文件.*
+>- **Q：按照产品需求，一次需要请求大于5条广告，requestAd(num>5)，该怎么处理？**
+>- *A：那对不起，按照广告商要求，为了防治恶意请求广告，最多只支持5条，即使requestAd(10000)，依旧返回5条*
+>- **Q：调试过程中360OS商业化后台配置成功后，从日志分析可以看到策略一直是null，好尴尬**
+>- *A：那需要确定一下*t.adv.os.qiku.com*是否可以ping通，并且hosts确实已经按照文档进行了修改*
+>- **Q：如果由于网络环境问题实在获取不到服务器下发的策略，何解？**
+>- *A：可以联系相关开发人员，会为您提供一条服务器下发的策略，通过setTragetConfig设置，*
+>- **Q：调用广告的点击事件，页面不进行跳转，该怎么办？**
+>- *A：说明文档描述，六个参数需要确保满足要求，尤其是四个int触摸值，必须是符合规矩的，建议setOnTouchListener.*
+>- **Q：...天王盖地虎**
+>- *A：...宝塔镇河妖...*
+>- **Q：... ...**
+>- *A：... ...*
+>- **Q：...一入糗百深似海**
+>- *A：...从此节操是路人...*
+>- **Q：Reaper SDK是否会引起应用无响应等异常？**
+>- *A：Reaper SDK是不会在UI线程中进行任何耗时操作的。*
+>- **Q：假设很不幸的事还是发生了，并确定是由Reaper SDK引发的崩溃，如何处理？**
+>- *A：这种致命性的崩溃，概率相当低，如若出现着实抱歉，高抬贵手抓取日志，联系文档开头的邮箱，必当竭诚协作*
+
 
 ### Api使用说明
 
@@ -155,7 +174,7 @@ ReaperInit在初始化状态会自动缓存广告，并自动监管广告的有�
  * @param appContext 应用上下文
  * @param appId      360OS广告平台申请的APP id
  * @param appKey     360OS广告平台申请的APP key
- * @param testMode 是否是测试模式，测试模式支持设置配置文件
+ * @param testMode   是否是测试模式，测试模式支持设置配置文件
  */
 public void init(Context appContext, String appId,
                      String appKey, boolean testMode);
@@ -164,9 +183,9 @@ public void init(Context appContext, String appId,
 /**
  * 获取某广告位的广告请求句柄{@link AdRequester}，可通过句柄请求广告
  *
- * @param adPositionId      360OS广告平台申请的广告位ID
- * @param adRequestCallback 广告请求回调
- * @param needHoldAd 是否在无网络或其他异常情况下返回保底广告
+ * @param adPositionId         360OS广告平台申请的广告位ID
+ * @param adRequestCallback    广告请求回调
+ * @param needHoldAd           是否在无网络或其他异常情况下返回保底广告
  * @return
  */               
 public AdRequester getAdRequester(String adPositionId,
@@ -259,8 +278,8 @@ adInfo.onAdShow(view);
 /**
  * 广告被展示
  *
- * @param v 展示广告所使用的view (不传时聚效广告源将无法上报)，目前该view
- *          若传null，会打点广告曝光失败
+ * @param v   展示广告所使用的view (不传时聚效广告源将无法上报)，目前该view
+ *            若传null，会打点广告曝光失败
  */
 public void onAdShow(View v);
 ```
