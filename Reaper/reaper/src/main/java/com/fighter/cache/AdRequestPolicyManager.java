@@ -39,7 +39,11 @@ public class AdRequestPolicyManager {
             case "weight":
                 sWeightPolicy.setContext(context);
                 sWeightPolicy.setPosId(posId);
-                sWeightPolicy.setWeight(getWeight(exposure));
+                List<String> list = getWeight(exposure);
+                if (list == null) {
+                    return null;
+                }
+                sWeightPolicy.setWeight(list);
                 return sWeightPolicy;
             default:
                 ReaperLog.e(TAG, "not match policy!");
@@ -62,7 +66,7 @@ public class AdRequestPolicyManager {
         if (exposure == null)
             return null;
         String [] weights = exposure.split(":");
-        if (weights.length < 1) {
+        if (weights.length < 2) {
             ReaperLog.e(TAG, "policy format err");
             return null;
         }

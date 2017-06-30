@@ -517,7 +517,7 @@ public class AdCacheManager implements DownloadCallback{
                 return "AdRequestPolicyManager getAdRequestPolicy posId " + mPosId + " policy is null";
             }
             adSenseSize = policy.size();
-            // 1. if cache is full, back cache ad info
+            /* 1. if cache is full, back cache ad info */
             Object info = getCacheAdInfo(mPosId);
             AdCacheInfo adCacheInfo;
             Object cache;
@@ -533,32 +533,34 @@ public class AdCacheManager implements DownloadCallback{
                 } else if (cache instanceof AdInfo) {
                     adInfo = (AdInfo) cache;
                 }
-                // judge the get cache is timeout or not
-                if (isAdCacheTimeout(adCacheInfo) && adInfo != null) {
-                    //TODO DELETE
-                    Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
-                            + " posId: " + adInfo.getAdPosId()
-                            + " localPosId: " + adInfo.getExtra("adLocalPosId")
-                            + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
-                            + " is invalid in cache will not show unless no net and needHold");
-                    //TODO END DELETE
-                    trackActionEvent(EVENT_VIEW_FAIL, adInfo, "timeout");
-                    setCacheTimeout(adCacheInfo);
-                    isGetCache = true;
-                    adInfo = null;
-                } else {
-                    isGetCache = true;
-                    setCacheUsed(adCacheInfo);
-                    //TODO DELETE
-                    Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
-                            + " posId: " + adInfo.getAdPosId()
-                            + " localPosId: " + adInfo.getExtra("adLocalPosId")
-                            + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
-                            + " is valid in cache will return to user");
-                    //TODO END DELETE
+                /* judge the get cache is timeout or not */
+                if (adInfo != null) {
+                    if (isAdCacheTimeout(adCacheInfo)) {
+                        //TODO DELETE
+                        Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+                                + " posId: " + adInfo.getAdPosId()
+                                + " localPosId: " + adInfo.getExtra("adLocalPosId")
+                                + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
+                                + " is invalid in cache will not show unless no net and needHold");
+                        //TODO END DELETE
+                        trackActionEvent(EVENT_VIEW_FAIL, adInfo, "timeout");
+                        setCacheTimeout(adCacheInfo);
+                        isGetCache = false;
+                        adInfo = null;
+                    } else {
+                        isGetCache = true;
+                        setCacheUsed(adCacheInfo);
+                        //TODO DELETE
+                        Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+                                + " posId: " + adInfo.getAdPosId()
+                                + " localPosId: " + adInfo.getExtra("adLocalPosId")
+                                + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
+                                + " is valid in cache will return to user");
+                        //TODO END DELETE
+                    }
                 }
             }
-            // 2. post tasks to pull ad from server
+            /* 2. post tasks to pull ad from server */
             if (isGetCache) {
                 for (int i = 0; i < mRequestNum - 1; i++) {
                     postAdRequestWrapperTask(mPosId, mCallBack, false, policy, policy.next(0), 0, adSenseSize, AdRequestRunner.this);
@@ -568,7 +570,7 @@ public class AdCacheManager implements DownloadCallback{
                     postAdRequestWrapperTask(mPosId, mCallBack, false, policy, policy.next(0), 0, adSenseSize, AdRequestRunner.this);
                 }
             }
-            // 3.post a task to pull ad for cache
+            /* 3.post a task to pull ad for cache */
             postAdRequestWrapperTask(mPosId, null, true, policy, policy.next(0), 0, adSenseSize, AdRequestRunner.this);
             return adInfo;
         }
@@ -745,7 +747,6 @@ public class AdCacheManager implements DownloadCallback{
      * @return hold ad, maybe null if no hold ad.
      */
     private AdInfo generateHoldAd(String posId) {
-        ReaperLog.i(TAG, "generateHoldAd");
         AdCacheInfo adCacheInfo;
         AdInfo info = null;
         ArrayMap<String, Object> cacheObjects = mAdCache.get(posId);
@@ -759,6 +760,7 @@ public class AdCacheManager implements DownloadCallback{
                     info =  (AdInfo)object;
                 }
                 if (info != null) {
+                    ReaperLog.i(TAG, "hold ad: " + info.getUUID());
                     info.setAdInfoAvailable(false);
                     adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_HOLD_AD);
                 }
@@ -828,15 +830,11 @@ public class AdCacheManager implements DownloadCallback{
     }
 
     private void setCacheUsed(AdCacheInfo adCacheInfo) {
-//        Log.i(TAG, "setCacheUsd");
-//        Log.i(TAG, "\n\n");
         if (adCacheInfo == null)
             return;
-        ReaperLog.i(TAG, "return ad cache: " + adCacheInfo.getUuid());
+        ReaperLog.i(TAG, "set ad cache used: " + adCacheInfo.getUuid());
         adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_RETURN);
         updateDiskCache(adCacheInfo);
-//        Log.i(TAG, "setCacheUsed adCacheInfo : " + adCacheInfo.getUuid() + ", mState: " + adCacheInfo.getCacheState());
-//        Log.i(TAG, "\n\n");
     }
 
     private void setCacheDisplayed(AdInfo adInfo) {
@@ -943,8 +941,6 @@ public class AdCacheManager implements DownloadCallback{
                 }
             }
         }
-//        Log.i(TAG, "getCacheInfo memory: " + adInfo);
-//        Log.i(TAG, "\n\n");
         return adInfo;
     }
 
@@ -985,8 +981,6 @@ public class AdCacheManager implements DownloadCallback{
                 }
             }
         }
-//        Log.i(TAG, "getCacheInfo memory: " + adInfo);
-//        Log.i(TAG, "\n\n");
         /* 2. find ad cache in disk cache */
         if (adInfo == null) {
             try {
@@ -1010,35 +1004,37 @@ public class AdCacheManager implements DownloadCallback{
             return;
         ArrayMap<String, Object> cacheObjects = mAdCache.get(cacheId);
         AdCacheInfo cacheInfoInBottom = null;
-        if (cacheObjects != null) {
-            cacheInfoInBottom = (AdCacheInfo) cacheObjects.get(cacheObjects.keyAt(0));
-        }
-        if (cacheObjects != null && cacheObjects.size() > CACHE_MAX) {
-            if (cacheInfoInBottom != null &&
-                    (cacheInfoInBottom.isCacheBackToUser() || cacheInfoInBottom.isCacheDisPlayed())) {
-                //TODO DELETE
-                Object cache = cacheInfoInBottom.getCache();
-                AdInfo adInfo = null;
-                if (cache instanceof String) {
-                    adInfo = AdInfo.convertFromString((String) cache);
-                } else if (cache instanceof AdInfo){
-                    adInfo = (AdInfo) cache;
-                }
-                Log.i("ForTest", "srcName: " + adInfo.getExtra("adName") + " posId: "
-                        + adInfo.getAdPosId() + " localPosId: "
-                        + adInfo.getExtra("adLocalPosId")
-                        + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
-                        + " state " + cacheInfoInBottom.getCacheState() + " has deleted from sdcard"
-                        + " deleted because cache up to limit");
-                //TODO END DELETE
-                String cachePath = cacheInfoInBottom.getCachePath();
-                if (cachePath != null) {
-                    File cacheFile = new File(cachePath);
-                    if (cacheFile.exists()) {
-                        cacheFile.delete();
+        if (cacheObjects.size() > CACHE_MAX) {
+            for (int i = 0; i < cacheObjects.size(); i++) {
+            cacheInfoInBottom = (AdCacheInfo) cacheObjects.get(cacheObjects.keyAt(i));
+                if (cacheInfoInBottom != null && cacheObjects.size() > 1 &&
+                        (cacheInfoInBottom.isCacheBackToUser() || cacheInfoInBottom.isCacheDisPlayed())) {
+                    //TODO DELETE
+                    Object cache = cacheInfoInBottom.getCache();
+                    AdInfo adInfo = null;
+                    if (cache instanceof String) {
+                        adInfo = AdInfo.convertFromString((String) cache);
+                    } else if (cache instanceof AdInfo) {
+                        adInfo = (AdInfo) cache;
+                    }
+                    if (adInfo != null) {
+                        Log.i("ForTest", "srcName: " + adInfo.getExtra("adName") + " posId: "
+                                + adInfo.getAdPosId() + " localPosId: "
+                                + adInfo.getExtra("adLocalPosId")
+                                + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
+                                + " state " + cacheInfoInBottom.getCacheState() + " has deleted from sdcard"
+                                + " deleted because cache up to limit");
+                        //TODO END DELETE
+                        String cachePath = cacheInfoInBottom.getCachePath();
+                        if (cachePath != null) {
+                            File cacheFile = new File(cachePath);
+                            if (cacheFile.exists()) {
+                                cacheFile.delete();
+                            }
+                        }
+                        cacheObjects.remove(cacheObjects.keyAt(i));
                     }
                 }
-                cacheObjects.remove(cacheObjects.keyAt(0));
             }
         }
     }
@@ -1051,16 +1047,12 @@ public class AdCacheManager implements DownloadCallback{
     }
 
     private void onRequestAdSucceed(Object receiver, AdInfo adInfo) {
+        if (adInfo == null)
+            return;
         ReaperLog.i(TAG, "on success ad info: " + adInfo.getUUID());
-//        Log.i(TAG, "on success ad info: " + adInfo.getUUID()+ ", hash: " + adInfo.hashCode());
-//        Log.i(TAG, "\n\n");
         ArrayMap<String, Object> params = new ArrayMap<>();
-        if (adInfo != null) {
-            params.put("isSucceed", true);
-            params.put("adInfo", adInfo.getAdAllParams());
-        } else {
-            onRequestAdError(receiver, "request ad succeed, but with no ad response");
-        }
+        params.put("isSucceed", true);
+        params.put("adInfo", adInfo.getAdAllParams());
         onRequestAd(receiver, params);
     }
 
@@ -1718,119 +1710,6 @@ public class AdCacheManager implements DownloadCallback{
         }
     }
 
-    private void updateWrapper(List<ReaperAdSense> reaperAdSenses) {
-        if (reaperAdSenses == null) return;
-        if (mSdkWrapperSupport == null)
-            mSdkWrapperSupport = new HashMap<>();
-        if (mSdkWrapperAdTypeSupport == null)
-            mSdkWrapperAdTypeSupport = new HashMap<>();
-        mSdkWrapperAdTypeSupport.put(AdType.TYPE_BANNER, AdType.TYPE_BANNER);
-//        mSdkWrapperAdTypeSupport.put(AdType.TYPE_APP_WALL, AdType.TYPE_APP_WALL);
-        mSdkWrapperAdTypeSupport.put(AdType.TYPE_FEED, AdType.TYPE_FEED);
-        mSdkWrapperAdTypeSupport.put(AdType.TYPE_FULL_SCREEN, AdType.TYPE_FULL_SCREEN);
-        mSdkWrapperAdTypeSupport.put(AdType.TYPE_NATIVE, AdType.TYPE_NATIVE);
-        mSdkWrapperAdTypeSupport.put(AdType.TYPE_VIDEO, AdType.TYPE_VIDEO);
-        mSdkWrapperAdTypeSupport.put(AdType.TYPE_PLUG_IN, AdType.TYPE_PLUG_IN);
-
-        if (mMethodCall == null)
-            mMethodCall = new HashMap<>();
-        for(ReaperAdSense adSense : reaperAdSenses) {
-            String adSourceName = adSense.ads_name;
-            if (!mSdkWrapperSupport.containsKey(adSourceName)) {
-                switch (adSourceName) {
-                    case SdkName.GUANG_DIAN_TONG:
-                        ISDKWrapper tencentWrapper = new TencentSDKWrapper();
-                        tencentWrapper.init(mContext, null);
-                        mSdkWrapperSupport.put(SdkName.GUANG_DIAN_TONG, tencentWrapper);
-                        break;
-                    case SdkName.MIX_ADX:
-                        ISDKWrapper mixAdxWrapper = new MixAdxSDKWrapper();
-                        mixAdxWrapper.init(mContext, null);
-                        mSdkWrapperSupport.put(SdkName.MIX_ADX, mixAdxWrapper);
-                        break;
-                    case SdkName.AKAD:
-                        ISDKWrapper akAdWrapper = new AKAdSDKWrapper();
-                        akAdWrapper.init(mContext, null);
-                        mSdkWrapperSupport.put(SdkName.AKAD, akAdWrapper);
-                        break;
-                    default:
-                        ReaperLog.e(TAG, "not match sdk wrapper");
-                }
-            }
-        }
-    }
-
-    private AdResponse requestWrapperAdInner(List<ReaperAdSense> reaperAdSenses, int location, String advType, AdRequestWrapperTask task) {
-        if (reaperAdSenses == null)
-            return null;
-        ReaperLog.i(TAG, "location is ：" + location);
-        if (location > reaperAdSenses.size() -1) {
-            return null;
-        }
-        ReaperAdSense sense = reaperAdSenses.get(location);
-        String adsName = sense.ads_name;
-        ISDKWrapper sdkWrapper = mSdkWrapperSupport.get(adsName);
-        if (sdkWrapper == null) {
-            ReaperLog.e(TAG, "Can not find " + adsName + "'s sdk implements, may need " +
-                    "upgrade reaper jar, current version " + BumpVersion.value());
-            return null;
-        }
-
-        String adType = null;
-        if (mSdkWrapperAdTypeSupport.containsKey(advType)) {
-            adType = mSdkWrapperAdTypeSupport.get(advType);
-        } else {
-            ReaperLog.e(TAG, "Can not find match ad type with type name " +
-                    advType);
-            return null;
-        }
-
-        AdRequest.Builder builder = new AdRequest.Builder()
-                .adPosId(sense.getPosId())
-                .adLocalAppId(sense.ads_appid)
-                .adLocalPositionId(sense.ads_posid)
-                .adType(adType)
-                .adExpireTime(Long.parseLong(sense.expire_time))
-                .adCount(1);
-
-        if ("pixel".equalsIgnoreCase(sense.adv_size_type)) {
-            String realSize = sense.adv_real_size;
-            String[] size = realSize.split("\\*");
-            int width = 0;
-            int height = 0;
-
-            if (size.length == 2) {
-                try {
-                    width = Integer.valueOf(size[0]);
-                    height = Integer.valueOf(size[1]);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if (width > 0 || height > 0) {
-                builder.adWidth(width);
-                builder.adHeight(height);
-            }
-        } else if ("ratio".equalsIgnoreCase(sense.adv_size_type)) {
-            ReaperLog.e(TAG, "[TEST] Not support adv size type " +
-                        sense.adv_size_type);
-            return null;
-        } else {
-            ReaperLog.e("Not support adv size type " +
-                        sense.adv_size_type);
-            return null;
-        }
-        AdResponse adResponse = null;
-        if (sdkWrapper.isRequestAdSupportSync()) {
-            adResponse = sdkWrapper.requestAdSync(builder.create());
-        } else {
-            sdkWrapper.requestAdAsync(builder.create(), task);
-        }
-
-        return adResponse;
-    }
-
     private AdResponse requestWrapperAdInner(ReaperAdSense reaperAdSense, String advType, AdRequestWrapperTask task) {
         if (reaperAdSense == null)
             return null;
@@ -1882,7 +1761,7 @@ public class AdCacheManager implements DownloadCallback{
                 builder.adHeight(height);
             }
         } else if ("ratio".equalsIgnoreCase(reaperAdSense.adv_size_type)) {
-            ReaperLog.e(TAG, "[TEST] Not support adv size type " +
+            ReaperLog.e(TAG, "Not support adv size type " +
                     reaperAdSense.adv_size_type);
             return null;
         } else {
