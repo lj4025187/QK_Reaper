@@ -45,7 +45,7 @@ import com.qiku.proguard.annotations.NoProguard;
 @NoProguard
 public class ReaperActivity extends Activity {
 
-    private final static String TAG = ReaperActivity.class.getSimpleName();
+    private final static String TAG = "ReaperActivity";
     private final static int REQUEST_CODE = 6666;
     private final static int RETRY_LOAD_TIMES = 3;
 
@@ -72,17 +72,22 @@ public class ReaperActivity extends Activity {
         }
 
         @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-            LoaderLog.i(TAG, "onPageStarted");
+        public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+            super.doUpdateVisitedHistory(view, url, isReload);
+            if(isReload)
+                loadUrl(view, url);
         }
 
         @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            LoaderLog.i(TAG, "onPageFinished");
-            if(!visible && !TextUtils.isEmpty(url))
-                startInBrowser(Uri.parse(url));
+        public void onLoadResource(WebView view, String url) {
+            super.onLoadResource(view, url);
+        }
+
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
+            LoaderLog.i(TAG, "onPageStarted");
+            view.setVisibility(View.INVISIBLE);
         }
 
         @Override
@@ -90,12 +95,27 @@ public class ReaperActivity extends Activity {
             super.onPageCommitVisible(view, url);
             LoaderLog.i(TAG, "onPageCommitVisible");
             visible = true;
+            view.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            LoaderLog.i(TAG, "onPageFinished");
+            if(visible) {
+                view.setVisibility(View.VISIBLE);
+            } else {
+                LoaderLog.i(TAG, "page finished not visible open in browser");
+                startInBrowser(Uri.parse(url));
+            }
         }
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             super.onReceivedError(view, request, error);
+            if(!visible) return;
+            LoaderLog.i(TAG, "receive err not visible open in browser");
             Uri uri = request.getUrl();
             view.stopLoading();
             startInBrowser(uri);
@@ -103,8 +123,7 @@ public class ReaperActivity extends Activity {
 
         private void startInBrowser(Uri uri) {
             if (!TextUtils.isEmpty(uri.toString())) {
-                boolean openWebUrl = openWebUrl(uri);
-                LoaderLog.i(TAG, "onReceivedError open in browser " + openWebUrl);
+                openWebUrl(uri);
             }
             finish();
         }
@@ -120,6 +139,10 @@ public class ReaperActivity extends Activity {
                 return;
             if (url.startsWith("tel:")) {
                 Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } else  if (url.startsWith("sms:")) {
+                Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             } else {
@@ -338,6 +361,7 @@ public class ReaperActivity extends Activity {
         mSettings.setJavaScriptEnabled(!mUrl.startsWith("file://"));
         //支持通过JS打开新窗口
         mSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+        LoaderLog.i(TAG, "url : " + mUrl);
         mWebView.loadUrl(mUrl);
     }
 
