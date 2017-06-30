@@ -3,6 +3,8 @@ package com.fighter.common.utils;
 import android.os.Environment;
 import android.util.Log;
 
+import com.fighter.config.ReaperConfig;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -17,12 +19,11 @@ public class ReaperLog {
     public static final String TAG = "Reaper";
     private static final String LOCAL_DIR = Environment.getExternalStorageDirectory() + "/Reaper";
     private static final String LOCAL_LOG_DIR = LOCAL_DIR + "/logs";
-    private static final boolean DEBUG_LOG = true;
     private static final boolean RECORD_LOG = true;
     private static long sStartTime = 0;
 
     public static void i(String msg) {
-        if (!DEBUG_LOG)
+        if (!ReaperConfig.TEST_MODE)
             return;
         Log.i(TAG, msg);
         if (RECORD_LOG)
@@ -30,7 +31,7 @@ public class ReaperLog {
     }
 
     public static void i(String subTag, String msg) {
-        if (!DEBUG_LOG)
+        if (!ReaperConfig.TEST_MODE)
             return;
         Log.i(TAG, "[" + subTag + "] ==> " + msg);
         if (RECORD_LOG)
@@ -38,16 +39,12 @@ public class ReaperLog {
     }
 
     public static void e(String msg) {
-        if (!DEBUG_LOG)
-            return;
         Log.e(TAG, msg);
         if (RECORD_LOG)
             writeLocalLog("E ", msg);
     }
 
     public static void e(String subTag, String msg) {
-        if (!DEBUG_LOG)
-            return;
         Log.e(TAG, "[" + subTag + "] ==> " + msg);
         if (RECORD_LOG)
             writeLocalLog("E ", msg);
@@ -55,7 +52,7 @@ public class ReaperLog {
 
     //for print list
     public static <T> void printList(List<T> list) {
-        if (!DEBUG_LOG)
+        if (!ReaperConfig.TEST_MODE)
             return;
         if (list == null) return;
         for (T t : list) {
@@ -64,7 +61,7 @@ public class ReaperLog {
     }
 
     public static void startTime(String msg) {
-        if (!DEBUG_LOG)
+        if (!ReaperConfig.TEST_MODE)
             return;
         sStartTime = System.currentTimeMillis();
         String message = "start count time : " + msg;
@@ -74,7 +71,7 @@ public class ReaperLog {
     }
 
     public static void endTime(String msg) {
-        if (!DEBUG_LOG)
+        if (!ReaperConfig.TEST_MODE)
             return;
         String message = msg + " used time : " + (System.currentTimeMillis() - sStartTime);
         e(message);
@@ -142,7 +139,7 @@ public class ReaperLog {
     }
 
     public static void printStackTrace() {
-        if (DEBUG_LOG) {
+        if (ReaperConfig.TEST_MODE) {
             try {
                 StackTraceElement[] sts = Thread.currentThread().getStackTrace();
                 for (StackTraceElement stackTraceElement : sts) {
@@ -155,7 +152,7 @@ public class ReaperLog {
     }
 
     public static void printException(String msg, Throwable e) {
-        if (DEBUG_LOG) {
+        if (ReaperConfig.TEST_MODE) {
             DEFAULT_LOGHANDLER.publish("Log_StackTrace", Log.ERROR, msg + '\n' + Log.getStackTraceString(e));
         }
     }
