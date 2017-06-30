@@ -11,7 +11,7 @@ public class TrackerEventType {
     static final String AD_DISPLAY_EVENT = "ad_display";
     static final String AD_CLICK_EVENT= "ad_click";
     static final String AD_ACTION_EVENT = "ad_action";
-    static final String AD_DOWNLOAD_FAILED_EVENT = "ad_download_fail";
+    static final String AD_DOWNLOAD_FAILED_EVENT = "ad_down_fail";
 
     public static final String APP_ACTION_TYPE_BEGIN = "down_begin";
     public static final String APP_ACTION_TYPE_END = "down_end";

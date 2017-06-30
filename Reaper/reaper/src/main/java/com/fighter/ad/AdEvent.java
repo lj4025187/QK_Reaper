@@ -21,6 +21,11 @@ public class AdEvent {
      */
     public static final int EVENT_CLOSE = 2;
 
+    /**
+     * 广告下载失败
+     */
+    public static final int EVENT_AD_DOWN_FAIL = 3;
+
     // ----------------------------------------------------
 
     // App类事件

@@ -64,6 +64,7 @@ import static com.fighter.ad.AdEvent.EVENT_APP_INSTALL;
 import static com.fighter.ad.AdEvent.EVENT_APP_START_DOWNLOAD;
 import static com.fighter.ad.AdEvent.EVENT_CLICK;
 import static com.fighter.ad.AdEvent.EVENT_CLOSE;
+import static com.fighter.ad.AdEvent.EVENT_AD_DOWN_FAIL;
 import static com.fighter.ad.AdEvent.EVENT_VIDEO_CARD_CLICK;
 import static com.fighter.ad.AdEvent.EVENT_VIDEO_CONTINUE;
 import static com.fighter.ad.AdEvent.EVENT_VIDEO_EXIT;
@@ -1164,6 +1165,15 @@ public class AdCacheManager implements DownloadCallback{
                 break;
             case EVENT_CLOSE:
                 break;
+            case EVENT_AD_DOWN_FAIL:
+                EventDownLoadParam adDownFailParam = new EventDownLoadParam();
+                adDownFailParam.ad_info = adInfo;
+                adDownFailParam.ad_num = 1;
+                adDownFailParam.ad_appid = Integer.parseInt(mAppId);
+                adDownFailParam.app_pkg = mContext.getPackageName();
+                adDownFailParam.reason = errMsg;
+                mReaperTracker.trackDownloadEvent(mContext, adDownFailParam);
+                break;
             case EVENT_APP_START_DOWNLOAD:
             case EVENT_APP_DOWNLOAD_COMPLETE:
             case EVENT_APP_DOWNLOAD_FAILED:
@@ -1908,13 +1918,8 @@ public class AdCacheManager implements DownloadCallback{
         try {
             imageFile = cacheAdFile(imageUrl);
         } catch (Exception e) {
-            EventDownLoadParam param = new EventDownLoadParam();
-            param.ad_info = adInfo;
-            param.ad_num = 1;
-            param.ad_appid = Integer.parseInt(mAppId);
-            param.app_pkg = mContext.getPackageName();
-            param.reason = "OkHttpDownloader exception in sdk " + e.toString();
-            mReaperTracker.trackDownloadEvent(mContext, param);
+            String errMsg = "OkHttpDownloader exception in sdk " + e.toString();
+            trackActionEvent(EVENT_AD_DOWN_FAIL, adInfo, errMsg);
             e.printStackTrace();
         }
         if (imageFile != null && imageFile.exists()) {

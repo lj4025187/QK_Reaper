@@ -1,6 +1,5 @@
 package com.fighter.ad;
 
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
