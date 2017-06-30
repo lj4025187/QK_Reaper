@@ -9,7 +9,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.DisplayMetrics;
@@ -1356,7 +1355,7 @@ public class AdCacheManager implements DownloadCallback{
         if(adInfo == null)
             return;
         if(TextUtils.isEmpty(fileName)){
-            trackActionEvent(EVENT_APP_DOWNLOAD_FAILED, adInfo, adInfo + " download app file name is null");
+            trackActionEvent(EVENT_APP_DOWNLOAD_FAILED, adInfo, adInfo.getUUID() + " download app file name is null");
             return;
         }
         //download app success
@@ -1537,7 +1536,7 @@ public class AdCacheManager implements DownloadCallback{
         public void run() {
             String actionUrl = sdkWrapper.requestDownloadUrl(adInfo);
             if(TextUtils.isEmpty(actionUrl)) {
-                String errMsg = adInfo + " download fail action is null";
+                String errMsg = adInfo.getUUID() + " download fail action is null";
                 ReaperLog.i(TAG, errMsg);
                 trackActionEvent(EVENT_APP_DOWNLOAD_FAILED, adInfo, errMsg);
             }
