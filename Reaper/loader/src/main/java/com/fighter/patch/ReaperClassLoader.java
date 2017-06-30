@@ -30,7 +30,10 @@ public class ReaperClassLoader extends DexClassLoader {
         if (TextUtils.isEmpty(name)) {
             return null;
         }
-        if (name.startsWith("okio") || name.startsWith("okhttp3")) {
+        if (name.startsWith("okio") || name.startsWith("okhttp3")
+                || name.startsWith("com.alibaba.fastjson")
+                || name.startsWith("com.qiku.serversdk.custom")
+                || name.startsWith("com.qihoo.sdk")) {
             LoaderLog.i("load " + name + " by ReaperClassloader, do not delegate to parent");
             return findClass(name);
         } else {
