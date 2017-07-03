@@ -9,14 +9,11 @@ import com.fighter.reaper.BuildConfig;
 import com.fighter.reaper.BumpVersion;
 import com.qihoo.sdk.report.QHConfig;
 import com.qihoo.sdk.report.QHStatAgent;
-import com.qihoo.sdk.report.QHStatAgent.ExtraTagIndex;
 import com.qihoo.sdk.report.QHStatAgent.DataUploadLevel;
+import com.qihoo.sdk.report.QHStatAgent.ExtraTagIndex;
 import com.qihoo.sdk.report.QHStatAgent.SamplingPlan;
-import com.qihoo.sdk.report.ReportServerAddress;
 
 import java.util.HashMap;
-
-import static com.qihoo.sdk.report.AbTestTag.D;
 
 /**
  * This Util is the connection with QHStatAgent.jar
@@ -30,7 +27,7 @@ public class TrackerStatAgent {
     private final static String REAPER_AGENT_KEY = "dd458505749b2941217ddd59394240e8";
     private final static String DEBUG_REAPER_AGENT_KEY = "a86c450b76fb8c371afead6410d55534";
     //switch for QHStatAgent function
-    private final static Boolean SWITCH_OPEN = true;
+    private final static Boolean SWITCH_OPEN = BuildConfig.DEBUG;
     //switch for error exception upload
     private final static boolean CATCH_ERR = true;
 

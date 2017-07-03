@@ -35,14 +35,18 @@ dependencies {
 ##### 有2种方式初始化（前提：权限均已授权）
 
 1.直接继承ReaperApplication，然后用getReaperApi()方法得到ReaperApi请求广告
-> 测试模式下，testMode设置为false，从测试环境拉取配置信息，可以通过adb logcat -s Reaper查看调试日志。移动设备需要配置hosts：**10.139.232.146 t.adv.os.qiku.com**，确保可以ping通该网段后在配置中心申请相关广告位。
+> - 测试模式下，testMode设置为false，从测试环境拉取配置信息，可以通过adb logcat -s Reaper查看调试日志。移动设备
+> 需要配置hosts：**10.139.232.146 t.adv.os.qiku.com**，确保可以ping通该网段后在配置中心申请相关广告位。
+>
+>	测试环境配置中心地址：http://test.partner.360os.com/html/entrance/allApplications.html
+>	
+>
+> - 量产模式下，testMode设置为true，从正式环境拉取广告位配置信息，调试日志将不会输出。
 > 
-> 测试环境配置中心地址：http://test.partner.360os.com/html/entrance/allApplications.html
-> 
-> 量产模式下，testMode设置为true，从正式环境拉取广告位配置信息，调试日志将不会输出。
-> 
-> 正式环境配置中心地址：http://partner.360os.com/html/entrance/allApplications.html
-> 
+> 	正式环境配置中心地址：http://partner.360os.com/html/entrance/allApplications.html
+>	
+><u>注意：测试模式下，**聚效**只能配置测试广告位。发版本时，改值必须置为***false***。 </u>
+>	
 >权限申请及配置流程请咨询服务器开发人员：**张鑫润，高轩，安三星**
 
 ```java
@@ -54,7 +58,7 @@ public class MyApp extends ReaperApplication {
         // appContext   应用上下文
         // appId        360OS广告平台申请的APP id
         // appKey       360OS广告平台申请的APP key
-        // testMode     是否是测试模式，测试模式支持设置配置文件
+        // testMode     是否是测试模式，测试模式支持设置配置文件，发版本时置为false
         mReaperApi.init(this, appid, appkey, true);
     }
 }
