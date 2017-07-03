@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.LongSparseArray;
 
 import com.fighter.ad.AdInfo;
@@ -25,6 +24,7 @@ import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
 import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
+import com.fighter.config.ReaperConfig;
 import com.fighter.config.ReaperConfigManager;
 import com.fighter.reaper.BumpVersion;
 import com.fighter.tracker.EventActionParam;
@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.fighter.ad.AdEvent.EVENT_AD_DOWN_FAIL;
 import static com.fighter.ad.AdEvent.EVENT_APP_ACTIVE;
 import static com.fighter.ad.AdEvent.EVENT_APP_DOWNLOAD_CANCELED;
 import static com.fighter.ad.AdEvent.EVENT_APP_DOWNLOAD_COMPLETE;
@@ -64,7 +65,6 @@ import static com.fighter.ad.AdEvent.EVENT_APP_INSTALL;
 import static com.fighter.ad.AdEvent.EVENT_APP_START_DOWNLOAD;
 import static com.fighter.ad.AdEvent.EVENT_CLICK;
 import static com.fighter.ad.AdEvent.EVENT_CLOSE;
-import static com.fighter.ad.AdEvent.EVENT_AD_DOWN_FAIL;
 import static com.fighter.ad.AdEvent.EVENT_VIDEO_CARD_CLICK;
 import static com.fighter.ad.AdEvent.EVENT_VIDEO_CONTINUE;
 import static com.fighter.ad.AdEvent.EVENT_VIDEO_EXIT;
@@ -95,7 +95,6 @@ public class AdCacheManager implements DownloadCallback{
     private static final long EFFECTIVE_TIME = 3*60*1000;
     private static final int REQUEST_CODE = 9999;
     private static final int MAX_REQUEST_AD_COUNT = 5;
-    private static final String SALT = "cf447fe3adac00476ee9244fd30fba74";
     private static final String METHOD_ON_RESPONSE = "onResponse";
 
     private static final int CACHE_MAX = 5;
@@ -420,7 +419,7 @@ public class AdCacheManager implements DownloadCallback{
 //                Log.i(TAG, "\n");
                     if (isCache) {
                         //TODO DELETE
-                        Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+                        ReaperLog.i("ForTest", "srcName: " + adInfo.getExtra("adName")
                                 + " posId: " + adInfo.getAdPosId()
                                 + " localPosId: " + adInfo.getExtra("adLocalPosId")
                                 + " uuid: " + adInfo.getUUID().substring(30)
@@ -431,7 +430,7 @@ public class AdCacheManager implements DownloadCallback{
 //                    Log.i(TAG, "AdRequestWrapperNotify task: " + task.hashCode());
 //                    Log.i(TAG, "\n");
                         //TODO DELETE
-                        Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+                        ReaperLog.i("ForTest", "srcName: " + adInfo.getExtra("adName")
                                 + " posId: " + adInfo.getAdPosId()
                                 + " localPosId: " + adInfo.getExtra("adLocalPosId")
                                 + " uuid: " + adInfo.getUUID().substring(30)
@@ -537,7 +536,7 @@ public class AdCacheManager implements DownloadCallback{
                 if (adInfo != null) {
                     if (isAdCacheTimeout(adCacheInfo)) {
                         //TODO DELETE
-                        Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+                        ReaperLog.i("ForTest", "srcName: " + adInfo.getExtra("adName")
                                 + " posId: " + adInfo.getAdPosId()
                                 + " localPosId: " + adInfo.getExtra("adLocalPosId")
                                 + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
@@ -551,7 +550,7 @@ public class AdCacheManager implements DownloadCallback{
                         isGetCache = true;
                         setCacheUsed(adCacheInfo);
                         //TODO DELETE
-                        Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+                        ReaperLog.i("ForTest", "srcName: " + adInfo.getExtra("adName")
                                 + " posId: " + adInfo.getAdPosId()
                                 + " localPosId: " + adInfo.getExtra("adLocalPosId")
                                 + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
@@ -1018,7 +1017,7 @@ public class AdCacheManager implements DownloadCallback{
                         adInfo = (AdInfo) cache;
                     }
                     if (adInfo != null) {
-                        Log.i("ForTest", "srcName: " + adInfo.getExtra("adName") + " posId: "
+                        ReaperLog.i("ForTest", "srcName: " + adInfo.getExtra("adName") + " posId: "
                                 + adInfo.getAdPosId() + " localPosId: "
                                 + adInfo.getExtra("adLocalPosId")
                                 + " uuid: " + adInfo.getUUID().substring(30) + " get from cache"
@@ -1651,7 +1650,9 @@ public class AdCacheManager implements DownloadCallback{
         boolean fetchSucceed = true;
 
         fetchSucceed = ReaperConfigManager.fetchReaperConfigFromServer(mContext,
-                mContext.getPackageName(), SALT, mAppKey, mAppId);
+                mContext.getPackageName(),
+                ReaperConfig.TEST_MODE ? ReaperConfig.TEST_SALT : ReaperConfig.RELEASE_SALT,
+                mAppKey, mAppId);
 
         if (!fetchSucceed) {
             ReaperLog.e(TAG, "Can not fetch reaper config from server");
@@ -1826,7 +1827,7 @@ public class AdCacheManager implements DownloadCallback{
             //TODO DELETE
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String dateStr = format.format(info.getCacheTime());
-            Log.i("ForTest", "srcName: " + adInfo.getExtra("adName")
+            ReaperLog.i("ForTest", "srcName: " + adInfo.getExtra("adName")
                     + " posId: " + adInfo.getAdPosId()
                     + " localPosId: " + adInfo.getExtra("adLocalPosId")
                     + " uuid: " + adInfo.getUUID().substring(30)

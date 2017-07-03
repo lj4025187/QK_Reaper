@@ -35,11 +35,11 @@ dependencies {
 ##### 有2种方式初始化（前提：权限均已授权）
 
 1.直接继承ReaperApplication，然后用getReaperApi()方法得到ReaperApi请求广告
-> 测试模式下，testMode设置为false，从测试环境拉取配置信息。移动设备需要配置hosts：**10.139.232.146 t.adv.os.qiku.com**，确保可以ping通该网段后在配置中心申请相关广告位。
+> 测试模式下，testMode设置为false，从测试环境拉取配置信息，可以通过adb logcat -s Reaper查看调试日志。移动设备需要配置hosts：**10.139.232.146 t.adv.os.qiku.com**，确保可以ping通该网段后在配置中心申请相关广告位。
 > 
 > 测试环境配置中心地址：http://test.partner.360os.com/html/entrance/allApplications.html
 > 
-> 量产模式下，testMode设置为true，从正式环境拉去广告位配置信息。
+> 量产模式下，testMode设置为true，从正式环境拉去广告位配置信息，调试日志将不会输出。
 > 
 > 正式环境配置中心地址：http://partner.360os.com/html/entrance/allApplications.html
 > 

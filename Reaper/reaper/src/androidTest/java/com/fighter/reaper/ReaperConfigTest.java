@@ -181,9 +181,9 @@ public class ReaperConfigTest {
 
         boolean fetchSuccess = ReaperConfigManager.fetchReaperConfigFromServer(
                 context, context.getPackageName(),
-                ReaperConfig.TEST_SALT,
-                ReaperConfig.TEST_APPKEY,
-                ReaperConfig.TEST_APPID);
+                ReaperConfig.RELEASE_SALT,
+                ReaperConfig.RELEASE_APP_KEY,
+                ReaperConfig.RELEASE_APP_ID);
         ReaperLog.i(TAG, "##################### testFetchConfigFromServer ####################" + fetchSuccess);
     }
 }

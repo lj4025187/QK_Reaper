@@ -174,16 +174,25 @@ public class AdFragment extends Fragment implements Handler.Callback,
             showEmptyView(false);
         }
         String posId = generatePosId();
-        boolean isSupport = TextUtils.equals(SampleConfig.QIHOO_VIDEO_ADV/*"5"*/, posId)    //Qihoo video
-                        ||  TextUtils.equals(SampleConfig.QIHOO_ORIGINAL_ADV/*"6"*/, posId)    //Qihoo original
-                        ||  TextUtils.equals(SampleConfig.TENCENT_INSERT_ADV/*"7"*/, posId)    //Tencent insert
-                        ||  TextUtils.equals(SampleConfig.TENCENT_BANNER_ADV/*"8"*/, posId)      //Tencent banner
-                        ||  TextUtils.equals(SampleConfig.TENCENT_OPEN_ADV/*"9"*/, posId)      //Tencent openapp
-                        ||  TextUtils.equals(SampleConfig.TENCENT_FEED_ADV/*"10"*/, posId)     //Tencent feed
-                        ||  TextUtils.equals(SampleConfig.TENCENT_ORIGINAL_ADV/*"11"*/, posId)     //Tencent original
-                        ||  TextUtils.equals(SampleConfig.BAIDU_INSERT_ADV/*"13"*/, posId)     //Baidu insert
-                        ||  TextUtils.equals(SampleConfig.BAIDU_BANNER_ADV/*"14"*/, posId)     //Baidu banner
-                        ||  TextUtils.equals(SampleConfig.BAIDU_OPEN_ADV/*"15"*/, posId);    //Baidu openapp
+        boolean isSupport;
+        if(SampleConfig.TEST_MODE) {
+            isSupport = TextUtils.equals(SampleConfig.QIHOO_VIDEO_ADV/*"5"*/, posId)    //Qihoo video
+                        || TextUtils.equals(SampleConfig.QIHOO_ORIGINAL_ADV/*"6"*/, posId)    //Qihoo original
+                        || TextUtils.equals(SampleConfig.TENCENT_INSERT_ADV/*"7"*/, posId)    //Tencent insert
+                        || TextUtils.equals(SampleConfig.TENCENT_BANNER_ADV/*"8"*/, posId)      //Tencent banner
+                        || TextUtils.equals(SampleConfig.TENCENT_OPEN_ADV/*"9"*/, posId)      //Tencent openapp
+                        || TextUtils.equals(SampleConfig.TENCENT_FEED_ADV/*"10"*/, posId)     //Tencent feed
+                        || TextUtils.equals(SampleConfig.TENCENT_ORIGINAL_ADV/*"11"*/, posId)     //Tencent original
+                        || TextUtils.equals(SampleConfig.BAIDU_INSERT_ADV/*"13"*/, posId)     //Baidu insert
+                        || TextUtils.equals(SampleConfig.BAIDU_BANNER_ADV/*"14"*/, posId)     //Baidu banner
+                        || TextUtils.equals(SampleConfig.BAIDU_OPEN_ADV/*"15"*/, posId);    //Baidu openapp
+        } else {
+            isSupport = TextUtils.equals(SampleConfig.QIHOO_VIDEO_ADV/*"5"*/, posId)    //Qihoo video
+                    || TextUtils.equals(SampleConfig.QIHOO_ORIGINAL_ADV/*"6"*/, posId)    //Qihoo original
+                    || TextUtils.equals(SampleConfig.TENCENT_INSERT_ADV/*"7"*/, posId)    //Tencent insert
+                    || TextUtils.equals(SampleConfig.TENCENT_BANNER_ADV/*"8"*/, posId)      //Tencent banner
+                    || TextUtils.equals(SampleConfig.BAIDU_BANNER_ADV/*"14"*/, posId);     //Baidu banner
+        }
 
 
         if (!isSupport) {

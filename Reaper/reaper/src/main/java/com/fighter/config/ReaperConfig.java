@@ -16,7 +16,7 @@ public final class ReaperConfig {
 
 
     // TODO set this false when publish
-    public static boolean TEST_MODE = true;
+    public static boolean TEST_MODE = false;
 
     /**
      * For test
@@ -24,10 +24,18 @@ public final class ReaperConfig {
     public static final String TEST_URL_HTTP = "http://t.adv.os.qiku.com/new_cfg";
     public static final String TEST_URL_HTTPS = "https://t.adv.os.qiku.com/new_cfg";
     public static final String TEST_SDK_VERSION = "1.0.0";
-//    public static final String TEST_APPKEY = "52b039014f5ee11cf9865d66f0b8f23f";
+
     public static final String TEST_APPKEY = "123";
     public static final String TEST_SALT = "cf447fe3adac00476ee9244fd30fba74";
     public static final String TEST_APPID = "100025";
+
+    /**
+     * For release
+     */
+    public final static String RELEASE_APP_KEY = "ffaebf62bfb5f52d4f9008f130630232";
+    public final static String RELEASE_APP_ID = "100000";
+    public static final String RELEASE_SALT = "cf447fe3adac00476ee9";
+
 
     /**
      * Url param keys

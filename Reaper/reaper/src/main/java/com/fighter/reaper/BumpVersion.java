@@ -5,6 +5,7 @@ package com.fighter.reaper;
  */
 
 
+import com.qiku.proguard.BuildConfig;
 import com.qiku.proguard.annotations.NoProguard;
 
 /**
@@ -24,8 +25,10 @@ public class BumpVersion {
     @NoProguard
     public static String value() {
         String v = "" + RELEASE + "." + SECOND + "." + REVISION;
-        if (SUFFIX != null)
-            v += SUFFIX;
+        if(BuildConfig.DEBUG) {
+            if (SUFFIX != null)
+                v += SUFFIX;
+        }
         return v;
     }
 

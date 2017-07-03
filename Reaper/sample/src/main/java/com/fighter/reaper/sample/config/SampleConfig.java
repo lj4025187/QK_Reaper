@@ -14,10 +14,15 @@ public class SampleConfig {
 
     public final static boolean IS_FOR_SERVER = false;
     public final static boolean LOCAL_CONFIG = false;
+    //true : t.adv.os.qiku.com
+    //false: comp.360os.com
+    public final static boolean TEST_MODE = false;
 
-//    public final static String APP_KEY = "52b039014f5ee11cf9865d66f0b8f23f";
-    public final static String APP_KEY = "123";
-    public final static String APP_ID = "100025";
+    public final static String TEST_APP_KEY = "123";
+    public final static String TEST_APP_ID = "100025";
+
+    public final static String RELEASE_APP_KEY = "ffaebf62bfb5f52d4f9008f130630232";
+    public final static String RELEASE_APP_ID = "100000";
 
     public final static int REQUEST_COUNT_PER_TIME = 5;
 
@@ -45,6 +50,17 @@ public class SampleConfig {
             BAIDU_INSERT_ADV = "13";  //Baidu insert
             BAIDU_BANNER_ADV = "14";  //Baidu banner
             BAIDU_OPEN_ADV = "15";  //Baidu openapp
+        } else if(!SampleConfig.TEST_MODE){
+            QIHOO_VIDEO_ADV = "1010";  //Qihoo video
+            QIHOO_ORIGINAL_ADV = "1011"; //Qihoo original
+            TENCENT_INSERT_ADV = "1006";  //Tencent insert
+            TENCENT_BANNER_ADV = "1005";  //Tencent banner
+            TENCENT_OPEN_ADV = "1008";  //Tencent openapp
+            TENCENT_FEED_ADV = "1009";  //Tencent feed
+            TENCENT_ORIGINAL_ADV = "1004";  //Tencent original
+            BAIDU_INSERT_ADV = "1012";  //Baidu insert
+            BAIDU_BANNER_ADV = "1013";  //Baidu banner
+            BAIDU_OPEN_ADV = "1014";  //Baidu openapp
         } else {
             QIHOO_VIDEO_ADV = "1045";  //Qihoo video
             QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original

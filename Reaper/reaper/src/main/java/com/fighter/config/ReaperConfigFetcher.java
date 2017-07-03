@@ -4,9 +4,9 @@ import android.content.Context;
 
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.config.db.ReaperConfigDB;
-import com.fighter.reaper.BumpVersion;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -75,7 +75,22 @@ public class ReaperConfigFetcher {
                                 String salt, String appKey, String appId) {
 
         String baseUrl = ReaperConfig.TEST_MODE ? ReaperConfig.TEST_URL_HTTPS : ReaperConfig.URL_HTTPS;
-        String sdkVersion = ReaperConfig.TEST_MODE ? ReaperConfig.TEST_SDK_VERSION : BumpVersion.value();
+        String sdkVersion = "";
+        if(ReaperConfig.TEST_MODE) {
+            sdkVersion = ReaperConfig.TEST_SDK_VERSION;
+        } else {
+            try {
+                Class<?> versionClass = Class.forName("com.fighter.loader.Version");
+                Field version = versionClass.getDeclaredField("VERSION");
+                version.setAccessible(true);
+                sdkVersion = (String) version.get(versionClass.newInstance());
+            } catch (ClassNotFoundException
+                    | IllegalAccessException
+                    | InstantiationException
+                    | NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+        }
         String url = baseUrl +
                 "?" + ReaperConfig.KEY_URL_PARAM_SDK_VERSION + "=" + sdkVersion +
                 "&" + ReaperConfig.KEY_URL_PARAM_ID + "=" + appId;
