@@ -22,8 +22,15 @@
 
 > 集成reaper.aar
 
-- 在集成模块中修改build.gradle，添加依赖
-
+- 将aar文件放入引用 Module 的 libs 目录下，和一般的 jar 文件类似。在集成模块中修改build.gradle，把 libs 目录加入依赖
+```xml
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+```
+添加aar依赖
 ```xml
 dependencies {
     compile (name: 'reaper', ext: 'aar')
