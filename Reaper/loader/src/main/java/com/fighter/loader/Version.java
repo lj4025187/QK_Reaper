@@ -1,15 +1,13 @@
 package com.fighter.loader;
 
-import com.qiku.proguard.annotations.NoProguard;
-
 /**
+ * Param for fetching the .rr file version
+ *
  * Created by Matti on 2017/5/19.
  */
 
-@NoProguard
 public class Version {
 
-    @NoProguard
     public static String VERSION = "1.0.0";
 
 }

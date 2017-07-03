@@ -23,10 +23,10 @@ public final class ReaperConfig {
      */
     public static final String TEST_URL_HTTP = "http://t.adv.os.qiku.com/new_cfg";
     public static final String TEST_URL_HTTPS = "https://t.adv.os.qiku.com/new_cfg";
-    public static final String TEST_SDK_VERSION = "1.0.0";
+    public static final String TEST_SDK_VERSION = "1.0.0-beta";
 
     public static final String TEST_APPKEY = "123";
-    public static final String TEST_SALT = "cf447fe3adac00476ee9244fd30fba74";
+    public static final String TEST_SALT = "e69470b7c6cbe1909bc8a3e19cdaab11";
     public static final String TEST_APPID = "100025";
 
     /**
