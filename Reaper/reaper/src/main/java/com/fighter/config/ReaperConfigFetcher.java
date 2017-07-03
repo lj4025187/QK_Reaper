@@ -80,7 +80,7 @@ public class ReaperConfigFetcher {
             sdkVersion = ReaperConfig.TEST_SDK_VERSION;
         } else {
             try {
-                Class<?> versionClass = Class.forName("com.fighter.loader.Version");
+                Class<?> versionClass = Class.forName("com.fighter.loader.Version", true, context.getClassLoader());
                 Field version = versionClass.getDeclaredField("VERSION");
                 version.setAccessible(true);
                 sdkVersion = (String) version.get(versionClass.newInstance());
