@@ -39,7 +39,7 @@ dependencies {
 > 
 > 测试环境配置中心地址：http://test.partner.360os.com/html/entrance/allApplications.html
 > 
-> 量产模式下，testMode设置为true，从正式环境拉去广告位配置信息，调试日志将不会输出。
+> 量产模式下，testMode设置为true，从正式环境拉取广告位配置信息，调试日志将不会输出。
 > 
 > 正式环境配置中心地址：http://partner.360os.com/html/entrance/allApplications.html
 > 

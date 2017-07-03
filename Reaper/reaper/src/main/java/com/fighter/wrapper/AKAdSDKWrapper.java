@@ -23,6 +23,7 @@ import com.fighter.ad.SdkName;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
 import com.fighter.download.ReaperEnv;
+import com.qiku.proguard.BuildConfig;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -84,7 +85,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         mContext = ReaperEnv.sContextProxy;
         mDownloadMap = new LruCache<>(200);
         //if second param set true should see "AKAD" tag
-        AKAD.initSdk(mContext, false, false);
+        AKAD.initSdk(mContext, BuildConfig.DEBUG, BuildConfig.DEBUG);
         AKAD.setApkListener(mContext, new ApkDownloadListener());
     }
 
