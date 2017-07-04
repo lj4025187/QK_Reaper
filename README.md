@@ -52,6 +52,7 @@ public class BumpVersion {
     public static final int REVISION = 0;
     public static final String SUFFIX = "-beta";
 
+	//value返回值用来对比是否需要升级rr文件。
     @NoProguard
     public static String value() {
         String v = "" + RELEASE + "." + SECOND + "." + REVISION;
@@ -68,18 +69,22 @@ public class BumpVersion {
     }
 }
 ```
-value值用来对比是否升级rr文件。
 
 ```java
 public final class ReaperConfig {
-	
+	//该值从Reaper.init方法中传入，若为true，从测试环境取配置信息，且聚效需要配置为测试广告位；
+    //若为false，从正式环境取配置信息，且聚效广告位需要配置为正式广告位。
     public static boolean TEST_MODE = false;
-    
+    //广告配置中心测试环境对应1.0.0-beta版本的密钥
     public static final String TEST_SALT = "e69470b7c6cbe1909bc8a3e19cdaab11";
-    
+    //广告配置中心正式环境对应1.0.0版本的密钥
     public static final String RELEASE_SALT = "cf447fe3adac00476ee9";
 }
 ```
-
-
-
+### 对应关系如下
+reaper.arr|reaper-debug.rr|reaper-release.rr|salt|备注
+---|---|---|---|---
+1.0.0|1.0.0-beta||e69470b7c6cbe1909bc8a3e19cdaab11|使用中
+1.0.0|1.0.0||cf447fe3adac00476ee9244fd30fba74|已弃用
+1.0.0||1.0.0|cf447fe3adac00476ee9|发版中
+注：rr文件升级版本，需在广告配置中心重新添加版本，并生成对应的salt。
