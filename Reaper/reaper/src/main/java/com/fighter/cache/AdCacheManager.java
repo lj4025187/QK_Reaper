@@ -546,7 +546,7 @@ public class AdCacheManager implements DownloadCallback{
             // 2. update ad wrapper.
             updateWrapper(mContext, mCacheId);
 
-            if (!success) {
+            if (!success && !needHoldAd) {
                 return "update config failed";
             }
             mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
