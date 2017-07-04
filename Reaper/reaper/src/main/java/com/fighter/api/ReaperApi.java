@@ -140,14 +140,20 @@ public class ReaperApi {
         }
 
         if (!mIsInitSucceed.get()) {
-            mAdCacheManager.onRequestAdError(adRequestCallback,
-                    "ReaperApi not initialized, please call init() first");
+            while(adCount > 0) {
+                mAdCacheManager.onRequestAdError(adRequestCallback,
+                        "ReaperApi not initialized, please call init() first");
+                adCount --;
+            }
             return;
         }
 
         if (TextUtils.isEmpty(adPositionId)) {
-            mAdCacheManager.onRequestAdError(adRequestCallback,
-                    "Can not request ad with empty position id");
+            while (adCount > 0) {
+                mAdCacheManager.onRequestAdError(adRequestCallback,
+                        "Can not request ad with empty position id");
+                adCount --;
+            }
             return;
         }
         mAdCacheManager.requestAdCache(adCount, adPositionId, adRequestCallback);

@@ -226,15 +226,39 @@ public class AdCacheManager implements DownloadCallback{
     private PriorityTaskDaemon.TaskNotify mUpdateConfigNotify = new PriorityTaskDaemon.TaskNotify() {
         @Override
         public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
+            int requestNum = 0;
+            if (task instanceof UpdateConfigTask) {
+                requestNum = ((UpdateConfigTask) task).getRequestNum();
+            }
             if (result instanceof Boolean) {
-                if (!(boolean)result && !needHoldAd)
-                    onRequestAdError(mCallBack, "update config failed");
+                if (!(boolean)result && !needHoldAd) {
+                    while (requestNum > 0) {
+                        onRequestAdError(mCallBack, "update config failed");
+                        requestNum --;
+                    }
+                }
             }
         }
     };
+    private class UpdateConfigTask extends PriorityTaskDaemon.NotifyPriorityTask {
+        private int mRequestNum;
 
-    private PriorityTaskDaemon.NotifyPriorityTask mUpdateConfigTask = new PriorityTaskDaemon.NotifyPriorityTask(
-            PriorityTaskDaemon.PriorityTask.PRI_FIRST, mUpdateConfigRunner, mUpdateConfigNotify);
+        public int getRequestNum() {
+            return mRequestNum;
+        }
+
+        public void setRequestNum(int requestNum) {
+            this.mRequestNum = requestNum;
+        }
+
+        public UpdateConfigTask(int priority, PriorityTaskDaemon.TaskRunnable runnable, PriorityTaskDaemon.TaskNotify notify) {
+            super(priority, runnable, notify);
+        }
+    }
+    private UpdateConfigTask mUpdateConfigTask = new UpdateConfigTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
+            mUpdateConfigRunner, mUpdateConfigNotify);
+//    private PriorityTaskDaemon.NotifyPriorityTask mUpdateConfigTask = new PriorityTaskDaemon.NotifyPriorityTask(
+//            PriorityTaskDaemon.PriorityTask.PRI_FIRST, mUpdateConfigRunner, mUpdateConfigNotify);
     /****************************************************update config Task start**************************************************************************/
     /****************************************************AdRequestWrapper Task start**************************************************************************/
     /**
@@ -475,6 +499,14 @@ public class AdCacheManager implements DownloadCallback{
     private class AdRequestTask extends PriorityTaskDaemon.NotifyPriorityTask {
         private String mPosId;
         private Object mCallBack;
+        private int mRequestNum;
+
+        public void setRequestNum(int requestNum) {
+            this.mRequestNum = requestNum;
+        }
+        public int getRequestNum() {
+           return this.mRequestNum;
+        }
 
         public Object getCallBack() {
             return mCallBack;
@@ -509,6 +541,14 @@ public class AdCacheManager implements DownloadCallback{
 
         @Override
         public Object doSomething() {
+            // 1.fetch update config.
+            boolean success = updateConfig();
+            // 2. update ad wrapper.
+            updateWrapper(mContext, mCacheId);
+
+            if (!success) {
+                return "update config failed";
+            }
             mReaperAdvPos = ReaperConfigManager.getReaperAdvPos(mContext, mPosId);
             int adSenseSize = 0;
             IAdRequestPolicy policy = AdRequestPolicyManager.getAdRequestPolicy(mContext, mPosId);
@@ -579,14 +619,19 @@ public class AdCacheManager implements DownloadCallback{
         @Override
         public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
             Object callBack = null;
+            int adRequestNum = 0;
             if (task instanceof AdRequestTask) {
                 callBack = ((AdRequestTask) task).getCallBack();
+                adRequestNum = ((AdRequestTask) task).getRequestNum();
             }
             if (result != null) {
                 if (result instanceof AdInfo) {
                     onRequestAdSucceed(callBack, (AdInfo) result);
                 } else if (result instanceof String) {
-                    onRequestAdError(callBack, (String)result);
+                    while (adRequestNum > 0) {
+                        onRequestAdError(callBack, (String) result);
+                        adRequestNum --;
+                    }
                 }
             }
         }
@@ -632,7 +677,8 @@ public class AdCacheManager implements DownloadCallback{
      * update config from server
      *
      */
-    private void postUpdateConfigTask() {
+    private void postUpdateConfigTask(int adRequestNum) {
+        mUpdateConfigTask.setRequestNum(adRequestNum);
         mWorkThread.postTaskInFront(mUpdateConfigTask);
     }
 
@@ -722,12 +768,12 @@ public class AdCacheManager implements DownloadCallback{
     /**
      * request the ad cache to get the Ad information.
      */
-    public void requestAdCache(int adCount, String cacheId, Object callBack) {
+    public void requestAdCache(int adRequestNum, String cacheId, Object callBack) {
         mCacheId = cacheId;
         mCallBack = callBack;
-        postUpdateConfigTask();
-        int count = adCount > MAX_REQUEST_AD_COUNT ? MAX_REQUEST_AD_COUNT : adCount;
-        postAdRequestTask(mCacheId, mCallBack, count);
+        int requestNum = adRequestNum > MAX_REQUEST_AD_COUNT ? MAX_REQUEST_AD_COUNT : adRequestNum;
+//        postUpdateConfigTask(requestNum);
+        postAdRequestTask(mCacheId, mCallBack, requestNum);
     }
 
     /**
@@ -1582,6 +1628,7 @@ public class AdCacheManager implements DownloadCallback{
         AdRequestNotify notify = new AdRequestNotify();
         AdRequestTask task = new AdRequestTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
                 runner, notify, posId, callBack);
+        task.setRequestNum(requestNum);
         mWorkThread.postTaskInFront(task);
     }
 
@@ -1670,7 +1717,7 @@ public class AdCacheManager implements DownloadCallback{
     private void updateWrapper(Context context, String posId) {
         if (posId == null) return;
         List<ReaperAdSense> reaperAdSenses = ReaperConfigManager.getReaperAdSenses(context, posId);
-        if (reaperAdSenses == null) return;
+        if (reaperAdSenses == null || reaperAdSenses.size() == 0) return;
         if (mSdkWrapperSupport == null)
             mSdkWrapperSupport = new HashMap<>();
         if (mSdkWrapperAdTypeSupport == null)

@@ -3,6 +3,7 @@ package com.fighter.cache;
 import android.content.Context;
 
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfigManager;
 
@@ -22,7 +23,10 @@ public class AdRequestPolicyManager {
 
     public static IAdRequestPolicy getAdRequestPolicy(Context context, String posId) {
         ReaperAdvPos reaperAdvPos = ReaperConfigManager.getReaperAdvPos(context, posId);
-        if(reaperAdvPos == null) return null;
+        if(reaperAdvPos == null ) return null;
+        List<ReaperAdSense> adSenses = ReaperConfigManager.getReaperAdSenses(context, posId);
+        if (adSenses == null || adSenses.size() == 0)
+            return null;
         String exposure = reaperAdvPos.adv_exposure;
         String mode = getMode(exposure);
         if (mode == null)
