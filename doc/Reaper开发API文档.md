@@ -17,6 +17,7 @@
 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_UPDATES" />
+<uses-permission android:name="android.permission.WRITE_SETTINGS" />
 ```
 - 应用程序无需修改AndroidManifest.xml（动态权限检测需开发者自行适配）
 
