@@ -1142,18 +1142,22 @@ public class AdCacheManager implements DownloadCallback{
         if (actionEvent == EVENT_VIEW_SUCCESS) {
             setCacheDisplayed(adInfo);
         }
-        //jump to webView and download app here
-        if (actionEvent == EVENT_CLICK && checkCoordinateValid(adInfo)) {
-            handleClickAction(adInfo);
-        }
         long adConstructTime = adInfo.getConstructTime();
         boolean adInfoAvailable = adInfo.getAdInfoAvailable();
         ReaperLog.i(TAG, " ad info " + adInfo.getUUID() + " is adInfoAvailable " + adInfoAvailable);
+        boolean hasExpired = System.currentTimeMillis()
+                - adConstructTime
+                > (adInfo.getExpireTime() * 1000);
+        //jump to webView and download app here
+        if (actionEvent == EVENT_CLICK && checkCoordinateValid(adInfo)) {
+            handleClickAction(adInfo);
+            //expired AdInfo click or down for jx
+            if(hasExpired) postTrackerTask(adInfo, actionEvent);
+        }
+
         if (!adInfoAvailable) return;
         //TODO 上报超时广告，需要打哪种点：展示失败or展示成功
-        if(System.currentTimeMillis()
-                - adConstructTime
-                > (adInfo.getExpireTime() * 1000)) {
+        if(hasExpired) {
             trackActionEvent(EVENT_VIEW_FAIL, adInfo, "timeout");
             return;
         }

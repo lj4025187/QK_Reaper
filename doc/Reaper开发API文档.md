@@ -277,6 +277,8 @@ public static final int CONTENT_TYPE_PICTURE_WITH_TEXT = 3;
  */
 public static final int CONTENT_TYPE_VIDEO = 4;
 ```
+> 注：视频类型广告涉及的视频播放、暂停、停止等界面及操作功能需集成人员自行处理。需要跳转至广告详情页时，调用onAdClicked方法即可。
+
 ```java
 //actionType 有如下两种类型，调用如下：
 int actionType = adInfo.getActionType();
