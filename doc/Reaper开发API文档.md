@@ -134,7 +134,7 @@ AdRequester adRequester =
 // 请求广告
 adRequester.requestAd(1/*请求广告的个数，最大个数为5*/);
 ```
-
+<font color="#ff0000">注：AdInfo广告存在超时时间，可以通过getExtra("expire_time")获取广告有效时间，请在有效时间内处理该广告的相关事件（展示、点击等）</font>
 > 展示/点击广告上报
 
 ```java
@@ -511,6 +511,7 @@ adPosId |String||超盟分配的广告位|jx / baidu / gdt
 adLocalAppId|String||对应广告商的真实AppId|jx / baidu / gdt
 adPosId |String||“超盟”分配广告位|jx / baidu / gdt 
 adLocalPosId|String||真实广告商分配广告位|jx / baidu / gdt
+expire_time|Long||广告有效时间|jx / baidu / gdt
 text    |String||扩展字段(副标题)|jx
 adName  |String|jx/gdt/baidu|对应的广告源|jx / baidu / gdt
 btnText |String||预留按钮文字|jx
