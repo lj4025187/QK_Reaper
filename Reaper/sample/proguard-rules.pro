@@ -23,3 +23,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-dontwarn okio.**
+-dontwarn org.bouncycastle.jce.provider.BouncyCastleProvider
+-keep class com.fighter.** { *; }
+#-keep class okhttp3.** { *; }
+#-keep class com.alibaba.** { *; }
+-keep class com.bumptech.glide.** { *; }

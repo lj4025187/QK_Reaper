@@ -517,3 +517,9 @@ adName  |String|jx/gdt/baidu|对应的广告源|jx / baidu / gdt
 btnText |String||预留按钮文字|jx
 download_app_pkg|String||下载app包名|jx / baidu
 download_app_name|String||下载应用名称|jx / baidu / gdt
+### 混淆问题
+如果您需要使用proguard混淆代码，需确保不要混淆SDK的代码，请在集成模块的proguard-rules.pro文件尾部添加如下配置：
+> ```xml
+-dontwarn org.bouncycastle.jce.provider.BouncyCastleProvider
+-keep class com.fighter.** { *; }
+```
