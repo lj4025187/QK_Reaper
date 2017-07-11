@@ -33,4 +33,5 @@
 -keep class okhttp3.** { *; }
 -keep class com.alibaba.** { *; }
 -keep class com.ak.android.** { *; }
+-keep class android.support.v4.app.NotificationCompat**{ public *; }
 -keep class com.fighter.config.** {*; }

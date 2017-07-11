@@ -16,6 +16,7 @@ import com.ak.android.engine.navvideo.NativeVideoAd;
 import com.ak.android.engine.navvideo.NativeVideoAdLoaderListener;
 import com.ak.android.shell.AKAD;
 import com.alibaba.fastjson.JSONObject;
+import com.fighter.ContextProxy;
 import com.fighter.ad.AdEvent;
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
@@ -82,6 +83,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
         ReaperLog.i(TAG, "[init]");
+        ReaperEnv.sContextProxy = new ContextProxy(appContext);
         mContext = ReaperEnv.sContextProxy;
         mDownloadMap = new LruCache<>(200);
         //if second param set true should see "AKAD" tag
