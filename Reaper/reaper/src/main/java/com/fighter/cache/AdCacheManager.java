@@ -371,8 +371,10 @@ public class AdCacheManager implements DownloadCallback{
             if(mAdResponse == null || mReaperAdvPos == null) return null;
             if (mAdResponse.isSucceed()) {
                 return mAdResponse.getAdInfo();
-            } else
+            } else {
+                ReaperLog.e(TAG, "ad response failed: " + mAdResponse.toString());
                 return false;
+            }
         }
     }
 
@@ -407,6 +409,7 @@ public class AdCacheManager implements DownloadCallback{
                     adInfo = adResponse.getAdInfo();
                     ReaperLog.i(TAG, "wrapper runner adInfo: " + adInfo.getUUID() + ", hash: " + adInfo.hashCode());
                 } else {
+                    ReaperLog.e(TAG, "ad response failed: " + adResponse.toString());
                     return false;
                 }
             }
@@ -475,7 +478,7 @@ public class AdCacheManager implements DownloadCallback{
                                     if (adInfo != null)
                                         onRequestAdSucceed(callBack, adInfo);
                                     else
-                                        onRequestAdError(callBack, "no hold ad.");
+                                        onRequestAdError(callBack, "try all ads not get ad and no hold ad.");
                                 } else {
                                     onRequestAdError(callBack, "try all ads not get ad.");
                                 }

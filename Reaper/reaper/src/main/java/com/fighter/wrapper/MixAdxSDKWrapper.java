@@ -166,6 +166,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                 } else {
                     JSONObject errJson = new JSONObject();
                     errJson.put("httpResponseCode", response.code());
+                    ReaperLog.e(TAG, "ad request failed, errCode: " + response.code() + ", errMsg: " + errJson.toString());
                     return new AdResponse.Builder().errMsg(errJson.toJSONString()).create();
                 }
             }

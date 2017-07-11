@@ -279,7 +279,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                             errJson.put("httpResponseCode", 0);
                             errJson.put("akAdErrCode", errCode);
                             errJson.put("akAdErrMsg", errMsg);
-
+                            ReaperLog.e(TAG, "adRequest failed, errCode: " + errCode + ", errMsg: " + errMsg);
                             AdResponse adResponse = new AdResponse.Builder()
                                     .errMsg(errJson.toJSONString())
                                     .create();
