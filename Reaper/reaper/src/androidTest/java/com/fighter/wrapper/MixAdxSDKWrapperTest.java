@@ -24,8 +24,8 @@ public class MixAdxSDKWrapperTest {
                 .adExpireTime(30 * 60 * 1000)
                 .adLocalAppId("0")
                 .adLocalPositionId("128")
-                .adType(AdType.TYPE_PLUG_IN) //false
-//                .adType(AdType.TYPE_BANNER) //ok
+//                .adType(AdType.TYPE_PLUG_IN) //false
+                .adType(AdType.TYPE_BANNER) //ok
 //                .adType(AdType.TYPE_FULL_SCREEN) //ok
 //                .adType(AdType.TYPE_FEED) //Can not find match mix adx ad type with ad type feed_adv
 //                .adType(AdType.TYPE_VIDEO) //Can not find match mix adx ad type with ad type video_adv

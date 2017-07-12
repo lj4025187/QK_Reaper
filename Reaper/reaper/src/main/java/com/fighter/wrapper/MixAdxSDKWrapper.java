@@ -327,6 +327,9 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
         if (!TextUtils.isEmpty(appName)) {
             result.put("app_name", appName);                                  // app 名称
         }
+        String m1 = Device.getM1(mContext);                                   // imei
+        if (TextUtils.isEmpty(m1)) m1 = "";
+        result.put("imei", m1);
         result.put("androidid", Device.getAndroidID(mContext));               // android id
         result.put("mac", Device.getMac(mContext));                           // mac
         result.put("cell_id", String.valueOf(Device.getCellId(mContext)));    // 基站编号
