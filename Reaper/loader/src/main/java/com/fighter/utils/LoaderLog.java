@@ -8,9 +8,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class LoaderLog {
 
@@ -19,22 +22,19 @@ public class LoaderLog {
     private static final String LOCAL_LOG_DIR = LOCAL_DIR + "/logs";
     private static final boolean DEBUG_LOG = true;
     private static final boolean RECORD_LOG = true;
-    private static long sStartTime = 0;
+    private static final int FILES_LENGTH = 5;
+    private static ExecutorService mExecutor;
 
     public static void i(String msg) {
         if (!DEBUG_LOG)
             return;
         Log.i(TAG, msg);
-        if (RECORD_LOG)
-            writeLocalLog("I ", msg);
     }
 
     public static void i(String subTag, String msg) {
         if (!DEBUG_LOG)
             return;
         Log.i(TAG, "[" + subTag + "] ==> " + msg);
-        if (RECORD_LOG)
-            writeLocalLog("I ", msg);
     }
 
     public static void e(String msg) {
@@ -50,36 +50,7 @@ public class LoaderLog {
             return;
         Log.e(TAG, "[" + subTag + "] ==> " + msg);
         if (RECORD_LOG)
-            writeLocalLog("E ", msg);
-    }
-
-    //for print list
-    public static <T> void printList(List<T> list) {
-        if (!DEBUG_LOG)
-            return;
-        if (list == null) return;
-        for (T t : list) {
-            e(TAG, "from list : " + t);
-        }
-    }
-
-    public static void startTime(String msg) {
-        if (!DEBUG_LOG)
-            return;
-        sStartTime = System.currentTimeMillis();
-        String message = "start count time : " + msg;
-        e(message);
-        if (RECORD_LOG)
-            writeLocalLog("TIME START : ", message);
-    }
-
-    public static void endTime(String msg) {
-        if (!DEBUG_LOG)
-            return;
-        String message = msg + " used time : " + (System.currentTimeMillis() - sStartTime);
-        e(message);
-        if (RECORD_LOG)
-            writeLocalLog("TIME END : ", message);
+            writeLocalLog("E ", "[" + subTag + "] ==> " + msg);
     }
 
     private static String getCurrentDate() {
@@ -88,24 +59,77 @@ public class LoaderLog {
         return formatter.format(curDate);
     }
 
-    private static void writeLocalLog(String type, String msg) {
-        String currentDate = getCurrentDate();
+    private static void writeLocalLog(final String type, final String msg) {
 
-        File file = new File(LOCAL_LOG_DIR + File.separator + "LoaderLog-" + currentDate + ".txt");
-        if(!file.exists()) {
-            if(createLocalLogFile(file.toString())) {
-                writeLocalLog(file, type, msg);
+        if (mExecutor == null) {
+            mExecutor = Executors.newSingleThreadExecutor();
+        }
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                String currentDate = getCurrentDate();
+                File file = new File(LOCAL_LOG_DIR + File.separator + "ReaperLog-" + currentDate + ".txt");
+                if (!file.exists()) {
+                    if (createLocalLogFile(file.toString())) {
+                        writeLocalLog(file, type, msg);
+                    }
+                } else {
+                    writeLocalLog(file, type, msg);
+                }
+            }
+        });
+    }
+
+    private static boolean createLocalLogFile(String path) {
+        boolean ret = createLocalLogDir();
+        if (!ret) return false;
+        deleteOldestFile(new File(LOCAL_LOG_DIR));
+        File file = new File(path);
+        if (!file.exists()) {
+            try {
+                ret = file.createNewFile();
+            } catch (IOException e) {
+                ret = false;
+                e.printStackTrace();
             }
         } else {
-            writeLocalLog(file, type, msg);
+            ret = true;
         }
+        return ret;
+    }
 
+    private static boolean createLocalLogDir() {
+        boolean ret;
+        File local = new File(LOCAL_DIR);
+        ret = local.exists() || local.mkdir();
+        if (!ret)
+            return false;
+        File dir = new File(LOCAL_LOG_DIR);
+        ret = dir.exists() || dir.mkdir();
+        return ret;
+    }
+
+    private static synchronized void deleteOldestFile(File directory) {
+        if (!directory.exists() || !directory.isDirectory()) return;
+        File[] files = directory.listFiles();
+        if (files == null) return;
+        int length = files.length;
+        if (length < FILES_LENGTH) return;
+        Arrays.sort(files, new Comparator<File>() {
+            @Override
+            public int compare(File f1, File f2) {
+                return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+            }
+        });
+        for (int i = 0; i < length - FILES_LENGTH + 1; i++) {
+            boolean delete = files[i].delete();
+        }
     }
 
     private static void writeLocalLog(File file, String type, String msg) {
         BufferedWriter bufferedWriter;
         try {
-            bufferedWriter = new BufferedWriter(new FileWriter(file, true), type.length()+msg.length()+1);
+            bufferedWriter = new BufferedWriter(new FileWriter(file, true), type.length() + msg.length() + 1);
             bufferedWriter.write(type);
             bufferedWriter.write(msg);
             bufferedWriter.write('\n');
@@ -114,30 +138,5 @@ public class LoaderLog {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private static boolean createLocalLogFile(String path) {
-        boolean ret = true;
-        File local = new File(LOCAL_DIR);
-        if(!local.exists()) {
-            ret = local.mkdir();
-        }
-        if(!ret)
-            return false;
-        File dir = new File(LOCAL_LOG_DIR);
-        if(!dir.exists())
-            ret = dir.mkdir();
-        if(!ret) {
-            return false;
-        }
-        File file = new File(path);
-        if(!file.exists()) {
-            try {
-                ret = file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return ret;
     }
 }
