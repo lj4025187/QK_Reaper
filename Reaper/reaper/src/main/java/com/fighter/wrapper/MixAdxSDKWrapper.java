@@ -328,10 +328,10 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
             result.put("app_name", appName);                                  // app 名称
         }
         String m1 = Device.getM1(mContext);                                   // imei
-        if (TextUtils.isEmpty(m1)) m1 = "";
+        if (TextUtils.isEmpty(m1)) m1 = "353490069872915";
         result.put("imei", m1);
         result.put("androidid", Device.getAndroidID(mContext));               // android id
-        result.put("mac", Device.getMac(mContext));                           // mac
+        result.put("mac", Device.getMacStable(mContext));                     // mac
         result.put("cell_id", String.valueOf(Device.getCellId(mContext)));    // 基站编号
         result.put("is_mobile_device", true);                                 // 是否是移动设备
         result.put("have_wifi",

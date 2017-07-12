@@ -25,7 +25,7 @@ public class ReaperLog {
     private static final boolean RECORD_LOG = true;
     private static final int FILES_LENGTH = 5;
     private static long sStartTime = 0;
-    private static ExecutorService mExecutor;
+    private static ExecutorService sExecutor;
 
     public static void i(String msg) {
         if (!ReaperConfig.TEST_MODE)
@@ -59,10 +59,10 @@ public class ReaperLog {
 
     private static void writeLocalLog(final String type, final String msg) {
 
-        if (mExecutor == null) {
-            mExecutor = Executors.newSingleThreadExecutor();
+        if (sExecutor == null) {
+            sExecutor = Executors.newSingleThreadExecutor();
         }
-        mExecutor.execute(new Runnable() {
+        sExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 String currentDate = getCurrentDate();

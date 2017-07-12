@@ -24,15 +24,9 @@ public final class ReaperConfig {
     public static final String TEST_URL_HTTP = "http://t.adv.os.qiku.com/new_cfg";
     public static final String TEST_URL_HTTPS = "https://t.adv.os.qiku.com/new_cfg";
 
-    /*------------------------------1.0.0-beta----------------------------------------*/
-//    public static final String TEST_SDK_VERSION = "1.0.0-beta";
-//    public static final String TEST_SALT = "e69470b7c6cbe1909bc8a3e19cdaab11";
-    public static final String TEST_APPID = "100025";
-    public static final String TEST_APPKEY = "123";
-
-    /*------------------------------1.0.1-beta----------------------------------------*/
-    public static final String TEST_SDK_VERSION = "1.0.1-beta";
-    public static final String TEST_SALT = "9b4d15ad22bc748da30c533accd867e2";
+    /*------------------------------1.0.2-beta----------------------------------------*/
+    public static final String TEST_SDK_VERSION = "1.0.2-beta";
+    public static final String TEST_SALT = "df37807c41453a87e783def20172c21a";
 
     /**
      * For release

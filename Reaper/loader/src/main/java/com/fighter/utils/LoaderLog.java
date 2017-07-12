@@ -23,7 +23,7 @@ public class LoaderLog {
     private static final boolean DEBUG_LOG = true;
     private static final boolean RECORD_LOG = true;
     private static final int FILES_LENGTH = 5;
-    private static ExecutorService mExecutor;
+    private static ExecutorService sExecutor;
 
     public static void i(String msg) {
         if (!DEBUG_LOG)
@@ -61,10 +61,10 @@ public class LoaderLog {
 
     private static void writeLocalLog(final String type, final String msg) {
 
-        if (mExecutor == null) {
-            mExecutor = Executors.newSingleThreadExecutor();
+        if (sExecutor == null) {
+            sExecutor = Executors.newSingleThreadExecutor();
         }
-        mExecutor.execute(new Runnable() {
+        sExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 String currentDate = getCurrentDate();
