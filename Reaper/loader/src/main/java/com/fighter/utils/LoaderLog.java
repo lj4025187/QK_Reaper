@@ -24,6 +24,7 @@ public class LoaderLog {
     private static final boolean RECORD_LOG = true;
     private static final int FILES_LENGTH = 5;
     private static ExecutorService sExecutor;
+    private static SimpleDateFormat sMillionsFormat, sCurrentFormat;
 
     public static void i(String msg) {
         if (!DEBUG_LOG)
@@ -41,8 +42,9 @@ public class LoaderLog {
         if (!DEBUG_LOG)
             return;
         Log.e(TAG, msg);
-        if (RECORD_LOG)
-            writeLocalLog("E ", msg);
+        if (RECORD_LOG) {
+            writeLocalLog(getCurrentMillions()+" : E ", msg);
+        }
     }
 
     public static void e(String subTag, String msg) {
@@ -50,13 +52,21 @@ public class LoaderLog {
             return;
         Log.e(TAG, "[" + subTag + "] ==> " + msg);
         if (RECORD_LOG)
-            writeLocalLog("E ", "[" + subTag + "] ==> " + msg);
+            writeLocalLog(getCurrentMillions()+" : E ", "[" + subTag + "] ==> " + msg);
+    }
+
+    private static String getCurrentMillions() {
+        if(sMillionsFormat == null)
+            sMillionsFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:", Locale.getDefault());
+        Date curMillion = new Date(System.currentTimeMillis());//获取当前时间
+        return sMillionsFormat.format(curMillion);
     }
 
     private static String getCurrentDate() {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy_MM_dd", Locale.getDefault());
+        if(sCurrentFormat == null)
+            sCurrentFormat = new SimpleDateFormat("yyyy_MM_dd", Locale.getDefault());
         Date curDate = new Date(System.currentTimeMillis());//获取当前时间
-        return formatter.format(curDate);
+        return sCurrentFormat.format(curDate);
     }
 
     private static void writeLocalLog(final String type, final String msg) {
