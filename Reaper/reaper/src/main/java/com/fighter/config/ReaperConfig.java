@@ -33,10 +33,10 @@ public final class ReaperConfig {
     /**
      * For release
      */
-    /*------------------------------1.0.0----------------------------------------*/
+    /*------------------------------1.0.2----------------------------------------*/
     public final static String RELEASE_APP_KEY = "ffaebf62bfb5f52d4f9008f130630232";
     public final static String RELEASE_APP_ID = "100000";
-    public static final String RELEASE_SALT = "cf447fe3adac00476ee9";
+    public static final String RELEASE_SALT = "1bcb28471c204dfbc3da";
 
 
     /**

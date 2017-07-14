@@ -67,7 +67,7 @@ public class TrackerStatAgent {
         //设置分发渠道，如手机助手；或者可以填写你们分给App的Id之类的，用以区分这些数据是由谁带来的
         QHStatAgent.setChannel(context, "");
         QHStatAgent.onError(context);
-        QHStatAgent.setLoggingEnabled(BuildConfig.DEBUG);
+        QHStatAgent.setLoggingEnabled(true);
     }
 
     /**
