@@ -26,17 +26,17 @@ public final class ReaperConfig {
     public static final String TEST_APPID = "100025";
     public static final String TEST_APPKEY = "123";
 
-    /*------------------------------1.0.2-beta----------------------------------------*/
-    public static final String TEST_SDK_VERSION = "1.0.2-beta";
-    public static final String TEST_SALT = "df37807c41453a87e783def20172c21a";
+    /*------------------------------1.0.3-beta----------------------------------------*/
+    public static final String TEST_SDK_VERSION = "1.0.3-beta";
+    public static final String TEST_SALT = "0ce09a622f6217dd9ce41efcbb905284";
 
     /**
      * For release
      */
-    /*------------------------------1.0.2----------------------------------------*/
+    /*------------------------------1.0.3----------------------------------------*/
     public final static String RELEASE_APP_KEY = "ffaebf62bfb5f52d4f9008f130630232";
     public final static String RELEASE_APP_ID = "100000";
-    public static final String RELEASE_SALT = "1bcb28471c204dfbc3da";
+    public static final String RELEASE_SALT = "4f765071e09b3a5e66cc";
 
 
     /**
