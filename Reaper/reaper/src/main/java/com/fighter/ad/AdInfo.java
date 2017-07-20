@@ -58,7 +58,7 @@ public class AdInfo {
 
     private static final String CACHE_KEY = "_CACHE_KEY_";
 
-    // ----------------------------------------------------
+    /**---------------------以下KEY开头的final String不能修改值，loader需要反射获取-------------------------------**/
 
     /**
      * 广告唯一标志 uuid生成
@@ -174,6 +174,7 @@ public class AdInfo {
      * AdInfo 对应的CacheInfo
      */
     private static final String KEY_CACHE_START_TIME = "adCacheStartTime";
+    /**---------------------以上KEY开头的final String不能修改值，loader需要反射获取-------------------------------**/
 
     private Map<String, Object> mAdParams;
 
