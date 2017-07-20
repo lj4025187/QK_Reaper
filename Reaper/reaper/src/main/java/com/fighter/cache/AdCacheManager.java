@@ -107,9 +107,9 @@ public class AdCacheManager implements DownloadCallback{
     private Map<String, Method> mMethodCall;
 
     private ThreadPoolUtils mThreadPoolUtils = new ThreadPoolUtils(ThreadPoolUtils.SingleThread, 1);
-    private LongSparseArray<AdInfo> mDownloadApps;
-    private Map<String, Long> mInstallApps;
-    private Map<String, AdInfo> mInstallAds;
+    private LongSparseArray<AdInfo> mDownloadApps;//以DownloadManager返回的id为key，存放下载的应用对应的AdInfo
+    private Map<String, Long> mInstallApps;//以包名为key，存放应用下载完成的时间点，判断是否需要（安装完成、激活）打点
+    private Map<String, AdInfo> mInstallAds;//以包名为key，存放下载的应用对应AdInfo，用来跟踪（安装完成、激活）打点
     private ReaperAdvPos mReaperAdvPos;
 
     /**************************************************Init cache task start*****************************************************************/

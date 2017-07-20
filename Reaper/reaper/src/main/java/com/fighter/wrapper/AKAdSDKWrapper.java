@@ -82,11 +82,11 @@ public class AKAdSDKWrapper extends ISDKWrapper {
 
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
-        ReaperLog.i(TAG, "[init]");
         ReaperEnv.sContextProxy = new ContextProxy(appContext);
         mContext = ReaperEnv.sContextProxy;
         mDownloadMap = new LruCache<>(200);
         //if second param set true should see "AKAD" tag
+        ReaperLog.i(TAG, "[init] in AKAd " + mContext.getPackageName());
         AKAD.initSdk(mContext, ReaperConfig.TEST_MODE, ReaperConfig.TEST_MODE);
         AKAD.setApkListener(mContext, new ApkDownloadListener());
     }

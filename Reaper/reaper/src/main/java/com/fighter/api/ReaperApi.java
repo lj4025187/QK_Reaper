@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @KeepAll
 public class ReaperApi {
-    private static final String TAG = ReaperApi.class.getSimpleName();
+    private static final String TAG = "reaper.ReaperApi";
 
     private Context mContext;
     private String mAppId;
@@ -75,6 +75,9 @@ public class ReaperApi {
         }
 
         mContext = (Context) params.get("appContext");
+        String packageName = mContext.getPackageName();
+        ReaperLog.e(TAG, "init in reaper " + packageName);
+
         mAppId = (String) params.get("appId");
         mAppKey = (String) params.get("appKey");
         isTestMode = (boolean)params.get("testMode");
@@ -101,7 +104,6 @@ public class ReaperApi {
             ReaperLog.e(TAG, "[init] app key is null");
             return;
         }
-        
         ReaperActivityThreadHook.wrapInstrumentation();
         mAdCacheManager = AdCacheManager.getInstance();
         mAdCacheManager.init(mContext, mAppId, mAppKey);
