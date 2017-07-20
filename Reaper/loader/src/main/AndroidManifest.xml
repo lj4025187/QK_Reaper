@@ -55,10 +55,10 @@
             </intent-filter>
         </receiver>
         <provider
-            android:authorities="com.reaper.provider.ReaperProvider"
+            android:authorities="${applicationId}.reaper.provider.ReaperProvider"
             android:name="com.fighter.loader.ReaperProvider"/>
         <provider
-            android:authorities="com.reaper.provider.ReaperProxyProvider"
+            android:authorities="${applicationId}.reaper.provider.ReaperProxyProvider"
             android:name="com.fighter.loader.ReaperProxyProvider"/>
     </application>
 </manifest>
