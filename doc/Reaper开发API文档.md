@@ -1,5 +1,5 @@
 # Reaper API开发文档
-`Version 1.0.0`
+`Version 1.0.1`
 `Created By wanghaiteng@360.cn`
 `Published by FighterTeam`
 `Android Studio`
@@ -513,7 +513,7 @@ adPosId |String||超盟分配的广告位|jx / baidu / gdt
 adLocalAppId|String||对应广告商的真实AppId|jx / baidu / gdt
 adPosId |String||“超盟”分配广告位|jx / baidu / gdt 
 adLocalPosId|String||真实广告商分配广告位|jx / baidu / gdt
-expire_time|Long||广告有效时间|jx / baidu / gdt
+expire_time|Long||广告有效时间(单位：秒)|jx / baidu / gdt
 text    |String||扩展字段(副标题)|jx
 adName  |String|jx/gdt/baidu|对应的广告源|jx / baidu / gdt
 btnText |String||预留按钮文字|jx
