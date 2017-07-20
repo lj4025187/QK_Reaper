@@ -154,12 +154,12 @@ public class AdInfo {
      * 广告目标APP的包名
      * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
      */
-    private static final String KEY_DOWN_PKG_NAME = "download_app_pkg";
+    private static final String KEY_DOWN_PKG_NAME = "appPackageName";
     /**
      * 广告目标APP的应用名称
      * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
      */
-    private static final String KEY_DOWN_APP_NAME = "download_app_name";
+    private static final String KEY_DOWN_APP_NAME = "appName";
     /**
      * 广告目标APP的应用名称
      * 仅在表现类型为{@link ActionType#APP_DOWNLOAD}时有效
