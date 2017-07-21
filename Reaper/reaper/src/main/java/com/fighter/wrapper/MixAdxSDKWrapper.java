@@ -103,7 +103,11 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
     static {
         TYPE_REF_MAP.put(AdType.TYPE_BANNER, 1);
         TYPE_REF_MAP.put(AdType.TYPE_PLUG_IN, 2);
+        TYPE_REF_MAP.put(AdType.TYPE_APP_WALL, 3);
         TYPE_REF_MAP.put(AdType.TYPE_FULL_SCREEN, 4);
+        TYPE_REF_MAP.put(AdType.TYPE_FEED, 5);
+        TYPE_REF_MAP.put(AdType.TYPE_NATIVE, 8);
+        TYPE_REF_MAP.put(AdType.TYPE_VIDEO, 9);
     }
 
     private Context mContext;
@@ -285,7 +289,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
 
         HashMap<String, String> params = new HashMap<>();
         params.put("pos", adRequest.getAdLocalPositionId());                              // 广告位ID
-        params.put("postp", String.valueOf(TYPE_REF_MAP.get(adRequest.getAdType())));// 广告位类型
+//        params.put("postp", String.valueOf(TYPE_REF_MAP.get(adRequest.getAdType())));     // 广告位类型
         params.put("posw", String.valueOf(adRequest.getAdWidth()));                             // 广告位宽
         params.put("posh", String.valueOf(adRequest.getAdHeight()));                            // 广告位高
 
