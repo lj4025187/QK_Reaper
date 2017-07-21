@@ -16,13 +16,25 @@ public class SampleConfig {
     public final static boolean LOCAL_CONFIG = false;
     //true : t.adv.os.qiku.com
     //false: comp.360os.com
-    public final static boolean TEST_MODE = false;
+    public final static boolean TEST_MODE = true;
 
-    public final static String TEST_APP_KEY = "123";
-    public final static String TEST_APP_ID = "100025";
+    //sample对应id和key
+    public final static String TEST_SAMPLE_APP_KEY = "123";
+    public final static String TEST_SAMPLE_APP_ID = "100025";
 
-    public final static String RELEASE_APP_KEY = "ffaebf62bfb5f52d4f9008f130630232";
-    public final static String RELEASE_APP_ID = "100000";
+    public final static String RELEASE_SAMPLE_APP_KEY = "ffaebf62bfb5f52d4f9008f130630232";
+    public final static String RELEASE_SAMPLE_APP_ID = "100000";
+
+    //模拟负一屏的广告位置
+    public final static boolean CARD_MANAGER_MODE = false;
+
+    //cardmanager
+    public final static String TEST_CARD_APP_KEY = "d078b24a9fe83fb7921000f1d942b8d4";
+    public final static String TEST_CARD_APP_ID = "100053";
+
+    //cardmanager
+    public final static String RELEASE_CARD_APP_KEY = "f3b9be6264f4cb950595f481536d1887";
+    public final static String RELEASE_CARD_APP_ID = "100001";
 
     public final static int REQUEST_COUNT_PER_TIME = 5;
 
@@ -39,7 +51,7 @@ public class SampleConfig {
 
     static {
 
-        if(LOCAL_CONFIG) {
+        if (LOCAL_CONFIG) {
             QIHOO_VIDEO_ADV = "5";  //Qihoo video
             QIHOO_ORIGINAL_ADV = "6"; //Qihoo original
             TENCENT_INSERT_ADV = "7";  //Tencent insert
@@ -50,28 +62,54 @@ public class SampleConfig {
             BAIDU_INSERT_ADV = "13";  //Baidu insert
             BAIDU_BANNER_ADV = "14";  //Baidu banner
             BAIDU_OPEN_ADV = "15";  //Baidu openapp
-        } else if(!SampleConfig.TEST_MODE){
-            QIHOO_VIDEO_ADV = "1010";  //Qihoo video
-            QIHOO_ORIGINAL_ADV = "1011"; //Qihoo original
-            TENCENT_INSERT_ADV = "1006";  //Tencent insert
-            TENCENT_BANNER_ADV = "1005";  //Tencent banner
-            TENCENT_OPEN_ADV = "1008";  //Tencent openapp
-            TENCENT_FEED_ADV = "1009";  //Tencent feed
-            TENCENT_ORIGINAL_ADV = "1004";  //Tencent original
-            BAIDU_INSERT_ADV = "1012";  //Baidu insert
-            BAIDU_BANNER_ADV = "1013";  //Baidu banner
-            BAIDU_OPEN_ADV = "1014";  //Baidu openapp
+        } else if (!SampleConfig.CARD_MANAGER_MODE) {
+            if (SampleConfig.TEST_MODE) {
+                QIHOO_VIDEO_ADV = "1045";  //Qihoo video
+                QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original
+                TENCENT_INSERT_ADV = "1040";  //Tencent insert
+                TENCENT_BANNER_ADV = "1041";  //Tencent banner
+                TENCENT_OPEN_ADV = "1042";  //Tencent openapp
+                TENCENT_FEED_ADV = "1043";  //Tencent feed
+                TENCENT_ORIGINAL_ADV = "1044";  //Tencent original
+                BAIDU_INSERT_ADV = "1048";  //Baidu insert
+                BAIDU_BANNER_ADV = "1049";  //Baidu banner
+                BAIDU_OPEN_ADV = "1050";  //Baidu openapp
+            } else {
+                QIHOO_VIDEO_ADV = "1010";  //Qihoo video
+                QIHOO_ORIGINAL_ADV = "1011"; //Qihoo original
+                TENCENT_INSERT_ADV = "1006";  //Tencent insert
+                TENCENT_BANNER_ADV = "1005";  //Tencent banner
+                TENCENT_OPEN_ADV = "1008";  //Tencent openapp
+                TENCENT_FEED_ADV = "1009";  //Tencent feed
+                TENCENT_ORIGINAL_ADV = "1004";  //Tencent original
+                BAIDU_INSERT_ADV = "1012";  //Baidu insert
+                BAIDU_BANNER_ADV = "1013";  //Baidu banner
+                BAIDU_OPEN_ADV = "1014";  //Baidu openapp
+            }
         } else {
-            QIHOO_VIDEO_ADV = "1045";  //Qihoo video
-            QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original
-            TENCENT_INSERT_ADV = "1040";  //Tencent insert
-            TENCENT_BANNER_ADV = "1041";  //Tencent banner
-            TENCENT_OPEN_ADV = "1042";  //Tencent openapp
-            TENCENT_FEED_ADV = "1043";  //Tencent feed
-            TENCENT_ORIGINAL_ADV = "1044";  //Tencent original
-            BAIDU_INSERT_ADV = "1048";  //Baidu insert
-            BAIDU_BANNER_ADV = "1049";  //Baidu banner
-            BAIDU_OPEN_ADV = "1050";  //Baidu openapp
+            if (SampleConfig.TEST_MODE) {
+                TENCENT_INSERT_ADV = "1063";  //Tencent insert
+                TENCENT_BANNER_ADV = "1064";  //Tencent banner
+                TENCENT_OPEN_ADV = "1042";  //Tencent openapp
+                TENCENT_FEED_ADV = "1043";  //Tencent feed
+                TENCENT_ORIGINAL_ADV = "1044";  //Tencent original
+                BAIDU_INSERT_ADV = "1048";  //Baidu insert
+                BAIDU_BANNER_ADV = "1049";  //Baidu banner
+                BAIDU_OPEN_ADV = "1050";  //Baidu openapp
+                QIHOO_VIDEO_ADV = "1045";  //Qihoo video
+                QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original
+            } else {
+                TENCENT_INSERT_ADV = "1032";  //Tencent insert
+                TENCENT_BANNER_ADV = "1018";  //Tencent banner
+                TENCENT_OPEN_ADV = "1019";  //Tencent openapp
+                TENCENT_FEED_ADV = "1020";  //Tencent feed
+                TENCENT_ORIGINAL_ADV = "1030";  //Tencent original
+                BAIDU_INSERT_ADV = "1019";  //Baidu insert
+                BAIDU_BANNER_ADV = "1032";  //Baidu banner
+                BAIDU_OPEN_ADV = "1014";  //Baidu openapp
+                QIHOO_VIDEO_ADV = "1020";  //Qihoo video
+                QIHOO_ORIGINAL_ADV = "1032"; //Qihoo original
+            }
         }
     }
 
@@ -183,65 +221,65 @@ public class SampleConfig {
                     "\"reason\": \"\"," +
                     "\"next_time\": \"28800\"," +
                     "\"pos_ids\": [" +
-                        "{" +
-                            "\"pos_id\": \"1\"," +
-                            "\"adv_type\":\"banner_adv\"," +
-                            "\"adv_exposure\": \"first\"," +
-                            "\"adsenses\": [" +
-                                "{" +
-                                    "\"ads_name\": \"jx\"," +
-                                    "\"expire_time\": \"1800\"," +
-                                    "\"priority\": \"10\"," +
-                                    "\"ads_appid\": \"100001\"," +
-                                    "\"ads_key\": \"adbsjmemsfm\"," +
-                                    "\"ads_posid\": \"10001\"," +
-                                    "\"max_adv_num\": \"10\"," +
-                                    "\"adv_size_type\": \"pixel\"," +
-                                    "\"adv_real_size\": \"640*100\"" +
-                                "}," +
-                                "{" +
-                                    "\"ads_name\": \"gdt\"," +
-                                    "\"expire_time\": \"1800\"," +
-                                    "\"priority\": \"3\"," +
-                                    "\"ads_appid\": \"1104241296\"," +
-                                    "\"ads_key\": \"adbsjmemsfm\"," +
-                                    "\"ads_posid\": \"6050305154328807\"," +
-                                    "\"max_adv_num\": \"10\"," +
-                                    "\"adv_size_type\": \"pixel\"," +
-                                    "\"adv_real_size\": \"640*100\"" +
-                                "}," +
-                                "{" +
-                                    "\"ads_name\": \"baidu\"," +
-                                    "\"expire_time\": \"1800\"," +
-                                    "\"priority\": \"10\"," +
-                                    "\"ads_appid\": \"0\"," +
-                                    "\"ads_key\": \"adbsjmemsfm\"," +
-                                    "\"ads_posid\": \"128\"," +
-                                    "\"max_adv_num\": \"10\"," +
-                                    "\"adv_size_type\": \"pixel\"," +
-                                    "\"adv_real_size\": \"640*100\"" +
-                                "}," +
-                            "]" +
-                        "}," +
-                        "{" +
-                            "\"pos_id\": \"2\"," +
-                            "\"adv_type\":\"insert_adv\"," +
-                            "\"adv_exposure\": \"first\"," +
-                            "\"adsenses\": [" +
-                                "{" +
-                                    "\"ads_name\": \"gdt\"," +
-                                    "\"expire_time\": \"1800\"," +
-                                    "\"priority\": \"3\"," +
-                                    "\"ads_appid\": \"1104241296\"," +
-                                    "\"ads_key\": \"adbsjmemsfm\"," +
-                                    "\"ads_posid\": \"1060308114529681\"," +
-                                    "\"max_adv_num\": \"10\"," +
-                                    "\"adv_size_type\": \"pixel\"," +
-                                    "\"adv_real_size\": \"640*500\"" +
-                                "}" +
-                            "]" +
-                        "}" +
+                    "{" +
+                    "\"pos_id\": \"1\"," +
+                    "\"adv_type\":\"banner_adv\"," +
+                    "\"adv_exposure\": \"first\"," +
+                    "\"adsenses\": [" +
+                    "{" +
+                    "\"ads_name\": \"jx\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"10\"," +
+                    "\"ads_appid\": \"100001\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"10001\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"640*100\"" +
+                    "}," +
+                    "{" +
+                    "\"ads_name\": \"gdt\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"3\"," +
+                    "\"ads_appid\": \"1104241296\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"6050305154328807\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"640*100\"" +
+                    "}," +
+                    "{" +
+                    "\"ads_name\": \"baidu\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"10\"," +
+                    "\"ads_appid\": \"0\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"128\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"640*100\"" +
+                    "}," +
                     "]" +
-                "}";
+                    "}," +
+                    "{" +
+                    "\"pos_id\": \"2\"," +
+                    "\"adv_type\":\"insert_adv\"," +
+                    "\"adv_exposure\": \"first\"," +
+                    "\"adsenses\": [" +
+                    "{" +
+                    "\"ads_name\": \"gdt\"," +
+                    "\"expire_time\": \"1800\"," +
+                    "\"priority\": \"3\"," +
+                    "\"ads_appid\": \"1104241296\"," +
+                    "\"ads_key\": \"adbsjmemsfm\"," +
+                    "\"ads_posid\": \"1060308114529681\"," +
+                    "\"max_adv_num\": \"10\"," +
+                    "\"adv_size_type\": \"pixel\"," +
+                    "\"adv_real_size\": \"640*500\"" +
+                    "}" +
+                    "]" +
+                    "}" +
+                    "]" +
+                    "}";
 
 }

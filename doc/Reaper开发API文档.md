@@ -1,5 +1,5 @@
 # Reaper API开发文档
-`Version 1.0.1`
+`Version 1.0.2`
 `Created By wanghaiteng@360.cn`
 `Published by FighterTeam`
 `Android Studio`

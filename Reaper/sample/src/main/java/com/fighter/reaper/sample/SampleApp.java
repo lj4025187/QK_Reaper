@@ -2,6 +2,8 @@ package com.fighter.reaper.sample;
 
 
 import android.app.Application;
+import android.content.Context;
+import android.content.ContextWrapper;
 
 import com.fighter.loader.ReaperApi;
 import com.fighter.loader.ReaperInit;
@@ -39,17 +41,29 @@ public class SampleApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        if(mReaperApi == null) {
+        if (mReaperApi == null) {
             mReaperApi = ReaperInit.init(this);
         }
-        if(mReaperApi == null) {
+        if (mReaperApi == null) {
             ToastUtil.getInstance(this).showSingletonToast(getString(R.string.ad_reaper_init_failed));
             return;
         }
-        mReaperApi.init(this, SampleConfig.TEST_MODE ? SampleConfig.TEST_APP_ID : SampleConfig.RELEASE_APP_ID,
-                SampleConfig.TEST_MODE ? SampleConfig.TEST_APP_KEY : SampleConfig.RELEASE_APP_KEY,
-                SampleConfig.TEST_MODE);
-        if(SampleConfig.LOCAL_CONFIG)
+
+        //模拟负一屏
+        Context context = getApplicationContext();
+        if (SampleConfig.CARD_MANAGER_MODE) {
+            ContextProxy proxy = new ContextProxy(context);
+            mReaperApi.init(proxy,
+                    SampleConfig.TEST_MODE ? SampleConfig.TEST_CARD_APP_ID : SampleConfig.RELEASE_CARD_APP_ID,
+                    SampleConfig.TEST_MODE ? SampleConfig.TEST_CARD_APP_KEY : SampleConfig.RELEASE_CARD_APP_KEY,
+                    SampleConfig.TEST_MODE);
+        } else {
+            mReaperApi.init(context,
+                    SampleConfig.TEST_MODE ? SampleConfig.TEST_SAMPLE_APP_ID : SampleConfig.RELEASE_SAMPLE_APP_ID,
+                    SampleConfig.TEST_MODE ? SampleConfig.TEST_SAMPLE_APP_KEY : SampleConfig.RELEASE_SAMPLE_APP_KEY,
+                    SampleConfig.TEST_MODE);
+        }
+        if (SampleConfig.LOCAL_CONFIG)
             mReaperApi.setTargetConfig(ResponseGenerator.generate());
     }
 
@@ -57,4 +71,21 @@ public class SampleApp extends Application {
         return mReaperApi;
     }
 
+
+    class ContextProxy extends ContextWrapper {
+
+        public ContextProxy(Context base) {
+            super(base);
+        }
+
+        @Override
+        public String getPackageName() {
+            return "com.qiku.cardmanager";
+        }
+
+        @Override
+        public Context getApplicationContext() {
+            return this;
+        }
+    }
 }
