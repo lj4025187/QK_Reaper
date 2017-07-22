@@ -16,7 +16,7 @@ public class SampleConfig {
     public final static boolean LOCAL_CONFIG = false;
     //true : t.adv.os.qiku.com
     //false: comp.360os.com
-    public final static boolean TEST_MODE = true;
+    public final static boolean TEST_MODE = false;
 
     //sample对应id和key
     public final static String TEST_SAMPLE_APP_KEY = "123";
@@ -26,7 +26,7 @@ public class SampleConfig {
     public final static String RELEASE_SAMPLE_APP_ID = "100000";
 
     //模拟负一屏的广告位置
-    public final static boolean CARD_MANAGER_MODE = false;
+    public final static boolean CARD_MANAGER_MODE = true;
 
     //cardmanager
     public final static String TEST_CARD_APP_KEY = "d078b24a9fe83fb7921000f1d942b8d4";
@@ -62,7 +62,31 @@ public class SampleConfig {
             BAIDU_INSERT_ADV = "13";  //Baidu insert
             BAIDU_BANNER_ADV = "14";  //Baidu banner
             BAIDU_OPEN_ADV = "15";  //Baidu openapp
-        } else if (!SampleConfig.CARD_MANAGER_MODE) {
+        } else if (SampleConfig.CARD_MANAGER_MODE) {
+            if (SampleConfig.TEST_MODE) {
+                TENCENT_INSERT_ADV = "1063";  //Tencent insert
+                TENCENT_BANNER_ADV = "1064";  //Tencent banner
+                TENCENT_OPEN_ADV = "1042";  //Tencent openapp
+                TENCENT_FEED_ADV = "1043";  //Tencent feed
+                TENCENT_ORIGINAL_ADV = "1044";  //Tencent original
+                BAIDU_INSERT_ADV = "1048";  //Baidu insert
+                BAIDU_BANNER_ADV = "1049";  //Baidu banner
+                BAIDU_OPEN_ADV = "1050";  //Baidu openapp
+                QIHOO_VIDEO_ADV = "1045";  //Qihoo video
+                QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original
+            } else {
+                TENCENT_INSERT_ADV = "1032";  //Tencent insert
+                TENCENT_BANNER_ADV = "1018";  //Tencent banner
+                TENCENT_OPEN_ADV = "1019";  //Tencent openapp
+                TENCENT_FEED_ADV = "1020";  //Tencent feed
+                TENCENT_ORIGINAL_ADV = "1030";  //Tencent original
+                BAIDU_INSERT_ADV = "1019";  //Baidu insert
+                BAIDU_BANNER_ADV = "1032";  //Baidu banner
+                BAIDU_OPEN_ADV = "1014";  //Baidu openapp
+                QIHOO_VIDEO_ADV = "1020";  //Qihoo video
+                QIHOO_ORIGINAL_ADV = "1017"; //Qihoo original
+            }
+        } else {
             if (SampleConfig.TEST_MODE) {
                 QIHOO_VIDEO_ADV = "1045";  //Qihoo video
                 QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original
@@ -85,30 +109,6 @@ public class SampleConfig {
                 BAIDU_INSERT_ADV = "1012";  //Baidu insert
                 BAIDU_BANNER_ADV = "1013";  //Baidu banner
                 BAIDU_OPEN_ADV = "1014";  //Baidu openapp
-            }
-        } else {
-            if (SampleConfig.TEST_MODE) {
-                TENCENT_INSERT_ADV = "1063";  //Tencent insert
-                TENCENT_BANNER_ADV = "1064";  //Tencent banner
-                TENCENT_OPEN_ADV = "1042";  //Tencent openapp
-                TENCENT_FEED_ADV = "1043";  //Tencent feed
-                TENCENT_ORIGINAL_ADV = "1044";  //Tencent original
-                BAIDU_INSERT_ADV = "1048";  //Baidu insert
-                BAIDU_BANNER_ADV = "1049";  //Baidu banner
-                BAIDU_OPEN_ADV = "1050";  //Baidu openapp
-                QIHOO_VIDEO_ADV = "1045";  //Qihoo video
-                QIHOO_ORIGINAL_ADV = "1046"; //Qihoo original
-            } else {
-                TENCENT_INSERT_ADV = "1032";  //Tencent insert
-                TENCENT_BANNER_ADV = "1018";  //Tencent banner
-                TENCENT_OPEN_ADV = "1019";  //Tencent openapp
-                TENCENT_FEED_ADV = "1020";  //Tencent feed
-                TENCENT_ORIGINAL_ADV = "1030";  //Tencent original
-                BAIDU_INSERT_ADV = "1019";  //Baidu insert
-                BAIDU_BANNER_ADV = "1032";  //Baidu banner
-                BAIDU_OPEN_ADV = "1014";  //Baidu openapp
-                QIHOO_VIDEO_ADV = "1020";  //Qihoo video
-                QIHOO_ORIGINAL_ADV = "1032"; //Qihoo original
             }
         }
     }

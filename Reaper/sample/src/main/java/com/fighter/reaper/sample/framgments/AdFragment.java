@@ -202,6 +202,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
             showEmptyView(true);
             return;
         }
+        SampleLog.i(TAG, " request ad posid " + posId);
         AdRequester adRequester = mReaperApi.getAdRequester(posId, this, true);
         if (adRequester == null)
             return;
