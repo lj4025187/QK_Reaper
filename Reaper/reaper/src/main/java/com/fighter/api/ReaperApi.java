@@ -75,15 +75,16 @@ public class ReaperApi {
         }
 
         mContext = (Context) params.get("appContext");
-        String packageName = mContext.getPackageName();
-        ReaperLog.e(TAG, "init in reaper " + packageName);
 
         mAppId = (String) params.get("appId");
         mAppKey = (String) params.get("appKey");
         isTestMode = (boolean)params.get("testMode");
         ReaperConfig.TEST_MODE = isTestMode;
 
-        ReaperGlobal.setApplication((Application) mContext);
+//        ReaperGlobal.setApplication((Application) mContext);
+        ReaperGlobal.setContext(mContext);
+        String packageName = mContext.getPackageName();
+        ReaperLog.i(TAG, "init in reaper " + packageName);
 
         if (mContext == null) {
             ReaperLog.e(TAG, "[init] app context is null");

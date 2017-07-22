@@ -43,7 +43,8 @@ public class ReaperActivityThreadHook {
 
         //有些情况下上面的方法拿不到，下面再换个方法尝试一次
         if (sCurrentActivityThread == null) {
-            Object impl = ReaperContextImplHook.getImpl(ReaperGlobal.getApplication());
+//            Object impl = ReaperContextImplHook.getImpl(ReaperGlobal.getApplication());
+            Object impl = ReaperContextImplHook.getImpl(ReaperGlobal.getContext());
             if (impl != null) {
                 sCurrentActivityThread = new ReaperContextImplHook(impl).getMainThread();
             }
