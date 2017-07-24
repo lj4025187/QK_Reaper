@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import com.fighter.patch.ReaperClassLoader;
 import com.fighter.patch.ReaperFile;
 import com.fighter.patch.ReaperPatch;
+import com.fighter.patch.ReaperPatchCryptAndroidTool;
 import com.fighter.patch.ReaperPatchManager;
 import com.fighter.patch.ReaperPatchVersion;
 import com.fighter.utils.LoaderLog;
@@ -315,6 +316,9 @@ public class ReaperInit {
                 continue;
             reaperFiles.add(reaperFile);
         }
+
+        //delete all files in .reaper_patch
+        ReaperPatchCryptAndroidTool.deleteAllFiles(context);
 
         ClassLoader parent = context.getClassLoader().getParent();
         List<ReaperPatch> patches =
