@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">ReaperSample</string>
+    <string name="ad_reaper_init_failed">初始化失败，啥都不想干</string>
+    <string name="ad_load_failed_toast">醒醒啊小强，广告都挂了</string>
+
+    <string name="edit_text_tip">温馨提示:可以通过\"adb shell input text ***\"命令输入key,id,posId值</string>
+    <string name="app_key_hint">appkey:52b039014f5ee11cf9865d66f0b8f23f</string>
+    <string name="app_id_hint">appid:100025</string>
+    <string name="app_pos_id_hint">posid:10019</string>
+
+    <string name="toast_edit_text_null">app_key(app_id,posId)不能为空，罢工不干</string>>
+
+    <string name="tencent_ad_src_name">腾讯</string>
+    <string name="baidu_ad_src_name">百度</string>
+    <string name="qihoo_ad_src_name">360</string>
+    <string name="ad_src_unknown">未知广告源</string>
+
+    <string name="ad_item_title_default">标题牺牲了</string>
+    <string name="ad_item_desc_default">内容阵亡了</string>
+    <string name="ad_item_action_default">撩我哦</string>
+    <string name="ad_item_flag">广告</string>
+
+    <string name="ad_video_action">嘿嘿小视频</string>
+    <string name="ad_pic_action">看羞羞图</string>
+    <string name="ad_app_action">点击下载</string>
+    <string name="ad_unknown_action">羞羞羞。。。</string>
+
+    <string name="ad_video_play_toast">FBI Warning。。。</string>
+
+    <string name="list_view_loading">猥琐发育，别浪。。。</string>
+    <string name="list_view_footer">撸起来。。。别打扰。。。</string>
+    <string name="list_view_empty">什么玩意儿都没有。。。</string>
+
+
+    <string name="text_ad_type">文字:标题、内容</string>
+    <string name="pic_ad_type">图片:图片</string>
+    <string name="pic_text_ad_type">图文</string>
+    <string name="video_ad_type">视频</string>
+    <string name="unknown_ad_type">未定义类型</string>
+
+    <string name="detail_banner_type">Banner</string>
+    <string name="detail_plugin_type">插屏</string>
+    <string name="detail_app_type">应用</string>
+    <string name="detail_full_screen_type">开屏</string>
+    <string name="detail_feed_type">Feed</string>
+    <string name="detail_native_type">原生</string>
+    <string name="detail_video_type">视频</string>
+    <string name="detail_unknown_type">未知类型</string>
+    <string name="toast_dis_support_ad">目前不支持广告源%1$s的广告类型%2$s的获取</string>
+
+    <string name="download_dialog_title">温馨提示</string>
+    <string name="download_dialog_message">是否确认下载该应用(来自sample的问候)?</string>
+    <string name="toast_start_download">开始应用的下载</string>
+    <string name="toast_cancel_download">已经取消该应用的下载</string>
+
+    <string name="toast_quest_ad_begin">开始第%d次请求广告</string>
+    <string name="toast_quest_ad_end">第%1$d次请求开始返回第%2$d条数据</string>
+</resources>

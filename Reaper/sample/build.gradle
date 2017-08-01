@@ -1,0 +1,87 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        applicationId "com.fighter.reaper.sample"
+        minSdkVersion 23
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0.6"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+afterEvaluate {
+//    assembleRelease {
+//        copyJarRrFile.execute()
+//    }
+//
+//    assembleDebug {
+//        copyJarRrFile.execute()
+//    }
+}
+
+task copyJarRrFile {
+    doLast {
+        // copy reaper.rr to assets/
+        def rrDir = file("../bin/");
+        def assDir = file('./src/main/assets/')
+        def jarDir = file('./libs/')
+        if (!assDir.exists()) {
+            assDir.mkdirs()
+        }
+        rrDir.eachFileRecurse { f ->
+            if(f.getName().endsWith(".rr")) {
+                def rrFile = new File(assDir, "reaper.rr");
+                rrFile.delete();
+                f.withInputStream { rrFile << it }
+            } /*else if(f.getName().endsWith(".jar")) {
+                def jarFile = new File(jarDir, "reaper.jar");
+                jarFile.delete();
+                f.withInputStream {jarFile << it}
+            }*/
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    testCompile 'junit:junit:4.12'
+    // fastjson
+//    compile 'com.alibaba:fastjson:1.1.52.android'
+    // okhttp3
+//    compile 'com.squareup.okhttp3:okhttp:3.4.2'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile ('com.github.bumptech.glide:okhttp3-integration:1.4.0'){
+        exclude group: 'glide-parent'
+    }
+    compile (name: 'reaper', ext: 'aar')
+    compile (name: 'proguard', ext: 'aar')
+}

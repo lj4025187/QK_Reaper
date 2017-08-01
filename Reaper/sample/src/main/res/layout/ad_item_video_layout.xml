@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/id_ad_item_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFFBFBFC">
+
+    <TextView
+        android:id="@+id/id_ad_item_index"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:textSize="18sp" />
+
+    <LinearLayout
+        android:id="@+id/id_ad_desc_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_item_index">
+
+        <TextView
+            android:id="@+id/id_ad_view_type"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="start"
+            android:textSize="12dp" />
+
+        <TextView
+            android:id="@+id/id_ad_detail_type"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="12dp" />
+
+        <TextView
+            android:id="@+id/id_ad_src_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:textSize="12dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/id_ad_uuid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_desc_layout"
+        android:textSize="15dp" />
+
+    <LinearLayout
+        android:id="@+id/id_ad_extra_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_uuid"
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:id="@+id/id_ad_image_size"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp" />
+
+        <TextView
+            android:id="@+id/id_ad_extra2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/id_ad_custom_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_extra_layout"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="16dp"
+        android:maxLines="1"
+        android:text="Title"
+        android:textColor="#454545"
+        android:textSize="20dp" />
+
+    <FrameLayout
+        android:id="@+id/id_video_main_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_ad_custom_title"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="16dp">
+
+        <com.fighter.reaper.sample.videolist.widget.TextureVideoView
+            android:id="@+id/id_video_texture_view"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            app:scaleType="fitCenter" />
+
+        <ImageView
+            android:id="@+id/id_ad_image_view"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:scaleType="centerCrop" />
+
+        <include layout="@layout/ad_flag_layout" />
+
+        <com.fighter.reaper.sample.videolist.widget.CircularProgressBar
+            android:id="@+id/id_video_progress"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:visibility="invisible"
+            app:cpb_background_progressbar_color="@android:color/white"
+            app:cpb_background_progressbar_width="10dp"
+            app:cpb_progressbar_color="@color/colorPrimary"
+            app:cpb_progressbar_width="10dp" />
+    </FrameLayout>
+
+    <RelativeLayout
+        android:id="@+id/id_ad_custom_desc_action"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_video_main_view"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/layer_ad_bg"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/id_ad_custom_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_toLeftOf="@+id/id_ad_custom_action"
+            android:singleLine="true"
+            android:text="描述"
+            android:textColor="#999999"
+            android:textSize="16dp" />
+
+        <TextView
+            android:id="@+id/id_ad_custom_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/layer_ad_btn"
+            android:padding="5dp"
+            android:textColor="#ffffff" />
+    </RelativeLayout>
+
+</RelativeLayout>

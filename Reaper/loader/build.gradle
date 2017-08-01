@@ -1,0 +1,169 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+//    aaptOptions {
+//        noCompress "apk"
+//    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+task publishSDKRealeaseAar {
+    doLast {
+        def dexDir = file('./build/outputs/aar')
+        def targetDexDir = file('../bin/')
+        if (!targetDexDir.exists()) {
+            targetDexDir.mkdirs()
+        }
+        dexDir.eachFileRecurse { f ->
+            if (f.getName().startsWith('loader-release')) {
+                def targetDexFile = new File(targetDexDir, 'reaper.aar')
+                targetDexFile.delete();
+                f.withInputStream { targetDexFile << it }
+            }
+        }
+    }
+}
+
+task publishSDKDebugAar {
+    doLast {
+        def dexDir = file('./build/outputs/aar')
+        def targetDexDir = file('../bin/')
+        if (!targetDexDir.exists()) {
+            targetDexDir.mkdirs()
+        }
+        dexDir.eachFileRecurse { f ->
+            if (f.getName().startsWith('loader-debug')) {
+                def targetDexFile = new File(targetDexDir, 'reaper.aar')
+                targetDexFile.delete();
+                f.withInputStream { targetDexFile << it }
+            }
+        }
+    }
+}
+
+task publishSDKJar(type: Jar) {
+    archiveName 'reaper.jar'
+
+    manifest {
+        attributes 'Implementation-Title': 'Reaper Jar File',
+                'Implementation-Version': '1.0'/*,
+                'Main-Class': 'com.fighter.loader.Main'*/
+    }
+
+    from('./build/intermediates/classes/release/') {
+        include('com/fighter/loader/*.class')
+        include('com/fighter/helper/*.class')
+        include('com/fighter/config/*.class')
+        include('com/fighter/patch/*.class')
+        include('com/fighter/utils/*.class')
+    }
+
+    destinationDir file('../bin')
+
+    exclude 'R.class'
+    exclude {
+        it.name.startsWith('R$') || it.name == 'R.class'
+    }
+
+}
+
+task makeGeneratorJar(type: Jar) {
+    archiveName 'generator.jar'
+
+    manifest {
+        attributes 'Implementation-Title': 'Reaper Generator Jar File',
+                'Implementation-Version': '1.0',
+                'Main-Class': 'com.fighter.utils.ReaperPatchGenerator',
+                'Class-Path': '../third_party/jars/bcprov-jdk15on-1.57.jar'
+    }
+
+    from('./build/intermediates/classes/release/') {
+        include('com/fighter/utils/ReaperPatchGenerator.class')
+        include('com/fighter/patch/ReaperPatchCryptTool.class')
+        include('com/fighter/patch/ReaperPatchCryptTool$Header.class')
+        include('com/fighter/patch/IReaperBlockCipher.class')
+        include('com/fighter/patch/IReaperBlockCipher$Key.class')
+        include('com/fighter/patch/AESBlockCipher.class')
+    }
+
+    destinationDir file('../bin')
+
+    exclude 'R.class'
+    exclude {
+        it.name.startsWith('R$') || it.name == 'R.class'
+    }
+}
+
+// make java doc, generate out path is build/docs/javadoc/...
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+javadoc {
+    options {
+        encoding "UTF-8"
+        charSet "UTF-8"
+        author false
+        version true
+        links "http://docs.oracle.com/javase/7/docs/api"
+    }
+}
+
+afterEvaluate {
+    assembleRelease {
+        doLast {
+            makeGeneratorJar.execute()
+            publishSDKJar.execute()
+            publishSDKRealeaseAar.execute();
+            javadoc.execute()
+        }
+    }
+    assembleDebug {
+        doLast {
+            makeGeneratorJar.execute()
+            publishSDKJar.execute()
+            publishSDKDebugAar.execute();
+            javadoc.execute()
+        }
+    }
+}
+
+
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testCompile 'junit:junit:4.12'
+    compile(name: 'proguard', ext: 'aar')
+
+    compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.57'
+}

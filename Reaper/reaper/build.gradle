@@ -1,0 +1,122 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "com.fighter.reaper"
+        minSdkVersion 19
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        sign {
+            keyAlias 'Reaper'
+            keyPassword 'fighter.reaper'
+            storeFile file('../Reaper.jks')
+            storePassword 'fighter.reaper'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            signingConfig signingConfigs.sign
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled true
+            signingConfig signingConfigs.sign
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+task generateReaperPatch(type: Exec) {
+    workingDir '../'
+    commandLine "java", "-jar" , "./bin/generator.jar", "./bin/reaper.apk", "./bin/reaper.rr"
+}
+
+/**
+ * publish release dex as reaper.dex
+ */
+task publishReleaseReaperDex {
+    doLast {
+        def dexDir = file('./build/outputs/apk/')
+        def targetDexDir = file('../bin/')
+        if (!targetDexDir.exists()) {
+            targetDexDir.mkdirs()
+        }
+        dexDir.eachFileRecurse { f ->
+            if (f.getName().startsWith('reaper-release')) {
+                def targetDexFile = new File(targetDexDir, 'reaper.apk')
+                targetDexFile.delete();
+                f.withInputStream { targetDexFile << it }
+            }
+        }
+    }
+}
+
+/**
+ * publish dex dex as reaper.dex
+ */
+task publishDebugReaperDex {
+    doLast {
+        def dexDir = file('./build/outputs/apk/')
+        def targetDexDir = file('../bin/')
+        if (!targetDexDir.exists()) {
+            targetDexDir.mkdirs()
+        }
+        dexDir.eachFileRecurse { f ->
+            if (f.getName().startsWith('reaper-debug')) {
+                def targetDexFile = new File(targetDexDir, 'reaper.apk')
+                targetDexFile.delete();
+                f.withInputStream { targetDexFile << it }
+            }
+        }
+    }
+}
+
+afterEvaluate {
+    assembleRelease {
+        doLast {
+            publishReleaseReaperDex.execute()
+            generateReaperPatch.execute()
+        }
+    }
+
+    assembleDebug {
+        doLast {
+            publishDebugReaperDex.execute()
+            generateReaperPatch.execute()
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testCompile 'junit:junit:4.12'
+    compile(name: 'proguard', ext: 'aar')
+    // fastjson
+    compile 'com.alibaba:fastjson:1.1.52.android'
+    // okhttp3
+    compile 'com.squareup.okhttp3:okhttp:3.4.2'
+    compile files('libs/serversdk-2.0.6.jar')
+    compile 'com.android.support:support-v4:25.3.1'
+}
