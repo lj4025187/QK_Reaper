@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.fighter.loader.AdInfo;
+import com.fighter.reaper.sample.BuildConfig;
 import com.fighter.reaper.sample.R;
 
 /**
@@ -16,7 +17,7 @@ public class SampleConfig {
     public final static boolean LOCAL_CONFIG = false;
     //true : t.adv.os.qiku.com
     //false: comp.360os.com
-    public final static boolean TEST_MODE = false;
+    public final static boolean TEST_MODE = BuildConfig.DEBUG;
 
     //sample对应id和key
     public final static String TEST_SAMPLE_APP_KEY = "123";
