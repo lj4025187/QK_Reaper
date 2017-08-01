@@ -34,17 +34,17 @@ call gradle.bat assembleDebug
 echo ==============build assembleDebug task finish==============
 cd ..
 echo ==============%PROJECT% build finish!!!==============
-echo %LOCAL_FILE_PATH%bin
+echo bin:%LOCAL_FILE_PATH%bin
 
 if exist %LOCAL_FILE_PATH%bin (
 	echo clear cache
 	rd /s /q %LOCAL_FILE_PATH%bin
 )
-
+echo rd bin
 if not exist %LOCAL_FILE_PATH%bin (
 	md %LOCAL_FILE_PATH%bin
 )
-
+echo md bin
 rem set OUTPATH = %LOCAL_FILE_PATH%bin
 rem echo OUTPATH:%OUTPATH%
 
