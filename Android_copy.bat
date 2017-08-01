@@ -47,9 +47,9 @@ if not exist %LOCAL_FILE_PATH%\bin (
 
 set OUTPATH = %LOCAL_FILE_PATH%\bin
 
-xcopy /s /i /y /e  QK_Reaper\bin\reaper.aar %OUTPATH%\reaper.aar
-xcopy /s /i /y /e  QK_Reaper\bin\reaper.rr %OUTPATH%\reaper.rr
-xcopy /s /i /y /e  QK_Reaper\bin\sample.apk %OUTPATH%\sample.apk
+xcopy /s /i /y /e  QK_Reaper\bin\reaper.aar %OUTPATH%\bin\
+xcopy /s /i /y /e  QK_Reaper\bin\reaper.rr %OUTPATH%\bin\
+xcopy /s /i /y /e  QK_Reaper\bin\sample.apk %OUTPATH%\bin\
 
 
 cd
