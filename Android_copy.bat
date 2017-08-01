@@ -34,18 +34,18 @@ call gradle.bat assembleDebug
 echo ==============build assembleDebug task finish==============
 cd ..
 echo ==============%PROJECT% build finish!!!==============
-echo %LOCAL_FILE_PATH%\bin
+echo %LOCAL_FILE_PATH%bin
 
-if exist %LOCAL_FILE_PATH%\bin (
+if exist %LOCAL_FILE_PATH%bin (
 	echo clear cache
-	rd /s /q %LOCAL_FILE_PATH%\bin
+	rd /s /q %LOCAL_FILE_PATH%bin
 )
 
-if not exist %LOCAL_FILE_PATH%\bin (
-	md %LOCAL_FILE_PATH%\bin
+if not exist %LOCAL_FILE_PATH%bin (
+	md %LOCAL_FILE_PATH%bin
 )
 
-set OUTPATH = %LOCAL_FILE_PATH%\bin
+set OUTPATH = %LOCAL_FILE_PATH%bin
 echo OUTPATH:%OUTPATH%
 
 copy /y QK_Reaper\bin\reaper.aar %OUTPATH%\reaper.aar
