@@ -44,6 +44,7 @@ cd sample
 copy /y ../bin/reaper.aar libs/reaper.aar
 copy /y ../bin/reaper.rr src/main/assets/reaper.rr
 call gradle.bat assembleDebug
+cd ..
 echo ==============finish sample task==============================
 echo ==============build assembleDebug task finish==============
 cd ..
