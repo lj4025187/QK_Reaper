@@ -9,8 +9,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 25
         versionCode 1
-        versionName "1.0.6"
-
+        versionName "1.0.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
@@ -18,23 +17,25 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            versionNameSuffix "_VER_" + new Date().format("yyyy.MM.dd_HH:mm:ss")
         }
 
         debug {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            versionNameSuffix "_VER_" + new Date().format("yyyy.MM.dd_HH:mm:ss")
         }
     }
 }
 
-afterEvaluate {
-//    assembleRelease {
-//        copyJarRrFile.execute()
-//    }
-//
-//    assembleDebug {
-//        copyJarRrFile.execute()
-//    }
+beforeEvaluate {
+    assembleRelease {
+        copyJarRrFile.execute()
+    }
+
+    assembleDebug {
+        copyJarRrFile.execute()
+    }
 }
 
 task copyJarRrFile {
@@ -42,20 +43,53 @@ task copyJarRrFile {
         // copy reaper.rr to assets/
         def rrDir = file("../bin/");
         def assDir = file('./src/main/assets/')
-        def jarDir = file('./libs/')
+        def aarDir = file('./libs/')
         if (!assDir.exists()) {
             assDir.mkdirs()
         }
         rrDir.eachFileRecurse { f ->
-            if(f.getName().endsWith(".rr")) {
+            if (f.getName().endsWith(".rr")) {
                 def rrFile = new File(assDir, "reaper.rr");
                 rrFile.delete();
                 f.withInputStream { rrFile << it }
-            } /*else if(f.getName().endsWith(".jar")) {
-                def jarFile = new File(jarDir, "reaper.jar");
+            } else if (f.getName().endsWith(".aar")) {
+                def jarFile = new File(aarDir, "reaper.aar");
                 jarFile.delete();
-                f.withInputStream {jarFile << it}
-            }*/
+                f.withInputStream { jarFile << it }
+            }
+        }
+    }
+}
+
+afterEvaluate {
+    assembleRelease {
+        doLast {
+            publishSampleApk.execute()
+        }
+    }
+
+    assembleDebug {
+        doLast {
+            publishSampleApk.execute()
+        }
+    }
+}
+
+task publishSampleApk {
+    doLast {
+        def dexDir = file('./build/outputs/apk/')
+        def targetDexDir = file('../bin/')
+        if (!targetDexDir.exists()) {
+            targetDexDir.mkdirs()
+        }
+        dexDir.eachFileRecurse { f ->
+            if (f.getName().endsWith('.apk')) {
+                def targetDexFile = new File(targetDexDir, 'sample.apk')
+                if (targetDexFile.exists()) {
+                    targetDexFile.delete();
+                }
+                f.withInputStream { targetDexFile << it }
+            }
         }
     }
 }
@@ -79,9 +113,9 @@ dependencies {
     // okhttp3
 //    compile 'com.squareup.okhttp3:okhttp:3.4.2'
     compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile ('com.github.bumptech.glide:okhttp3-integration:1.4.0'){
+    compile('com.github.bumptech.glide:okhttp3-integration:1.4.0') {
         exclude group: 'glide-parent'
     }
-    compile (name: 'reaper', ext: 'aar')
-    compile (name: 'proguard', ext: 'aar')
+    compile(name: 'reaper', ext: 'aar')
+    compile(name: 'proguard', ext: 'aar')
 }

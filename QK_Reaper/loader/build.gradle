@@ -18,6 +18,10 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
     }
 //    aaptOptions {
 //        noCompress "apk"
@@ -87,7 +91,7 @@ task publishSDKJar(type: Jar) {
 
 }
 
-task makeGeneratorJar(type: Jar) {
+task makeReleaseGeneratorJar(type: Jar) {
     archiveName 'generator.jar'
 
     manifest {
@@ -98,6 +102,33 @@ task makeGeneratorJar(type: Jar) {
     }
 
     from('./build/intermediates/classes/release/') {
+        include('com/fighter/utils/ReaperPatchGenerator.class')
+        include('com/fighter/patch/ReaperPatchCryptTool.class')
+        include('com/fighter/patch/ReaperPatchCryptTool$Header.class')
+        include('com/fighter/patch/IReaperBlockCipher.class')
+        include('com/fighter/patch/IReaperBlockCipher$Key.class')
+        include('com/fighter/patch/AESBlockCipher.class')
+    }
+
+    destinationDir file('../bin')
+
+    exclude 'R.class'
+    exclude {
+        it.name.startsWith('R$') || it.name == 'R.class'
+    }
+}
+
+task makeDebugGeneratorJar(type: Jar) {
+    archiveName 'generator.jar'
+
+    manifest {
+        attributes 'Implementation-Title': 'Reaper Generator Jar File',
+                'Implementation-Version': '1.0',
+                'Main-Class': 'com.fighter.utils.ReaperPatchGenerator',
+                'Class-Path': '../third_party/jars/bcprov-jdk15on-1.57.jar'
+    }
+
+    from('./build/intermediates/classes/debug/') {
         include('com/fighter/utils/ReaperPatchGenerator.class')
         include('com/fighter/patch/ReaperPatchCryptTool.class')
         include('com/fighter/patch/ReaperPatchCryptTool$Header.class')
@@ -133,7 +164,7 @@ javadoc {
 afterEvaluate {
     assembleRelease {
         doLast {
-            makeGeneratorJar.execute()
+            makeReleaseGeneratorJar.execute()
             publishSDKJar.execute()
             publishSDKRealeaseAar.execute();
             javadoc.execute()
@@ -141,7 +172,7 @@ afterEvaluate {
     }
     assembleDebug {
         doLast {
-            makeGeneratorJar.execute()
+            makeDebugGeneratorJar.execute()
             publishSDKJar.execute()
             publishSDKDebugAar.execute();
             javadoc.execute()

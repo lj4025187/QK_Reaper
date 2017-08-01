@@ -27,7 +27,7 @@ public class TrackerStatAgent {
     private final static String REAPER_AGENT_KEY = "dd458505749b2941217ddd59394240e8";
     private final static String DEBUG_REAPER_AGENT_KEY = "a86c450b76fb8c371afead6410d55534";
     //switch for QHStatAgent function
-    private final static Boolean SWITCH_OPEN = BuildConfig.DEBUG;
+    private final static Boolean SWITCH_OPEN = true;
     //switch for error exception upload
     private final static boolean CATCH_ERR = true;
 
