@@ -48,9 +48,9 @@ if not exist %LOCAL_FILE_PATH%\bin (
 set OUTPATH = %LOCAL_FILE_PATH%\bin
 echo OUTPATH
 
-copy /y QK_Reaper\bin\reaper.aar %OUTPATH%\bin\
-copy /y QK_Reaper\bin\reaper.rr %OUTPATH%\bin\
-copy /y QK_Reaper\bin\sample.apk %OUTPATH%\bin\
+copy /y QK_Reaper\bin\reaper.aar %OUTPATH%\
+copy /y QK_Reaper\bin\reaper.rr %OUTPATH%\
+copy /y QK_Reaper\bin\sample.apk %OUTPATH%\
 
 cd
 echo ==============%PROJECT% copy finish!!!==============
