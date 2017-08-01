@@ -38,11 +38,12 @@ echo ==============finish loader task==============================
 echo ==============start reaper task===============================
 cd reaper
 call gradle.bat assembleDebug
+cd ..
 echo ==============finish reaper task==============================
 echo ==============start sample task===============================
+copy /y bin/reaper.aar sample/libs/reaper.aar
+copy /y bin/reaper.rr sample/src/main/assets/reaper.rr
 cd sample
-copy /y ../bin/reaper.aar libs/reaper.aar
-copy /y ../bin/reaper.rr src/main/assets/reaper.rr
 call gradle.bat assembleDebug
 cd ..
 echo ==============finish sample task==============================
