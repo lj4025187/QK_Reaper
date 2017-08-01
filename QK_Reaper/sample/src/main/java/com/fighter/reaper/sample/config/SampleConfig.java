@@ -27,7 +27,7 @@ public class SampleConfig {
     public final static String RELEASE_SAMPLE_APP_ID = "100000";
 
     //模拟负一屏的广告位置
-    public final static boolean CARD_MANAGER_MODE = true;
+    public final static boolean CARD_MANAGER_MODE = false;
 
     //cardmanager
     public final static String TEST_CARD_APP_KEY = "d078b24a9fe83fb7921000f1d942b8d4";
