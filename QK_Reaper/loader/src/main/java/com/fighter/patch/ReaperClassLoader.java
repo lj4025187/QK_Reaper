@@ -2,8 +2,6 @@ package com.fighter.patch;
 
 import android.text.TextUtils;
 
-import com.fighter.utils.LoaderLog;
-
 import dalvik.system.DexClassLoader;
 
 /**
@@ -34,7 +32,6 @@ public class ReaperClassLoader extends DexClassLoader {
                 || name.startsWith("com.alibaba.fastjson")
                 || name.startsWith("com.qiku.serversdk.custom")
                 || name.startsWith("com.qihoo.sdk")) {
-            LoaderLog.i("load " + name + " by ReaperClassloader, do not delegate to parent");
             return findClass(name);
         } else {
             return super.loadClass(name, resolve);
