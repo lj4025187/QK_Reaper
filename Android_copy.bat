@@ -30,7 +30,21 @@ echo Gradle info:
 call gradle.bat -v 
 call gradle.bat clean
 echo ==============clean task finish===============================
+echo ==============start loader task===============================
+cd loader
 call gradle.bat assembleDebug
+cd ..
+echo ==============finish loader task==============================
+echo ==============start reaper task===============================
+cd reaper
+call gradle.bat assembleDebug
+echo ==============finish reaper task==============================
+echo ==============start sample task===============================
+cd sample
+copy /y ../bin/reaper.aar libs/reaper.aar
+copy /y ../bin/reaper.rr src/main/assets/reaper.rr
+call gradle.bat assembleDebug
+echo ==============finish sample task==============================
 echo ==============build assembleDebug task finish==============
 cd ..
 echo ==============%PROJECT% build finish!!!==============
