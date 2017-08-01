@@ -21,47 +21,38 @@ set welcome=%PROJECT% File-Path=%LOCAL_FILE_PATH%
 echo %welcome%
 
 ::%SystemRoot%\system32\ping.exe -n 1 10.18.49.11
-::
-::
-::echo now environment path is %Path% 
-::
-::cd QK_Reaper
-::echo Gradle info:
-::call gradle.bat -v 
-::call gradle.bat clean
-::echo ==============clean task finish===============================
-::call gradle.bat assembleDebug
-::echo ==============build assembleDebug task finish==============
-::cd ../
-::goto buildEnd
-::
-::
-:::buildEnd
-::@rem build end
-::goto end
-::
-::
-:::end
-::echo ==============%PROJECT% build finish!!!==============
-::echo %LOCAL_FILE_PATH%\bin
-::
-::if exist %LOCAL_FILE_PATH%\bin (
-::	echo clear cache
-::	rd /s /q %LOCAL_FILE_PATH%\bin
-::)
-::
-::if not exist %LOCAL_FILE_PATH%\bin (
-::	md %LOCAL_FILE_PATH%\bin
-::)
-::
-::set OUTPATH = %LOCAL_FILE_PATH%\bin
-::
-::xcopy /s /i /y /e  QK_Reaper\bin\reaper.aar %OUTPATH%
-::xcopy /s /i /y /e  QK_Reaper\bin\reaper.rr %OUTPATH%
-::xcopy /s /i /y /e  QK_Reaper\bin\sample.apk %OUTPATH%
-::
-::
-::cd
-::echo ==============%PROJECT% copy finish!!!==============
-::
-::
+
+
+echo now environment path is %Path% 
+
+cd QK_Reaper
+echo Gradle info:
+call gradle.bat -v 
+call gradle.bat clean
+echo ==============clean task finish===============================
+call gradle.bat assembleDebug
+echo ==============build assembleDebug task finish==============
+cd ../
+echo ==============%PROJECT% build finish!!!==============
+echo %LOCAL_FILE_PATH%\bin
+
+if exist %LOCAL_FILE_PATH%\bin (
+	echo clear cache
+	rd /s /q %LOCAL_FILE_PATH%\bin
+)
+
+if not exist %LOCAL_FILE_PATH%\bin (
+	md %LOCAL_FILE_PATH%\bin
+)
+
+set OUTPATH = %LOCAL_FILE_PATH%\bin
+
+xcopy /s /i /y /e  QK_Reaper\bin\reaper.aar %OUTPATH%
+xcopy /s /i /y /e  QK_Reaper\bin\reaper.rr %OUTPATH%
+xcopy /s /i /y /e  QK_Reaper\bin\sample.apk %OUTPATH%
+
+
+cd
+echo ==============%PROJECT% copy finish!!!==============
+
+
