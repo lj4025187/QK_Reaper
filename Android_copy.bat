@@ -32,7 +32,7 @@ call gradle.bat clean
 echo ==============clean task finish===============================
 call gradle.bat assembleDebug
 echo ==============build assembleDebug task finish==============
-cd ../
+cd ..
 echo ==============%PROJECT% build finish!!!==============
 echo %LOCAL_FILE_PATH%\bin
 
@@ -46,11 +46,11 @@ if not exist %LOCAL_FILE_PATH%\bin (
 )
 
 set OUTPATH = %LOCAL_FILE_PATH%\bin
+echo OUTPATH
 
-xcopy /s /i /y /e  QK_Reaper\bin\reaper.aar %OUTPATH%\bin\
-xcopy /s /i /y /e  QK_Reaper\bin\reaper.rr %OUTPATH%\bin\
-xcopy /s /i /y /e  QK_Reaper\bin\sample.apk %OUTPATH%\bin\
-
+copy /y QK_Reaper\bin\reaper.aar %OUTPATH%\bin\
+copy /y QK_Reaper\bin\reaper.rr %OUTPATH%\bin\
+copy /y QK_Reaper\bin\sample.apk %OUTPATH%\bin\
 
 cd
 echo ==============%PROJECT% copy finish!!!==============
