@@ -41,8 +41,8 @@ call gradle.bat assembleDebug
 cd ..
 echo ==============finish reaper task==============================
 echo ==============start sample task===============================
-copy /y bin/reaper.aar sample/libs/reaper.aar
-copy /y bin/reaper.rr sample/src/main/assets/reaper.rr
+copy /y bin\reaper.aar sample\libs\reaper.aar
+copy /y bin\reaper.rr sample\src\main\assets\reaper.rr
 cd sample
 call gradle.bat assembleDebug
 cd ..
