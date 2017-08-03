@@ -14,6 +14,7 @@ import android.util.ArrayMap;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 
+import com.ak.android.other.news.DownloadUtil;
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
@@ -54,6 +55,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.fighter.ad.AdEvent.EVENT_AD_DOWN_FAIL;
@@ -84,7 +86,7 @@ import static com.fighter.ad.AdEvent.EVENT_VIEW_SUCCESS;
  * Created by lichen on 17-5-17.
  */
 
-public class AdCacheManager implements DownloadCallback{
+public class AdCacheManager implements DownloadCallback {
 
     private static final String TAG = "AdCacheManager";
     private static final String EXTRA_EVENT_DOWN_X = "downX";
@@ -110,6 +112,8 @@ public class AdCacheManager implements DownloadCallback{
     private LongSparseArray<AdInfo> mDownloadApps;//以DownloadManager返回的id为key，存放下载的应用对应的AdInfo
     private Map<String, Long> mInstallApps;//以包名为key，存放应用下载完成的时间点，判断是否需要（安装完成、激活）打点
     private Map<String, AdInfo> mInstallAds;//以包名为key，存放下载的应用对应AdInfo，用来跟踪（安装完成、激活）打点
+    private Map<String, String> mSilentInstall;//以包名为key，存放聚效返回的key，用来上报应用的激活打点
+    private Map<String, String> mInstallAppsPath;//以包名为key，存放应用安装的路径，安装成功后删除对应的apk
     private ReaperAdvPos mReaperAdvPos;
 
     /**************************************************Init cache task start*****************************************************************/
@@ -703,6 +707,8 @@ public class AdCacheManager implements DownloadCallback{
         mDownloadApps = new LongSparseArray<>();
         mInstallApps = new HashMap<>();
         mInstallAds = new HashMap<>();
+        mSilentInstall = new HashMap<>();
+        mInstallAppsPath = new HashMap<>();
         String cacheId = null;
         ArrayMap<String, Object> adCacheObjects = new ArrayMap<>();
         File adCacheDir = new File(context.getCacheDir(), "ac");
@@ -1079,7 +1085,7 @@ public class AdCacheManager implements DownloadCallback{
                         if (cachePath != null) {
                             File cacheFile = new File(cachePath);
                             if (cacheFile.exists()) {
-                                cacheFile.delete();
+                                boolean delete = cacheFile.delete();
                             }
                         }
                         cacheObjects.remove(cacheObjects.keyAt(i));
@@ -1421,7 +1427,6 @@ public class AdCacheManager implements DownloadCallback{
         if(!apkFile.exists()) {
             return;
         }
-        registerInstallReceiver();
         String parent = apkFile.getParent();
         //handle the result file to apk file
         if(!fileName.endsWith(".apk")) {
@@ -1441,14 +1446,38 @@ public class AdCacheManager implements DownloadCallback{
         String appLabel = getPackageAppLabel(packageInfo);
         adInfo.setDownAppName(appLabel);
         adInfo.setDownPkgName(packageInfo.packageName);
-        mInstallApps.put(packageInfo.packageName, System.currentTimeMillis());
+        mInstallApps.put(packageInfo.packageName, System.currentTimeMillis());//通过包名记录应用下载完成的时间
         mInstallAds.put(packageInfo.packageName, adInfo);
-        trackActionEvent(EVENT_APP_DOWNLOAD_COMPLETE, adInfo);
-        installApk(resultFile);
+        trackActionEvent(EVENT_APP_DOWNLOAD_COMPLETE, adInfo);//下载完成的打点
+        installApk(packageInfo.packageName, resultFile.getAbsolutePath());
         //down complete should remove this adInfo
         mDownloadApps.remove(reference);
     }
 
+    /**
+     *
+     * Install apk when receive download complete
+     *
+     * @param packageName
+     * @param apkPath
+     */
+    private void installApk(String packageName, String apkPath) {
+        File apkFile = new File(apkPath);
+        if(!apkFile.exists()) {
+            ReaperLog.e(TAG, " install apk failed because file " + apkPath + " not exits");
+            return;
+        }
+        mInstallAppsPath.put(packageName, apkPath);
+        registerInstallReceiver();
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+        mContext.startActivity(intent);
+    }
+
+    /**
+     * register install receiver
+     */
     private void registerInstallReceiver() {
         if(mInstallReceiver == null)
             mInstallReceiver = new ApkInstallReceiver();
@@ -1456,17 +1485,6 @@ public class AdCacheManager implements DownloadCallback{
         intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
         intentFilter.addDataScheme("package");
         mContext.registerReceiver(mInstallReceiver, intentFilter);
-    }
-
-    /**
-     * Install apk when receive download complete
-     * @param apkFile
-     */
-    private void installApk(File apkFile) {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
-        mContext.startActivity(intent);
     }
 
     private PackageInfo getPackageInfo(File apkFile) {
@@ -1530,6 +1548,13 @@ public class AdCacheManager implements DownloadCallback{
         mDownloadApps.remove(reference);
     }
 
+    @Override
+    public void onSilentInstallFailed(String key, String apkPath, String packageName) {
+        ReaperLog.i(TAG, " silent install fail so called package installer");
+        mSilentInstall.put(packageName, key);
+        installApk(packageName, apkPath);
+    }
+
     /**
      * this callback method is for ISDKWrapper handle download apk own（eg.AkAdSDKWrapper）
      *
@@ -1560,21 +1585,60 @@ public class AdCacheManager implements DownloadCallback{
                 return;
             String action = intent.getAction();
             if(!TextUtils.equals(action, Intent.ACTION_PACKAGE_ADDED)) return;
-            String packageName = intent.getData().getSchemeSpecificPart();
-            if(TextUtils.isEmpty(packageName)
-                    || !mInstallApps.containsKey(packageName)
-                        || !mInstallAds.containsKey(packageName)) return;
-            long start = mInstallApps.get(packageName);
-            if(System.currentTimeMillis() - start < EFFECTIVE_TIME) {
-                AdInfo adInfo = mInstallAds.get(packageName);
-                trackActionEvent(EVENT_APP_INSTALL, adInfo);
-                PackageManager packageManager = context.getPackageManager();
-                Intent appIntent = packageManager.getLaunchIntentForPackage(packageName);
-                context.startActivity(appIntent);
-                trackActionEvent(EVENT_APP_ACTIVE, adInfo);
+            Uri data = intent.getData();
+            String packageName = data.getSchemeSpecificPart();
+            if(TextUtils.isEmpty(packageName)){
+                ReaperLog.e(TAG, "on receive package name is null will not start downloaded app");
+                return;
             }
-            mInstallApps.remove(packageName);
-            mInstallAds.remove(packageName);
+            ReaperLog.i(TAG, " intent action ACTION_PACKAGE_ADDED " + packageName);
+            //silent install fail call package installer to install success
+            if (mSilentInstall.containsKey(packageName)) {
+                String key = mSilentInstall.get(packageName);
+                if(!TextUtils.isEmpty(key))
+                    DownloadUtil.onApkActived(mContext, key);
+                ReaperLog.i(TAG, "silent install fail " + packageName + " installed by package installer");
+                activeAppByPackageName(context, packageName);
+                mSilentInstall.remove(packageName);
+            } else {
+                if (!mInstallApps.containsKey(packageName)
+                        || !mInstallAds.containsKey(packageName)) return;
+                long start = mInstallApps.get(packageName);
+                if (System.currentTimeMillis() - start < EFFECTIVE_TIME) {
+                    AdInfo adInfo = mInstallAds.get(packageName);
+                    trackActionEvent(EVENT_APP_INSTALL, adInfo);
+                    activeAppByPackageName(context, packageName);
+                    trackActionEvent(EVENT_APP_ACTIVE, adInfo);
+                }
+                mInstallApps.remove(packageName);
+                mInstallAds.remove(packageName);
+            }
+
+            //For deleting the apk file
+            if(mInstallAppsPath.containsKey(packageName)) {
+                String apkPath = mInstallAppsPath.get(packageName);
+                if(!TextUtils.isEmpty(apkPath)) {
+                    File apkFile = new File(apkPath);
+                    if(apkFile.exists()) {
+                        boolean delete = apkFile.delete();
+                        ReaperLog.i(TAG, packageName + " on receive package added "
+                                + delete + " delete file " + apkPath);
+                    }
+                }
+                mInstallAppsPath.remove(packageName);
+            }
+        }
+
+        /**
+         * 通过包名开启刚刚安装完成的应用
+         *
+         * @param context
+         * @param packageName
+         */
+        private void activeAppByPackageName(Context context, String packageName) {
+            PackageManager packageManager = context.getPackageManager();
+            Intent appIntent = packageManager.getLaunchIntentForPackage(packageName);
+            context.startActivity(appIntent);
         }
     }
 
@@ -1796,6 +1860,7 @@ public class AdCacheManager implements DownloadCallback{
                 .adLocalPositionId(reaperAdSense.ads_posid)
                 .adType(adType)
                 .adExpireTime(Long.parseLong(reaperAdSense.expire_time))
+                .adSilentInstall(TextUtils.equals(reaperAdSense.silent_install, "1"))
                 .adCount(1);
 
         if ("pixel".equalsIgnoreCase(reaperAdSense.adv_size_type)) {
@@ -1881,7 +1946,7 @@ public class AdCacheManager implements DownloadCallback{
         ReaperLog.i(TAG, "cache ad info: " + adInfo.getUUID());
         try {
             //TODO DELETE
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
             String dateStr = format.format(info.getCacheTime());
             ReaperLog.i("ForTest", "srcName: " + adInfo.getExtra("adName")
                     + " posId: " + adInfo.getAdPosId()

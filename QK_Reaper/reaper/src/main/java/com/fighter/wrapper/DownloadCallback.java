@@ -25,4 +25,13 @@ public interface DownloadCallback {
     void onDownloadComplete(long reference, String fileName);
 
     void onDownloadFailed(long reference, int reason);
+
+    /**
+     * 静默安装失败后，调起安装器来安装，针对聚效处理
+     *
+     * @param key         由聚效返回的下载应用的key，需要传回去进行激活计算
+     * @param apkPath     由聚效返回的apk下载的路径
+     * @param packageName apk对应的包名
+     */
+    void onSilentInstallFailed(String key, String apkPath, String packageName);
 }

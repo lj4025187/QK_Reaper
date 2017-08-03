@@ -26,6 +26,7 @@ import android.view.Surface;
 import android.view.WindowManager;
 
 import com.fighter.common.utils.EncryptUtils;
+import com.fighter.common.utils.ReaperLog;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -663,6 +664,10 @@ public final class Device {
             if (tm != null) {
                 m1 = tm.getDeviceId();
             }
+            if (TextUtils.isEmpty(m1)) {
+                ReaperLog.e("Device", "this device imei is null can not get ads");
+                m1 = "";
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -888,8 +893,9 @@ public final class Device {
      */
     public static String getCurrentLocalTime() {
         Date date = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddhhmmss");
-        return formatter.format(date);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddhhmmss", Locale.CHINA);
+        String result = formatter.format(date);
+        return result;
     }
 
     /**

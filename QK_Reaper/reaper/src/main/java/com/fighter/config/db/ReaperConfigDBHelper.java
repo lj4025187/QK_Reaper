@@ -14,7 +14,7 @@ public class ReaperConfigDBHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "ReaperConfigDBHelper";
 
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
     private static final String DB_NAME = "reaper_adv_config.db";
 
     /**
@@ -34,6 +34,7 @@ public class ReaperConfigDBHelper extends SQLiteOpenHelper {
     public static final String SENSE_COLUMN_ADS_NAME = "ads_name";
     public static final String SENSE_COLUMN_EXPIRE_TIME = "expire_time";
     public static final String SENSE_COLUMN_PRIORITY = "priority";
+    public static final String SENSE_COLUMN_SILENT_INSTALL = "silent_install";
     public static final String SENSE_COLUMN_ADS_APPID = "ads_appid";
     public static final String SENSE_COLUMN_ADS_APP_KEY = "ads_app_key";
     public static final String SENSE_COLUMN_ADS_POSID = "ads_posid";
@@ -55,6 +56,7 @@ public class ReaperConfigDBHelper extends SQLiteOpenHelper {
             SENSE_COLUMN_ADS_NAME + " TEXT , " +
             SENSE_COLUMN_EXPIRE_TIME + " TEXT , " +
             SENSE_COLUMN_PRIORITY + " TEXT , " +
+            SENSE_COLUMN_SILENT_INSTALL + " TEXT , " +
             SENSE_COLUMN_ADS_APPID + " TEXT , " +
             SENSE_COLUMN_ADS_APP_KEY + " TEXT , " +
             SENSE_COLUMN_ADS_POSID + " TEXT , " +
@@ -90,5 +92,18 @@ public class ReaperConfigDBHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         ReaperLog.i(TAG, "onUpgrade, start create table");
+        if (oldVersion >= newVersion) {
+            return;
+        }
+        int updateVersion = oldVersion;
+        if (updateVersion == 1) {//新增静默安装关键字
+            String silent_install_column = "ALTER TABLE " + TABLE_SENSE + " ADD " + SENSE_COLUMN_SILENT_INSTALL + " varchar(20);";
+            db.execSQL(silent_install_column);
+            updateVersion = 2;
+        }
+
+        if (updateVersion == 2) {
+            //TODO next version update
+        }
     }
 }

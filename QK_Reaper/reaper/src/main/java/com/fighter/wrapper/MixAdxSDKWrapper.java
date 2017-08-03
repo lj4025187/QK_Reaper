@@ -163,6 +163,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                     adResponse = convertResponse(
                             adRequest.getAdPosId(),
                             adRequest.getExpireTime(),
+                            adRequest.getSilentInstall(),
                             adRequest.getAdType(),
                             adRequest.getAdLocalAppId(),
                             adRequest.getAdLocalPositionId(),
@@ -332,7 +333,9 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
             result.put("app_name", appName);                                  // app 名称
         }
         String m1 = Device.getM1(mContext);                                   // imei
-        if (TextUtils.isEmpty(m1)) m1 = "353490069872915";
+        if (TextUtils.isEmpty(m1)) {
+            ReaperLog.e(TAG, "get m1 value is null");
+        }
         result.put("imei", m1);
         result.put("androidid", Device.getAndroidID(mContext));               // android id
         result.put("mac", Device.getMacStable(mContext));                     // mac
@@ -405,6 +408,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
 
     private AdResponse convertResponse(String adPosId,
                                        long expireTime,
+                                       boolean silentInstall,
                                        String adType,
                                        String adLocalAppId,
                                        String adLocalPositionId,
@@ -449,6 +453,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                     adInfo = new AdInfo();
                     adInfo.generateUUID();
                     adInfo.setExpireTime(expireTime);
+                    adInfo.setSilentInstall(silentInstall);
                     adInfo.setCanCache(true);
                     adInfo.setAdName(SdkName.MIX_ADX);
                     adInfo.setAdPosId(adPosId);

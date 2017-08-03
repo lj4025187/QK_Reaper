@@ -1,6 +1,7 @@
 package com.fighter.tracker;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.fighter.common.Device;
 import com.fighter.common.utils.EncryptUtils;
@@ -65,7 +66,8 @@ final class CommonParam {
         String m1_str = Device.getM1(context);
         if (m1_str != null) {
             String m1_sum = EncryptUtils.encryptMD5ToString(m1_str);
-            m1 = m1_sum.toLowerCase();
+            if(!TextUtils.isEmpty(m1_sum))
+                m1 = m1_sum.toLowerCase();
         }
         brand = Device.getBuildBrand();
         solution = Device.getBuildManufacturer();

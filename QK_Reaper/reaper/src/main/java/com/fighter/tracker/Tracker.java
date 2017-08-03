@@ -12,7 +12,7 @@ import java.util.HashMap;
  * Created by lichen on 17-5-8.
  */
 public class Tracker {
-    private static final String TAG = Tracker.class.getSimpleName();
+    private static final String TAG = "Tracker";
 
     private static Tracker sTracker = new Tracker();
 

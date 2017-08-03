@@ -836,9 +836,9 @@ public class EncryptUtils {
      * @return 16进制大写字符串
      */
     private static String bytes2HexString(byte[] bytes) {
-        if (bytes == null) return null;
+        if (bytes == null) return "";
         int len = bytes.length;
-        if (len <= 0) return null;
+        if (len <= 0) return "";
         char[] ret = new char[len << 1];
         for (int i = 0, j = 0; i < len; i++) {
             ret[j++] = hexDigits[bytes[i] >>> 4 & 0x0f];

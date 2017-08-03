@@ -14,7 +14,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static com.fighter.config.db.ReaperConfigDBHelper.*;
+import static com.fighter.config.db.ReaperConfigDBHelper.POS_COLUMN_ADV_EXPOSURE;
+import static com.fighter.config.db.ReaperConfigDBHelper.POS_COLUMN_ADV_TYPE;
+import static com.fighter.config.db.ReaperConfigDBHelper.POS_COLUMN_POS_ID;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_ADB_REAL_SIZE;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_ADS_APPID;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_ADS_APP_KEY;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_ADS_NAME;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_ADS_POSID;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_ADV_SIZE_TYPE;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_EXPIRE_TIME;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_MAX_ADV_NUM;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_POS_ID;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_PRIORITY;
+import static com.fighter.config.db.ReaperConfigDBHelper.SENSE_COLUMN_SILENT_INSTALL;
+import static com.fighter.config.db.ReaperConfigDBHelper.TABLE_POS;
+import static com.fighter.config.db.ReaperConfigDBHelper.TABLE_SENSE;
 
 /**
  * This is the config database to save
@@ -124,6 +139,7 @@ public class ReaperConfigDB {
                 SENSE_COLUMN_ADS_NAME,
                 SENSE_COLUMN_EXPIRE_TIME,
                 SENSE_COLUMN_PRIORITY,
+                SENSE_COLUMN_SILENT_INSTALL,
                 SENSE_COLUMN_ADS_APPID,
                 SENSE_COLUMN_ADS_APP_KEY,
                 SENSE_COLUMN_ADS_POSID,
@@ -133,7 +149,7 @@ public class ReaperConfigDB {
         String selection = SENSE_COLUMN_POS_ID + "=?";
         String[] selectionArgs = new String[] {posId};
 
-        Cursor cursor = db.query(TABLE_SENSE, columns, selection, selectionArgs, null, null, null);
+        Cursor cursor = db.query(TABLE_SENSE, null, selection, selectionArgs, null, null, null);
         if (cursor == null) {
             return null;
         }
@@ -145,6 +161,7 @@ public class ReaperConfigDB {
                 sense.ads_name = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_NAME));
                 sense.expire_time = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_EXPIRE_TIME));
                 sense.priority = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_PRIORITY));
+                sense.silent_install = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_SILENT_INSTALL));
                 sense.ads_appid = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_APPID));
                 sense.ads_app_key = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_APP_KEY));
                 sense.ads_posid = cursor.getString(cursor.getColumnIndex(SENSE_COLUMN_ADS_POSID));
@@ -228,12 +245,16 @@ public class ReaperConfigDB {
         try {
             for (ReaperAdvPos pos : posList) {
                 if (pos == null)  continue;
-                db.insert(TABLE_POS, null, pos.toContentValues());
+                long pos_insert = db.insert(TABLE_POS, null, pos.toContentValues());
+                if(pos_insert < 0)
+                    ReaperLog.e(TAG, pos + " insert pos to " + TABLE_POS + " exits problems");
                 List<ReaperAdSense> senseList = pos.getAdSenseList();
                 if (senseList == null || senseList.size() == 0) continue;
                 for (ReaperAdSense sense : senseList) {
                     if (sense == null) continue;
-                    db.insert(TABLE_SENSE, null, sense.toContentValues());
+                    long sense_insert = db.insert(TABLE_SENSE, null, sense.toContentValues());
+                    if(sense_insert < 0 )
+                        ReaperLog.e(TAG, sense + " insert sense to " + TABLE_SENSE + " exits problems");
                 }
             }
         } finally {

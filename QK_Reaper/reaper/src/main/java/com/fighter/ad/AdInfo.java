@@ -69,6 +69,10 @@ public class AdInfo {
      */
     private static final String KEY_EXPIRE_TIME = "expire_time";
     /**
+     * 广告是否支持静默安装
+     */
+    private static final String KEY_SILENT_INSTALL = "silent_install";
+    /**
      * 广告内容类型
      */
     private static final String KEY_CONTENT_TYPE = "contentType";
@@ -200,6 +204,15 @@ public class AdInfo {
 
     public void setExpireTime(long expireTime) {
         mAdParams.put(KEY_EXPIRE_TIME, expireTime);
+    }
+
+    public boolean getSilentInstall() {
+        Object o = mAdParams.get(KEY_SILENT_INSTALL);
+        return o != null && (boolean) o;
+    }
+
+    public void setSilentInstall(boolean silentInstall) {
+        mAdParams.put(KEY_SILENT_INSTALL, silentInstall);
     }
 
     public int getContentType() {
@@ -451,6 +464,7 @@ public class AdInfo {
                 ", mActionType=" + getActionType() +
                 ", mUuid=" + getUUID() +
                 ", mExpireTime=" + getExpireTime() +
+                ", mSilentInstall=" + getSilentInstall() +
                 ", mCanCache=" + canCache() +
                 ", mAdSource=" + getAdName() +
                 ", mAdPosId=" + getAdPosId() +

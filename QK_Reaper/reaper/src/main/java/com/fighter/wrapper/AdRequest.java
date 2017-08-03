@@ -21,6 +21,10 @@ public class AdRequest {
      */
     private static final String KEY_EXPIRE_TIME = "expire_time";
     /**
+     * 广告位是否支持静默安装
+     */
+    private static final String KEY_SILENT_INSTALL = "silent_install";
+    /**
      * 申请时广告商下发的App ID
      */
     private static final String KEY_AD_LOCAL_APP_ID = "adLocalAppId";
@@ -73,6 +77,11 @@ public class AdRequest {
     public long getExpireTime() {
         Object o = mAdParams.get(KEY_EXPIRE_TIME);
         return o == null ? 0 : (long) o;
+    }
+
+    public boolean getSilentInstall() {
+        Object o = mAdParams.get(KEY_SILENT_INSTALL);
+        return o != null && (boolean) o;
     }
 
     public String getAdLocalAppId() {
@@ -157,6 +166,17 @@ public class AdRequest {
          */
         public Builder adExpireTime(long expireTime) {
             putParam(KEY_EXPIRE_TIME, expireTime);
+            return this;
+        }
+
+        /**
+         * 是否支持静默安装
+         *
+         * @param silentInstall 是否支持静默安装
+         * @return 广告创建器
+         */
+        public Builder adSilentInstall(boolean silentInstall) {
+            putParam(KEY_SILENT_INSTALL, silentInstall);
             return this;
         }
 

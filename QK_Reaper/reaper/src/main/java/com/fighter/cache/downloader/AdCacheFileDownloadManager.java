@@ -76,7 +76,7 @@ public class AdCacheFileDownloadManager {
     /**
      * when finish app should unregister receiver
      */
-    private void onFinsh() {
+    private void release() {
         if (mDownloadReceiver != null)
             mContext.unregisterReceiver(mDownloadReceiver);
     }
@@ -97,11 +97,10 @@ public class AdCacheFileDownloadManager {
         }
         mAdFileCacheUtil.clearCacheFile(new File(mDownloadPath));
         Request request = new Request.Builder().url(imageUrl).build();
-        File file = mOkHttpDownloader.downloadSync(request,
+        return mOkHttpDownloader.downloadSync(request,
                 mDownloadPath,
                 UUID.randomUUID().toString(),
                 true);
-        return file;
     }
 
     /**
@@ -131,8 +130,10 @@ public class AdCacheFileDownloadManager {
             request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName + ".apk");
         } catch (IllegalStateException e) {
             ReaperLog.e(TAG, " IllegalStateException from DownloadManager.Request " + e);
+            e.printStackTrace();
         } catch (NullPointerException e) {
             ReaperLog.e(TAG, " NullPointerException from DownloadManager.Request " + e);
+            e.printStackTrace();
         }
         return mDownloadManager.enqueue(request);
     }
@@ -166,13 +167,15 @@ public class AdCacheFileDownloadManager {
                             reason = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON));
                         }
                     } catch (Exception e) {
+                        ReaperLog.e(TAG, "DownloadCompleteReceiver " + e.toString());
                         e.printStackTrace();
                     } finally {
-                        CloseUtils.closeIOQuietly(cursor);
+                        if (cursor != null)
+                            CloseUtils.closeIOQuietly(cursor);
                     }
-                    if(status == DownloadManager.STATUS_SUCCESSFUL) {
+                    if (status == DownloadManager.STATUS_SUCCESSFUL) {
                         mCallback.onDownloadComplete(reference, fileName);
-                    } else if(status == DownloadManager.STATUS_FAILED) {
+                    } else if (status == DownloadManager.STATUS_FAILED) {
                         mCallback.onDownloadFailed(reference, reason);
                     }
                     break;

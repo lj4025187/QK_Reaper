@@ -31,6 +31,7 @@ public class ReaperAdSense implements Comparable{
     public String ads_name;
     public String expire_time;
     public String priority;
+    public String silent_install;
     public String ads_appid;
     public String ads_app_key;
     public String ads_posid;
@@ -46,6 +47,7 @@ public class ReaperAdSense implements Comparable{
                 ", ads_name='" + ads_name + '\'' +
                 ", expire_time='" + expire_time + '\'' +
                 ", priority ='" + priority + '\'' +
+                ", silent_install ='" + silent_install + '\'' +
                 ", ads_appid='" + ads_appid + '\'' +
                 ", ads_app_key='" + ads_app_key + '\'' +
                 ", ads_posid='" + ads_posid + '\'' +
@@ -78,6 +80,7 @@ public class ReaperAdSense implements Comparable{
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_ADS_NAME, ads_name);
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_EXPIRE_TIME, expire_time);
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_PRIORITY, priority);
+        cv.put(ReaperConfigDBHelper.SENSE_COLUMN_SILENT_INSTALL, silent_install);
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_ADS_APPID, ads_appid);
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_ADS_APP_KEY, ads_app_key);
         cv.put(ReaperConfigDBHelper.SENSE_COLUMN_ADS_POSID, ads_posid);

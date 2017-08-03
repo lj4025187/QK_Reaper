@@ -11,3 +11,6 @@
 /bin
 log.txt
 /gradle.properties
+/sample/libs/reaper.aar
+/sample/src/main/assets/reaper.rr
+

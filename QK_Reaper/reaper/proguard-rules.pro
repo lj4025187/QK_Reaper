@@ -29,9 +29,11 @@
 -dontwarn com.alibaba.fastjson.**
 -dontwarn springfox.documentation.**
 -dontwarn com.qiku.serversdk.**
+-dontwarn com.ak.android.**
 -keep class com.qiku.proguard.annotations.** { *; }
 -keep class okhttp3.** { *; }
 -keep class com.alibaba.** { *; }
+-keep class android.content.** { *; }
 -keep class com.ak.android.** { *; }
 -keep class android.support.v4.app.NotificationCompat**{ public *; }
 -keep class com.fighter.config.** {*; }

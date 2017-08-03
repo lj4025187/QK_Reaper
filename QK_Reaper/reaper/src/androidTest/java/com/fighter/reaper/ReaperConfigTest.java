@@ -48,6 +48,7 @@ public class ReaperConfigTest {
                     "\"ads_name\": \"jx\"," +
                     "\"expire_time\": \"1800\"," +
                     "\"priority\": \"10\"," +
+                    "\"silent_install\": \"1\"," +
                     "\"ads_appid\": \"100001\"," +
                     "\"ads_key\": \"adbsjmemsfm\"," +
                     "\"ads_posid\": \"10001\"," +
@@ -59,6 +60,7 @@ public class ReaperConfigTest {
                     "\"ads_name\": \"gdt\"," +
                     "\"expire_time\": \"1800\"," +
                     "\"priority\": \"3\"," +
+                    "\"silent_install\": \"1\"," +
                     "\"ads_appid\": \"1104241296\"," +
                     "\"ads_key\": \"adbsjmemsfm\"," +
                     "\"ads_posid\": \"6050305154328807\"," +
@@ -70,6 +72,7 @@ public class ReaperConfigTest {
                     "\"ads_name\": \"baidu\"," +
                     "\"expire_time\": \"1800\"," +
                     "\"priority\": \"10\"," +
+                    "\"silent_install\": \"0\"," +
                     "\"ads_appid\": \"0\"," +
                     "\"ads_key\": \"adbsjmemsfm\"," +
                     "\"ads_posid\": \"128\"," +
@@ -88,6 +91,7 @@ public class ReaperConfigTest {
                     "\"ads_name\": \"gdt\"," +
                     "\"expire_time\": \"1800\"," +
                     "\"priority\": \"3\"," +
+                    "\"silent_install\": \"1\"," +
                     "\"ads_appid\": \"1104241296\"," +
                     "\"ads_key\": \"adbsjmemsfm\"," +
                     "\"ads_posid\": \"1060308114529681\"," +

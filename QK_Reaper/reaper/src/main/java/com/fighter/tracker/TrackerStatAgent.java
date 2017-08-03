@@ -23,7 +23,7 @@ import java.util.HashMap;
 
 public class TrackerStatAgent {
 
-    private final static String TAG = TrackerStatAgent.class.getSimpleName();
+    private final static String TAG = "TrackerStatAgent";
     private final static String REAPER_AGENT_KEY = "dd458505749b2941217ddd59394240e8";
     private final static String DEBUG_REAPER_AGENT_KEY = "a86c450b76fb8c371afead6410d55534";
     //switch for QHStatAgent function

@@ -119,4 +119,5 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.4.2'
     compile files('libs/serversdk-2.0.6.jar')
     compile 'com.android.support:support-v4:25.3.1'
+    compile files('libs/akad_4.0.3038_0725_base.jar')
 }
