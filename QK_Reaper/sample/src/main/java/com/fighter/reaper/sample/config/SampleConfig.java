@@ -15,6 +15,12 @@ public class SampleConfig {
 
     public final static boolean IS_FOR_SERVER = false;
     public final static boolean LOCAL_CONFIG = false;
+
+    //save in sp key
+    public static final String KEY_NEED_HOLD_AD = "need_hold_ad";
+
+
+
     //true : t.adv.os.qiku.com
     //false: comp.360os.com
     public final static boolean TEST_MODE = BuildConfig.DEBUG;

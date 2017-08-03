@@ -1,5 +1,6 @@
 package com.fighter.reaper.sample.activities;
 
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
@@ -47,6 +48,13 @@ public class TabMainActivity extends BaseActivity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+        findViewById(R.id.id_settings).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         mTabHost.getTabWidget().setDividerDrawable(null);
         initTabData();
@@ -138,8 +146,8 @@ public class TabMainActivity extends BaseActivity {
 
         public void setChecked(boolean isChecked) {
             if (textView != null) {
-                textView.setTextColor(getResources().getColor( isChecked ? R.color.color_tab_indicator_pressed : R.color.color_tab_indicator_normal));
-                textView .setTypeface(Typeface.defaultFromStyle(isChecked ? Typeface.BOLD : Typeface.NORMAL));
+                textView.setTextColor(getResources().getColor(isChecked ? R.color.color_tab_indicator_pressed : R.color.color_tab_indicator_normal));
+                textView.setTypeface(Typeface.defaultFromStyle(isChecked ? Typeface.BOLD : Typeface.NORMAL));
             }
         }
 

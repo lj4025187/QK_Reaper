@@ -20,6 +20,7 @@ import com.fighter.loader.AdInfo;
 import com.fighter.loader.AdRequester;
 import com.fighter.loader.ReaperApi;
 import com.fighter.reaper.sample.R;
+import com.fighter.reaper.sample.SpManager;
 import com.fighter.reaper.sample.adapter.AdAdapter;
 import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.model.AppItem;
@@ -107,7 +108,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if(mListData.isEmpty()) {
+        if (mListData.isEmpty()) {
             startPullAds();
         }
     }
@@ -175,17 +176,17 @@ public class AdFragment extends Fragment implements Handler.Callback,
         }
         String posId = generatePosId();
         boolean isSupport;
-        if(SampleConfig.TEST_MODE) {
+        if (SampleConfig.TEST_MODE) {
             isSupport = TextUtils.equals(SampleConfig.QIHOO_VIDEO_ADV/*"5"*/, posId)    //Qihoo video
-                        || TextUtils.equals(SampleConfig.QIHOO_ORIGINAL_ADV/*"6"*/, posId)    //Qihoo original
-                        || TextUtils.equals(SampleConfig.TENCENT_INSERT_ADV/*"7"*/, posId)    //Tencent insert
-                        || TextUtils.equals(SampleConfig.TENCENT_BANNER_ADV/*"8"*/, posId)      //Tencent banner
-                        || TextUtils.equals(SampleConfig.TENCENT_OPEN_ADV/*"9"*/, posId)      //Tencent openapp
-                        || TextUtils.equals(SampleConfig.TENCENT_FEED_ADV/*"10"*/, posId)     //Tencent feed
-                        || TextUtils.equals(SampleConfig.TENCENT_ORIGINAL_ADV/*"11"*/, posId)     //Tencent original
-                        || TextUtils.equals(SampleConfig.BAIDU_INSERT_ADV/*"13"*/, posId)     //Baidu insert
-                        || TextUtils.equals(SampleConfig.BAIDU_BANNER_ADV/*"14"*/, posId)     //Baidu banner
-                        || TextUtils.equals(SampleConfig.BAIDU_OPEN_ADV/*"15"*/, posId);    //Baidu openapp
+                    || TextUtils.equals(SampleConfig.QIHOO_ORIGINAL_ADV/*"6"*/, posId)    //Qihoo original
+                    || TextUtils.equals(SampleConfig.TENCENT_INSERT_ADV/*"7"*/, posId)    //Tencent insert
+                    || TextUtils.equals(SampleConfig.TENCENT_BANNER_ADV/*"8"*/, posId)      //Tencent banner
+                    || TextUtils.equals(SampleConfig.TENCENT_OPEN_ADV/*"9"*/, posId)      //Tencent openapp
+                    || TextUtils.equals(SampleConfig.TENCENT_FEED_ADV/*"10"*/, posId)     //Tencent feed
+                    || TextUtils.equals(SampleConfig.TENCENT_ORIGINAL_ADV/*"11"*/, posId)     //Tencent original
+                    || TextUtils.equals(SampleConfig.BAIDU_INSERT_ADV/*"13"*/, posId)     //Baidu insert
+                    || TextUtils.equals(SampleConfig.BAIDU_BANNER_ADV/*"14"*/, posId)     //Baidu banner
+                    || TextUtils.equals(SampleConfig.BAIDU_OPEN_ADV/*"15"*/, posId);    //Baidu openapp
         } else {
             isSupport = TextUtils.equals(SampleConfig.QIHOO_VIDEO_ADV/*"5"*/, posId)    //Qihoo video
                     || TextUtils.equals(SampleConfig.QIHOO_ORIGINAL_ADV/*"6"*/, posId)    //Qihoo original
@@ -202,8 +203,9 @@ public class AdFragment extends Fragment implements Handler.Callback,
             showEmptyView(true);
             return;
         }
-        SampleLog.i(TAG, " request ad posid " + posId);
-        AdRequester adRequester = mReaperApi.getAdRequester(posId, this, true);
+        boolean needHold = SpManager.getInstance(mContext).getBooleanTrue(SampleConfig.KEY_NEED_HOLD_AD);
+        SampleLog.i(TAG, " request ad position id " + posId + " need Hold " + needHold);
+        AdRequester adRequester = mReaperApi.getAdRequester(posId, this, needHold);
         if (adRequester == null)
             return;
         adRequester.requestAd(SampleConfig.REQUEST_COUNT_PER_TIME);
@@ -214,32 +216,42 @@ public class AdFragment extends Fragment implements Handler.Callback,
         switch (mCategory) {
             case SampleConfig.TYPE_PLUG_IN:
                 if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "1";
-                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = SampleConfig.TENCENT_INSERT_ADV/*"7"*/;
-                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = SampleConfig.BAIDU_INSERT_ADV/*"13"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME))
+                    posId = SampleConfig.TENCENT_INSERT_ADV/*"7"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME))
+                    posId = SampleConfig.BAIDU_INSERT_ADV/*"13"*/;
                 break;
             case SampleConfig.TYPE_BANNER:
                 if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "2";
-                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = SampleConfig.TENCENT_BANNER_ADV/*"8"*/;
-                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = SampleConfig.BAIDU_BANNER_ADV/*"14"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME))
+                    posId = SampleConfig.TENCENT_BANNER_ADV/*"8"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME))
+                    posId = SampleConfig.BAIDU_BANNER_ADV/*"14"*/;
                 break;
             case SampleConfig.TYPE_FULL_SCREEN:
                 if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "3";
-                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = SampleConfig.TENCENT_OPEN_ADV/*"9"*/;
-                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = SampleConfig.BAIDU_OPEN_ADV/*"15"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME))
+                    posId = SampleConfig.TENCENT_OPEN_ADV/*"9"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME))
+                    posId = SampleConfig.BAIDU_OPEN_ADV/*"15"*/;
                 break;
             case SampleConfig.TYPE_FEED:
                 if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "4";
-                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = SampleConfig.TENCENT_FEED_ADV/*"10"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME))
+                    posId = SampleConfig.TENCENT_FEED_ADV/*"10"*/;
                 if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "16";
                 break;
             case SampleConfig.TYPE_VIDEO:
-                if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = SampleConfig.QIHOO_VIDEO_ADV/*"5"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME))
+                    posId = SampleConfig.QIHOO_VIDEO_ADV/*"5"*/;
                 if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = "11";
                 if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "17";
                 break;
             case SampleConfig.TYPE_NATIVE:
-                if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = SampleConfig.QIHOO_ORIGINAL_ADV /*"6"*/;
-                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME)) posId = SampleConfig.TENCENT_ORIGINAL_ADV/*"12"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME))
+                    posId = SampleConfig.QIHOO_ORIGINAL_ADV /*"6"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.TENCENT_SRC_NAME))
+                    posId = SampleConfig.TENCENT_ORIGINAL_ADV/*"12"*/;
                 if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME)) posId = "18";
                 break;
 
@@ -291,7 +303,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
         }
         ToastUtil.getInstance(mContext).showSingletonToast(R.string.ad_load_failed_toast);
         mFailedData.add(s);
-        if (mListData.size() + mFailedData.size() >= SampleConfig.REQUEST_COUNT_PER_TIME){
+        if (mListData.size() + mFailedData.size() >= SampleConfig.REQUEST_COUNT_PER_TIME) {
             mAdAdapter.notifyDataSetChanged();
             showFooterView(false);
             showLoadingView(false);
@@ -311,7 +323,7 @@ public class AdFragment extends Fragment implements Handler.Callback,
         SampleLog.i(TAG, " on success ads uuid " + adInfo.getUuid());
         SampleLog.i(TAG, " on success ads isAvailable " + adInfo.isAvailable());
 
-        if (mListData.size() + mFailedData.size() >= SampleConfig.REQUEST_COUNT_PER_TIME){
+        if (mListData.size() + mFailedData.size() >= SampleConfig.REQUEST_COUNT_PER_TIME) {
             showFooterView(false);
             showLoadingView(false);
             showEmptyView(false);
