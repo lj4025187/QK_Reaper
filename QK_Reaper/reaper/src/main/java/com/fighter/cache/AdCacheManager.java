@@ -377,7 +377,11 @@ public class AdCacheManager implements DownloadCallback {
                 return mAdResponse.getAdInfo();
             } else {
                 ReaperLog.e(TAG, "ad response failed: " + mAdResponse.toString());
-                trackActionEvent(EVENT_AD_DOWN_FAIL, null, "request_fail:" + mAdResponse.getErrMsg());
+                AdInfo failAdInfo = new AdInfo();
+                failAdInfo.setAdPosId(mAdResponse.getAdPosId());
+                failAdInfo.setAdName(mAdResponse.getAdName());
+                failAdInfo.setAdType(mAdResponse.getAdType());
+                trackActionEvent(EVENT_AD_DOWN_FAIL, failAdInfo, "request_fail:" + mAdResponse.getErrMsg());
                 return false;
             }
         }
@@ -415,7 +419,11 @@ public class AdCacheManager implements DownloadCallback {
                     ReaperLog.i(TAG, "wrapper runner adInfo: " + adInfo.getUUID() + ", hash: " + adInfo.hashCode());
                 } else {
                     ReaperLog.e(TAG, "ad response failed: " + adResponse.toString());
-                    trackActionEvent(EVENT_AD_DOWN_FAIL, null, "request_fail:" + adResponse.getErrMsg());
+                    AdInfo failAdInfo = new AdInfo();
+                    failAdInfo.setAdPosId(adResponse.getAdPosId());
+                    failAdInfo.setAdName(adResponse.getAdName());
+                    failAdInfo.setAdType(adResponse.getAdType());
+                    trackActionEvent(EVENT_AD_DOWN_FAIL, failAdInfo, "request_fail:" + adResponse.getErrMsg());
                     return false;
                 }
             }
