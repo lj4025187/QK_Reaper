@@ -54,8 +54,8 @@ public class SampleApp extends Application {
 
         Map<String, Object> config = new ArrayMap<>();
         config.put("LOG_SWITCH", true);
-        config.put("SERVER_TEST", false);
-        config.put("AKAD_TEST", false);
+        config.put("SERVER_TEST", BuildConfig.DEBUG);
+        config.put("AKAD_TEST", true);
         mReaperApi.initConfigValue(config);
         //模拟负一屏
         Context context = getApplicationContext();

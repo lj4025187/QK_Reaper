@@ -9,6 +9,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
+import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.DisplayMetrics;
@@ -1478,9 +1480,19 @@ public class AdCacheManager implements DownloadCallback {
         }
         mInstallAppsPath.put(packageName, apkPath);
         registerInstallReceiver();
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Uri fileUri;
+        if(Build.VERSION.SDK_INT >= 24) {
+            fileUri = FileProvider.getUriForFile(mContext,
+                    mContext.getApplicationContext().getPackageName() + ".reaper.provider.ReaperFileProvider",
+                    apkFile);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } else {
+            fileUri = Uri.fromFile(apkFile);
+        }
+        intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
         mContext.startActivity(intent);
     }
 

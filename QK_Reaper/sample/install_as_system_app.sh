@@ -1,3 +1,5 @@
+cp ../bin/reaper.aar libs/;
+cp ../bin/reaper.rr src/main/assets/;
 gradle clean;
 gradle assembleDebug
 

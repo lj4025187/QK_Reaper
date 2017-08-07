@@ -32,7 +32,6 @@ import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
-import com.fighter.config.ReaperConfig;
 import com.fighter.download.ReaperEnv;
 
 import java.io.File;
