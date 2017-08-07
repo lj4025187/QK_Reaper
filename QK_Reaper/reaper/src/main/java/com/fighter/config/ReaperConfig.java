@@ -15,9 +15,6 @@ public final class ReaperConfig {
     public static final String URL_HTTP = "http://comp.360os.com/new_cfg";
 
 
-    // TODO set this false when publish
-    public static boolean TEST_MODE = false;
-
     /**
      * For test
      */

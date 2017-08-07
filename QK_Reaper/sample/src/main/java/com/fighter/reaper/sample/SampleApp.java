@@ -4,12 +4,15 @@ package com.fighter.reaper.sample;
 import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.util.ArrayMap;
 
 import com.fighter.loader.ReaperApi;
 import com.fighter.loader.ReaperInit;
 import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.utils.ResponseGenerator;
 import com.fighter.reaper.sample.utils.ToastUtil;
+
+import java.util.Map;
 
 /**
  * Created by LiuJia on 2017/5/19.
@@ -49,6 +52,11 @@ public class SampleApp extends Application {
             return;
         }
 
+        Map<String, Object> config = new ArrayMap<>();
+        config.put("LOG_SWITCH", true);
+        config.put("SERVER_TEST", false);
+        config.put("AKAD_TEST", false);
+        mReaperApi.initConfigValue(config);
         //模拟负一屏
         Context context = getApplicationContext();
         if (SampleConfig.CARD_MANAGER_MODE) {

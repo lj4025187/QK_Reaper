@@ -29,8 +29,6 @@ import javax.net.ssl.X509TrustManager;
 
 import okhttp3.OkHttpClient;
 
-import static android.provider.CalendarContract.Instances.BEGIN;
-
 /**
  * Utils for http request
  *
@@ -60,7 +58,7 @@ public final class ReaperConfigHttpHelper {
      */
     public static OkHttpClient getHttpsClient() {
         try {
-            String[] certs = ReaperConfig.TEST_MODE ? new String[] {TEST_CERT} : CERTS;
+            String[] certs = ReaperConfigFetcher.SERVER_TEST_MODE ? new String[] {TEST_CERT} : CERTS;
             X509TrustManager tm = trustManagerForCertificates(certs);
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{tm}, null);

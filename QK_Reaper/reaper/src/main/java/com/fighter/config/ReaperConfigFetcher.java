@@ -26,6 +26,7 @@ import okhttp3.ResponseBody;
 public class ReaperConfigFetcher {
 
     private static final String TAG = "ReaperConfigFetcher";
+    public static boolean SERVER_TEST_MODE = false;
 
     /**
      * Fetch config data from config server.
@@ -74,8 +75,8 @@ public class ReaperConfigFetcher {
     public static boolean fetch(Context context, String pkg,
                                 String salt, String appKey, String appId) {
 
-        String baseUrl = ReaperConfig.TEST_MODE ? ReaperConfig.TEST_URL_HTTPS : ReaperConfig.URL_HTTPS;
-        String sdkVersion = ReaperConfig.TEST_MODE ? ReaperConfig.TEST_SDK_VERSION : BumpVersion.value();
+        String baseUrl = SERVER_TEST_MODE ? ReaperConfig.TEST_URL_HTTPS : ReaperConfig.URL_HTTPS;
+        String sdkVersion = SERVER_TEST_MODE ? ReaperConfig.TEST_SDK_VERSION : BumpVersion.value();
         String url = baseUrl +
                 "?" + ReaperConfig.KEY_URL_PARAM_SDK_VERSION + "=" + sdkVersion +
                 "&" + ReaperConfig.KEY_URL_PARAM_ID + "=" + appId;

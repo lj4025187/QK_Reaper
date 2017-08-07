@@ -3,8 +3,6 @@ package com.fighter.common.utils;
 import android.os.Environment;
 import android.util.Log;
 
-import com.fighter.config.ReaperConfig;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -20,6 +18,7 @@ import java.util.concurrent.Executors;
 public class ReaperLog {
 
     public static final String TAG = "Reaper";
+    public static boolean LOG_SWITCH = false;
     private static final String LOCAL_DIR = Environment.getExternalStorageDirectory() + "/Reaper";
     private static final String LOCAL_LOG_DIR = LOCAL_DIR + "/logs";
     private static final boolean RECORD_LOG = true;
@@ -29,13 +28,13 @@ public class ReaperLog {
     private static SimpleDateFormat sMillionsFormat, sCurrentFormat;
 
     public static void i(String msg) {
-        if (!ReaperConfig.TEST_MODE)
+        if (!LOG_SWITCH)
             return;
         Log.i(TAG, msg);
     }
 
     public static void i(String subTag, String msg) {
-        if (!ReaperConfig.TEST_MODE)
+        if (!LOG_SWITCH)
             return;
         Log.i(TAG, "[" + subTag + "] ==> " + msg);
     }
@@ -148,7 +147,7 @@ public class ReaperLog {
     }
 
     public static void printStackTrace() {
-        if (ReaperConfig.TEST_MODE) {
+        if (LOG_SWITCH) {
             try {
                 StackTraceElement[] sts = Thread.currentThread().getStackTrace();
                 for (StackTraceElement stackTraceElement : sts) {
@@ -161,7 +160,7 @@ public class ReaperLog {
     }
 
     public static void printException(String msg, Throwable e) {
-        if (ReaperConfig.TEST_MODE) {
+        if (LOG_SWITCH) {
             DEFAULT_LOGHANDLER.publish("Log_StackTrace", Log.ERROR, msg + '\n' + Log.getStackTraceString(e));
         }
     }

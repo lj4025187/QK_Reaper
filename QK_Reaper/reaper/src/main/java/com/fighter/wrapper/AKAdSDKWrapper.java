@@ -49,6 +49,7 @@ import java.util.Map;
  */
 public class AKAdSDKWrapper extends ISDKWrapper {
     private static final String TAG = "AKAdSDKWrapper";
+    public static boolean AKAD_TEST_MODE = false;
 
     public static final String PARAMS_KEY_VIEW = "view";
     public static final String PARAMS_KEY_ACTIVITY = "activity";
@@ -102,7 +103,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         mDownloadApk = new HashMap<>();
         //if second param set true should see "AKAD" tag
         ReaperLog.i(TAG, "[init] in AKAd " + mContext.getPackageName());
-        AKAD.initSdk(mContext, ReaperConfig.TEST_MODE, ReaperConfig.TEST_MODE);
+        AKAD.initSdk(mContext, AKAD_TEST_MODE, AKAD_TEST_MODE);
         ApkDownloadListener apkDownloadListener = new ApkDownloadListener();
         AKAD.setApkListener(mContext, apkDownloadListener);
         HookInstaller.setSilentListener(apkDownloadListener);

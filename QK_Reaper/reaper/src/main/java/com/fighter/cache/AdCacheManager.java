@@ -26,6 +26,7 @@ import com.fighter.common.utils.ThreadPoolUtils;
 import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfig;
+import com.fighter.config.ReaperConfigFetcher;
 import com.fighter.config.ReaperConfigManager;
 import com.fighter.reaper.BumpVersion;
 import com.fighter.tracker.EventActionParam;
@@ -1779,7 +1780,7 @@ public class AdCacheManager implements DownloadCallback {
 
         fetchSucceed = ReaperConfigManager.fetchReaperConfigFromServer(mContext,
                 mContext.getPackageName(),
-                ReaperConfig.TEST_MODE ? ReaperConfig.TEST_SALT : ReaperConfig.RELEASE_SALT,
+                ReaperConfigFetcher.SERVER_TEST_MODE ? ReaperConfig.TEST_SALT : ReaperConfig.RELEASE_SALT,
                 mAppKey, mAppId);
 
         if (!fetchSucceed) {

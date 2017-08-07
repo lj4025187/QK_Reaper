@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 
 import com.fighter.utils.LoaderLog;
-import com.qiku.proguard.annotations.KeepAll;
 import com.qiku.proguard.annotations.NoProguard;
 
 import java.lang.reflect.InvocationTargetException;
@@ -89,6 +88,18 @@ public class ReaperApi {
         Map<String, Object> params = new ArrayMap<>();
         putParam(params, "config", configJson);
         invokeReaperApi("setTargetConfig", params);
+    }
+
+    /**
+     * 该接口用来设置后期扩展的字段，eg.日志开关，服务器地址，聚效广告位情况
+     *
+     * @param params
+     */
+    @NoProguard
+    public void initConfigValue(Map<String, Object> params) {
+        if(params == null || params.isEmpty())
+            return;
+        invokeReaperApi("initConfigValue", params);
     }
 
     /**

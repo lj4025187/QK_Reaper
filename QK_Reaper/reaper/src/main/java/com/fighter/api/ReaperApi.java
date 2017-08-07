@@ -1,8 +1,8 @@
 package com.fighter.api;
 
-import android.app.Application;
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.fighter.ad.AdInfo;
 import com.fighter.cache.AdCacheManager;
@@ -12,12 +12,14 @@ import com.fighter.common.rc4.RC4Factory;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfig;
+import com.fighter.config.ReaperConfigFetcher;
 import com.fighter.config.ReaperConfigHttpHelper;
 import com.fighter.config.db.ReaperConfigDB;
 import com.fighter.download.ReaperEnv;
 import com.fighter.hook.ReaperActivityThreadHook;
 import com.fighter.hook.ReaperGlobal;
 import com.fighter.reaper.R;
+import com.fighter.wrapper.AKAdSDKWrapper;
 import com.qiku.proguard.annotations.KeepAll;
 import com.qiku.proguard.annotations.NoProguard;
 
@@ -78,8 +80,7 @@ public class ReaperApi {
 
         mAppId = (String) params.get("appId");
         mAppKey = (String) params.get("appKey");
-        isTestMode = (boolean)params.get("testMode");
-        ReaperConfig.TEST_MODE = isTestMode;
+        isTestMode = (boolean) params.get("testMode");
 
 //        ReaperGlobal.setApplication((Application) mContext);
         ReaperGlobal.setContext(mContext);
@@ -130,6 +131,32 @@ public class ReaperApi {
     }
 
     @NoProguard
+    public void initConfigValue(Map<String, Object> params) {
+        if (params == null || params.isEmpty()) return;
+        String logModeKey = "LOG_SWITCH";
+        if (params.containsKey(logModeKey)) {
+            Object logMode = params.get(logModeKey);
+            if (logMode != null && logMode instanceof Boolean)
+                ReaperLog.LOG_SWITCH = (boolean) logMode;
+            Log.i("Reaper", "ReaperLog.LOG_SWITCH " + ReaperLog.LOG_SWITCH);
+        }
+        String serverModeKey = "SERVER_TEST";
+        if (params.containsKey(serverModeKey)) {
+            Object serverMode = params.get(serverModeKey);
+            if (serverMode != null && serverMode instanceof Boolean)
+                ReaperConfigFetcher.SERVER_TEST_MODE = (boolean) serverMode;
+            Log.i("Reaper", "ReaperConfigFetcher.SERVER_TEST_MODE " + ReaperConfigFetcher.SERVER_TEST_MODE);
+        }
+        String akadModeKey = "AKAD_TEST";
+        if (params.containsKey(akadModeKey)) {
+            Object akadMode = params.get(akadModeKey);
+            if (akadMode != null && akadMode instanceof Boolean)
+                AKAdSDKWrapper.AKAD_TEST_MODE = (boolean) akadMode;
+            Log.i("Reaper", "AKAdSDKWrapper.AKAD_TEST_MODE " + AKAdSDKWrapper.AKAD_TEST_MODE);
+        }
+    }
+
+    @NoProguard
     public void requestAd(Map<String, Object> params) {
         ReaperLog.i(TAG, "[requestAd] params: " + params);
 
@@ -143,10 +170,10 @@ public class ReaperApi {
         }
 
         if (!mIsInitSucceed.get()) {
-            while(adCount > 0) {
+            while (adCount > 0) {
                 mAdCacheManager.onRequestAdError(adRequestCallback,
                         "ReaperApi not initialized, please call init() first");
-                adCount --;
+                adCount--;
             }
             return;
         }
@@ -155,7 +182,7 @@ public class ReaperApi {
             while (adCount > 0) {
                 mAdCacheManager.onRequestAdError(adRequestCallback,
                         "Can not request ad with empty position id");
-                adCount --;
+                adCount--;
             }
             return;
         }
@@ -178,6 +205,7 @@ public class ReaperApi {
             mAdCacheManager.setNeedHoldAd(needHoldAd);
         }
     }
+
     /**
      * 广告事件
      *
