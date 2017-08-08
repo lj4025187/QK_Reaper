@@ -120,13 +120,6 @@ public class ReaperActivity extends Activity {
             startInBrowser(uri);
         }
 
-        private void startInBrowser(Uri uri) {
-            if (!TextUtils.isEmpty(uri.toString())) {
-                openWebUrl(uri);
-            }
-            finish();
-        }
-
         private void loadUrl(WebView view, String url) {
             if (TextUtils.isEmpty(url))
                 return;
@@ -210,12 +203,12 @@ public class ReaperActivity extends Activity {
                 initTransparentView(needPermissions);
                 break;
             case 9999://value in AdCacheManager
-                initWebRootView();
                 String url = intent.getStringExtra("url");
                 if (!TextUtils.isEmpty(url)) {
                     mUrl = url;
-                    reloadUrl();
+                    initWebRootView();
                 }
+                reloadUrl();
             default:
                 break;
         }
@@ -250,7 +243,14 @@ public class ReaperActivity extends Activity {
         mProgressBar.setId(View.generateViewId());
         mRootView.addView(mProgressBar);
 
-        mWebView = new WebView(mContext);
+        try {
+            mWebView = new WebView(mContext);
+        } catch (Exception e) {
+            LoaderLog.i(TAG, "web view init exception " + e.toString() + " start in browser");
+            if(!TextUtils.isEmpty(mUrl))
+                startInBrowser(Uri.parse(mUrl.trim()));
+            return;
+        }
         RelativeLayout.LayoutParams webParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
         webParam.addRule(RelativeLayout.BELOW, mProgressBar.getId());
         mWebView.setLayoutParams(webParam);
@@ -348,7 +348,7 @@ public class ReaperActivity extends Activity {
     }
 
     private void reloadUrl() {
-        if (TextUtils.isEmpty(mUrl)) {
+        if (TextUtils.isEmpty(mUrl) || mSettings == null || mWebView == null) {
             LoaderLog.e(TAG, "can not load null url");
             return;
         }
@@ -358,6 +358,13 @@ public class ReaperActivity extends Activity {
         mSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         LoaderLog.i(TAG, "url : " + mUrl);
         mWebView.loadUrl(mUrl);
+    }
+
+    private void startInBrowser(Uri uri) {
+        if (!TextUtils.isEmpty(uri.toString())) {
+            openWebUrl(uri);
+        }
+        finish();
     }
 
     @Override
