@@ -35,6 +35,7 @@ public class ReaperPatchCryptAndroidTool {
     private static void deleteDirectory(File directory) {
         if (!directory.isDirectory()) return;
         File[] files = directory.listFiles();
+        if(files == null || files.length == 0) return;
         for (File file : files) {
             if (file.isDirectory()) {
                 deleteDirectory(file);
