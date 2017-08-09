@@ -57,13 +57,14 @@ public class RefInvoker {
 	public static Object invokeMethod(Object target, String className, String methodName, Class[] paramTypes,
 			Object[] paramValues) {
 
+		Class clazz = null;
 		try {
-			Class clazz = forName(className);
-			return invokeMethod(target, clazz, methodName, paramTypes, paramValues);
+			clazz = forName(className);
 		}catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		return null;
+		if(clazz == null) return null;
+		return invokeMethod(target, clazz, methodName, paramTypes, paramValues);
 	}
 
 	public static Object invokeMethod(Object target, Class clazz, String methodName, Class[] paramTypes,
@@ -74,15 +75,12 @@ public class RefInvoker {
 				method.setAccessible(true);
 			}
 			return method.invoke(target, paramValues);
-		} catch (SecurityException e) {
-			e.printStackTrace();
+		/*} catch (SecurityException e) {
+			e.printStackTrace();*/
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
+			throw new IllegalArgumentException(e);
+		} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 			e.printStackTrace();
 		}
 		return null;
