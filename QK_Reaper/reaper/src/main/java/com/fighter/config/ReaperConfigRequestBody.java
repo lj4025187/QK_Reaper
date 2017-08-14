@@ -21,7 +21,7 @@ public class ReaperConfigRequestBody {
     public String app_pkg;
     public String net_type;
     public String c_time;
-    public String chanel;   //ro.vendor.channel.number
+    public String channel;   //ro.vendor.channel.number
     public String mcc;
 
     @Override
@@ -35,7 +35,7 @@ public class ReaperConfigRequestBody {
                 ", app_pkg='" + app_pkg + '\'' +
                 ", net_type='" + net_type + '\'' +
                 ", c_time='" + c_time + '\'' +
-                ", chanel='" + chanel + '\'' +
+                ", channel='" + channel + '\'' +
                 ", mcc='" + mcc + '\'' +
                 '}';
     }
@@ -66,7 +66,7 @@ public class ReaperConfigRequestBody {
         instance.app_pkg = pkg;
         instance.net_type = Device.getNetworkTypeString(context);
         instance.c_time = Device.getCurrentLocalTime();
-        instance.chanel = Device.getDeviceChannel();
+        instance.channel = Device.getDeviceChannel();
         instance.mcc = Device.getMcc(context);
         return instance;
     }
@@ -86,7 +86,7 @@ public class ReaperConfigRequestBody {
         instance.app_pkg = "com.qiku.advertisement";
         instance.net_type = "4g";
         instance.c_time = "20170505121231";
-        instance.chanel = "xxxx_xxxx_xxxx";
+        instance.channel = "xxxx_xxxx_xxxx";
         instance.mcc = "460";
         return instance;
     }
