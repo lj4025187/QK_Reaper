@@ -8,7 +8,6 @@ import android.os.ParcelFileDescriptor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.fighter.utils.LoaderLog;
 import com.qiku.proguard.annotations.NoProguard;
 
 import java.io.FileNotFoundException;
@@ -23,6 +22,7 @@ import java.io.FileNotFoundException;
 public class ReaperProxyProvider extends ContentProvider {
     private static final String TAG = "ReaperProxyProvider";
 
+    @NoProguard
     private ContentProvider providerProxy;
 
     public ReaperProxyProvider() {
@@ -62,7 +62,6 @@ public class ReaperProxyProvider extends ContentProvider {
     @Nullable
     @Override
     public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
-        LoaderLog.i(TAG, "ReaperProxyProvider openFile: " + uri + " ," + mode);
         return providerProxy == null? super.openFile(uri, mode) : providerProxy.openFile(uri, mode);
     }
 }

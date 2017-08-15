@@ -23,21 +23,14 @@ public class ReaperHookProvider {
         if (context == null)
             return;
         ClassLoader contextClassLoader = context.getClassLoader();
-        ReaperLog.i(TAG, "context class loader = " + contextClassLoader);
 
         try {
             Class<?> reaperProxyProvider = Class.forName("com.fighter.loader.ReaperProxyProvider", true, contextClassLoader);
-            for (Field field : reaperProxyProvider.getDeclaredFields()) {
-                ReaperLog.i(TAG, "name ===>" + field.getName());
-            }
             Field proxyProvider  = reaperProxyProvider.getDeclaredField("providerProxy");
             proxyProvider.setAccessible(true);
-            proxyProvider.set(getContentProvider(context), new ProxyProvider());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+            proxyProvider.set(getContentProvider(context), AKADProxyProvider.newInstance(context));
+        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+            ReaperLog.e(TAG, " hookReaperProxyProvider exception " + e.toString());
             e.printStackTrace();
         }
     }
@@ -59,15 +52,8 @@ public class ReaperHookProvider {
             getProviderMethod.setAccessible(true);
             ret = (ContentProvider) getProviderMethod.invoke(null, IContentProvider);
             return ret;
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
+        } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
+            ReaperLog.e(TAG, "getContentProvider exception " + e.toString());
             e.printStackTrace();
         }
         return null;

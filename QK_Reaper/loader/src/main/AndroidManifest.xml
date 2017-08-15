@@ -59,7 +59,9 @@
             android:name="com.fighter.loader.ReaperProvider"/>
         <provider
             android:authorities="${applicationId}.reaper.provider.ReaperProxyProvider"
-            android:name="com.fighter.loader.ReaperProxyProvider"/>
+            android:name="com.fighter.loader.ReaperProxyProvider"
+            android:exported="false"
+            android:grantUriPermissions="true"/>
         <provider
             android:name="com.fighter.loader.ReaperFileProvider"
             android:authorities="${applicationId}.reaper.provider.ReaperFileProvider"
