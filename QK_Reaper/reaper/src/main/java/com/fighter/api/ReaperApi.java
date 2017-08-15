@@ -18,6 +18,7 @@ import com.fighter.config.db.ReaperConfigDB;
 import com.fighter.download.ReaperEnv;
 import com.fighter.hook.ReaperActivityThreadHook;
 import com.fighter.hook.ReaperGlobal;
+import com.fighter.hook.ReaperHookProvider;
 import com.fighter.reaper.R;
 import com.fighter.wrapper.AKAdSDKWrapper;
 import com.qiku.proguard.annotations.KeepAll;
@@ -107,6 +108,8 @@ public class ReaperApi {
             return;
         }
         ReaperActivityThreadHook.wrapInstrumentation();
+        ReaperHookProvider.hookReaperProxyProvider(mContext);
+
         mAdCacheManager = AdCacheManager.getInstance();
         mAdCacheManager.init(mContext, mAppId, mAppKey);
 

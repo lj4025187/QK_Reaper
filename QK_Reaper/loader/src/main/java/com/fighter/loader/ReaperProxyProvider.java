@@ -4,8 +4,15 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
+import com.fighter.utils.LoaderLog;
 import com.qiku.proguard.annotations.NoProguard;
+
+import java.io.FileNotFoundException;
+
 
 /**
  * reaper proxy provider
@@ -14,33 +21,48 @@ import com.qiku.proguard.annotations.NoProguard;
  */
 @NoProguard
 public class ReaperProxyProvider extends ContentProvider {
+    private static final String TAG = "ReaperProxyProvider";
+
+    private ContentProvider providerProxy;
+
+    public ReaperProxyProvider() {
+    }
+
     @Override
     public boolean onCreate() {
-        return false;
+        return providerProxy == null? false : providerProxy.onCreate();
     }
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        return null;
+        return providerProxy == null? null : providerProxy.query(uri, projection, selection, selectionArgs, sortOrder);
     }
 
     @Override
     public String getType(Uri uri) {
-        return null;
+        return providerProxy == null? null : providerProxy.getType(uri);
     }
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        return null;
+        return providerProxy == null? null : providerProxy.insert(uri, values);
     }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        return providerProxy == null? 0 : providerProxy.delete(uri, selection, selectionArgs);
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
+        return providerProxy == null? 0 : providerProxy.update(uri, values, selection, selectionArgs);
+    }
+
+
+    @Nullable
+    @Override
+    public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
+        LoaderLog.i(TAG, "ReaperProxyProvider openFile: " + uri + " ," + mode);
+        return providerProxy == null? super.openFile(uri, mode) : providerProxy.openFile(uri, mode);
     }
 }
