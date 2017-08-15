@@ -82,6 +82,13 @@ public class ReaperInit {
     private static Context sContext;
     private static ReaperApi sInstance;
 
+    /** the static reaper path */
+    private static ReaperPatch sReaperPatch;
+
+    private static ReaperPatch getReaperPath() {
+        return sReaperPatch == null? null : sReaperPatch;
+    }
+
     /**
      * Get highest version of ReaperApi
      * @param context Application context
@@ -363,7 +370,7 @@ public class ReaperInit {
             LoaderLog.i(TAG, "hasFd : " + targetPatch.getReaperFile().hasFD());
             LoaderLog.i(TAG, "get highest version : " + targetPatch.getAbsolutePath());
         }
-
+        sReaperPatch = targetPatch;
         return targetPatch;
     }
 
