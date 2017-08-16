@@ -20,8 +20,10 @@
     <uses-sdk tools:overrideLibrary="com.qiku.proguard"/>
 
     <application >
+        <!-- the activity export true,fix cardmanager have no permission start webview-->
         <activity android:name="com.fighter.loader.ReaperActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"/>
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="true"/>
         <activity
             android:name="com.fighter.loader.ReaperProxyActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
