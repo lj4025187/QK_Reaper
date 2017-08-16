@@ -51,6 +51,7 @@ public final class Device {
     // ----------------------------------------------------
     // App 信息
     // ----------------------------------------------------
+    private static MacThread macThread = new MacThread();
 
     public static String getApplicationName(Context context) {
         PackageManager pm = context.getPackageManager();
@@ -204,25 +205,26 @@ public final class Device {
             }
             wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wifiManager != null) {
-                if (!wifiManager.isWifiEnabled())
+                boolean wifiOriginState = wifiManager.isWifiEnabled();
+
+                if (!wifiOriginState)
                     wifiManager.setWifiEnabled(true);
 
-                int tryCount = 0;
-                do {
-                    macAddress = getMac(context);
-                    tryCount++;
-                    try {
-                        Thread.sleep(200 + tryCount * 100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } while (macAddress == null);
+                macAddress = getMac(context);
 
-                if (wifiManager.isWifiEnabled())
+                if (wifiOriginState != wifiManager.isWifiEnabled())
                     wifiManager.setWifiEnabled(false);
+
+                if (macAddress == null) {
+                    macThread.setContext(context.getApplicationContext());
+                    macThread.start();
+                }
             }
         }
-        storeWifiMac(context, macAddress);
+
+        if (macAddress != null){
+            storeWifiMac(context, macAddress);
+        }
         return macAddress;
     }
 
@@ -929,5 +931,47 @@ public final class Device {
             return result.successMsg;
         }
         return null;
+    }
+
+    private static class MacThread extends Thread {
+        private Context mContext;
+
+        public void setContext(Context context) {
+            mContext = context;
+        }
+
+        public synchronized void run() {
+            if (mContext == null)
+                return;
+            String macAddress = getMac(mContext);
+
+            if (macAddress == null) {
+                WifiManager wifiManager = (WifiManager) mContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                if (wifiManager != null) {
+                    boolean wifiOriginState = wifiManager.isWifiEnabled();
+
+                    if (!wifiOriginState)
+                        wifiManager.setWifiEnabled(true);
+
+                    int tryCount = 0;
+                    do {
+                        macAddress = getMac(mContext);
+                        tryCount++;
+                        try {
+                            Thread.sleep(100 + tryCount * 100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } while (macAddress == null || tryCount < 2);
+
+                    if (wifiOriginState != wifiManager.isWifiEnabled())
+                        wifiManager.setWifiEnabled(false);
+
+
+                }
+            }
+            if (macAddress != null)
+                storeWifiMac(mContext, macAddress);
+        }
     }
 }

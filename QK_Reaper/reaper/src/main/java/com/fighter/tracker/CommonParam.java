@@ -81,6 +81,9 @@ final class CommonParam {
 
     static HashMap<String, String> generateMap() {
         HashMap<String, String> map = new HashMap<>();
+        if (mac == null) {
+            mac = Device.getFormatMac(mContext);
+        }
         map.put("mac", mac == null? "" : mac);
         map.put("m1", m1);
         map.put("brand", brand);
