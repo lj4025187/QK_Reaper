@@ -15,7 +15,7 @@ import java.io.File;
  */
 
 public class SignUtil {
-    private static final String TAG = SignUtil.class.getSimpleName();
+    private static final String TAG = "SignUtil";
 
     private static final String SIGN_MD5 = "760C87E5A95E199E5DAB8C263C895CB1";
 
@@ -24,7 +24,7 @@ public class SignUtil {
         if (signByte == null)
             return false;
         String signString = getSignMd5(signByte);
-        return signString.equals(SIGN_MD5);
+        return SIGN_MD5.equals(signString);
     }
 
     private static byte[] getSignFromApk(Context context, String reaperFilePath) {

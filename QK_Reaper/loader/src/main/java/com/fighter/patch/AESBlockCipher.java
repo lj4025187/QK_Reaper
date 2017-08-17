@@ -20,56 +20,54 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class AESBlockCipher implements IReaperBlockCipher {
 
-    private static final String TAG = AESBlockCipher.class.getSimpleName();
+    private static final String TAG = "AESBlockCipher";
 
     public static final String ALGORITHM = "AES/CFB/NoPadding";
     public static final int KEY_SIZE = 16;
     public static final int BLOCK_SIZE = 1024;
-    public static ThreadLocal<Cipher> sThreadEncryptCipher = new ThreadLocal<>();
-    public static ThreadLocal<Cipher> sThreadDecryptCipher = new ThreadLocal<>();
 
-    private boolean mEncryptInited = false;
-    private boolean mDecryptInited = false;
+    private Cipher mEncryptCipher;
+    private Cipher mDecryptCipher;
 
     private Cipher currentEncryptCipher() throws Exception {
-        if (mEncryptInited)
-            return sThreadEncryptCipher.get();
-        Cipher cipher = null;
+        if (mEncryptCipher != null) {
+            return mEncryptCipher;
+        }
+
         try {
-            cipher = Cipher.getInstance(ALGORITHM);
+            mEncryptCipher = Cipher.getInstance(ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
             throw new Exception("init encrypt cipher", e);
         } catch (NoSuchPaddingException e) {
             throw new Exception("init encrypt cipher", e);
         }
-        sThreadEncryptCipher.set(cipher);
-        mEncryptInited = true;
-        return cipher;
+
+        return mEncryptCipher;
     }
 
     private Cipher currentDecryptCipher() throws Exception {
-        if (mDecryptInited)
-            return sThreadDecryptCipher.get();
-        Cipher cipher = null;
+        if (mDecryptCipher != null) {
+            return mDecryptCipher;
+        }
+
         try {
-            cipher = Cipher.getInstance(ALGORITHM);
+            mDecryptCipher = Cipher.getInstance(ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
             throw new Exception("init decrypt cipher", e);
         } catch (NoSuchPaddingException e) {
             throw new Exception("init decrypt cipher", e);
         }
-        sThreadDecryptCipher.set(cipher);
-        mDecryptInited = true;
-        return cipher;
+
+        return mDecryptCipher;
     }
 
     @Override
-    public ByteBuffer allocateBlockBuffer() {
+    public synchronized ByteBuffer allocateBlockBuffer() {
         return ByteBuffer.allocate(BLOCK_SIZE);
     }
 
     @Override
-    public Key createKey() {
+    public synchronized Key createKey() {
         return new Key(KEY_SIZE);
     }
 
@@ -82,7 +80,7 @@ public class AESBlockCipher implements IReaperBlockCipher {
     }
 
     @Override
-    public void initKey(Key key) throws Exception {
+    public synchronized void initKey(Key key) throws Exception {
         try {
             currentEncryptCipher().init(Cipher.ENCRYPT_MODE, toCFBKey(key), toCFBIV(key));
             currentDecryptCipher().init(Cipher.DECRYPT_MODE, toCFBKey(key), toCFBIV(key));
@@ -96,10 +94,7 @@ public class AESBlockCipher implements IReaperBlockCipher {
     }
 
     @Override
-    public int encrypt(ByteBuffer inbuffer, ByteBuffer outbuffer) throws Exception {
-
-        assert inbuffer.arrayOffset() <= inbuffer.position();
-        assert inbuffer.position() < inbuffer.capacity();
+    public synchronized int encrypt(ByteBuffer inbuffer, ByteBuffer outbuffer) throws Exception {
 
         int size = inbuffer.limit() - inbuffer.position();
         if (size % KEY_SIZE != 0) {
@@ -131,9 +126,7 @@ public class AESBlockCipher implements IReaperBlockCipher {
     }
 
     @Override
-    public int decrypt(ByteBuffer inbuffer, ByteBuffer outbuffer) throws Exception {
-        assert inbuffer.arrayOffset() <= inbuffer.position();
-        assert inbuffer.position() < inbuffer.capacity();
+    public synchronized int decrypt(ByteBuffer inbuffer, ByteBuffer outbuffer) throws Exception {
 
         int size = inbuffer.limit() - inbuffer.position();
         if (size % KEY_SIZE != 0) {

@@ -27,35 +27,36 @@ public class LoaderLog {
     private static SimpleDateFormat sMillionsFormat, sCurrentFormat;
 
     public static void i(String msg) {
-        if (!DEBUG_LOG)
-            return;
-        Log.i(TAG, msg);
+        if (DEBUG_LOG) {
+            Log.i(TAG, msg);
+        }
     }
 
     public static void i(String subTag, String msg) {
-        if (!DEBUG_LOG)
-            return;
-        Log.i(TAG, "[" + subTag + "] ==> " + msg);
+        if (DEBUG_LOG) {
+            Log.i(TAG, "[" + subTag + "] ==> " + msg);
+        }
     }
 
     public static void e(String msg) {
-        if (!DEBUG_LOG)
-            return;
-        Log.e(TAG, msg);
+        if (DEBUG_LOG) {
+            Log.e(TAG, msg);
+        }
         if (RECORD_LOG) {
-            writeLocalLog(getCurrentMillions()+" : E ", msg);
+            writeLocalLog(getCurrentMillis()+" : E ", msg);
         }
     }
 
     public static void e(String subTag, String msg) {
-        if (!DEBUG_LOG)
-            return;
-        Log.e(TAG, "[" + subTag + "] ==> " + msg);
-        if (RECORD_LOG)
-            writeLocalLog(getCurrentMillions()+" : E ", "[" + subTag + "] ==> " + msg);
+        if (DEBUG_LOG) {
+            Log.e(TAG, "[" + subTag + "] ==> " + msg);
+        }
+        if (RECORD_LOG) {
+            writeLocalLog(getCurrentMillis() + " : E ", "[" + subTag + "] ==> " + msg);
+        }
     }
 
-    private static String getCurrentMillions() {
+    private static String getCurrentMillis() {
         if(sMillionsFormat == null)
             sMillionsFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:", Locale.getDefault());
         Date curMillion = new Date(System.currentTimeMillis());//获取当前时间
@@ -78,12 +79,12 @@ public class LoaderLog {
             @Override
             public void run() {
                 String currentDate = getCurrentDate();
-                File file = new File(LOCAL_LOG_DIR + File.separator + "ReaperLog-" + currentDate + ".txt");
+                File file = new File(LOCAL_LOG_DIR + File.separator
+                        + "ReaperLog-" + currentDate + ".txt");
                 if (!file.exists()) {
-                    if (createLocalLogFile(file.toString())) {
-                        writeLocalLog(file, type, msg);
-                    }
-                } else {
+                    createLocalLogFile(file.toString());
+                }
+                if (file.exists()) {
                     writeLocalLog(file, type, msg);
                 }
             }
@@ -95,17 +96,15 @@ public class LoaderLog {
         if (!ret) return false;
         deleteOldestFile(new File(LOCAL_LOG_DIR));
         File file = new File(path);
-        if (!file.exists()) {
-            try {
-                ret = file.createNewFile();
-            } catch (IOException e) {
-                ret = false;
-                e.printStackTrace();
-            }
-        } else {
-            ret = true;
+        if (file.exists()) {
+            return true;
         }
-        return ret;
+        try {
+            return file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private static boolean createLocalLogDir() {
@@ -119,7 +118,7 @@ public class LoaderLog {
         return ret;
     }
 
-    private static synchronized void deleteOldestFile(File directory) {
+    private static void deleteOldestFile(File directory) {
         if (!directory.exists() || !directory.isDirectory()) return;
         File[] files = directory.listFiles();
         if (files == null) return;
@@ -132,21 +131,29 @@ public class LoaderLog {
             }
         });
         for (int i = 0; i < length - FILES_LENGTH + 1; i++) {
-            boolean delete = files[i].delete();
+            files[i].delete();
         }
     }
 
     private static void writeLocalLog(File file, String type, String msg) {
-        BufferedWriter bufferedWriter;
+        BufferedWriter bufferedWriter = null;
         try {
-            bufferedWriter = new BufferedWriter(new FileWriter(file, true), type.length() + msg.length() + 1);
+            bufferedWriter = new BufferedWriter(new FileWriter(file, true),
+                    type.length() + msg.length() + 1);
             bufferedWriter.write(type);
             bufferedWriter.write(msg);
             bufferedWriter.write('\n');
             bufferedWriter.flush();
-            bufferedWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (bufferedWriter != null) {
+                try {
+                    bufferedWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

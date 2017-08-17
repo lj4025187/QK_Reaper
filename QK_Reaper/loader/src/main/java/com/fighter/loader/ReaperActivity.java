@@ -171,7 +171,8 @@ public class ReaperActivity extends Activity {
         }
 
         @Override
-        public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
+        public boolean onJsPrompt(WebView view, String url, String message, String defaultValue,
+                                  JsPromptResult result) {
             return super.onJsPrompt(view, url, message, defaultValue, result);
         }
 
@@ -192,7 +193,12 @@ public class ReaperActivity extends Activity {
         mContext = getApplicationContext();
         Intent intent = getIntent();
         if (intent == null) return;
-        handleIntent(intent);
+        try {
+            handleIntent(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+            LoaderLog.i(TAG, "handleIntent exception : " + e.getClass().getName());
+        }
     }
 
     private void handleIntent(Intent intent) {
@@ -209,6 +215,7 @@ public class ReaperActivity extends Activity {
                     initWebRootView();
                 }
                 reloadUrl();
+                break;
             default:
                 break;
         }
@@ -222,20 +229,26 @@ public class ReaperActivity extends Activity {
 
     @TargetApi(Build.VERSION_CODES.M)
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
         if (requestCode != REQUEST_CODE || permissions == null || permissions.length == 0) return;
         int length = permissions.length;
+
+        //TODO : do not handle permission now
     }
 
     private void initWebRootView() {
         setTheme(android.R.style.Theme_Black_NoTitleBar);
         mRootView = new RelativeLayout(mContext);
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        RelativeLayout.LayoutParams params =
+                new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.MATCH_PARENT);
         mRootView.setBackground(new ColorDrawable(Color.parseColor("#f9f9f9")));
         mRootView.setLayoutParams(params);
 
         mProgressBar = new ProgressBar(mContext, null, android.R.attr.progressBarStyleHorizontal);
-        RelativeLayout.LayoutParams proParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 12);
+        RelativeLayout.LayoutParams proParams =
+                new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 12);
         params.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
         mProgressBar.setLayoutParams(proParams);
         mProgressBar.setIndeterminate(false);
@@ -251,14 +264,18 @@ public class ReaperActivity extends Activity {
                 startInBrowser(Uri.parse(mUrl.trim()));
             return;
         }
-        RelativeLayout.LayoutParams webParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        RelativeLayout.LayoutParams webParam =
+                new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.MATCH_PARENT);
         webParam.addRule(RelativeLayout.BELOW, mProgressBar.getId());
         mWebView.setLayoutParams(webParam);
         initWebView();
         mRootView.addView(mWebView);
 
         mBottomBar = new LinearLayout(mContext);
-        RelativeLayout.LayoutParams bottomParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams bottomParams =
+                new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
         bottomParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         mBottomBar.setOrientation(LinearLayout.HORIZONTAL);
         GradientDrawable bottomBack =

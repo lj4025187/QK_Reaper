@@ -1,8 +1,10 @@
 package com.fighter.loader;
 
-import android.text.TextUtils;
+import android.content.Context;
+import android.os.SystemClock;
 
 import com.fighter.utils.LoaderLog;
+import com.fighter.utils.NetworkUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,41 +15,42 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 
 public class ReaperVersionManager {
-    private static final String TAG = ReaperVersionManager.class.getSimpleName();
-    private static final boolean DEBUG_VERSION = true;
 
-    private static final int RETRY_TIME = 4;
+    private static final String TAG = "ReaperVersionManager";
+
+    private static final int RETRY_TIME = 5;
+
+    /**
+     * Has a new version
+     * Must be same with that defined in Reaper
+     */
     private static final int REAPER_VERSION_CHECK_NEW_VERSION = 1;
+
+    /**
+     * Has no new version
+     * Must be same with that defined in Reaper
+     */
     private static final int REAPER_VERSION_CHECK_NO_NEW_VERSION = 0;
+
+    /**
+     * Check version fail
+     * Must be same with that defined in Reaper
+     */
     private static final int REAPER_VERSION_CHECK_FAILED = -1;
 
-    private static String mVersion;
-    private static boolean mCheckSuccess;
-    private static ReaperVersionManager sInstance;
-    private ReentrantLock mLock;
+    private Context mContext;
+    private String mVersion;
     private Class mReaperDownloadClass;
+
+    private boolean mCheckComplete;
+    private ReentrantLock mLock;
     private int mRetry;
 
-    public static ReaperVersionManager getInstance(String version) {
-        synchronized (ReaperVersionManager.class) {
-            if (sInstance == null) {
-                sInstance = new ReaperVersionManager(version);
-            }
-            if (!TextUtils.equals(version, mVersion)) {
-                //we get a new version,need re-init
-                mCheckSuccess = false;
-            }
-        }
-        return sInstance;
-    }
-
-    private ReaperVersionManager(String version) {
+    public ReaperVersionManager(Context context, String version, Class networkClass) {
+        mContext = context;
         mVersion = version;
+        mReaperDownloadClass = networkClass;
         mLock = new ReentrantLock();
-    }
-
-    public void setReaperNetworkClass(Class claxx) {
-        mReaperDownloadClass = claxx;
     }
 
     /**
@@ -55,44 +58,43 @@ public class ReaperVersionManager {
      * @see #mRetry
      */
     public void queryHigherReaper() {
-        synchronized (ReaperVersionManager.class) {
-            if (mCheckSuccess) {
-                return;
-            }
+        if (!NetworkUtils.isNetworkAvailable(mContext)) {
+            LoaderLog.i(TAG, "network unavailable, cant query higher reaper!!!");
+            return;
         }
+
         new Thread(new Runnable() {
             @Override
             public void run() {
-                LoaderLog.e(TAG, "checkHigherVersion, before lock . Pid:"+ Thread.currentThread().getId());
-                mLock.lock();
-                LoaderLog.e(TAG, "checkHigherVersion, we have locked here," +
-                        " and waiting for other Thread exec over. ");
-
-                if (mCheckSuccess) {
-                    return;
-                }
-                int checkResult = doQuery();
-                //do check.
-                if (checkResult == REAPER_VERSION_CHECK_NEW_VERSION) {
-                    mCheckSuccess = true;
-                } else {
-                    mCheckSuccess = checkResult == REAPER_VERSION_CHECK_NO_NEW_VERSION;
-                }
-
-                mLock.unlock();
-
-                if (!mCheckSuccess && mRetry++ < RETRY_TIME) {
-                    try {
-                        Thread.sleep(1500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    queryHigherReaper();
-                }
-                LoaderLog.e(TAG, "checkHigherVersion, unLock and check over. mCheckSuccess : "
-                        + mCheckSuccess + "; retry time : " + mRetry);
+                queryHigherReaperWithSubThread();
             }
         }).start();
+    }
+
+    private void queryHigherReaperWithSubThread() {
+        try {
+            mLock.lock();
+            queryHigherReaperWithLock();
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    private void queryHigherReaperWithLock() {
+        while(!mCheckComplete && mRetry < RETRY_TIME) {
+            int checkResult = doQuery();
+            mCheckComplete = checkResult == REAPER_VERSION_CHECK_NEW_VERSION ||
+                    checkResult == REAPER_VERSION_CHECK_NO_NEW_VERSION;
+
+            LoaderLog.e(TAG, "queryHigherReaperWithSubThread. "
+                    + "doQuery result : " + checkResult
+                    + ", mCheckComplete : " + mCheckComplete
+                    + ", retry time : " + mRetry);
+
+            mRetry ++;
+
+            SystemClock.sleep(1500);
+        }
     }
 
     /**
@@ -105,7 +107,7 @@ public class ReaperVersionManager {
     private int doQuery() {
         if (mReaperDownloadClass == null) {
             LoaderLog.e(TAG, "doQuery, cant find ReaperDownload Class!");
-            return -1;
+            return REAPER_VERSION_CHECK_FAILED;
         }
 
         try {
@@ -113,13 +115,13 @@ public class ReaperVersionManager {
                     mReaperDownloadClass.getDeclaredMethod("doQuery", String.class, String.class);
             if (doQueryMethod == null) {
                 LoaderLog.e(TAG, "doQuery, doQueryMethod == null !");
-                return -1;
+                return REAPER_VERSION_CHECK_FAILED;
             }
             doQueryMethod.setAccessible(true);
             Object retVal = doQueryMethod.invoke(null, Version.VERSION, mVersion);
             if (retVal == null || !(retVal instanceof Integer)) {
                 LoaderLog.e(TAG, "doQuery, invoke method error !");
-                return -1;
+                return REAPER_VERSION_CHECK_FAILED;
             }
             return (int) retVal;
         } catch (NoSuchMethodException e) {
@@ -129,6 +131,6 @@ public class ReaperVersionManager {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        return -1;
+        return REAPER_VERSION_CHECK_FAILED;
     }
 }

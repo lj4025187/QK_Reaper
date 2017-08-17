@@ -1,6 +1,7 @@
 package com.fighter.helper;
 
 import com.fighter.patch.ReaperFile;
+import com.fighter.utils.CloseUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -108,14 +109,7 @@ public class ReaperPatchHelper {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (bis != null)
-                    bis.close();
-                if (bos != null)
-                    bos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            CloseUtils.closeIOQuietly(bis, bos);
         }
         return ret;
     }

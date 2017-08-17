@@ -14,7 +14,7 @@ import java.io.File;
 
 public class ReaperPatchCryptAndroidTool {
 
-    private static final String TAG = ReaperPatchCryptAndroidTool.class.getSimpleName();
+    private static final String TAG = "ReaperPatchCryptTool";
 
 
     /**
@@ -26,9 +26,7 @@ public class ReaperPatchCryptAndroidTool {
 
     public static void deleteAllFiles(Context context) {
 
-        String dexPath = "/data/data/" + context.getPackageName()
-                + "/" + PATCH_DIR;
-        File dexDir = new File(dexPath);
+        File dexDir = new File(context.getFilesDir(), PATCH_DIR);
         deleteDirectory(dexDir);
     }
 
@@ -40,40 +38,42 @@ public class ReaperPatchCryptAndroidTool {
             if (file.isDirectory()) {
                 deleteDirectory(file);
             } else {
-                boolean delete = file.delete();
+                file.delete();
             }
         }
     }
 
     public static ClassLoader createReaperClassLoader(Context context, ReaperFile file, ClassLoader parent) {
-        String optPath = "/data/data/" + context.getPackageName()
-                + "/" + PATCH_OPT_DIR;
-        File optFile = new File(optPath);
+        File optFile = new File(context.getFilesDir(), PATCH_OPT_DIR);
         if (!optFile.exists()) {
-            if (!optFile.mkdirs())
+            if (!optFile.mkdirs()) {
                 LoaderLog.e(TAG, "create optPath fail because no permission");
+                return null;
+            }
         }
 
-        String libPath = "/data/data/" + context.getPackageName()
-                + "/" + PATCH_LIB_DIR;
-        File libFile = new File(libPath);
+        File libFile = new File(context.getFilesDir(), PATCH_LIB_DIR);
         if (!libFile.exists()) {
-            if (!libFile.mkdirs())
+            if (!libFile.mkdirs()) {
                 LoaderLog.e(TAG, "create libFile fail because no permission");
+                return null;
+            }
         }
 
-        String dexPath = "/data/data/" + context.getPackageName() + "/" + PATCH_DIR + "/" + System.currentTimeMillis() + ".dex";
+        File dexFile =
+                new File(context.getFilesDir(), PATCH_DIR + "/" + System.currentTimeMillis() + ".dex");
         try {
-            decryptTo(file, dexPath);
+            decryptTo(file, dexFile.getAbsolutePath());
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
             return null;
         }
-        if (!SignUtil.checkSign(context, dexPath)) {
+        if (!SignUtil.checkSign(context, dexFile.getAbsolutePath())) {
             Log.e(TAG, "reaper rr is not signature illegal");
             return null;
         }
-        return new ReaperClassLoader(dexPath, optPath, libPath, parent);
+        return new ReaperClassLoader(dexFile.getAbsolutePath(), optFile.getAbsolutePath(),
+                libFile.getAbsolutePath(), parent);
     }
 
     public static boolean decryptTo(ReaperFile file, String dexPath) throws Exception {

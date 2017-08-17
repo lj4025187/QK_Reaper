@@ -1,7 +1,5 @@
 package com.fighter.patch;
 
-import com.fighter.utils.LoaderLog;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,9 +31,6 @@ public class ReaperPatchCryptTool {
 
         File dexFile = new File(dexPath);
         if (!dexFile.exists()) {
-            if(!dexFile.getParentFile().mkdirs()) {
-                LoaderLog.e("create dex file fail because no permission");
-            }
             dexFile.createNewFile();
         }
 
@@ -64,15 +59,16 @@ public class ReaperPatchCryptTool {
         } finally {
             try {
                 fis.close();
-                if (fos != null) {
-                    fos.flush();
-                    fos.close();
-                }
-                inputBuffer.clear();
-                outputBuffer.clear();
-            } catch (IOException e) {
-                throw new Exception("decryptTo: ", e);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+            try {
+                fos.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            inputBuffer.clear();
+            outputBuffer.clear();
         }
 
         return true;
@@ -109,15 +105,16 @@ public class ReaperPatchCryptTool {
         } finally {
             try {
                 fis.close();
-                if (fos != null) {
-                    fos.flush();
-                    fos.close();
-                }
-                inputBuffer.clear();
-                outputBuffer.clear();
-            } catch (IOException e) {
-                throw new Exception("decryptTo: ", e);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+            try {
+                fos.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            inputBuffer.clear();
+            outputBuffer.clear();
         }
 
         return true;
@@ -130,7 +127,6 @@ public class ReaperPatchCryptTool {
 
     private static class Header {
         long realSize;
-
 
         Header() {
             realSize = 0;
