@@ -118,7 +118,6 @@ public class AdCacheManager implements DownloadCallback {
     private Map<String, String> mSilentInstall;//以包名为key，存放聚效返回的key，用来上报应用的激活打点
     private Map<String, String> mInstallAppsPath;//以包名为key，存放应用安装的路径，安装成功后删除对应的apk
     private ReaperAdvPos mReaperAdvPos;
-    public static boolean sSupportLock = false;
 
     /**************************************************Init cache task start*****************************************************************/
     private boolean mInitCacheSuccess = false;
@@ -382,9 +381,8 @@ public class AdCacheManager implements DownloadCallback {
             } else {
                 ReaperLog.e(TAG, "ad response failed: " + mAdResponse.toString());
                 AdInfo failAdInfo = new AdInfo();
-                failAdInfo.setAdName(mAdResponse.getAdName());
                 failAdInfo.setAdPosId(mAdResponse.getAdPosId());
-                failAdInfo.setAdLocalPosId(mAdResponse.getAdLocalPositionId());
+                failAdInfo.setAdName(mAdResponse.getAdName());
                 failAdInfo.setAdType(mAdResponse.getAdType());
                 trackActionEvent(EVENT_AD_DOWN_FAIL, failAdInfo, "request_fail:" + mAdResponse.getErrMsg());
                 return false;
@@ -425,9 +423,8 @@ public class AdCacheManager implements DownloadCallback {
                 } else {
                     ReaperLog.e(TAG, "ad response failed: " + adResponse.toString());
                     AdInfo failAdInfo = new AdInfo();
-                    failAdInfo.setAdName(adResponse.getAdName());
                     failAdInfo.setAdPosId(adResponse.getAdPosId());
-                    failAdInfo.setAdLocalPosId(adResponse.getAdLocalPositionId());
+                    failAdInfo.setAdName(adResponse.getAdName());
                     failAdInfo.setAdType(adResponse.getAdType());
                     trackActionEvent(EVENT_AD_DOWN_FAIL, failAdInfo, "request_fail:" + adResponse.getErrMsg());
                     return false;
@@ -1301,7 +1298,6 @@ public class AdCacheManager implements DownloadCallback {
                             Class<?> reaperClass = Class.forName("com.fighter.loader.ReaperActivity", true, mContext.getClassLoader());
                             Intent intent = new Intent(mContext, reaperClass);
                             intent.putExtra("url", actionUrl);
-                            intent.putExtra("support_lock", sSupportLock);
                             intent.putExtra("requestCode", REQUEST_CODE);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             mContext.startActivity(intent);

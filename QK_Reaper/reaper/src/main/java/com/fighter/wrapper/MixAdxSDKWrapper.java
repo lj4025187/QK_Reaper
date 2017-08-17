@@ -145,12 +145,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
         String errMsg = checkParams(adRequest);
         if (!TextUtils.isEmpty(errMsg)) {
             return new AdResponse.Builder()
-                    .adName(SdkName.MIX_ADX)
-                    .adPosId(adRequest.getAdPosId())
-                    .adLocalPositionAd(adRequest.getAdLocalPositionId())
-                    .adType(adRequest.getAdType())
-                    .errMsg(errMsg)
-                    .create();
+                    .errMsg(errMsg).create();
         }
 
         Request request = new Request.Builder()
@@ -177,13 +172,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                     JSONObject errJson = new JSONObject();
                     errJson.put("httpResponseCode", response.code());
                     ReaperLog.e(TAG, "ad request failed, errCode: " + response.code() + ", errMsg: " + errJson.toString());
-                    return new AdResponse.Builder()
-                            .adName(SdkName.MIX_ADX)
-                            .adPosId(adRequest.getAdPosId())
-                            .adLocalPositionAd(adRequest.getAdLocalPositionId())
-                            .adType(adRequest.getAdType())
-                            .errMsg(errJson.toJSONString())
-                            .create();
+                    return new AdResponse.Builder().errMsg(errJson.toJSONString()).create();
                 }
             }
         } catch (IOException e) {
@@ -193,13 +182,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
             CloseUtils.closeIOQuietly(response);
         }
         return adResponse == null ?
-                new AdResponse.Builder()
-                        .adName(SdkName.MIX_ADX)
-                        .adPosId(adRequest.getAdPosId())
-                        .adLocalPositionAd(adRequest.getAdLocalPositionId())
-                        .adType(adRequest.getAdType())
-                        .errMsg("Request has no response.")
-                        .create() :
+                new AdResponse.Builder().errMsg("Request has no response.").create() :
                 adResponse;
     }
 

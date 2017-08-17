@@ -270,10 +270,6 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     errJson.put("akAdErrCode", 1);
                     errJson.put("akAdErrMsg", "the AKAD source not suppoort ad type [" + mAdRequest.getAdType() + "]");
                     AdResponse adResponse = new AdResponse.Builder()
-                            .adName(SdkName.AKAD)
-                            .adPosId(mAdRequest.getAdPosId())
-                            .adLocalPositionAd(mAdRequest.getAdLocalPositionId())
-                            .adType(mAdRequest.getAdType())
                             .errMsg(errJson.toString())
                             .create();
 
@@ -312,10 +308,6 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                             errJson.put("akAdErrMsg", errMsg);
                             ReaperLog.e(TAG, "adRequest failed, errCode: " + errCode + ", errMsg: " + errMsg);
                             AdResponse adResponse = new AdResponse.Builder()
-                                    .adName(SdkName.AKAD)
-                                    .adPosId(mAdRequest.getAdPosId())
-                                    .adLocalPositionAd(mAdRequest.getAdLocalPositionId())
-                                    .adType(mAdRequest.getAdType())
                                     .errMsg(errJson.toJSONString())
                                     .create();
 
@@ -341,10 +333,6 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                 errJson.put("akAdErrCode", 0);
                 errJson.put("akAdErrMsg", "can not create AKAD loader");
                 AdResponse adResponse = new AdResponse.Builder()
-                        .adName(SdkName.AKAD)
-                        .adPosId(mAdRequest.getAdPosId())
-                        .adLocalPositionAd(mAdRequest.getAdLocalPositionId())
-                        .adType(mAdRequest.getAdType())
                         .errMsg(errJson.toString())
                         .create();
 
@@ -383,10 +371,6 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                             errJson.put("akAdErrMsg", errMsg);
 
                             AdResponse adResponse = new AdResponse.Builder()
-                                    .adName(SdkName.AKAD)
-                                    .adPosId(mAdRequest.getAdPosId())
-                                    .adLocalPositionAd(mAdRequest.getAdLocalPositionId())
-                                    .adType(mAdRequest.getAdType())
                                     .errMsg(errJson.toJSONString())
                                     .create();
 
@@ -412,10 +396,6 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                 errJson.put("akAdErrCode", 0);
                 errJson.put("akAdErrMsg", "can not create AKAD loader");
                 AdResponse adResponse = new AdResponse.Builder()
-                        .adName(SdkName.AKAD)
-                        .adPosId(mAdRequest.getAdPosId())
-                        .adLocalPositionAd(mAdRequest.getAdLocalPositionId())
-                        .adType(mAdRequest.getAdType())
                         .errMsg(errJson.toString())
                         .create();
 
@@ -445,11 +425,12 @@ public class AKAdSDKWrapper extends ISDKWrapper {
             errJson.put("httpResponseCode", 200);
 
             AdResponse.Builder builder = new AdResponse.Builder();
-            builder.adPosId(mAdRequest.getAdPosId())
-                   .adName(SdkName.AKAD)
-                   .adType(mAdRequest.getAdType())
-                   .adLocalAppId(mAdRequest.getAdLocalAppId())
-                   .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
+            builder
+                    .adPosId(mAdRequest.getAdPosId())
+                    .adName(SdkName.AKAD)
+                    .adType(mAdRequest.getAdType())
+                    .adLocalAppId(mAdRequest.getAdLocalAppId())
+                    .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
             if (mAds != null && mAds.size() > 0) {
                 AdInfo adInfo = null;
                 for (NativeAd ad : mAds) {
@@ -550,11 +531,12 @@ public class AKAdSDKWrapper extends ISDKWrapper {
             errJson.put("httpResponseCode", 200);
 
             AdResponse.Builder builder = new AdResponse.Builder();
-            builder.adName(SdkName.AKAD)
-                   .adPosId(mAdRequest.getAdPosId())
-                   .adType(mAdRequest.getAdType())
-                   .adLocalAppId(mAdRequest.getAdLocalAppId())
-                   .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
+            builder
+                    .adPosId(mAdRequest.getAdPosId())
+                    .adName(SdkName.AKAD)
+                    .adType(mAdRequest.getAdType())
+                    .adLocalAppId(mAdRequest.getAdLocalAppId())
+                    .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
             if (mAds != null && mAds.size() > 0) {
                 AdInfo adInfo = null;
                 for (NativeVideoAd ad : mAds) {

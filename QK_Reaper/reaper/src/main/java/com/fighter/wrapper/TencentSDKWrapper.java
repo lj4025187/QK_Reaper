@@ -132,14 +132,8 @@ public class TencentSDKWrapper extends ISDKWrapper {
 
         String errMsg = checkParams(adRequest);
         if (!TextUtils.isEmpty(errMsg)) {
-            return new AdResponse
-                    .Builder()
-                    .adName(SdkName.GUANG_DIAN_TONG)
-                    .adPosId(adRequest.getAdPosId())
-                    .adLocalPositionAd(adRequest.getAdLocalPositionId())
-                    .adType(adRequest.getAdType())
-                    .errMsg(errMsg)
-                    .create();
+            return new AdResponse.Builder()
+                    .errMsg(errMsg).create();
         }
 
         Request request = new Request.Builder()
@@ -165,14 +159,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
                     JSONObject errJson = new JSONObject();
                     errJson.put("httpResponseCode", response.code());
                     ReaperLog.e(TAG, "ad request failed, errCode: " + response.code() + ", errMsg: " + errJson.toString());
-                    return new AdResponse
-                            .Builder()
-                            .adName(SdkName.GUANG_DIAN_TONG)
-                            .adPosId(adRequest.getAdPosId())
-                            .adLocalPositionAd(adRequest.getAdLocalPositionId())
-                            .adType(adRequest.getAdType())
-                            .errMsg(errJson.toJSONString())
-                            .create();
+                    return new AdResponse.Builder().errMsg(errJson.toJSONString()).create();
                 }
             }
         } catch (IOException e) {
@@ -181,14 +168,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
             CloseUtils.closeIOQuietly(response);
         }
         return adResponse == null ?
-                new AdResponse
-                        .Builder()
-                        .adName(SdkName.GUANG_DIAN_TONG)
-                        .adPosId(adRequest.getAdPosId())
-                        .adLocalPositionAd(adRequest.getAdLocalPositionId())
-                        .adType(adRequest.getAdType())
-                        .errMsg("Request has no response.")
-                        .create() :
+                new AdResponse.Builder().errMsg("Request has no response.").create() :
                 adResponse;
     }
 
@@ -411,11 +391,8 @@ public class TencentSDKWrapper extends ISDKWrapper {
                                        String adLocalPositionId,
                                        String oriResponse) {
         AdResponse.Builder builder = new AdResponse.Builder();
-        builder.adPosId(adPosId)
-                .adName(SdkName.GUANG_DIAN_TONG)
-                .adType(adType)
-                .adLocalAppId(adLocalAppId)
-                .adLocalPositionAd(adLocalPositionId);
+        builder.adPosId(adPosId).adName(SdkName.GUANG_DIAN_TONG).adType(adType)
+                .adLocalAppId(adLocalAppId).adLocalPositionAd(adLocalPositionId);
         JSONObject errJson = new JSONObject();
 
         JSONObject resJson = null;

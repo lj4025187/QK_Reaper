@@ -188,6 +188,8 @@ public class ReaperActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         mContext = getApplicationContext();
         Intent intent = getIntent();
         if (intent == null) return;
@@ -207,12 +209,6 @@ public class ReaperActivity extends Activity {
                 initTransparentView(needPermissions);
                 break;
             case 9999://value in AdCacheManager
-                //support lock screen show ad for power master
-                boolean supportLock = intent.getBooleanExtra("support_lock", false);
-                if(supportLock) {
-                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                            | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-                }
                 String url = intent.getStringExtra("url");
                 if (!TextUtils.isEmpty(url)) {
                     mUrl = url;

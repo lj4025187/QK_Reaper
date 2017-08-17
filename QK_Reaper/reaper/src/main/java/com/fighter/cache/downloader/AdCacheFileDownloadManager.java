@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.text.TextUtils;
 
@@ -163,18 +162,9 @@ public class AdCacheFileDownloadManager {
                     try {
                         cursor = mDownloadManager.query(query);
                         if (cursor != null && cursor.moveToFirst()) {
-                            int fileUriIdx = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
-                            String fileUri = cursor.getString(fileUriIdx);
+                            fileName = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
                             status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
                             reason = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON));
-                            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-                                if (!TextUtils.isEmpty(fileUri)) {
-                                    fileName = Uri.parse(fileUri).getPath();
-                                }
-                            } else {
-                                int fileNameIdx = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
-                                fileName = cursor.getString(fileNameIdx);
-                            }
                         }
                     } catch (Exception e) {
                         ReaperLog.e(TAG, "DownloadCompleteReceiver " + e.toString());

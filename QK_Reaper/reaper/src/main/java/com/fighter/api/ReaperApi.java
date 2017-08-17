@@ -157,13 +157,6 @@ public class ReaperApi {
                 AKAdSDKWrapper.AKAD_TEST_MODE = (boolean) akadMode;
             Log.i("Reaper", "AKAdSDKWrapper.AKAD_TEST_MODE " + AKAdSDKWrapper.AKAD_TEST_MODE);
         }
-        String lockScreenMode = "SUPPORT_LOCK_SCREEN";
-        if(params.containsKey(lockScreenMode)) {
-            Object supportLock = params.get(lockScreenMode);
-            if (supportLock != null && supportLock instanceof Boolean)
-                AdCacheManager.sSupportLock = (boolean) supportLock;
-            Log.i("Reaper", "AdCacheManager.SUPPORT_LOCK_SCREEN " + AdCacheManager.sSupportLock);
-        }
     }
 
     @NoProguard
