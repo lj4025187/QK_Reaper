@@ -70,7 +70,7 @@
         <provider
             android:name="com.fighter.loader.ReaperFileProvider"
             android:authorities="${applicationId}.reaper.provider.ReaperFileProvider"
-            android:exported="true"
+            android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
