@@ -1,15 +1,10 @@
 package com.fighter.hook;
 
-import android.content.ContentProvider;
-import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
 
 import com.fighter.common.utils.ReaperLog;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Created by lichen on 17-8-15.
