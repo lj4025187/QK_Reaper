@@ -23,10 +23,7 @@ public class ReaperProxyProvider extends ContentProvider {
     private static final String TAG = "ReaperProxyProvider";
 
     @NoProguard
-    private ContentProvider providerProxy;
-
-    public ReaperProxyProvider() {
-    }
+    private static ContentProvider providerProxy;
 
     @Override
     public boolean onCreate() {
