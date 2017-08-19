@@ -60,10 +60,11 @@
             android:authorities="${applicationId}.reaper.provider.ReaperProvider"
             android:name="com.fighter.loader.ReaperProvider"/>
 
+        <!-- the provider export true,fix cardmanager have no permission opening provider-->
         <provider
             android:authorities="${applicationId}.reaper.provider.ReaperProxyProvider"
             android:name="com.fighter.loader.ReaperProxyProvider"
-            android:exported="false"
+            android:exported="true"
             android:grantUriPermissions="true"/>
 
         <provider
