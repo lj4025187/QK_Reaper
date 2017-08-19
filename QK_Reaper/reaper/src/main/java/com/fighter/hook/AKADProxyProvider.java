@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,9 +13,13 @@ import android.text.TextUtils;
 
 import com.ak.android.provider.AKProvider;
 import com.fighter.common.utils.ReaperLog;
-import com.fighter.download.ReaperEnv;
 
+import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * 代理聚效的AKProvider
@@ -87,20 +92,47 @@ public class AKADProxyProvider extends ContentProvider {
         }
         ReaperLog.i("proxy provider openFile:" + uri + " ," + mode);
         //fake authorities for provider
-        ReaperLog.i(TAG, " uri before " + uri + " mode " + mode + " initialized " + mInitialized);
-        if (TextUtils.isEmpty(sPackageName))
-            sPackageName = mContext.getPackageName();
-        String replace = uri.toString().replace(sPackageName + REAPER_AUTHORITIES_SUFFIX,
-                sPackageName + AK_AD_AUTHORITIES_SUFFIX);
-        ReaperLog.i(TAG, " uri after " + replace + " mode " + mode + " initialized " + mInitialized);
-        //初始化一次，不重新调用attachInfo和onCreate
-        if (!mInitialized) {
-            mAkProvider.attachInfo(ReaperEnv.sContextProxy, null);
-            boolean create = mAkProvider.onCreate();
-            mInitialized = true;
-            ReaperLog.i("ReaperProxyProvider", " uri result " + replace + " create " + create + mInitialized);
+        ReaperLog.i(TAG, " uri before " + uri + " mode " + mode/* + " initialized " + mInitialized*/);
+//        if (TextUtils.isEmpty(sPackageName))
+//            sPackageName = mContext.getPackageName();
+//        String replace = uri.toString().replace(sPackageName + REAPER_AUTHORITIES_SUFFIX,
+//                sPackageName + AK_AD_AUTHORITIES_SUFFIX);
+//        ReaperLog.i(TAG, " uri after " + replace + " mode " + mode + " initialized " + mInitialized);
+//        //初始化一次，不重新调用attachInfo和onCreate
+//        if (!mInitialized) {
+//            mAkProvider.attachInfo(ReaperEnv.sContextProxy, null);
+//            boolean create = mAkProvider.onCreate();
+//            mInitialized = true;
+//            ReaperLog.i("ReaperProxyProvider", " uri result " + replace + " create " + create + mInitialized);
+//        }
+//        //openFile
+//        return mAkProvider.openFile(Uri.parse(replace), mode);
+
+        String apkPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/sllak/apk/";
+        ReaperLog.i(TAG, " open file " + uri + " mode " + mode);
+        ParcelFileDescriptor pfd = null;
+        String uriPath = uri.getPath();
+        String filename = uriPath.substring(uriPath.lastIndexOf("/"));
+        ReaperLog.e(TAG, " file name " + filename);
+        File file = new File(apkPath, filename);
+        ReaperLog.e(TAG, " file " + file.getAbsolutePath());
+        if (!file.exists()) {
+            try {
+                InputStream in = mContext.getAssets().open(filename);
+                BufferedInputStream bis = new BufferedInputStream(in);
+                FileOutputStream fos = new FileOutputStream(file);
+                int len = 0;
+                byte[] b = new byte[1024];
+                while ((len = bis.read(b)) != -1) {
+                    fos.write(b, 0, len);
+                }
+                fos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        //openFile
-        return mAkProvider.openFile(Uri.parse(replace), mode);
+        pfd = ParcelFileDescriptor.open(file,
+                ParcelFileDescriptor.MODE_READ_ONLY);
+        return pfd;
     }
 }
