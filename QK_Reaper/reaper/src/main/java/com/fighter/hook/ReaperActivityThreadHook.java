@@ -9,7 +9,7 @@ import com.fighter.common.utils.RefInvoker;
  */
 
 public class ReaperActivityThreadHook {
-    private static final String TAG = ReaperActivityThreadHook.class.getSimpleName();
+    private static final String TAG = "ReaperActivityThreadHook";
 
     private static final String ClassName = "android.app.ActivityThread";
 

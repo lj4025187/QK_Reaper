@@ -25,7 +25,7 @@ public class ReaperInstrumentationHook {
 
     public Instrumentation.ActivityResult execStartActivity(Context who, IBinder contextThread, IBinder token, Activity target,
                                                             Intent intent, int requestCode, Bundle options) {
-        Object result = RefInvoker.invokeMethod(instance, android.app.Instrumentation.class.getName(),
+        Object result = RefInvoker.invokeMethod(instance, instance.getClass().getName(),
                 Method_execStartActivity, new Class[] { Context.class, IBinder.class, IBinder.class, Activity.class,
                         Intent.class, int.class, Bundle.class }, new Object[] { who, contextThread, token, target,
                         intent, requestCode, options });
