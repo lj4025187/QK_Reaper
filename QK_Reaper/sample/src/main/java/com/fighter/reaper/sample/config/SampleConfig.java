@@ -55,8 +55,6 @@ public class SampleConfig {
     public static String BAIDU_INSERT_ADV = "1048";  //Baidu insert
     public static String BAIDU_BANNER_ADV = "1049";  //Baidu banner
     public static String BAIDU_OPEN_ADV = "1050";  //Baidu openapp
-    public static String BA_XIN_MOVIE_ADV = "1074"; //Baxin movie
-    public static String BA_XIN_CATE_ADV = "1075"; //Baxin cate
 
     static {
 
@@ -107,8 +105,6 @@ public class SampleConfig {
                 BAIDU_INSERT_ADV = "1048";  //Baidu insert
                 BAIDU_BANNER_ADV = "1049";  //Baidu banner
                 BAIDU_OPEN_ADV = "1050";  //Baidu openapp
-                BA_XIN_MOVIE_ADV = "1074"; //Baxin movie
-                BA_XIN_CATE_ADV = "1075"; //Baxin cate
             } else {
                 QIHOO_VIDEO_ADV = "1010";  //Qihoo video
                 QIHOO_ORIGINAL_ADV = "1011"; //Qihoo original
@@ -137,7 +133,6 @@ public class SampleConfig {
     public final static String TENCENT_SRC_NAME = "gdt";
     public final static String BAIDU_SRC_NAME = "baidu";
     public final static String QIHOO_SRC_NAME = "jx";
-    public final static String BAXIN_SRC_NAME = "baxin";
     public final static String UNKNOWN_SRC_NAME = "unknown";
 
     public final static int DETAIL_BANNER_TYPE = 0x01;
@@ -294,101 +289,4 @@ public class SampleConfig {
                     "]" +
                     "}";
 
-
-    public class BullsEyeKey {
-        public static final String KEY_TITLE = "title";
-        /**
-         * 广告对应的真实广告源
-         */
-        public static final String ADV_SOURCE = "bx_adv_source";//猫眼，手助，美团
-        /**
-         * 广告的真实类型
-         */
-        public static final String ADV_TYPE = "bx_adv_type";//下载，2电影、3美食
-        /**
-         * 电影名称
-         */
-        public static final String MOVIE_NAME = "bx_movie_name";
-        /**
-         * 电影评分
-         */
-        public static final String MOVIE_RATE = "bx_movie_rate";
-        /**
-         * 电影上映时间
-         */
-        public static final String MOVIE_SHOW = "bx_movie_show";
-        /**
-         * 电影导演
-         */
-        public static final String MOVIE_DIRECTOR = "bx_movie_dir";
-        /**
-         * 电影演员
-         */
-        public static final String MOVIE_STAR = "bx_movie_star";
-        /**
-         * 电影时长
-         */
-        public static final String MOVIE_DURATION = "bx_movie_dur";
-        /**
-         * 电影版本
-         */
-        public static final String MOVIE_VERSION = "bx_movie_ver";
-        /**
-         * 电影上映情况
-         */
-        public static final String MOVIE_STATE = "bx_movie_state";
-
-        /**
-         * 美食所在城市
-         */
-        public static final String CATE_CITY = "bx_cate_city";
-        /**
-         * 美食商铺名称
-         */
-        public static final String CATE_SHOP = "bx_cate_shop";
-        /**
-         * 美食一级品类
-         */
-        public static final String CATE_CLASS_NAME = "bx_cate_class_name";
-        /**
-         * 美食二级品类
-         */
-        public static final String CATE_TYPE_NAME = "bx_cate_type_name";
-        /**
-         * 美食三级品类
-         */
-        public static final String CATE_TYPE = "bx_cate_cate_type";
-        /**
-         * 美食商圈
-         */
-        public static final String CATE_AREA = "bx_cate_area";
-        /**
-         * 美食行政区名称
-         */
-        public static final String CATE_DISTRICT = "bx_cate_dis";
-        /**
-         * 美食纬度
-         */
-        public static final String CATE_LATITUDE = "bx_cat_lat";
-        /**
-         * 美食经度
-         */
-        public static final String CATE_LONGITUDE = "bx_cate_lon";
-        /**
-         * 美食距离
-         */
-        public static final String CATE_DISTANCE = "bx_cate_distance";
-        /**
-         * 美食地址
-         */
-        public static final String CATE_ADDRESS = "bx_cate_adr";
-        /**
-         * 美食电话
-         */
-        public static final String CATE_PHONE = "bx_cate_phone";
-        /**
-         * 美食评分
-         */
-        public static final String CATE_RATE = "bx_cate_rate";
-    }
 }

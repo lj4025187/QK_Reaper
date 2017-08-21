@@ -13,7 +13,6 @@
     <string name="tencent_ad_src_name">腾讯</string>
     <string name="baidu_ad_src_name">百度</string>
     <string name="qihoo_ad_src_name">360</string>
-    <string name="baxin_ad_src_name">靶心</string>
     <string name="ad_src_unknown">未知广告源</string>
 
     <string name="ad_item_title_default">标题牺牲了</string>

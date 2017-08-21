@@ -19,8 +19,7 @@
             <!--<category android:name="android.intent.category.LAUNCHER" />-->
             <!--</intent-filter>-->
         </activity>
-        <activity android:name=".activities.TabMainActivity"
-            android:screenOrientation="portrait">
+        <activity android:name=".activities.TabMainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

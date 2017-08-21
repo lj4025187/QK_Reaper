@@ -18,8 +18,8 @@ public class BumpVersion {
 
     // Must be final constant
     public static final int RELEASE = 1;
-    public static final int SECOND = 1;
-    public static final int REVISION = 0;
+    public static final int SECOND = 0;
+    public static final int REVISION = 6;
     public static final String SUFFIX = "-beta";
 
     @NoProguard
