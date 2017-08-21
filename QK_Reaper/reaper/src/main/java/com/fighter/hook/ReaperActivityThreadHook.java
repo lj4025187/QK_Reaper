@@ -9,7 +9,7 @@ import com.fighter.common.utils.RefInvoker;
  */
 
 public class ReaperActivityThreadHook {
-    private static final String TAG = ReaperActivityThreadHook.class.getSimpleName();
+    private static final String TAG = "ReaperActivityThreadHook";
 
     private static final String ClassName = "android.app.ActivityThread";
 
@@ -17,22 +17,22 @@ public class ReaperActivityThreadHook {
 
     private static final String Method_currentActivityThread = "currentActivityThread";
 
-    private static ReaperActivityThreadHook reaperActivityThreadHook;
+    private static ReaperActivityThreadHook mReaperActivityThreadHook;
 
-    private Object instance;
+    private Object mInstance;
 
     private ReaperActivityThreadHook(Object instance) {
-        this.instance = instance;
+        this.mInstance = instance;
     }
 
     public static synchronized ReaperActivityThreadHook get() {
-        if (reaperActivityThreadHook == null) {
+        if (mReaperActivityThreadHook == null) {
             Object instance = currentActivityThread();
             if (instance != null) {
-                reaperActivityThreadHook = new ReaperActivityThreadHook(instance);
+                mReaperActivityThreadHook = new ReaperActivityThreadHook(instance);
             }
         }
-        return reaperActivityThreadHook;
+        return mReaperActivityThreadHook;
     }
 
     private static Object currentActivityThread() {
@@ -63,12 +63,12 @@ public class ReaperActivityThreadHook {
     }
 
     public Instrumentation getInstrumentation() {
-        return (Instrumentation) RefInvoker.getField(instance,
+        return (Instrumentation) RefInvoker.getField(mInstance,
                 ClassName, Field_mInstrumentation);
     }
 
     public void setInstrumentation(Instrumentation instrumentation) {
-        RefInvoker.setField(instance, ClassName,
+        RefInvoker.setField(mInstance, ClassName,
                 Field_mInstrumentation,
                 instrumentation);
     }

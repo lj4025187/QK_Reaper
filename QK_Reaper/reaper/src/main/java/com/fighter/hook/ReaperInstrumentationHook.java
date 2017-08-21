@@ -10,6 +10,8 @@ import android.os.IBinder;
 import com.fighter.common.utils.RefInvoker;
 
 /**
+ * hook instrumentation method
+ *
  * Created by lichen on 17-6-12.
  */
 
@@ -17,15 +19,15 @@ public class ReaperInstrumentationHook {
 
     private static final String Method_execStartActivity = "execStartActivity";
 
-    private Object instance;
+    private Object mInstance;
 
     public ReaperInstrumentationHook(Object instance) {
-        this.instance = instance;
+        this.mInstance = instance;
     }
 
     public Instrumentation.ActivityResult execStartActivity(Context who, IBinder contextThread, IBinder token, Activity target,
                                                             Intent intent, int requestCode, Bundle options) {
-        Object result = RefInvoker.invokeMethod(instance, android.app.Instrumentation.class.getName(),
+        Object result = RefInvoker.invokeMethod(mInstance, mInstance.getClass().getName(),
                 Method_execStartActivity, new Class[] { Context.class, IBinder.class, IBinder.class, Activity.class,
                         Intent.class, int.class, Bundle.class }, new Object[] { who, contextThread, token, target,
                         intent, requestCode, options });
