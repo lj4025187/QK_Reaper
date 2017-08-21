@@ -11,7 +11,7 @@ import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class RefInvoker {
-
+    private static final String TAG = "RefInvoker";
     private static final ClassLoader system = ClassLoader.getSystemClassLoader();
     private static final ClassLoader bootloader = system.getParent();
     private static final ClassLoader application = RefInvoker.class.getClassLoader();
@@ -69,22 +69,30 @@ public class RefInvoker {
 
     public static Object invokeMethod(Object target, Class clazz, String methodName, Class[] paramTypes,
                                       Object[] paramValues) {
+        Method method = null;
         try {
-            Method method = clazz.getDeclaredMethod(methodName, paramTypes);
-            if (method == null) {
+            method = clazz.getDeclaredMethod(methodName, paramTypes);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+
+        if (method == null) {
+            try {
                 method = clazz.getMethod(methodName, paramTypes);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
             }
-            if (method != null && !method.isAccessible()) {
-                method.setAccessible(true);
+        }
+
+        if (method != null) {
+            method.setAccessible(true);
+            try {
                 return method.invoke(target, paramValues);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
             }
-        /*} catch (SecurityException e) {
-			e.printStackTrace();*/
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            throw new IllegalArgumentException(e);
-        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            e.printStackTrace();
         }
         return null;
     }
