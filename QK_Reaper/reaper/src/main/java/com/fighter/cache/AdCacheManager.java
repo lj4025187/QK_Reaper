@@ -8,8 +8,11 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.util.ArrayMap;
@@ -21,6 +24,7 @@ import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
 import com.fighter.cache.downloader.AdCacheFileDownloadManager;
+import com.fighter.common.Device;
 import com.fighter.common.PriorityTaskDaemon;
 import com.fighter.common.utils.OpenUtils;
 import com.fighter.common.utils.ReaperLog;
@@ -41,6 +45,7 @@ import com.fighter.wrapper.AKAdSDKWrapper;
 import com.fighter.wrapper.AdRequest;
 import com.fighter.wrapper.AdResponse;
 import com.fighter.wrapper.AdResponseListener;
+import com.fighter.wrapper.BullsEyeSDKWrapper;
 import com.fighter.wrapper.DownloadCallback;
 import com.fighter.wrapper.ISDKWrapper;
 import com.fighter.wrapper.MixAdxSDKWrapper;
@@ -89,7 +94,7 @@ import static com.fighter.ad.AdEvent.EVENT_VIEW_SUCCESS;
  * Created by lichen on 17-5-17.
  */
 
-public class AdCacheManager implements DownloadCallback {
+public class AdCacheManager implements DownloadCallback, LocationListener {
 
     private static final String TAG = "AdCacheManager";
     private static final String EXTRA_EVENT_DOWN_X = "downX";
@@ -117,6 +122,7 @@ public class AdCacheManager implements DownloadCallback {
     private Map<String, AdInfo> mInstallAds;//以包名为key，存放下载的应用对应AdInfo，用来跟踪（安装完成、激活）打点
     private Map<String, String> mSilentInstall;//以包名为key，存放聚效返回的key，用来上报应用的激活打点
     private Map<String, String> mInstallAppsPath;//以包名为key，存放应用安装的路径，安装成功后删除对应的apk
+    private String mGpsSpeed, mGpsAccuracy, mGpsLat, mGpsLon;//GPS速度,半径,纬度,经度
     private ReaperAdvPos mReaperAdvPos;
 
     /**************************************************Init cache task start*****************************************************************/
@@ -787,6 +793,32 @@ public class AdCacheManager implements DownloadCallback {
         mReaperTracker = Tracker.getTracker();
         mReaperTracker.init(mContext);
         postInitCacheTask(mContext);
+
+        Device.registerLocListener(mContext, this);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        mGpsSpeed = String.valueOf(location == null ? "0" : location.getSpeed());
+        mGpsAccuracy = String.valueOf(location == null ? "0" : location.getAccuracy());
+        mGpsLat = String.valueOf(location == null ? "0" : location.getLatitude());
+        mGpsLon = String.valueOf(location == null ? "0" : location.getLongitude());
+        ReaperLog.i(TAG, " onLocationChanged speed " + mGpsSpeed + " accuracy " + mGpsAccuracy + " lat " + mGpsLat + " lon " + mGpsLon);
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
     }
 
     /**
@@ -1293,9 +1325,12 @@ public class AdCacheManager implements DownloadCallback {
                 }
                 break;
             case AdInfo.ActionType.BROWSER:
-                if(!iSdkWrapper.isOpenWebOwn()) {
-                    actionUrl = iSdkWrapper.requestWebUrl(adInfo);
-                    if (!TextUtils.isEmpty(actionUrl)) {
+                if(iSdkWrapper.isOpenWebOwn())
+                    return;
+                actionUrl = iSdkWrapper.requestWebUrl(adInfo);
+                if (!TextUtils.isEmpty(actionUrl)) {
+                    if(actionUrl.startsWith("https:") ||
+                            actionUrl.startsWith("http:")) {
                         try {
                             Class<?> reaperClass = Class.forName("com.fighter.loader.ReaperActivity", true, mContext.getClassLoader());
                             Intent intent = new Intent(mContext, reaperClass);
@@ -1304,11 +1339,12 @@ public class AdCacheManager implements DownloadCallback {
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             mContext.startActivity(intent);
                         } catch (ClassNotFoundException e) {
-                            OpenUtils.openWebUrl(mContext, actionUrl);
+                            OpenUtils.open(mContext, actionUrl);
                             e.printStackTrace();
                         }
+                    } else {
+                        OpenUtils.open(mContext, actionUrl);
                     }
-                } else {
                 }
                 break;
             default:
@@ -1847,8 +1883,18 @@ public class AdCacheManager implements DownloadCallback {
                         akAdWrapper.init(mContext, null);
                         mSdkWrapperSupport.put(SdkName.AKAD, akAdWrapper);
                         break;
+                    case SdkName.BA_XIN:
+                        BullsEyeSDKWrapper bullsEyeSDKWrapper = new BullsEyeSDKWrapper();
+                        Map<String, Object> extras = new ArrayMap<>();
+                        extras.put("app_id", adSense.ads_appid);
+                        extras.put("app_key", adSense.ads_app_key);
+                        bullsEyeSDKWrapper.init(mContext, extras);
+                        ReaperLog.e(TAG, "not match sdk wrapper " + SdkName.BA_XIN);
+                        mSdkWrapperSupport.put(SdkName.BA_XIN, bullsEyeSDKWrapper);
+                        break;
                     default:
                         ReaperLog.e(TAG, "not match sdk wrapper");
+                        break;
                 }
             }
         }
@@ -1914,6 +1960,21 @@ public class AdCacheManager implements DownloadCallback {
                     reaperAdSense.adv_size_type);
             return null;
         }
+
+        if(sdkWrapper instanceof TencentSDKWrapper) {
+            //添加广点通的扩展字段
+            builder.adExtra(TencentSDKWrapper.EXTRA_LAT, mGpsLat)
+                    .adExtra(TencentSDKWrapper.EXTRA_LNG, mGpsLon)
+                    .adExtra(TencentSDKWrapper.EXTRA_COORDTIME, String.valueOf(System.currentTimeMillis()));
+        } else if(sdkWrapper instanceof BullsEyeSDKWrapper) {
+            //添加靶心的扩展字段
+            builder.adExtra(BullsEyeSDKWrapper.EXTRA_GPS_SPEED, mGpsSpeed)
+                    .adExtra(BullsEyeSDKWrapper.EXTRA_GPS_ACCURACY, mGpsAccuracy)
+                    .adExtra(BullsEyeSDKWrapper.EXTRA_GPS_LAT, mGpsLat)
+                    .adExtra(BullsEyeSDKWrapper.EXTRA_GPS_LON, mGpsLon)
+                    .adExtra(BullsEyeSDKWrapper.EXTRA_CURRENT_MILLIS, String.valueOf(System.currentTimeMillis()));
+        }
+
         AdResponse adResponse = null;
         if (sdkWrapper.isRequestAdSupportSync()) {
             adResponse = sdkWrapper.requestAdSync(builder.create());

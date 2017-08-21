@@ -1,5 +1,5 @@
 # Reaper API开发文档
-`Version 1.0.2`
+`Version 1.0.5`
 `Created By wanghaiteng@360.cn`
 `Published by FighterTeam`
 `Android Studio`
@@ -62,7 +62,14 @@ dependencies {
 public class MyApp extends ReaperApplication {
 	
     public void onCreate() {
+     	       
     	super.onCreate();
+        //initConfigValue需要在ReaperApi.init(this, appid, appkey, true)之前调用
+        Map<String, Object> config = new ArrayMap<>();
+        config.put("LOG_SWITCH", true);//日志开(true)关(false)
+        config.put("AKAD_TEST", true);//聚效广告位是(true)否(false)为测试广告位(验证应用包名)
+        config.put("SUPPORT_LOCK_SCREEN", true);//是否支持网页类广告锁屏展示(不包括:聚效)
+        mReaperApi.initConfigValue(config);
         // appContext   应用上下文
         // appId        360OS广告平台申请的APP id
         // appKey       360OS广告平台申请的APP key
@@ -106,6 +113,13 @@ public class MyActivity extends Activity {
     private void requestAds() {
     	MyApp app = (MyApp)getApplication();
         ReaperApi api = app.getReaperApi();
+        
+        //initConfigValue需要在ReaperApi.init(this, appid, appkey, true)之前调用
+        Map<String, Object> config = new ArrayMap<>();
+        config.put("LOG_SWITCH", true);//日志开(true)关(false)
+        config.put("AKAD_TEST", true);//聚效广告位是(true)否(false)为测试广告位(验证应用包名)
+        config.put("SUPPORT_LOCK_SCREEN", true);//是否支持网页类广告锁屏展示(不包括:聚效)
+        api.initConfigValue(config);
         //使用api
         // appContext  应用上下文
         // appId       360OS广告平台申请的APP id
@@ -519,6 +533,33 @@ adName  |String|jx/gdt/baidu|对应的广告源|jx / baidu / gdt
 btnText |String||预留按钮文字|jx
 download_app_pkg|String||下载app包名|jx / baidu
 download_app_name|String||下载应用名称|jx / baidu / gdt
+
+- 靶心：baxin
+
+key|返回值类型 | 返回值 | 描述 | 有效广告商
+---|---|---|---|---
+bx_adv_source|String|maoyan(电影)/meituan（美食）|靶心对应的真实广告源|baxin
+bx_adv_type|String|2=电影;3=美食|广告的真实类型|baxin
+bx_movie_name|String||电影名称|baxin
+bx_movie_rate|String||电影评分|baxin
+bx_movie_show|String||电影上映时间|baxin
+bx_movie_dir|String||电影导演|baxin
+bx_movie_star|String||电影演员|baxin
+bx_movie_dur|String||电影时长|baxin
+bx_movie_ver|String|“/”分隔（3D/中国巨幕）|电影版本|baxin
+bx_movie_state|String|1=即将上映;3=正在热映;4=预售|电影上映情况|baxin
+bx_cate_city|String||美食所在城市|baxin
+bx_cate_shop|String||美食商铺名称|baxin
+bx_cate_type|String||美食品类|baxin
+bx_cate_area|String||美食商圈|baxin
+bx_cate_dis|String||美食行政区|baxin
+bx_cat_lat|String||美食纬度|baxin
+bx_cate_lon|String||美食经度|baxin
+bx_cate_distance|String||美食距离|baxin
+bx_cate_adr|String||美食地址|baxin
+bx_cate_phone|String||美食电话|baxin
+bx_cate_rate|String||美食评分|baxin
+
 ### 混淆问题
 如果您需要使用proguard混淆代码，需确保不要混淆SDK的代码，请在集成模块的proguard-rules.pro文件尾部添加如下配置：
 > ```xml

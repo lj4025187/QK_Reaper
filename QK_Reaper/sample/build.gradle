@@ -11,7 +11,7 @@ android {
         versionCode 1
         versionName "1.0.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -21,7 +21,7 @@ android {
         }
 
         debug {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             versionNameSuffix "_VER_" + new Date().format("yyyy.MM.dd_HH:mm:ss")
         }
@@ -118,4 +118,5 @@ dependencies {
     }
     compile(name: 'reaper', ext: 'aar')
     compile(name: 'proguard', ext: 'aar')
+    compile 'com.android.support:multidex:1.0.0'
 }
