@@ -1,11 +1,10 @@
-package com.fighter.download;
+package com.fighter.reaper;
 
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.text.TextUtils;
 
-import com.fighter.ContextProxy;
 import com.fighter.common.utils.ReaperLog;
 import com.qiku.proguard.annotations.NoProguard;
 
@@ -18,14 +17,14 @@ import java.lang.reflect.Method;
 
 @NoProguard
 public class ReaperEnv {
-    private static final String TAG = ReaperEnv.class.getSimpleName();
+
+    private static final String TAG = "ReaperEnv";
 
     @NoProguard
     private static String sSdkPath;
 
     @NoProguard
     public static AssetManager sAssetManager;
-    public static HttpsManager sHttpsManager;
 
     @NoProguard
     public static Resources sResources;
@@ -40,12 +39,16 @@ public class ReaperEnv {
     public static ContextProxy sContextProxy;
 
     @NoProguard
-    public static void initReaperEnv() {
+    public static void init(Context context, String sdkPath, ClassLoader loader) {
+        sContext = context;
+        sSdkPath = sdkPath;
+        sClassLoader = loader;
+
         if (TextUtils.isEmpty(sSdkPath)) {
-            ReaperLog.e(TAG, "sSdkPath == null !");
+            ReaperLog.e(TAG, "sdkPath == null !");
             return;
         }
-        ReaperLog.e(TAG, "abspath : " + sSdkPath);
+        ReaperLog.e(TAG, "sdkPath : " + sSdkPath);
         AssetManager assetManager= null;
         try {
             assetManager = AssetManager.class.newInstance();
@@ -73,9 +76,6 @@ public class ReaperEnv {
 
         sResources = new Resources(sAssetManager, sContext.getResources().getDisplayMetrics(),
                 sContext.getResources().getConfiguration());
-//        if (sHttpsManager == null) {
-//            sHttpsManager = new HttpsManager("");
-//        }
     }
 
 }

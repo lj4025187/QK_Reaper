@@ -25,14 +25,14 @@ import com.ak.android.engine.navvideo.NativeVideoAdLoaderListener;
 import com.ak.android.other.news.DownloadUtil;
 import com.ak.android.shell.AKAD;
 import com.alibaba.fastjson.JSONObject;
-import com.fighter.ContextProxy;
+import com.fighter.reaper.ContextProxy;
 import com.fighter.ad.AdEvent;
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.ThreadPoolUtils;
-import com.fighter.download.ReaperEnv;
+import com.fighter.reaper.ReaperEnv;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;

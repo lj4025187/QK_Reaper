@@ -147,4 +147,14 @@ public class ReaperFile {
             return buffer;
         }
     }
+
+    @Override
+    public String toString() {
+        if (mAfd != null) {
+            return "ReaperFile{ assets file }";
+        } else if (mFile != null && mFile.exists()) {
+            return "ReaperFile{ " + mFile.getAbsolutePath() + " }";
+        }
+        return "";
+    }
 }

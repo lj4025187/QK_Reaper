@@ -13,6 +13,7 @@ import android.text.TextUtils;
 
 import com.ak.android.provider.AKProvider;
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.reaper.ReaperEnv;
 
 import java.io.BufferedInputStream;
 import java.io.File;

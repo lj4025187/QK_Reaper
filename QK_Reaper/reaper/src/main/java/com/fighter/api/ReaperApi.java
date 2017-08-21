@@ -15,7 +15,7 @@ import com.fighter.config.ReaperConfig;
 import com.fighter.config.ReaperConfigFetcher;
 import com.fighter.config.ReaperConfigHttpHelper;
 import com.fighter.config.db.ReaperConfigDB;
-import com.fighter.download.ReaperEnv;
+import com.fighter.reaper.ReaperEnv;
 import com.fighter.hook.ReaperActivityThreadHook;
 import com.fighter.hook.ReaperGlobal;
 import com.fighter.hook.ReaperHookProvider;

@@ -72,33 +72,12 @@ public class ReaperPatchManager {
      * @return ReaperPatch list
      */
     public List<ReaperPatch> unpackPatches(Context context, List<ReaperFile> files, ClassLoader appClassLoader) {
-        List<ReaperPatch> patches = null;
-        Constructor c = null;
-        try {
-            Class ReaperPatchClass = Class.forName(REAPER_PATCH_CLASS);
-            c = ReaperPatchClass.getDeclaredConstructor(Context.class, ReaperFile.class, ClassLoader.class);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        if (c == null) {
+        if (context == null || files == null || files.size() == 0 || appClassLoader == null) {
             return null;
         }
-        c.setAccessible(true);
-        if (!files.isEmpty()) {
-            patches = new ArrayList<>();
-            for (ReaperFile file : files) {
-                try {
-                    patches.add((ReaperPatch) c.newInstance(context, file, appClassLoader));
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-            }
+        List<ReaperPatch> patches = new ArrayList<>();
+        for (ReaperFile file : files) {
+            patches.add(new ReaperPatch(context, file, appClassLoader));
         }
         return patches;
     }

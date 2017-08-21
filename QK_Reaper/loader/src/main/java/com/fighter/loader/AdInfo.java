@@ -12,10 +12,10 @@ import com.qiku.proguard.annotations.NoProguard;
 import java.io.File;
 import java.util.Map;
 
-@NoProguard
 /**
  * 广告信息
  */
+@KeepAll
 public class AdInfo {
 
     /**
@@ -58,7 +58,6 @@ public class AdInfo {
      *
      * @param v 展示广告所使用的view (不传时聚效广告源将无法上报)
      */
-    @NoProguard
     public void onAdShow(View v) {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "view", v);
@@ -75,7 +74,6 @@ public class AdInfo {
      * @param upX      广告所在view抬起时的x坐标，获取不到填-999(若为负值，直接返回，不进行事件上报)
      * @param upY      广告所在view抬起时的y坐标，获取不到填-999(若为负值，直接返回，不进行事件上报)
      */
-    @NoProguard
     public void onAdClicked(Activity activity, View v,
                             int downX, int downY,
                             int upX, int upY) {
@@ -98,7 +96,6 @@ public class AdInfo {
     /**
      * 广告被用户关闭
      */
-    @NoProguard
     public void onAdClose() {
         onEvent(AdEvent.EVENT_CLOSE, null);
     }
@@ -108,7 +105,6 @@ public class AdInfo {
      *
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
-    @NoProguard
     public void onVideoAdCardClick(int position) {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "position", position);
@@ -120,7 +116,6 @@ public class AdInfo {
      *
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
-    @NoProguard
     public void onVideoAdStartPlay(int position) {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "position", position);
@@ -132,7 +127,6 @@ public class AdInfo {
      *
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
-    @NoProguard
     public void onVideoAdPause(int position) {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "position", position);
@@ -144,7 +138,6 @@ public class AdInfo {
      *
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
-    @NoProguard
     public void onVideoAdContinue(int position) {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "position", position);
@@ -156,7 +149,6 @@ public class AdInfo {
      *
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
-    @NoProguard
     public void onVideoAdPlayComplete(int position) {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "position", position);
@@ -168,7 +160,6 @@ public class AdInfo {
      *
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
-    @NoProguard
     public void onVideoAdFullScreen(int position) {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "position", position);
@@ -180,7 +171,6 @@ public class AdInfo {
      *
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
-    @NoProguard
     public void onVideoAdExit(int position) {
         Map<String, Object> params = new ArrayMap<>();
         ReaperApi.putParam(params, "position", position);
@@ -197,7 +187,6 @@ public class AdInfo {
      * @see #CONTENT_TYPE_PICTURE_WITH_TEXT
      * @see #CONTENT_TYPE_VIDEO
      */
-    @NoProguard
     public int getContentType() {
         Object o = mParams.get("contentType");
         return o == null ? 0 : (int) o;
@@ -210,7 +199,6 @@ public class AdInfo {
      * @see #ACTION_TYPE_BROWSER
      * @see #ACTION_TYPE_APP_DOWNLOAD
      */
-    @NoProguard
     public int getActionType() {
         Object o = mParams.get("actionType");
         return o == null ? 0 : (int) o;
@@ -222,7 +210,6 @@ public class AdInfo {
      *
      * @return 图片URL链接
      */
-    @NoProguard
     public String getImgUrl() {
         return (String) mParams.get("imgUrl");
     }
@@ -236,7 +223,6 @@ public class AdInfo {
      *
      * @return 图片文件
      */
-    @NoProguard
     public File getImgFile() {
         String imgPath = (String) mParams.get("imgFile");
         if (imgPath != null) {
@@ -254,7 +240,6 @@ public class AdInfo {
      *
      * @return 视频广告链接
      */
-    @NoProguard
     public String getVideoUrl() {
         return (String) mParams.get("videoUrl");
     }
@@ -264,7 +249,6 @@ public class AdInfo {
      *
      * @return 广告标题
      */
-    @NoProguard
     public String getTitle() {
         return (String) mParams.get("title");
     }
@@ -274,7 +258,6 @@ public class AdInfo {
      *
      * @return 广告描述
      */
-    @NoProguard
     public String getDesc() {
         return (String) mParams.get("desc");
     }
@@ -284,7 +267,6 @@ public class AdInfo {
      *
      * @return APP图标链接
      */
-    @NoProguard
     public String getAppIconUrl() {
         return (String) mParams.get("appIconUrl");
     }
@@ -294,7 +276,6 @@ public class AdInfo {
      *
      * @return APP名称
      */
-    @NoProguard
     public String getAppName() {
         return (String) mParams.get("appName");
     }
@@ -304,7 +285,6 @@ public class AdInfo {
      *
      * @return APP软件包名
      */
-    @NoProguard
     public String getAppPackageName() {
         return (String) mParams.get("appPackageName");
     }
@@ -314,7 +294,6 @@ public class AdInfo {
      *
      * @return 返回广告的唯一标识
      */
-    @NoProguard
     public String getUuid() {
         return (String)mParams.get("uuid");
     }
@@ -324,7 +303,6 @@ public class AdInfo {
      *
      * @return adInfo is available or not
      */
-    @NoProguard
     public boolean isAvailable() {
         if (mParams.containsKey("isAvail")) {
             return (boolean) mParams.get("isAvail");
@@ -340,14 +318,12 @@ public class AdInfo {
      * @param key 属性key值
      * @return 属性value值
      */
-    @NoProguard
     public Object getExtra(String key) {
         return mParams.get(key);
     }
 
 
 
-    @Override
     public String toString() {
         return "AdInfo{" +
                 "mContentType=" + getContentType() +

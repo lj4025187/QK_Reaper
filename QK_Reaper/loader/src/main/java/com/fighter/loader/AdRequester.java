@@ -8,6 +8,7 @@ import java.util.Map;
 /**
  * 广告请求类，一个AdRequester对应一个360OS广告位ID，可通过此类请求对应广告。
  */
+@NoProguard
 public class AdRequester {
     private ReaperApi mReaperApi;
     Map<String, Object> mParams;

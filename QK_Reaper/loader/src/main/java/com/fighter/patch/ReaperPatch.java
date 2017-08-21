@@ -39,7 +39,7 @@ public class ReaperPatch {
      * @param file file
      * @param appClassLoader classLoader
      */
-    private ReaperPatch(Context context, ReaperFile file, ClassLoader appClassLoader) {
+    ReaperPatch(Context context, ReaperFile file, ClassLoader appClassLoader) {
 
         if (ReaperPatchHelper.isApkFile(file)) {
             mFile = file;
@@ -111,5 +111,14 @@ public class ReaperPatch {
      */
     public ReaperFile getReaperFile() {
         return mFile;
+    }
+
+    @Override
+    public String toString() {
+        return "ReaperPatch{" +
+                "mFile=" + mFile +
+                ", mType=" + mType +
+                ", mVersion=" + mVersion +
+                '}';
     }
 }

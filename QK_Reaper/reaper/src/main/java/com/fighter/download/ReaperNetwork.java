@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.reaper.ReaperEnv;
 import com.qiku.proguard.annotations.NoProguard;
 import com.qiku.serversdk.custom.AppConf;
 
