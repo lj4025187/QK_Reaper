@@ -1,6 +1,7 @@
 package com.fighter.hook;
 
 import android.app.Instrumentation;
+import android.content.Context;
 
 import com.fighter.common.utils.RefInvoker;
 
@@ -9,67 +10,55 @@ import com.fighter.common.utils.RefInvoker;
  */
 
 public class ReaperActivityThreadHook {
+
     private static final String TAG = "ReaperActivityThreadHook";
 
-    private static final String ClassName = "android.app.ActivityThread";
-
+    private static final String Class_ActivityThread = "android.app.ActivityThread";
     private static final String Field_mInstrumentation = "mInstrumentation";
-
     private static final String Method_currentActivityThread = "currentActivityThread";
+    private static final String Class_ContextImpl = "android.app.ContextImpl";
+    private static final String Field_mMainThread = "mMainThread";
+    private static final String Method_getImpl = "getImpl";
 
-    private static ReaperActivityThreadHook mReaperActivityThreadHook;
+    private static Object sActivityThread;
 
-    private Object mInstance;
-
-    private ReaperActivityThreadHook(Object instance) {
-        this.mInstance = instance;
+    public static void hookInstrumentation() {
+        if (!initActivityThread()) {
+            return;
+        }
+        Instrumentation oriInstrumentation = getOriginInstrumentation();
+        Instrumentation replaceInstrumentation = new ReaperInstrumentationWrapper(oriInstrumentation);
+        setInstrumentation(replaceInstrumentation);
     }
 
-    public static synchronized ReaperActivityThreadHook get() {
-        if (mReaperActivityThreadHook == null) {
-            Object instance = currentActivityThread();
-            if (instance != null) {
-                mReaperActivityThreadHook = new ReaperActivityThreadHook(instance);
+    private static boolean initActivityThread () {
+        if (sActivityThread == null) {
+            sActivityThread = currentActivityThread();
+            if (sActivityThread == null) {
+                sActivityThread = getActivityThreadByContextImpl();
             }
         }
-        return mReaperActivityThreadHook;
+        return sActivityThread != null;
     }
 
     private static Object currentActivityThread() {
-        // 从ThreadLocal中取出来的
-        Object sCurrentActivityThread = RefInvoker.invokeMethod(null, ClassName,
-                Method_currentActivityThread,
-                (Class[]) null, (Object[]) null);
-
-        //有些情况下上面的方法拿不到，下面再换个方法尝试一次
-        if (sCurrentActivityThread == null) {
-//            Object impl = ReaperContextImplHook.getImpl(ReaperGlobal.getApplication());
-            Object impl = ReaperContextImplHook.getImpl(ReaperGlobal.getContext());
-            if (impl != null) {
-                sCurrentActivityThread = new ReaperContextImplHook(impl).getMainThread();
-            }
-        }
-        return sCurrentActivityThread;
+        return RefInvoker.invokeMethod(null, Class_ActivityThread,
+                Method_currentActivityThread, null, null);
     }
 
-    public static void wrapInstrumentation() {
-        ReaperActivityThreadHook hackActivityThread = get();
-        if (hackActivityThread != null) {
-            Instrumentation originalInstrumentation = hackActivityThread.getInstrumentation();
-            if (!(originalInstrumentation instanceof ReaperInstrumentationWrapper)) {
-                hackActivityThread.setInstrumentation(new ReaperInstrumentationWrapper(originalInstrumentation));
-            }
-        }
+    private static Object getActivityThreadByContextImpl() {
+        Object contextImpl = RefInvoker.invokeMethod(null, Class_ContextImpl, Method_getImpl,
+                new Class[]{Context.class}, new Object[]{ReaperGlobal.getContext()});
+        return RefInvoker.getField(contextImpl, Class_ContextImpl, Field_mMainThread);
     }
 
-    public Instrumentation getInstrumentation() {
-        return (Instrumentation) RefInvoker.getField(mInstance,
-                ClassName, Field_mInstrumentation);
+    private static Instrumentation getOriginInstrumentation() {
+        return (Instrumentation) RefInvoker.getField(sActivityThread,
+                Class_ActivityThread, Field_mInstrumentation);
     }
 
-    public void setInstrumentation(Instrumentation instrumentation) {
-        RefInvoker.setField(mInstance, ClassName,
-                Field_mInstrumentation,
-                instrumentation);
+    private static void setInstrumentation(Instrumentation instrumentation) {
+        RefInvoker.setField(sActivityThread, Class_ActivityThread,
+                Field_mInstrumentation, instrumentation);
     }
 }

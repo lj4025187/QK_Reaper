@@ -2,7 +2,6 @@ package com.fighter.api;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.fighter.ad.AdInfo;
 import com.fighter.cache.AdCacheManager;
@@ -15,11 +14,11 @@ import com.fighter.config.ReaperConfig;
 import com.fighter.config.ReaperConfigFetcher;
 import com.fighter.config.ReaperConfigHttpHelper;
 import com.fighter.config.db.ReaperConfigDB;
-import com.fighter.reaper.ReaperEnv;
 import com.fighter.hook.ReaperActivityThreadHook;
 import com.fighter.hook.ReaperGlobal;
 import com.fighter.hook.ReaperHookProvider;
 import com.fighter.reaper.R;
+import com.fighter.reaper.ReaperEnv;
 import com.fighter.wrapper.AKAdSDKWrapper;
 import com.qiku.proguard.annotations.KeepAll;
 import com.qiku.proguard.annotations.NoProguard;
@@ -39,7 +38,7 @@ public class ReaperApi {
     private Context mContext;
     private String mAppId;
     private String mAppKey;
-    private boolean isTestMode;
+    private boolean mIsTestMode;
     private AtomicBoolean mIsInitSucceed = new AtomicBoolean(false);
     private AdCacheManager mAdCacheManager;
 
@@ -81,9 +80,8 @@ public class ReaperApi {
 
         mAppId = (String) params.get("appId");
         mAppKey = (String) params.get("appKey");
-        isTestMode = (boolean) params.get("testMode");
+        mIsTestMode = (boolean) params.get("testMode");
 
-//        ReaperGlobal.setApplication((Application) mContext);
         ReaperGlobal.setContext(mContext);
         String packageName = mContext.getPackageName();
         ReaperLog.i(TAG, "init in reaper " + packageName);
@@ -96,18 +94,17 @@ public class ReaperApi {
             ReaperLog.e(TAG, "[init] app id is null");
             return;
         }
-        try {
-            Integer integer = Integer.valueOf(mAppId);
-        } catch (NumberFormatException nfe) {
+
+        if (!TextUtils.isDigitsOnly(mAppId)) {
             ReaperLog.e(TAG, "[init] app id is Illegal");
-            nfe.printStackTrace();
             return;
         }
+
         if (TextUtils.isEmpty(mAppKey)) {
             ReaperLog.e(TAG, "[init] app key is null");
             return;
         }
-        ReaperActivityThreadHook.wrapInstrumentation();
+        ReaperActivityThreadHook.hookInstrumentation();
         ReaperHookProvider.hookReaperProxyProvider(mContext);
 
         mAdCacheManager = AdCacheManager.getInstance();
@@ -118,54 +115,75 @@ public class ReaperApi {
 
     @NoProguard
     public void setTargetConfig(Map<String, Object> params) {
-        if (params == null)
+        if (params == null) {
+            ReaperLog.e(TAG, "[setTargetConfig] params is null");
             return;
-        String config = (String) params.get("config");
-        if (isTestMode) {
-            ReaperConfigHttpHelper.recordLastSuccessTime(mContext);
-            String key = ReaperConfig.TEST_SALT + ReaperConfig.TEST_APPKEY;
-            IRC4 rc4 = RC4Factory.create(key);
-            byte[] encrypt = rc4.encrypt(config.getBytes());
-            List<ReaperAdvPos> reaperAdvPoses = ReaperConfigHttpHelper.parseResponseBody(mContext, encrypt, key);
-            if (reaperAdvPoses != null) {
-                ReaperConfigDB.getInstance(mContext).saveReaperAdvPos(reaperAdvPoses);
-            }
+        }
+        if (!mIsTestMode) {
+            ReaperLog.i(TAG, "[setTargetConfig] is not test mode");
+            return;
+        }
+        Object configObj = params.get("config");
+        if (configObj == null || !(configObj instanceof String)) {
+            ReaperLog.e(TAG, "[setTargetConfig] config is null or not String");
+            return;
+        }
+
+        String config = (String) configObj;
+        ReaperConfigHttpHelper.recordLastSuccessTime(mContext);
+        String key = ReaperConfig.TEST_SALT + ReaperConfig.TEST_APPKEY;
+        IRC4 rc4 = RC4Factory.create(key);
+        byte[] encrypt = rc4.encrypt(config.getBytes());
+        List<ReaperAdvPos> reaperAdvPoses =
+                ReaperConfigHttpHelper.parseResponseBody(mContext, encrypt, key);
+        if (reaperAdvPoses != null) {
+            ReaperConfigDB.getInstance(mContext).saveReaperAdvPos(reaperAdvPoses);
         }
     }
 
     @NoProguard
     public void initConfigValue(Map<String, Object> params) {
-        if (params == null || params.isEmpty()) return;
-        String logModeKey = "LOG_SWITCH";
-        if (params.containsKey(logModeKey)) {
-            Object logMode = params.get(logModeKey);
-            if (logMode != null && logMode instanceof Boolean)
-                ReaperLog.LOG_SWITCH = (boolean) logMode;
-            Log.i("Reaper", "ReaperLog.LOG_SWITCH " + ReaperLog.LOG_SWITCH);
+        if (params == null || params.isEmpty()) {
+            ReaperLog.e(TAG, "[initConfigValue] params is null");
+            return;
         }
-        String serverModeKey = "SERVER_TEST";
-        if (params.containsKey(serverModeKey)) {
-            Object serverMode = params.get(serverModeKey);
-            if (serverMode != null && serverMode instanceof Boolean)
-                ReaperConfigFetcher.SERVER_TEST_MODE = (boolean) serverMode;
-            Log.i("Reaper", "ReaperConfigFetcher.SERVER_TEST_MODE " + ReaperConfigFetcher.SERVER_TEST_MODE);
+
+        Object logMode = params.get("LOG_SWITCH");
+        if (logMode != null && logMode instanceof Boolean) {
+            ReaperLog.LOG_SWITCH = (boolean) logMode;
         }
-        String akadModeKey = "AKAD_TEST";
-        if (params.containsKey(akadModeKey)) {
-            Object akadMode = params.get(akadModeKey);
-            if (akadMode != null && akadMode instanceof Boolean)
-                AKAdSDKWrapper.AKAD_TEST_MODE = (boolean) akadMode;
-            Log.i("Reaper", "AKAdSDKWrapper.AKAD_TEST_MODE " + AKAdSDKWrapper.AKAD_TEST_MODE);
+        ReaperLog.i(TAG, "[initConfigValue] ReaperLog.LOG_SWITCH " + ReaperLog.LOG_SWITCH);
+
+        Object serverMode = params.get("SERVER_TEST");
+        if (serverMode != null && serverMode instanceof Boolean) {
+            ReaperConfigFetcher.SERVER_TEST_MODE = (boolean) serverMode;
         }
+        ReaperLog.i(TAG, "[initConfigValue] ReaperConfigFetcher.SERVER_TEST_MODE "
+                + ReaperConfigFetcher.SERVER_TEST_MODE);
+
+        Object akadMode = params.get("AKAD_TEST");
+        if (akadMode != null && akadMode instanceof Boolean) {
+            AKAdSDKWrapper.AKAD_TEST_MODE = (boolean) akadMode;
+        }
+        ReaperLog.i(TAG, "AKAdSDKWrapper.AKAD_TEST_MODE " + AKAdSDKWrapper.AKAD_TEST_MODE);
     }
 
     @NoProguard
     public void requestAd(Map<String, Object> params) {
         ReaperLog.i(TAG, "[requestAd] params: " + params);
+        if (params == null) {
+            ReaperLog.i(TAG, "[requestAd] params is null");
+            return;
+        }
 
-        String adPositionId = (String) params.get("adPositionId");
+        Object adPositionIdObj = params.get("adPositionId");
+        String adPositionId = (adPositionIdObj != null && adPositionIdObj instanceof String) ?
+                (String)adPositionIdObj : null;
+
         Object adRequestCallback = params.get("adRequestCallback");
-        int adCount = (int) params.get("adCount");
+
+        Object adCountObj = params.get("adCount");
+        int adCount = (adCountObj != null && adCountObj instanceof Integer) ? (int)adCountObj : 0;
 
         if (adRequestCallback == null) {
             ReaperLog.e(TAG, "[requestAd] AdRequestCallback is null");
@@ -194,16 +212,34 @@ public class ReaperApi {
 
     @NoProguard
     public String getMacAddress(Map<String, Object> params) {
-        Context context = (Context) params.get("appContext");
+        if (params == null) {
+            ReaperLog.e(TAG, "[getMacAddress] params is null");
+            return "";
+        }
+        Object contextObj = params.get("appContext");
+        if (contextObj == null) {
+            ReaperLog.e(TAG, "[getMacAddress] contextObj is null");
+            return "";
+        }
+        Context context = (contextObj instanceof Context) ? (Context) contextObj : null;
+        if (context == null) {
+            ReaperLog.e(TAG, "[getMacAddress] context is null");
+            return "";
+        }
         return Device.getMacStable(context);
     }
 
     @NoProguard
     public void setNeedHoldAd(Map<String, Object> params) {
-        boolean needHoldAd = false;
-        if (params.containsKey("needHoldAd")) {
-            needHoldAd = (boolean) params.get("needHoldAd");
+        if (params == null) {
+            ReaperLog.e(TAG, "[setNeedHoldAd] params is null");
+            return;
         }
+
+        Object needHoldAdObj = params.get("needHoldAd");
+        boolean needHoldAd = (needHoldAdObj != null && needHoldAdObj instanceof Boolean) ?
+                (boolean) needHoldAdObj : false;
+
         if (mAdCacheManager != null) {
             mAdCacheManager.setNeedHoldAd(needHoldAd);
         }
@@ -223,11 +259,17 @@ public class ReaperApi {
             return;
         }
 
-        if (params.containsKey("event")) {
+        if (params == null) {
+            ReaperLog.i(TAG, "[onEvent] params is null ");
+            return;
+        }
+
+        Object eventObj = params.get("event");
+        if (eventObj != null && eventObj instanceof Integer) {
             AdInfo adInfo = new AdInfo();
             adInfo.setExtras(params);
 
-            int adEvent = (int) params.get("event");
+            int adEvent = (int) eventObj;
             mAdCacheManager.onEvent(adEvent, adInfo);
         }
     }

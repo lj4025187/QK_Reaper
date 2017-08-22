@@ -1,6 +1,6 @@
 package com.fighter.ad;
 
-public class AdEvent {
+public final class AdEvent {
     // ----------------------------------------------------
 
     // 通用事件

@@ -34,12 +34,12 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
     private static final String TAG = "ReaperInstrumentationWrapper";
     private static final String DATA_TYPE_ARCHIVE = "application/vnd.android.package-archive";
 
-    private final ReaperInstrumentationHook mHackInstrumentation;
+    private final OriginInstrumentationWrapper mOriginInstrumentationWrapper;
 
     private final Instrumentation mOriginInstrumentation;
 
     public ReaperInstrumentationWrapper(Instrumentation instrumentation) {
-        this.mHackInstrumentation = new ReaperInstrumentationHook(instrumentation);
+        this.mOriginInstrumentationWrapper = new OriginInstrumentationWrapper(instrumentation);
         this.mOriginInstrumentation = instrumentation;
     }
 
@@ -403,7 +403,7 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
                     + ", Intent = " + intent + ", requestCode = " + requestCode + ", options = " + options);
         }
 
-        return mHackInstrumentation.execStartActivity(who, contextThread, token, target,
+        return mOriginInstrumentationWrapper.execStartActivity(who, contextThread, token, target,
                 proxyIntent, requestCode, options);
     }
 
