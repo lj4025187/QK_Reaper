@@ -10,59 +10,52 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PersistableBundle;
-import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.common.utils.RefInvoker;
 import com.qiku.proguard.annotations.NoProguard;
 
-import java.util.List;
 
 /**
- * instrumentation wrapper
+ * The Instrumentation is used to replace origin instrumentation in ActivityThread
  *
  * Created by lichen on 17-6-12.
  */
 
-public class ReaperInstrumentationWrapper extends Instrumentation {
-    private static final String TAG = "ReaperInstrumentationWrapper";
-    private static final String DATA_TYPE_ARCHIVE = "application/vnd.android.package-archive";
+public class ReaperInstrumentation extends Instrumentation {
+    private static final String TAG = "ReaperInstrumentation";
 
-    private final OriginInstrumentationWrapper mOriginInstrumentationWrapper;
 
     private final Instrumentation mOriginInstrumentation;
 
-    public ReaperInstrumentationWrapper(Instrumentation instrumentation) {
-        this.mOriginInstrumentationWrapper = new OriginInstrumentationWrapper(instrumentation);
+    public ReaperInstrumentation(Instrumentation instrumentation) {
         this.mOriginInstrumentation = instrumentation;
     }
 
-    // Override newActivity　method to proxy Activity, such as AkAdActivity
     @Override
-    public Activity newActivity(ClassLoader cl, String className, Intent intent) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        ReaperLog.i(TAG, "className = " + className + ", Intent = " + intent);
-        ReaperLog.i(TAG, "\n");
-        Intent akadIntent = intent;
-        ClassLoader akadClassLoader = cl;
-        if (className.equals(ProxyActivityName.PROXY_ACTIVITY)) {
-            className = ReaperGlobal.getClassName();
-            akadClassLoader = ReaperInstrumentationWrapper.class.getClassLoader();
-            ReaperLog.i(TAG, "new wrapper activity");
-            ReaperLog.i(TAG, "\n");
+    public Activity newActivity(ClassLoader cl, String className, Intent intent)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+
+        String oriClassName = className; // for log
+
+        if (ComponentProxyMap.PROXY_ACTIVITY.equals(className)) {
+            className = ComponentProxyMap.getRealActivityByProxy(ComponentProxyMap.PROXY_ACTIVITY);
+            cl = ReaperInstrumentation.class.getClassLoader(); // ReaperClassLoader
+        } else if (ComponentProxyMap.PROXY_WEB_VIEW_ACTIVITY.equals(className)) {
+            className = ComponentProxyMap.getRealActivityByProxy(
+                    ComponentProxyMap.PROXY_WEB_VIEW_ACTIVITY);
+            cl = ReaperInstrumentation.class.getClassLoader();
         }
-        ReaperLog.i(TAG, "fix className = " + className + ", Intent = " + intent + ", akadIntent = " + akadIntent);
-        ReaperLog.i(TAG, "\n");
-        Bundle extras = intent.getExtras();
-        if(extras != null)
-            ReaperLog.i(TAG, " intent extras " + extras.toString());
-        ReaperLog.i(TAG, "\n");
-        return mOriginInstrumentation.newActivity(akadClassLoader, className, akadIntent);
+        ReaperLog.i(TAG, "replace class from " + oriClassName +
+                " to " + className + " when newActivity");
+
+        return mOriginInstrumentation.newActivity(cl, className, intent);
     }
 
     @Override
@@ -246,7 +239,8 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
     }
 
     @Override
-    public Application newApplication(ClassLoader cl, String className, Context context) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public Application newApplication(ClassLoader cl, String className, Context context)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         return mOriginInstrumentation.newApplication(cl, className, context);
     }
 
@@ -256,8 +250,13 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
     }
 
     @Override
-    public Activity newActivity(Class<?> clazz, Context context, IBinder token, Application application, Intent intent, ActivityInfo info, CharSequence title, Activity parent, String id, Object lastNonConfigurationInstance) throws InstantiationException, IllegalAccessException {
-        return mOriginInstrumentation.newActivity(clazz, context, token, application, intent, info, title, parent, id, lastNonConfigurationInstance);
+    public Activity newActivity(Class<?> clazz, Context context, IBinder token,
+                                Application application, Intent intent, ActivityInfo info,
+                                CharSequence title, Activity parent, String id,
+                                Object lastNonConfigurationInstance)
+            throws InstantiationException, IllegalAccessException {
+        return mOriginInstrumentation.newActivity(clazz, context, token, application, intent, info,
+                title, parent, id, lastNonConfigurationInstance);
     }
 
     @Override
@@ -267,7 +266,8 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void callActivityOnCreate(Activity activity, Bundle icicle, PersistableBundle persistentState) {
+    public void callActivityOnCreate(Activity activity, Bundle icicle,
+                                     PersistableBundle persistentState) {
         mOriginInstrumentation.callActivityOnCreate(activity, icicle, persistentState);
     }
 
@@ -283,8 +283,10 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState, PersistableBundle persistentState) {
-        mOriginInstrumentation.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState);
+    public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState,
+                                                   PersistableBundle persistentState) {
+        mOriginInstrumentation.callActivityOnRestoreInstanceState(activity, savedInstanceState,
+                persistentState);
     }
 
     @Override
@@ -294,7 +296,8 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void callActivityOnPostCreate(Activity activity, Bundle icicle, PersistableBundle persistentState) {
+    public void callActivityOnPostCreate(Activity activity, Bundle icicle,
+                                         PersistableBundle persistentState) {
         mOriginInstrumentation.callActivityOnPostCreate(activity, icicle, persistentState);
     }
 
@@ -330,8 +333,10 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void callActivityOnSaveInstanceState(Activity activity, Bundle outState, PersistableBundle outPersistentState) {
-        mOriginInstrumentation.callActivityOnSaveInstanceState(activity, outState, outPersistentState);
+    public void callActivityOnSaveInstanceState(Activity activity, Bundle outState,
+                                                PersistableBundle outPersistentState) {
+        mOriginInstrumentation.callActivityOnSaveInstanceState(activity, outState,
+                outPersistentState);
     }
 
     @Override
@@ -376,58 +381,25 @@ public class ReaperInstrumentationWrapper extends Instrumentation {
     }
 
     @NoProguard
-    public ActivityResult execStartActivity(Context who, IBinder contextThread, IBinder token, Activity target,
-                                            Intent intent, int requestCode, Bundle options) {
-        ReaperLog.i(TAG, "who = " + who + ", IBinder = " + contextThread + ", token = " + token + ", target = " + target
-                        + ", Intent = " + intent + ", requestCode = " + requestCode + ", options = " + options);
-        ReaperLog.i(TAG, "\n");
-        Intent proxyIntent = new Intent();
-        proxyIntent = intent;
-        ComponentName componentName = intent.getComponent();
-        if (componentName != null) {
-            String className = componentName.getClassName();
-            if (className.equals(ProxyActivityName.AKAD_ACTIVITY)) {
-                proxyIntent.setFlags(intent.getFlags());
-                ComponentName proxyComponent = new ComponentName(intent.getComponent().getPackageName(), ProxyActivityName.PROXY_ACTIVITY);
-                proxyIntent.setComponent(proxyComponent);
-                proxyIntent.putExtras(intent.getExtras());
-                ReaperGlobal.setClassName(className);
-                ReaperLog.i(TAG, "start proxy activity");
-                ReaperLog.i(TAG, "\n");
-            }
-        }
-        if(TextUtils.equals(intent.getType(), DATA_TYPE_ARCHIVE)) {
-            proxyIntent = intent;
-            proxyIntent.setDataAndType(generateUri(who, intent.getData()), DATA_TYPE_ARCHIVE);
-            ReaperLog.i(TAG, "who = " + who + ", IBinder = " + contextThread + ", token = " + token + ", target = " + target
-                    + ", Intent = " + intent + ", requestCode = " + requestCode + ", options = " + options);
-        }
+    public ActivityResult execStartActivity(Context who, IBinder contextThread, IBinder token,
+            Activity target, Intent intent, int requestCode, Bundle options) {
 
-        return mOriginInstrumentationWrapper.execStartActivity(who, contextThread, token, target,
-                proxyIntent, requestCode, options);
+        ReaperLog.i(TAG, "who = " + who + ", IBinder = " + contextThread + ", token = " + token +
+                ", target = " + target + ", Intent = " + intent + ", requestCode = " + requestCode +
+                ", options = " + options);
+
+        AKADHook.changeToProxyWhenStartAKActivity(intent);
+
+        AKADHook.changeUriWhenCallPackageInstaller(who, intent);
+
+        // call origin method
+        Object result = RefInvoker.invokeMethod(mOriginInstrumentation,
+                mOriginInstrumentation.getClass(), "execStartActivity",
+                new Class[] { Context.class, IBinder.class, IBinder.class, Activity.class,
+                        Intent.class, int.class, Bundle.class },
+                new Object[] { who, contextThread, token, target,
+                        intent, requestCode, options });
+        return (ActivityResult)result;
     }
 
-    /**
-     * fake the uri authorities
-     *
-     * @param context
-     * @param origin
-     * @return
-     */
-    private Uri generateUri(Context context, Uri origin) {
-        ReaperLog.i(TAG, "uri origin " + origin);
-        if(TextUtils.isEmpty(origin.toString()) || Build.VERSION.SDK_INT < 24)
-            return origin;
-        if(!TextUtils.isEmpty(origin.getAuthority()))
-            return origin;
-        List<String> pathSegments = origin.getPathSegments();
-        StringBuilder path = new StringBuilder("content://" + context.getPackageName()
-                + ".reaper.provider.ReaperProxyProvider");
-        if(pathSegments != null && !pathSegments.isEmpty()) {
-            for(String value : pathSegments) {
-                path.append("/").append(value);
-            }
-        }
-        return Uri.parse(path.toString());
-    }
 }

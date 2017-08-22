@@ -30,6 +30,7 @@ import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfig;
 import com.fighter.config.ReaperConfigFetcher;
 import com.fighter.config.ReaperConfigManager;
+import com.fighter.hook.ComponentProxyMap;
 import com.fighter.reaper.BumpVersion;
 import com.fighter.tracker.EventActionParam;
 import com.fighter.tracker.EventClickParam;
@@ -1293,22 +1294,25 @@ public class AdCacheManager implements DownloadCallback {
                 }
                 break;
             case AdInfo.ActionType.BROWSER:
-                if(!iSdkWrapper.isOpenWebOwn()) {
-                    actionUrl = iSdkWrapper.requestWebUrl(adInfo);
-                    if (!TextUtils.isEmpty(actionUrl)) {
-                        try {
-                            Class<?> reaperClass = Class.forName("com.fighter.loader.ReaperActivity", true, mContext.getClassLoader());
-                            Intent intent = new Intent(mContext, reaperClass);
-                            intent.putExtra("url", actionUrl);
-                            intent.putExtra("requestCode", REQUEST_CODE);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            mContext.startActivity(intent);
-                        } catch (ClassNotFoundException e) {
-                            OpenUtils.openWebUrl(mContext, actionUrl);
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
+                if(iSdkWrapper.isOpenWebOwn()) {
+                    break;
+                }
+                actionUrl = iSdkWrapper.requestWebUrl(adInfo);
+                if (TextUtils.isEmpty(actionUrl)) {
+                    break;
+                }
+                try {
+                    Class<?> reaperClass =
+                            Class.forName(ComponentProxyMap.PROXY_WEB_VIEW_ACTIVITY, true,
+                                    mContext.getClassLoader());
+                    Intent intent = new Intent(mContext, reaperClass);
+                    intent.putExtra("url", actionUrl);
+                    intent.putExtra("requestCode", REQUEST_CODE);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    mContext.startActivity(intent);
+                } catch (ClassNotFoundException e) {
+                    OpenUtils.openWebUrl(mContext, actionUrl);
+                    e.printStackTrace();
                 }
                 break;
             default:

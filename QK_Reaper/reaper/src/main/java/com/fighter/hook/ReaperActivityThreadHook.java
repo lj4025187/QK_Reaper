@@ -27,7 +27,7 @@ public class ReaperActivityThreadHook {
             return;
         }
         Instrumentation oriInstrumentation = getOriginInstrumentation();
-        Instrumentation replaceInstrumentation = new ReaperInstrumentationWrapper(oriInstrumentation);
+        Instrumentation replaceInstrumentation = new ReaperInstrumentation(oriInstrumentation);
         setInstrumentation(replaceInstrumentation);
     }
 

@@ -1,18 +1,18 @@
-package com.fighter.loader;
+package com.fighter.proxy;
+
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.qiku.proguard.annotations.NoProguard;
-
 /**
- * reaper proxy receiver
+ * push receiver
  *
  * Created by lichen on 17-6-27.
  */
-@NoProguard
-public class ReaperProxyReceiver extends BroadcastReceiver {
+
+public class ReaperPushReceiver extends BroadcastReceiver {
+    // for push receiver
     @Override
     public void onReceive(Context context, Intent intent) {
 

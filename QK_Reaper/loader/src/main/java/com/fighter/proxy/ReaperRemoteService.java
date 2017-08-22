@@ -1,18 +1,17 @@
-package com.fighter.loader;
+package com.fighter.proxy;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import com.qiku.proguard.annotations.NoProguard;
-
 /**
- * reaper remote proxy service
+ * reaper remote service
  *
  * Created by lichen on 17-6-27.
  */
-@NoProguard
-public class ReaperRemoteProxyService extends Service {
+
+public class ReaperRemoteService extends Service {
+    // the service is reaper remote
     @Override
     public IBinder onBind(Intent intent) {
         return null;

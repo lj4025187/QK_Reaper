@@ -1,4 +1,4 @@
-package com.fighter.loader;
+package com.fighter.proxy;
 
 import android.app.Activity;
 import android.content.Intent;

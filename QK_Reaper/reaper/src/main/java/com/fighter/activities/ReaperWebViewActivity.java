@@ -1,4 +1,4 @@
-package com.fighter.loader;
+package com.fighter.activities;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -32,21 +32,19 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import com.fighter.utils.LoaderLog;
+import com.fighter.common.utils.ReaperLog;
 import com.qiku.proguard.annotations.NoProguard;
 
 
 /**
- * Reaper Activity
+ * Reaper WebView Activity used to browse ad
  * 
  * Created by lichen on 17-6-10.
  */
 @NoProguard
-public class ReaperActivity extends Activity {
+public class ReaperWebViewActivity extends Activity {
 
-    private final static String TAG = "ReaperActivity";
-    private final static int REQUEST_CODE = 6666;
-    private final static int RETRY_LOAD_TIMES = 3;
+    private final static String TAG = "ReaperWebViewActivity";
 
     private Context mContext;
     private RelativeLayout mRootView;
@@ -85,14 +83,14 @@ public class ReaperActivity extends Activity {
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
-            LoaderLog.i(TAG, "onPageStarted");
+            ReaperLog.i(TAG, "onPageStarted");
             view.setVisibility(View.INVISIBLE);
         }
 
         @Override
         public void onPageCommitVisible(WebView view, String url) {
             super.onPageCommitVisible(view, url);
-            LoaderLog.i(TAG, "onPageCommitVisible");
+            ReaperLog.i(TAG, "onPageCommitVisible");
             visible = true;
             view.setVisibility(View.INVISIBLE);
         }
@@ -100,11 +98,11 @@ public class ReaperActivity extends Activity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            LoaderLog.i(TAG, "onPageFinished");
+            ReaperLog.i(TAG, "onPageFinished");
             if(visible) {
                 view.setVisibility(View.VISIBLE);
             } else {
-                LoaderLog.i(TAG, "page finished not visible open in browser");
+                ReaperLog.i(TAG, "page finished not visible open in browser");
                 startInBrowser(Uri.parse(url));
             }
         }
@@ -114,7 +112,7 @@ public class ReaperActivity extends Activity {
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             super.onReceivedError(view, request, error);
             if(!visible) return;
-            LoaderLog.i(TAG, "receive err not visible open in browser");
+            ReaperLog.i(TAG, "receive err not visible open in browser");
             Uri uri = request.getUrl();
             view.stopLoading();
             startInBrowser(uri);
@@ -141,7 +139,7 @@ public class ReaperActivity extends Activity {
 
         @Override
         public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(ReaperActivity.this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(ReaperWebViewActivity.this);
             builder.setTitle(android.R.string.dialog_alert_title);
             builder.setMessage(message);
             builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -197,44 +195,17 @@ public class ReaperActivity extends Activity {
             handleIntent(intent);
         } catch (Exception e) {
             e.printStackTrace();
-            LoaderLog.i(TAG, "handleIntent exception : " + e.getClass().getName());
+            ReaperLog.i(TAG, "handleIntent exception : " + e.getClass().getName());
         }
     }
 
     private void handleIntent(Intent intent) {
-        int requestCode = intent.getIntExtra("requestCode", -1);
-        switch (requestCode) {
-            case 8888://value in RuntimePermissionManager
-                String[] needPermissions = intent.getStringArrayExtra("needPermissions");
-                initTransparentView(needPermissions);
-                break;
-            case 9999://value in AdCacheManager
-                String url = intent.getStringExtra("url");
-                if (!TextUtils.isEmpty(url)) {
-                    mUrl = url;
-                    initWebRootView();
-                }
-                reloadUrl();
-                break;
-            default:
-                break;
+        String url = intent.getStringExtra("url");
+        if (!TextUtils.isEmpty(url)) {
+            mUrl = url;
+            initWebRootView();
         }
-    }
-
-    @TargetApi(Build.VERSION_CODES.M)
-    private void initTransparentView(String[] needPermissions) {
-        setTheme(android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
-        requestPermissions(needPermissions, REQUEST_CODE);
-    }
-
-    @TargetApi(Build.VERSION_CODES.M)
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
-        if (requestCode != REQUEST_CODE || permissions == null || permissions.length == 0) return;
-        int length = permissions.length;
-
-        //TODO : do not handle permission now
+        reloadUrl();
     }
 
     private void initWebRootView() {
@@ -259,7 +230,7 @@ public class ReaperActivity extends Activity {
         try {
             mWebView = new WebView(mContext);
         } catch (Exception e) {
-            LoaderLog.i(TAG, "web view init exception " + e.toString() + " start in browser");
+            ReaperLog.i(TAG, "web view init exception " + e.toString() + " start in browser");
             if(!TextUtils.isEmpty(mUrl))
                 startInBrowser(Uri.parse(mUrl.trim()));
             return;
@@ -366,14 +337,14 @@ public class ReaperActivity extends Activity {
 
     private void reloadUrl() {
         if (TextUtils.isEmpty(mUrl) || mSettings == null || mWebView == null) {
-            LoaderLog.e(TAG, "can not load null url");
+            ReaperLog.e(TAG, "can not load null url");
             return;
         }
         //如果访问的页面中要与Javascript交互，则webview必须设置支持Javascript
         mSettings.setJavaScriptEnabled(!mUrl.startsWith("file://"));
         //支持通过JS打开新窗口
         mSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-        LoaderLog.i(TAG, "url : " + mUrl);
+        ReaperLog.i(TAG, "url : " + mUrl);
         mWebView.loadUrl(mUrl);
     }
 

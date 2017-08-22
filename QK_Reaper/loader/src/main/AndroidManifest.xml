@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.fighter.loader">
 
+    <permission android:name="reaper.permission.CALL_RECEIVER"/>
+    <uses-permission android:name="reaper.permission.CALL_RECEIVER"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -21,21 +23,23 @@
 
     <application >
         <!-- the activity export true,fix cardmanager have no permission start webview-->
-        <activity android:name="com.fighter.loader.ReaperActivity"
+        <!-- this activity is proxy of com.fighter.activities.ReaperWebViewActivity in reaper-->
+        <activity android:name="com.fighter.proxy.ReaperWebViewActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="portrait"
             android:exported="true"/>
         <activity
-            android:name="com.fighter.loader.ReaperProxyActivity"
+            android:name="com.fighter.proxy.ReaperProxyActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@android:style/Theme.Black.NoTitleBar"/>
-        <service android:name="com.fighter.loader.ReaperService" />
-        <service android:name="com.fighter.loader.ReaperProxyService"/>
-        <service android:name="com.fighter.loader.ReaperRemoteService"
+        <service android:name="com.fighter.proxy.ReaperService" />
+        <service android:name="com.fighter.proxy.ReaperProxyService"/>
+        <service android:name="com.fighter.proxy.ReaperRemoteService"
             android:process=":remote"/>
-        <service android:name="com.fighter.loader.ReaperRemoteProxyService"
+        <service android:name="com.fighter.proxy.ReaperRemoteProxyService"
             android:process=":proxy_remote"/>
 
-        <receiver android:name="com.fighter.loader.ReaperPushReceiver"
+        <receiver android:name="com.fighter.proxy.ReaperPushReceiver"
             android:enabled="true"
             android:label="xmpp.receiver"
             android:permission="xmpp.permission.SEND_NOTIFICATION">
@@ -43,32 +47,34 @@
                 <action android:name="com.xmpp.action.NOTIFICATION.6010002" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.fighter.loader.ReaperReceiver"
-            android:permission="reaper.permission.ACTION">
+
+        <receiver android:name="com.fighter.proxy.ReaperReceiver"
+            android:permission="reaper.permission.CALL_RECEIVER">
             <intent-filter>
                 <action android:name="com.figher.reaper.sdk.ACTION"/>
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.fighter.loader.ReaperProxyReceiver"
-            android:permission="reaper.permission.PROXY_ACTION">
+        <receiver android:name="com.fighter.proxy.ReaperProxyReceiver"
+            android:permission="reaper.permission.CALL_RECEIVER">
             <intent-filter>
                 <action android:name="com.figher.reaper.sdk.PROXY_ACTION"/>
             </intent-filter>
         </receiver>
+
         <provider
             android:authorities="${applicationId}.reaper.provider.ReaperProvider"
-            android:name="com.fighter.loader.ReaperProvider"/>
+            android:name="com.fighter.proxy.ReaperProvider"/>
 
         <!-- the provider export true,fix cardmanager have no permission opening provider-->
         <provider
+            android:name="com.fighter.proxy.ReaperProxyProvider"
             android:authorities="${applicationId}.reaper.provider.ReaperProxyProvider"
-            android:name="com.fighter.loader.ReaperProxyProvider"
             android:exported="true"
             android:grantUriPermissions="true"/>
 
         <provider
-            android:name="com.fighter.loader.ReaperFileProvider"
+            android:name="com.fighter.proxy.ReaperFileProvider"
             android:authorities="${applicationId}.reaper.provider.ReaperFileProvider"
             android:exported="false"
             android:grantUriPermissions="true">

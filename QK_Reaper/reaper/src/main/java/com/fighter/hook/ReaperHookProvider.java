@@ -20,7 +20,7 @@ public class ReaperHookProvider {
         ClassLoader contextClassLoader = context.getClassLoader();
 
         try {
-            Class<?> reaperProxyProvider = Class.forName("com.fighter.loader.ReaperProxyProvider", true, contextClassLoader);
+            Class<?> reaperProxyProvider = Class.forName("com.fighter.proxy.ReaperProxyProvider", true, contextClassLoader);
             Field proxyProvider  = reaperProxyProvider.getDeclaredField("providerProxy");
             proxyProvider.setAccessible(true);
             proxyProvider.set(null, AKADProxyProvider.newInstance(context));
