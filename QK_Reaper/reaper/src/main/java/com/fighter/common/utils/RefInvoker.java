@@ -71,13 +71,10 @@ public class RefInvoker {
 									  Object[] paramValues) {
 		try {
 			Method method = clazz.getDeclaredMethod(methodName, paramTypes);
-			if (method == null) {
-				method = clazz.getMethod(methodName, paramTypes);
-			}
-			if (method != null && !method.isAccessible()) {
+			if (!method.isAccessible()) {
 				method.setAccessible(true);
-				return method.invoke(target, paramValues);
 			}
+			return method.invoke(target, paramValues);
 		/*} catch (SecurityException e) {
 			e.printStackTrace();*/
 		} catch (IllegalArgumentException e) {
