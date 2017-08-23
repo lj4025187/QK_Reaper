@@ -34,7 +34,6 @@ public class AdInfo {
          * 视频
          */
         public static final int VIDEO = 4;
-
         /**
          * 多图
          */

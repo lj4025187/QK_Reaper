@@ -245,22 +245,6 @@ public class AdInfo {
      *
      * @return 图片文件
      */
-    public List<File> getImgFiles() {
-        List<File> imgPaths = (List) mParams.get("imgFiles");
-        if(imgPaths == null || imgPaths.isEmpty())
-            return null;
-        return imgPaths;
-    }
-
-    /**
-     * 获取{@link #getImgUrl()}对应的图片文件，可以直接用来展示，不必再下载。
-     * 图片文件可能格式包括 {@code .png}、{@code .jpg}、{@code .gif}，
-     * 需注意兼容性，如选择{@code glide}等支持{@code .gif}播放的库作为图片展示工具。
-     * 图片文件将在成功曝光后删除，调用曝光后，若需重新展示广告，请勿读取文件，而应重新请求新广告。
-     * 在图片文件失效时，可通过{@link #getImgUrl()}请求图片。
-     *
-     * @return 图片文件
-     */
     public File getImgFile() {
         String imgPath = (String) mParams.get("imgFile");
         if (imgPath != null) {
@@ -270,6 +254,22 @@ public class AdInfo {
             }
         }
         return null;
+    }
+
+    /**
+     * 获取{@link #getImgUrls()}对应的图片文件，可以直接用来展示，不必再下载。
+     * 图片文件可能格式包括 {@code .png}、{@code .jpg}、{@code .gif}，
+     * 需注意兼容性，如选择{@code glide}等支持{@code .gif}播放的库作为图片展示工具。
+     * 图片文件将在成功曝光后删除，调用曝光后，若需重新展示广告，请勿读取文件，而应重新请求新广告。
+     * 在图片文件失效时，可通过{@link #getImgUrls()}请求图片。
+     *
+     * @return 图片文件
+     */
+    public List<File> getImgFiles() {
+        List<File> imgPaths = (List) mParams.get("imgFiles");
+        if(imgPaths == null || imgPaths.isEmpty())
+            return null;
+        return imgPaths;
     }
 
     /**

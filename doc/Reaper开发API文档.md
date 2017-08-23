@@ -1,9 +1,18 @@
 # Reaper API开发文档
-`Version 1.0.2`
+`Version 1.0.5`
 `Created By wanghaiteng@360.cn`
 `Published by FighterTeam`
 `Android Studio`
 
+## 开发文档修改记录
+版本|修改人员|修改内容|备注|时间
+---|---|---|---|---
+1.0.0|李晨|初稿|初版功能（aar:1.0.0,rr:1.0.0))|2017.06.15
+1.0.1|刘佳|初稿|初版功能（aar:1.0.0,rr:1.0.0)|2017.07.17
+1.0.2|刘佳|添加Q/A注意事项|初版功能（aar:1.0.2,rr:1.0.3)|2017.07.26
+1.0.3|刘佳|添加广告有效期注意|初版功能（aar:1.0.3,rr:1.0.5)|2017.08.01
+1.0.4|刘佳|添加混淆问题注意|初版功能（aar:1.0.3,rr:1.0.6)|2017.08.15
+1.0.5|刘佳|新增多图接口|添加华屹（aar:1.0.3,rr:1.0.7)|2017.08.23
 ### Reaper SDK集成方式
 > Reaper SDK需要如下权限
 
@@ -278,6 +287,10 @@ public static final int CONTENT_TYPE_PICTURE_WITH_TEXT = 3;
  * 视频类型
  */
 public static final int CONTENT_TYPE_VIDEO = 4;
+/**
+ * 多图
+ */
+public static final int MULTI_PICTURES = 5;
 ```
 > 注：视频类型广告涉及的视频播放、暂停、停止等界面及操作功能需集成人员自行处理。需要跳转至广告详情页时，调用onAdClicked方法即可。
 
@@ -418,6 +431,15 @@ public String getImgUrl();
 ```
 ```java
 /**
+ * 返回展示图片的链接，{@link #getImgFiles()}可返回已缓存好的图片文件，
+ * 在图片文件失效时，可通过此链接重新获取并展示图片
+ *
+ * @return 图片URL链接集合
+ */
+public List<String> getImgUrls();
+```
+```java
+/**
  * 获取{@link #getImgUrl()}对应的图片文件，可以直接用来展示，不必再下载。
  * 图片文件可能格式包括 {@code .png}、{@code .jpg}、{@code .gif}，
  * 需注意兼容性，如选择{@code glide}等支持{@code .gif}播放的库作为图片展示工具。
@@ -427,6 +449,18 @@ public String getImgUrl();
  * @return 图片文件
  */
 public File getImgFile();
+```
+```java
+/**
+ * 获取{@link #getImgUrls()}对应的图片文件，可以直接用来展示，不必再下载。
+ * 图片文件可能格式包括 {@code .png}、{@code .jpg}、{@code .gif}，
+ * 需注意兼容性，如选择{@code glide}等支持{@code .gif}播放的库作为图片展示工具。
+ * 图片文件将在成功曝光后删除，调用曝光后，若需重新展示广告，请勿读取文件，而应重新请求新广告。
+ * 在图片文件失效时，可通过{@link #getImgUrl()}请求图片。
+ *
+ * @return 图片文件
+ */
+public File getImgFiles();
 ```
 ```java
 /**

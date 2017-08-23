@@ -120,6 +120,8 @@ public class SampleConfig {
                 BAIDU_INSERT_ADV = "1012";  //Baidu insert
                 BAIDU_BANNER_ADV = "1013";  //Baidu banner
                 BAIDU_OPEN_ADV = "1014";  //Baidu openapp
+                HUA_YI_OPEN_ADV = "1042"; //HuaYi openapp
+                HUA_YI_ORIGINAL_ADV = "1043"; //HuaYi origin
             }
         }
     }
