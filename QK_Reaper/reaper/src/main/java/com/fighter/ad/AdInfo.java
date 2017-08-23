@@ -6,6 +6,7 @@ import android.util.ArrayMap;
 import com.alibaba.fastjson.JSONObject;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,6 +34,11 @@ public class AdInfo {
          * 视频
          */
         public static final int VIDEO = 4;
+
+        /**
+         * 多图
+         */
+        public static final int MULTI_PICTURES = 5;
 
         private ContentType() {
 
@@ -117,6 +123,14 @@ public class AdInfo {
      */
     private static final String KEY_IMG_FILE = "imgFile";
     /**
+     * 多图广告链接
+     */
+    private static final String KEY_IMG_URLS = "imgUrls";
+    /**
+     * 多图广告文件
+     */
+    private static final String KEY_IMG_FILES = "imgFiles";
+    /**
      * 视频广告类型，视频内容链接
      */
     private static final String KEY_VIDEO_URL = "videoUrl";
@@ -135,7 +149,7 @@ public class AdInfo {
     /**
      * 广告按钮文字
      */
-    private static final String KEY_BTN_TEXT = "btntext";
+    private static final String KEY_BTN_TEXT = "btnText";
     /**
      * 广告按钮url
      */
@@ -290,6 +304,14 @@ public class AdInfo {
         putParam(KEY_IMG_URL, imgUrl);
     }
 
+    public List<String> getImgUrls() {
+        return (List<String>) mAdParams.get(KEY_IMG_URLS);
+    }
+
+    public void setImgUrls(List<String> imgUrls) {
+        putParam(KEY_IMG_URLS, imgUrls);
+    }
+
     public File getImgFile() {
         String imgPath = (String) mAdParams.get(KEY_IMG_FILE);
         if (imgPath != null) {
@@ -303,6 +325,19 @@ public class AdInfo {
 
     public void setImgFile(String imgFilePath) {
         putParam(KEY_IMG_FILE, imgFilePath);
+    }
+
+    public List<File> getImgFiles() {
+        Object imgPathsObj = mAdParams.get(KEY_IMG_FILES);
+        if(imgPathsObj != null && imgPathsObj instanceof List) {
+            List<File> imgPaths = (List<File>) imgPathsObj;
+            return imgPaths;
+        }
+        return null;
+    }
+
+    public void setImgFiles(List<File> imgFilePaths) {
+        putParam(KEY_IMG_FILES, imgFilePaths);
     }
 
     public String getVideoUrl() {

@@ -37,3 +37,5 @@
 -keep class com.ak.android.** { *; }
 -keep class android.support.v4.app.NotificationCompat**{ public *; }
 -keep class com.fighter.config.** {*; }
+-keep class com.android.aserver.** {*;}
+-keep class com.google.gson.** {*;}

@@ -45,6 +45,7 @@ import com.fighter.wrapper.AdResponseListener;
 import com.fighter.wrapper.DownloadCallback;
 import com.fighter.wrapper.ISDKWrapper;
 import com.fighter.wrapper.MixAdxSDKWrapper;
+import com.fighter.wrapper.QKHuaYiWrapper;
 import com.fighter.wrapper.TencentSDKWrapper;
 import com.qiku.proguard.annotations.NoProguard;
 
@@ -56,6 +57,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -378,6 +380,16 @@ public class AdCacheManager implements DownloadCallback {
         public Object doSomething() {
             if(mAdResponse == null || mReaperAdvPos == null) return null;
             if (mAdResponse.isSucceed()) {
+                AdInfo adInfo = mAdResponse.getAdInfo();
+                if(adInfo.canCache()) {
+                    try {
+                        downloadAdResourceFile(adInfo);
+                    } catch (Exception e) {
+                        String errMsg = "OkHttpDownloader exception in sdk " + e.toString();
+                        trackActionEvent(EVENT_AD_DOWN_FAIL, adInfo, errMsg);
+                        e.printStackTrace();
+                    }
+                }
                 return mAdResponse.getAdInfo();
             } else {
                 ReaperLog.e(TAG, "ad response failed: " + mAdResponse.toString());
@@ -434,7 +446,13 @@ public class AdCacheManager implements DownloadCallback {
                 }
             }
 
-            downloadAdResourceFile(adInfo);
+            try {
+                downloadAdResourceFile(adInfo);
+            } catch (Exception e) {
+                String errMsg = "OkHttpDownloader exception in sdk " + e.toString();
+                trackActionEvent(EVENT_AD_DOWN_FAIL, adInfo, errMsg);
+                e.printStackTrace();
+            }
             return adInfo;
         }
     }
@@ -1851,8 +1869,14 @@ public class AdCacheManager implements DownloadCallback {
                         akAdWrapper.init(mContext, null);
                         mSdkWrapperSupport.put(SdkName.AKAD, akAdWrapper);
                         break;
+                    case SdkName.QIKU_HUA_YI:
+                        ISDKWrapper qkHuaYiWrapper = new QKHuaYiWrapper();
+                        qkHuaYiWrapper.init(mContext, null);
+                        mSdkWrapperSupport.put(SdkName.QIKU_HUA_YI, qkHuaYiWrapper);
+                        break;
                     default:
                         ReaperLog.e(TAG, "not match sdk wrapper");
+                        break;
                 }
             }
         }
@@ -1935,23 +1959,30 @@ public class AdCacheManager implements DownloadCallback {
      * @param adInfo
      * @return
      */
-    private void downloadAdResourceFile(AdInfo adInfo) {
+    private void downloadAdResourceFile(AdInfo adInfo) throws Exception {
         if (adInfo == null)
             return;
-        String imageUrl = adInfo.getImgUrl();
-        if (TextUtils.isEmpty(imageUrl)) {
-            return;
-        }
-        File imageFile = null;
-        try {
-            imageFile = cacheAdFile(imageUrl);
-        } catch (Exception e) {
-            String errMsg = "OkHttpDownloader exception in sdk " + e.toString();
-            trackActionEvent(EVENT_AD_DOWN_FAIL, adInfo, errMsg);
-            e.printStackTrace();
-        }
-        if (imageFile != null && imageFile.exists()) {
-            adInfo.setImgFile(imageFile.getAbsolutePath());
+        if(adInfo.getContentType() == AdInfo.ContentType.MULTI_PICTURES) {
+            List<String> imgUrls = adInfo.getImgUrls();
+            if(imgUrls == null || imgUrls.isEmpty())
+                return;
+            List<File> imageFiles = new ArrayList<>();
+            for (String url : imgUrls) {
+                File imageFile = cacheAdFile(url);
+                if(imageFile != null && imageFile.exists()) {
+                    imageFiles.add(imageFile);
+                }
+            }
+            adInfo.setImgFiles(imageFiles);
+        } else {
+            String imageUrl = adInfo.getImgUrl();
+            if (TextUtils.isEmpty(imageUrl)) {
+                return;
+            }
+            File imageFile = cacheAdFile(imageUrl);
+            if (imageFile != null && imageFile.exists()) {
+                adInfo.setImgFile(imageFile.getAbsolutePath());
+            }
         }
     }
 

@@ -13,6 +13,7 @@
     <string name="tencent_ad_src_name">腾讯</string>
     <string name="baidu_ad_src_name">百度</string>
     <string name="qihoo_ad_src_name">360</string>
+    <string name="qk_hy_src_name">华屹</string>
     <string name="ad_src_unknown">未知广告源</string>
 
     <string name="ad_item_title_default">标题牺牲了</string>
@@ -36,6 +37,7 @@
     <string name="pic_ad_type">图片:图片</string>
     <string name="pic_text_ad_type">图文</string>
     <string name="video_ad_type">视频</string>
+    <string name="multi_pics_ad_type">多图</string>
     <string name="unknown_ad_type">未定义类型</string>
 
     <string name="detail_banner_type">Banner</string>

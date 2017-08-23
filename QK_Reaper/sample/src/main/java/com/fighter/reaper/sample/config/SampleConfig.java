@@ -1,5 +1,4 @@
 package com.fighter.reaper.sample.config;
-
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -55,6 +54,9 @@ public class SampleConfig {
     public static String BAIDU_INSERT_ADV = "1048";  //Baidu insert
     public static String BAIDU_BANNER_ADV = "1049";  //Baidu banner
     public static String BAIDU_OPEN_ADV = "1050";  //Baidu openapp
+    public static String HUA_YI_OPEN_ADV = "1082"; //HuaYi openapp
+    public static String HUA_YI_ORIGINAL_ADV = "1083"; //HuaYi origin
+
 
     static {
 
@@ -105,6 +107,8 @@ public class SampleConfig {
                 BAIDU_INSERT_ADV = "1048";  //Baidu insert
                 BAIDU_BANNER_ADV = "1049";  //Baidu banner
                 BAIDU_OPEN_ADV = "1050";  //Baidu openapp
+                HUA_YI_OPEN_ADV = "1082"; //HuaYi openapp
+                HUA_YI_ORIGINAL_ADV = "1083"; //HuaYi origin
             } else {
                 QIHOO_VIDEO_ADV = "1010";  //Qihoo video
                 QIHOO_ORIGINAL_ADV = "1011"; //Qihoo original
@@ -125,7 +129,8 @@ public class SampleConfig {
             PICTURE_AD_TYPE = 0x02,                 /*图片类型*/
             PIC_TEXT_AD_TYPE = 0x03,                /*图字类型*/
             VIDEO_AD_TYPE = 0x04,                   /*视频类型*/
-            UNKNOWN_AD_TYPE = 0x05;                 /*未知类型:应用广告*/
+            MULTI_PICTURES = 0x05,                  /*多图类型*/
+            UNKNOWN_AD_TYPE = 0x06;                 /*未知类型:应用广告*/
 
     public final static int ACTION_TYPE_BROWSER = 0x01, /*可浏览的类型*/
             ACTION_TYPE_DOWNLOAD = 0x02;                /*可下载类型*/
@@ -133,6 +138,7 @@ public class SampleConfig {
     public final static String TENCENT_SRC_NAME = "gdt";
     public final static String BAIDU_SRC_NAME = "baidu";
     public final static String QIHOO_SRC_NAME = "jx";
+    public final static String QK_HY_SRC_NAME = "huayi";
     public final static String UNKNOWN_SRC_NAME = "unknown";
 
     public final static int DETAIL_BANNER_TYPE = 0x01;
@@ -170,6 +176,9 @@ public class SampleConfig {
                 break;
             case VIDEO_AD_TYPE:
                 viewTypeString = context.getString(R.string.video_ad_type);
+                break;
+            case MULTI_PICTURES:
+                viewTypeString = context.getString(R.string.multi_pics_ad_type);
                 break;
             case UNKNOWN_AD_TYPE:
             default:

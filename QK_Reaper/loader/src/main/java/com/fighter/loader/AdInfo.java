@@ -2,14 +2,15 @@ package com.fighter.loader;
 
 import android.app.Activity;
 import android.media.MediaPlayer;
+import android.support.annotation.Keep;
 import android.util.ArrayMap;
 import android.view.View;
 
 import com.fighter.utils.LoaderLog;
 import com.qiku.proguard.annotations.KeepAll;
-import com.qiku.proguard.annotations.NoProguard;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,27 +22,38 @@ public class AdInfo {
     /**
      * 文字类型
      */
+    @Keep
     public static final int CONTENT_TYPE_TEXT = 1;
     /**
      * 纯图片类型
      */
+    @Keep
     public static final int CONTENT_TYPE_PICTURE = 2;
     /**
      * 图文混合类型
      */
+    @Keep
     public static final int CONTENT_TYPE_PICTURE_WITH_TEXT = 3;
     /**
      * 视频类型
      */
+    @Keep
     public static final int CONTENT_TYPE_VIDEO = 4;
+    /**
+     * 多图
+     */
+    @Keep
+    public static final int CONTENT_MULTI_PICTURES = 5;
 
     /**
      * 点击跳转浏览器
      */
+    @Keep
     public static final int ACTION_TYPE_BROWSER = 1;
     /**
      * 点击开始下载APP
      */
+    @Keep
     public static final int ACTION_TYPE_APP_DOWNLOAD = 2;
 
     // ----------------------------------------------------
@@ -212,6 +224,32 @@ public class AdInfo {
      */
     public String getImgUrl() {
         return (String) mParams.get("imgUrl");
+    }
+
+    /**
+     * 返回展示图片的链接，{@link #getImgFiles()}可返回已缓存好的图片文件，
+     * 在图片文件失效时，可通过此链接重新获取并展示图片
+     *
+     * @return 图片URL链接集合
+     */
+    public List<String> getImgUrls() {
+        return (List<String>) mParams.get("imgUrls");
+    }
+
+    /**
+     * 获取{@link #getImgUrl()}对应的图片文件，可以直接用来展示，不必再下载。
+     * 图片文件可能格式包括 {@code .png}、{@code .jpg}、{@code .gif}，
+     * 需注意兼容性，如选择{@code glide}等支持{@code .gif}播放的库作为图片展示工具。
+     * 图片文件将在成功曝光后删除，调用曝光后，若需重新展示广告，请勿读取文件，而应重新请求新广告。
+     * 在图片文件失效时，可通过{@link #getImgUrl()}请求图片。
+     *
+     * @return 图片文件
+     */
+    public List<File> getImgFiles() {
+        List<File> imgPaths = (List) mParams.get("imgFiles");
+        if(imgPaths == null || imgPaths.isEmpty())
+            return null;
+        return imgPaths;
     }
 
     /**

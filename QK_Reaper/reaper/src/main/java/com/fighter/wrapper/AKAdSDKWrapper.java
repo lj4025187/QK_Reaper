@@ -446,10 +446,10 @@ public class AKAdSDKWrapper extends ISDKWrapper {
 
             AdResponse.Builder builder = new AdResponse.Builder();
             builder.adPosId(mAdRequest.getAdPosId())
-                   .adName(SdkName.AKAD)
-                   .adType(mAdRequest.getAdType())
-                   .adLocalAppId(mAdRequest.getAdLocalAppId())
-                   .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
+                    .adName(SdkName.AKAD)
+                    .adType(mAdRequest.getAdType())
+                    .adLocalAppId(mAdRequest.getAdLocalAppId())
+                    .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
             if (mAds != null && mAds.size() > 0) {
                 AdInfo adInfo = null;
                 for (NativeAd ad : mAds) {
@@ -551,10 +551,10 @@ public class AKAdSDKWrapper extends ISDKWrapper {
 
             AdResponse.Builder builder = new AdResponse.Builder();
             builder.adName(SdkName.AKAD)
-                   .adPosId(mAdRequest.getAdPosId())
-                   .adType(mAdRequest.getAdType())
-                   .adLocalAppId(mAdRequest.getAdLocalAppId())
-                   .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
+                    .adPosId(mAdRequest.getAdPosId())
+                    .adType(mAdRequest.getAdType())
+                    .adLocalAppId(mAdRequest.getAdLocalAppId())
+                    .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
             if (mAds != null && mAds.size() > 0) {
                 AdInfo adInfo = null;
                 for (NativeVideoAd ad : mAds) {

@@ -92,13 +92,40 @@
         android:layout_below="@+id/id_ad_custom_title"
         android:background="#AF9B9BFC">
 
-        <ImageView
-            android:id="@+id/id_ad_image_view"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_margin="3dp"
-            android:src="@mipmap/image_view_default" />
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/id_ad_image_view_front"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:src="@mipmap/image_view_default"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/id_ad_image_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:src="@mipmap/image_view_default" />
+
+            <ImageView
+                android:id="@+id/id_ad_image_view_behind"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:layout_weight="1"
+                android:src="@mipmap/image_view_default"
+                android:visibility="gone" />
+
+        </LinearLayout>
 
         <include layout="@layout/ad_flag_layout" />
 

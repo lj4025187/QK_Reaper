@@ -21,9 +21,11 @@ import com.fighter.loader.AdInfo;
 import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.config.SampleConfig;
 import com.fighter.reaper.sample.model.BaseItem;
+import com.fighter.reaper.sample.utils.SampleLog;
 import com.fighter.reaper.sample.utils.ViewUtils;
 
 import java.io.File;
+import java.util.List;
 
 import static com.fighter.reaper.sample.config.SampleConfig.ACTION_TYPE_BROWSER;
 import static com.fighter.reaper.sample.config.SampleConfig.ACTION_TYPE_DOWNLOAD;
@@ -50,7 +52,9 @@ public class BaseItemHolder<T extends BaseItem> {
     protected TextView imageSize;
 
     public TextView adTitle;
+    public ImageView adViewFront;
     public ImageView adView;
+    public ImageView adViewBehind;
 
     public ViewGroup adDesParent;
     public TextView adDesc;
@@ -73,6 +77,8 @@ public class BaseItemHolder<T extends BaseItem> {
         imageSize = (TextView) itemView.findViewById(R.id.id_ad_image_size);
 
         adTitle = (TextView) itemView.findViewById(R.id.id_ad_custom_title);
+        adViewFront = (ImageView) itemView.findViewById(R.id.id_ad_image_view_front);
+        adViewBehind = (ImageView) itemView.findViewById(R.id.id_ad_image_view_behind);
         adView = (ImageView) itemView.findViewById(R.id.id_ad_image_view);
         adDesParent = (ViewGroup) itemView.findViewById(R.id.id_ad_custom_desc_action);
         adDesc = (TextView) itemView.findViewById(R.id.id_ad_custom_desc);
@@ -82,7 +88,7 @@ public class BaseItemHolder<T extends BaseItem> {
     public void onAttachView(int position, T iItem) {
         int index = position / SampleConfig.REQUEST_COUNT_PER_TIME;
         indexView.setText(String.valueOf(index + 1));
-        if(index % 2 != 0) {
+        if (index % 2 != 0) {
             baseView.setBackgroundColor(Color.CYAN);
             adDesParent.setBackground(new ColorDrawable(Color.CYAN));
         } else {
@@ -96,37 +102,136 @@ public class BaseItemHolder<T extends BaseItem> {
         uuid.setText("uuid:" + adInfo.getUuid());
 
         String title = adInfo.getTitle();
-        if(TextUtils.isEmpty(title)) {
+        if (TextUtils.isEmpty(title)) {
             ViewUtils.setViewVisibility(adTitle, View.GONE);
         } else {
             adTitle.setText(title);
         }
 
         String desc = adInfo.getDesc();
-        if(TextUtils.isEmpty(desc)) {
+        if (TextUtils.isEmpty(desc)) {
             ViewUtils.setViewVisibility(adDesc, View.GONE);
         } else {
             adDesc.setText(desc);
         }
 
         final String localId = (String) adInfo.getExtra("adLocalPosId");
-        final File imageFile = adInfo.getImgFile();
-        String imageUrl = adInfo.getImgUrl();
-        if(imageFile == null) {
-            if(TextUtils.isEmpty(imageUrl)) {
-                setImageSize(null, false, localId);
-                ViewUtils.setViewVisibility(adView, View.GONE);
+        if (adInfo.getContentType() == AdInfo.CONTENT_MULTI_PICTURES) {//多图,目前是三图
+            List<String> imgUrls = adInfo.getImgUrls();
+            List<File> imgFiles = adInfo.getImgFiles();
+            if (imgUrls == null || imgUrls.isEmpty()) {
+                SampleLog.e(TAG, "CONTENT_MULTI_PICTURES get urls null ");
             } else {
-                Glide.with(baseView.getContext())
-                        .load(imageUrl)
-                        .asBitmap()
-                        .into(new SimpleTarget<Bitmap>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
-                            @Override
-                            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                                setImageSize(resource, false, localId);
-                            }
-                        });
+                SampleLog.i(TAG, "CONTENT_MULTI_PICTURES get urls size " + imgUrls.size());
             }
+            ViewUtils.setViewVisibility(adViewFront, View.VISIBLE);
+            ViewUtils.setViewVisibility(adViewBehind, View.VISIBLE);
+            bindViewImage(imgUrls, imgFiles);
+        } else {//单图
+            final File imageFile = adInfo.getImgFile();
+            String imageUrl = adInfo.getImgUrl();
+            if (imageFile == null) {//图片文件未缓存
+                if (TextUtils.isEmpty(imageUrl)) {
+                    setImageSize(null, false, localId);
+                    ViewUtils.setViewVisibility(adView, View.GONE);
+                } else {
+                    Glide.with(baseView.getContext())
+                            .load(imageUrl)
+                            .asBitmap()
+                            .into(new SimpleTarget<Bitmap>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
+                                @Override
+                                public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                                    setImageSize(resource, false, localId);
+                                }
+                            });
+                }
+            } else {//图片文件已缓存
+                final boolean isGif = imageFile.getName().endsWith(".gif");
+                if (isGif) {
+                    Glide.with(baseView.getContext())
+                            .load(imageFile)
+                            .asGif()
+                            .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                            .listener(new RequestListener<File, GifDrawable>() {
+                                @Override
+                                public boolean onException(Exception e, File file, Target<GifDrawable> target, boolean b) {
+                                    return false;
+                                }
+
+                                @Override
+                                public boolean onResourceReady(GifDrawable gifDrawable, File file, Target<GifDrawable> target, boolean b, boolean b1) {
+                                    Bitmap resource = gifDrawable.getFirstFrame();
+                                    setImageSize(resource, isGif, localId);
+                                    return false;
+                                }
+                            })
+                            .into(adView);
+                } else {
+                    Glide.with(baseView.getContext())
+                            .load(imageFile)
+                            .asBitmap()
+                            .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                            .into(new SimpleTarget<Bitmap>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
+                                @Override
+                                public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                                    setImageSize(resource, isGif, localId);
+                                }
+                            });
+//                Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+//                adView.setImageBitmap(bitmap);
+                }
+
+            }
+        }
+
+        int actionType = adInfo.getActionType();
+        String btnText = (String) adInfo.getExtra("btnText");
+        switch (actionType) {
+            case ACTION_TYPE_BROWSER:
+                adAction.setText(TextUtils.isEmpty(btnText) ? context.getString(R.string.ad_pic_action) : btnText);
+                break;
+            case ACTION_TYPE_DOWNLOAD:
+                adAction.setText(TextUtils.isEmpty(btnText) ? context.getString(R.string.ad_app_action) : btnText);
+                break;
+            default:
+                adAction.setText(TextUtils.isEmpty(btnText) ? context.getString(R.string.ad_unknown_action) : btnText);
+                break;
+        }
+    }
+
+    private void bindViewImage(List<String> imgUrls, List<File> imgFiles) {
+        int size = imgUrls.size();
+        for (int i = 0; i < size; i++) {
+            setBitmap(i, imgUrls.get(i), imgFiles == null ? null : imgFiles.get(i));
+        }
+    }
+
+    private void setBitmap(int flag, String imageUrl, File imageFile) {
+        switch (flag) {
+            case 0:
+                useGlideLoadImage(adViewFront, imageUrl, imageFile);
+                break;
+            case 1:
+                useGlideLoadImage(adView, imageUrl, imageFile);
+                break;
+            case 2:
+                useGlideLoadImage(adViewBehind, imageUrl, imageFile);
+                break;
+        }
+    }
+
+    private void useGlideLoadImage(final ImageView imageView, String imageUrl, File imageFile) {
+        SampleLog.i(TAG, "useGlideLoadImage url " + imageUrl);
+        if (imageFile == null || !imageFile.exists()) {
+            Glide.with(baseView.getContext())
+                    .load(imageUrl)
+                    .asBitmap()
+                    .into(new SimpleTarget<Bitmap>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
+                        @Override
+                        public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                            imageView.setImageBitmap(resource);
+                        }
+                    });
         } else {
             final boolean isGif = imageFile.getName().endsWith(".gif");
             if (isGif) {
@@ -143,11 +248,11 @@ public class BaseItemHolder<T extends BaseItem> {
                             @Override
                             public boolean onResourceReady(GifDrawable gifDrawable, File file, Target<GifDrawable> target, boolean b, boolean b1) {
                                 Bitmap resource = gifDrawable.getFirstFrame();
-                                setImageSize(resource, isGif, localId);
+                                imageView.setImageBitmap(resource);
                                 return false;
                             }
                         })
-                        .into(adView);
+                        .into(imageView);
             } else {
                 Glide.with(baseView.getContext())
                         .load(imageFile)
@@ -156,42 +261,27 @@ public class BaseItemHolder<T extends BaseItem> {
                         .into(new SimpleTarget<Bitmap>(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL) {
                             @Override
                             public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                                setImageSize(resource, isGif, localId);
+                                imageView.setImageBitmap(resource);
                             }
                         });
-//                Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-//                adView.setImageBitmap(bitmap);
             }
-
-        }
-
-        int actionType = adInfo.getActionType();
-        switch (actionType) {
-            case ACTION_TYPE_BROWSER:
-                adAction.setText(context.getString(R.string.ad_pic_action));
-                break;
-            case ACTION_TYPE_DOWNLOAD:
-                adAction.setText(context.getString(R.string.ad_app_action));
-                break;
-            default:
-                adAction.setText(context.getString(R.string.ad_unknown_action));
-                break;
         }
     }
 
     /**
      * For set image size width * height
+     *
      * @param resource
      * @param isGif
      */
-    private void setImageSize(Bitmap resource, boolean isGif, String localId){
-        if(resource == null){
+    private void setImageSize(Bitmap resource, boolean isGif, String localId) {
+        if (resource == null) {
             imageSize.setText(localId);
             return;
         }
         int imageWidth = resource.getWidth();
         int imageHeight = resource.getHeight();
-        if(!isGif) {
+        if (!isGif) {
             adView.setImageBitmap(resource);
         }
 

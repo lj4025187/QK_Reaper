@@ -2,6 +2,7 @@ package com.fighter.reaper.sample.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
@@ -26,6 +27,13 @@ public class SettingsActivity extends Activity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SpManager.getInstance(getApplicationContext()).saveBoolean(SampleConfig.KEY_NEED_HOLD_AD, isChecked);
+            }
+        });
+
+        findViewById(R.id.id_top_back_parent).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
     }
