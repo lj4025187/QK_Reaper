@@ -327,12 +327,7 @@ public class AdInfo {
     }
 
     public List<File> getImgFiles() {
-        Object imgPathsObj = mAdParams.get(KEY_IMG_FILES);
-        if(imgPathsObj != null && imgPathsObj instanceof List) {
-            List<File> imgPaths = (List<File>) imgPathsObj;
-            return imgPaths;
-        }
-        return null;
+        return (List<File>)mAdParams.get(KEY_IMG_FILES);
     }
 
     public void setImgFiles(List<File> imgFilePaths) {

@@ -382,13 +382,7 @@ public class AdCacheManager implements DownloadCallback {
             if (mAdResponse.isSucceed()) {
                 AdInfo adInfo = mAdResponse.getAdInfo();
                 if(adInfo.canCache()) {
-                    try {
-                        downloadAdResourceFile(adInfo);
-                    } catch (Exception e) {
-                        String errMsg = "OkHttpDownloader exception in sdk " + e.toString();
-                        trackActionEvent(EVENT_AD_DOWN_FAIL, adInfo, errMsg);
-                        e.printStackTrace();
-                    }
+                    downloadAdResourceFile(adInfo);
                 }
                 return mAdResponse.getAdInfo();
             } else {
@@ -446,13 +440,7 @@ public class AdCacheManager implements DownloadCallback {
                 }
             }
 
-            try {
-                downloadAdResourceFile(adInfo);
-            } catch (Exception e) {
-                String errMsg = "OkHttpDownloader exception in sdk " + e.toString();
-                trackActionEvent(EVENT_AD_DOWN_FAIL, adInfo, errMsg);
-                e.printStackTrace();
-            }
+            downloadAdResourceFile(adInfo);
             return adInfo;
         }
     }
@@ -1959,30 +1947,34 @@ public class AdCacheManager implements DownloadCallback {
      * @param adInfo
      * @return
      */
-    private void downloadAdResourceFile(AdInfo adInfo) throws Exception {
+    private void downloadAdResourceFile(AdInfo adInfo){
         if (adInfo == null)
             return;
-        if(adInfo.getContentType() == AdInfo.ContentType.MULTI_PICTURES) {
-            List<String> imgUrls = adInfo.getImgUrls();
-            if(imgUrls == null || imgUrls.isEmpty())
-                return;
-            List<File> imageFiles = new ArrayList<>();
-            for (String url : imgUrls) {
-                File imageFile = cacheAdFile(url);
-                if(imageFile != null && imageFile.exists()) {
-                    imageFiles.add(imageFile);
+        try{
+            if(adInfo.getContentType() == AdInfo.ContentType.MULTI_PICTURES) {
+                List<String> imgUrls = adInfo.getImgUrls();
+                if(imgUrls == null || imgUrls.isEmpty())
+                    return;
+                List<File> imageFiles = new ArrayList<>();
+                for (String url : imgUrls) {
+                    File imageFile = cacheAdFile(url);
+                    if(imageFile != null && imageFile.exists()) {
+                        imageFiles.add(imageFile);
+                    }
                 }
-            }
-            adInfo.setImgFiles(imageFiles);
-        } else {
-            String imageUrl = adInfo.getImgUrl();
-            if (TextUtils.isEmpty(imageUrl)) {
-                return;
-            }
-            File imageFile = cacheAdFile(imageUrl);
-            if (imageFile != null && imageFile.exists()) {
+                adInfo.setImgFiles(imageFiles);
+            } else {
+                String imageUrl = adInfo.getImgUrl();
+                if (TextUtils.isEmpty(imageUrl)) {
+                    return;
+                }
+                File imageFile = cacheAdFile(imageUrl);
                 adInfo.setImgFile(imageFile.getAbsolutePath());
             }
+        } catch (Exception e){
+            String errMsg = "OkHttpDownloader exception in sdk " + e.toString();
+            trackActionEvent(EVENT_AD_DOWN_FAIL, adInfo, errMsg);
+            e.printStackTrace();
         }
     }
 

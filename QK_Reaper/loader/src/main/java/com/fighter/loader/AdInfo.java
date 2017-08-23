@@ -266,10 +266,7 @@ public class AdInfo {
      * @return 图片文件
      */
     public List<File> getImgFiles() {
-        List<File> imgPaths = (List) mParams.get("imgFiles");
-        if(imgPaths == null || imgPaths.isEmpty())
-            return null;
-        return imgPaths;
+        return (List<File>) mParams.get("imgFiles");
     }
 
     /**
