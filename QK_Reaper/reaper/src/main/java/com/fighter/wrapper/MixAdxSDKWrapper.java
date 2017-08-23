@@ -16,10 +16,10 @@ import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
 import com.fighter.common.Device;
+import com.fighter.common.GlobalThreadPool;
 import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.EmptyUtils;
 import com.fighter.common.utils.ReaperLog;
-import com.fighter.common.utils.ThreadPoolUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -112,7 +113,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
 
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
-    private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
+    private ExecutorService mThreadPool = GlobalThreadPool.getSingleThreadPool();
 
     // ----------------------------------------------------
 
@@ -213,7 +214,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
             throw new NullPointerException("AdResponse is null");
         }
 
-        mThreadPoolUtils.execute(new AdRequestRunnable(adRequest, adResponseListener));
+        mThreadPool.execute(new AdRequestRunnable(adRequest, adResponseListener));
     }
 
     @Override

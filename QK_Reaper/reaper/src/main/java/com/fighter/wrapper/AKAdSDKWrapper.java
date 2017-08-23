@@ -25,13 +25,13 @@ import com.ak.android.engine.navvideo.NativeVideoAdLoaderListener;
 import com.ak.android.other.news.DownloadUtil;
 import com.ak.android.shell.AKAD;
 import com.alibaba.fastjson.JSONObject;
+import com.fighter.common.GlobalThreadPool;
 import com.fighter.reaper.ContextProxy;
 import com.fighter.ad.AdEvent;
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
 import com.fighter.common.utils.ReaperLog;
-import com.fighter.common.utils.ThreadPoolUtils;
 import com.fighter.reaper.ReaperEnv;
 
 import java.io.File;
@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 360 聚效广告SDK Wrapper
@@ -77,7 +78,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
 
     private Context mContext;
     private PackageManager mPackageManager;
-    private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
+    private ExecutorService mThreadPool = GlobalThreadPool.getSingleThreadPool();
     private DownloadCallback mDownloadCallback;
     private LruCache<String, AdInfo> mDownloadMap;
     private HashMap<String, AppInfo> mDownloadApk;//以包名为key，聚效返回的key,path封装AppInfo为value，安装成功后回传
@@ -296,7 +297,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                         @Override
                         public void onAdLoadSuccess(ArrayList<NativeAd> ads) {
                             if (mAdResponseListener != null) {
-                                mThreadPoolUtils.execute(new AKAdNativeAdRunnable(
+                                mThreadPool.execute(new AKAdNativeAdRunnable(
                                         mAdRequest,
                                         ads,
                                         mAdResponseListener
@@ -367,7 +368,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                         @Override
                         public void onAdLoadSuccess(ArrayList<NativeVideoAd> ads) {
                             if (mAdResponseListener != null) {
-                                mThreadPoolUtils.execute(new AKAdNativeVideoAdRunnable(
+                                mThreadPool.execute(new AKAdNativeVideoAdRunnable(
                                         mAdRequest,
                                         ads,
                                         mAdResponseListener

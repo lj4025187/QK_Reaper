@@ -21,10 +21,10 @@ import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
 import com.fighter.cache.downloader.AdCacheFileDownloadManager;
+import com.fighter.common.GlobalThreadPool;
 import com.fighter.common.PriorityTaskDaemon;
 import com.fighter.common.utils.OpenUtils;
 import com.fighter.common.utils.ReaperLog;
-import com.fighter.common.utils.ThreadPoolUtils;
 import com.fighter.config.ReaperAdSense;
 import com.fighter.config.ReaperAdvPos;
 import com.fighter.config.ReaperConfig;
@@ -63,6 +63,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import static com.fighter.ad.AdEvent.EVENT_AD_DOWN_FAIL;
 import static com.fighter.ad.AdEvent.EVENT_APP_ACTIVE;
@@ -114,7 +115,7 @@ public class AdCacheManager implements DownloadCallback {
     private Map<String, String> mSdkWrapperAdTypeSupport;
     private Map<String, Method> mMethodCall;
 
-    private ThreadPoolUtils mThreadPoolUtils = new ThreadPoolUtils(ThreadPoolUtils.SingleThread, 1);
+    private ExecutorService mThreadPool = GlobalThreadPool.getFixedThreadPool();
     private LongSparseArray<AdInfo> mDownloadApps;//以DownloadManager返回的id为key，存放下载的应用对应的AdInfo
     private Map<String, Long> mInstallApps;//以包名为key，存放应用下载完成的时间点，判断是否需要（安装完成、激活）打点
     private Map<String, AdInfo> mInstallAds;//以包名为key，存放下载的应用对应AdInfo，用来跟踪（安装完成、激活）打点
@@ -1296,7 +1297,7 @@ public class AdCacheManager implements DownloadCallback {
                 if(iSdkWrapper.isDownloadOwn()) {
                     iSdkWrapper.setDownloadCallback(this);
                 } else {
-                    mThreadPoolUtils.execute(new RequestAppUrlTask(iSdkWrapper, adInfo));
+                    mThreadPool.execute(new RequestAppUrlTask(iSdkWrapper, adInfo));
                 }
                 break;
             case AdInfo.ActionType.BROWSER:

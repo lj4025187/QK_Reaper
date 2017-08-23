@@ -11,14 +11,15 @@ import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
 import com.fighter.common.Device;
+import com.fighter.common.GlobalThreadPool;
 import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.EmptyUtils;
 import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ReaperLog;
-import com.fighter.common.utils.ThreadPoolUtils;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -95,7 +96,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
 
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
-    private ThreadPoolUtils mThreadPoolUtils = AdThreadPool.INSTANCE.getThreadPoolUtils();
+    private ExecutorService mThreadPoolUtils = GlobalThreadPool.getSingleThreadPool();
 
     // ----------------------------------------------------
 
