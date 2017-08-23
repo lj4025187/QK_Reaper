@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PersistableBundle;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -52,8 +53,11 @@ public class ReaperInstrumentation extends Instrumentation {
                     ComponentProxyMap.PROXY_WEB_VIEW_ACTIVITY);
             cl = ReaperInstrumentation.class.getClassLoader();
         }
-        ReaperLog.i(TAG, "replace class from " + oriClassName +
-                " to " + className + " when newActivity");
+
+        if (!TextUtils.equals(oriClassName, className)) {
+            ReaperLog.i(TAG, "replace activity from " + oriClassName +
+                    " to " + className + " when newActivity");
+        }
 
         return mOriginInstrumentation.newActivity(cl, className, intent);
     }

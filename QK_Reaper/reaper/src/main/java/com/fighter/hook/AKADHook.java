@@ -77,6 +77,10 @@ public final class AKADHook {
             return false;
         }
 
+        if (!"content".equals(origin.getScheme())) {
+            return false;
+        }
+
         if(!TextUtils.isEmpty(origin.getAuthority())) {
             return false;
         }
