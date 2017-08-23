@@ -253,9 +253,9 @@ public class QKHuaYiWrapper extends ISDKWrapper {
 
         private int getAdInfoType(int adType) {
             switch (adType) {
-                case 11:
+                case 11://INFOFLOW_ONEPIC(11)大图广告;
                     return AdInfo.ContentType.PICTURE_WITH_TEXT;
-                case 12:
+                case 12://INFOFLOW_THREEPIC(12)三图广告
                     return AdInfo.ContentType.MULTI_PICTURES;
                 default:
                     return -1;
