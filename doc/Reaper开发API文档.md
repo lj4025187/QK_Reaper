@@ -1,5 +1,5 @@
 # Reaper API开发文档
-`Version 1.0.5`
+`Version 1.0.6`
 `Created By wanghaiteng@360.cn`
 `Published by FighterTeam`
 `Android Studio`
@@ -13,6 +13,7 @@
 1.0.3|刘佳|添加广告有效期注意|初版功能（aar:1.0.3,rr:1.0.5)|2017.08.01
 1.0.4|刘佳|添加混淆问题注意|初版功能（aar:1.0.3,rr:1.0.6)|2017.08.15
 1.0.5|刘佳|新增多图接口|添加华屹（aar:1.0.3,rr:1.0.7)|2017.08.23
+1.0.6|刘佳|补充initConfigValue|新增调试值(aar:1.0.3,rr:[>=]1.0.6)|2017.08.24
 ### Reaper SDK集成方式
 > Reaper SDK需要如下权限
 
@@ -52,18 +53,20 @@ dependencies {
 ##### 有2种方式初始化（前提：权限均已授权）
 
 1.直接继承ReaperApplication，然后用getReaperApi()方法得到ReaperApi请求广告
-> - 测试模式下，testMode设置为false，从测试环境拉取配置信息，可以通过adb logcat -s Reaper查看调试日志。移动设备
-> 需要配置hosts：**10.139.232.146 t.adv.os.qiku.com**，确保可以ping通该网段后在配置中心申请相关广告位。
->
+
+> - 若需要从测试环境拉取广告位配置信息，通过**\\\10.100.11.207\APK_Test_Version\SDK_Version\QK_Reaper\Dev_Version**获取reaper.aar与reaper.rr文件进行调试，并且在initConfigValue时，将”**SERVER_TEST**“设置为true。
+> 移动设备需要配置hosts：**10.139.232.146 t.adv.os.qiku.com**，确保可以ping通该网段后会在配置中心测试环境获取相关广告位。 <font color="#ff0000">该版本不能流入到用户手里。</font>
+> 
 >	测试环境配置中心地址：http://test.partner.360os.com/html/entrance/allApplications.html
 >	
->
-> - 量产模式下，testMode设置为true，从正式环境拉取广告位配置信息，调试日志将不会输出。
+
+> - 若要从正式环境拉取广告位配置信息，通过**\\\10.100.11.19\APK_Release_Version\SDK_Rel_Version\QK_Reaper**获取reaper.aar与reaper.rr文件进行集成，<font color="#ff0000">具体目录以测试同学测试通过推送至19服务器为准。</font>
 > 
 > 	正式环境配置中心地址：http://partner.360os.com/html/entrance/allApplications.html
 >	
-><u>注意：测试模式下，**聚效**只能配置测试广告位。发版本时，改值必须置为***false***。 </u>
->	
+>
+>testMode值设置为true后，支持本地调试时模拟服务器下发的广告位配置，通过<font color="#ff0000">setTargetConfig</font>模拟服务器下发的广告位配置信息。
+>
 >权限申请及配置流程请咨询服务器开发人员：**张鑫润，高轩，安三星**
 
 ```java
@@ -72,6 +75,15 @@ public class MyApp extends ReaperApplication {
 	
     public void onCreate() {
     	super.onCreate();
+        
+        //initConfigValue需要在ReaperApi.init(this, appid, appkey, true)之前调用,发版时不调用即可
+        Map<String, Object> config = new ArrayMap<>();
+        config.put("LOG_SWITCH", true);//日志开(true)关(false)
+        config.put("AKAD_TEST", true);//聚效广告位是(true)否(false)为测试环境
+        config.put("SERVER_TEST", true);//true   访问测试服务器拉取配置信息（rr文件从QK_Reaper的dev目录获取）
+        								//false  访问正式服务器拉去配置信息（rr文件从QK_Reaper的19服务器获取）
+        mReaperApi.initConfigValue(config);//仅为调试使用，发版时不调用即可
+        
         // appContext   应用上下文
         // appId        360OS广告平台申请的APP id
         // appKey       360OS广告平台申请的APP key
@@ -115,6 +127,15 @@ public class MyActivity extends Activity {
     private void requestAds() {
     	MyApp app = (MyApp)getApplication();
         ReaperApi api = app.getReaperApi();
+        
+        //initConfigValue需要在ReaperApi.init(this, appid, appkey, true)之前调用,发版时不调用即可
+        Map<String, Object> config = new ArrayMap<>();
+        config.put("LOG_SWITCH", true);	//日志开(true)关(false)
+        config.put("AKAD_TEST", true);	//聚效广告位是(true)否(false)为测试环境
+        config.put("SERVER_TEST", true);//true         访问测试服务器拉取配置信息（rr文件从QK_Reaper的dev目录获取）
+        								//不设置\false  访问正式服务器拉去配置信息（rr文件从QK_Reaper的19服务器获取）
+        api.initConfigValue(config);    //仅为调试使用，发版时不调用即可
+        
         //使用api
         // appContext  应用上下文
         // appId       360OS广告平台申请的APP id
@@ -197,6 +218,16 @@ ReaperInit在初始化状态会自动缓存广告，并自动监管广告的有�
 广告SDK API接口类
 ```java
 /**
+ * 该接口用来设置后期扩展的字段，eg.日志开关，聚效测试环境
+ * 
+ * @param params LOG_SWITCH：true  日志打开
+ *               AKAD_TEST ：true  聚效测试环境
+ *               SERVER_TEST ：true 超盟广告位服务器测试环境（rr文件从QK_Reaper的dev目录获取有效）
+ */
+public void initConfigValue(Map<String, Object> params) ;
+```
+```java
+/**
  * 初始化广告SDK。
  *
  * @param appContext 应用上下文
@@ -206,7 +237,15 @@ ReaperInit在初始化状态会自动缓存广告，并自动监管广告的有�
  */
 public void init(Context appContext, String appId,
                      String appKey, boolean testMode);
-```                     
+```       
+```java
+/**
+ * 设置测试模式使用的Json配置数据
+ *
+ * @param configJson 测试的目标测试数据
+ */
+public void setTargetConfig(String configJson) ;
+```
 ```java                     
 /**
  * 获取某广告位的广告请求句柄{@link AdRequester}，可通过句柄请求广告
