@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.fighter.loader">
 
-    <permission android:name="reaper.permission.CALL_RECEIVER"/>
-    <uses-permission android:name="reaper.permission.CALL_RECEIVER"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -48,15 +46,13 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.fighter.proxy.ReaperReceiver"
-            android:permission="reaper.permission.CALL_RECEIVER">
+        <receiver android:name="com.fighter.proxy.ReaperReceiver">
             <intent-filter>
                 <action android:name="com.figher.reaper.sdk.ACTION"/>
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.fighter.proxy.ReaperProxyReceiver"
-            android:permission="reaper.permission.CALL_RECEIVER">
+        <receiver android:name="com.fighter.proxy.ReaperProxyReceiver">
             <intent-filter>
                 <action android:name="com.figher.reaper.sdk.PROXY_ACTION"/>
             </intent-filter>
