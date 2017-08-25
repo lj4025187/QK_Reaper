@@ -1966,11 +1966,15 @@ public class AdCacheManager implements DownloadCallback {
                 adInfo.setImgFiles(imageFiles);
             } else {
                 String imageUrl = adInfo.getImgUrl();
-                if (TextUtils.isEmpty(imageUrl)) {
-                    return;
+                if (!TextUtils.isEmpty(imageUrl)) {
+                    File imageFile = cacheAdFile(imageUrl);
+                    adInfo.setImgFile(imageFile.getAbsolutePath());
                 }
-                File imageFile = cacheAdFile(imageUrl);
-                adInfo.setImgFile(imageFile.getAbsolutePath());
+                String smallImgUrl = adInfo.getSmallImgUrl();
+                if(!TextUtils.isEmpty(smallImgUrl)) {
+                    File smallImgFile = cacheAdFile(smallImgUrl);
+                    adInfo.setSmallImgFile(smallImgFile.getAbsolutePath());
+                }
             }
         } catch (Exception e){
             String errMsg = "OkHttpDownloader exception in sdk " + e.toString();

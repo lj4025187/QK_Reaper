@@ -122,6 +122,15 @@ public class AdInfo {
      */
     private static final String KEY_IMG_FILE = "imgFile";
     /**
+     * 广告小图片链接,关联：广点通img2
+     */
+    private static final String KEY_SMALL_IMAGE_URL = "smallImgUrl";
+    /**
+     * 广告小图片文件,关联：广点通img2
+     */
+    private static final String KEY_SMALL_IMG_FILE = "smallImgFile";
+
+    /**
      * 多图广告链接
      */
     private static final String KEY_IMG_URLS = "imgUrls";
@@ -303,6 +312,14 @@ public class AdInfo {
         putParam(KEY_IMG_URL, imgUrl);
     }
 
+    public String getSmallImgUrl() {
+        return (String) mAdParams.get(KEY_SMALL_IMAGE_URL);
+    }
+
+    public void setSmallImgUrl(String smallImgUrl) {
+        putParam(KEY_SMALL_IMAGE_URL, smallImgUrl);
+    }
+
     public List<String> getImgUrls() {
         return (List<String>) mAdParams.get(KEY_IMG_URLS);
     }
@@ -324,6 +341,21 @@ public class AdInfo {
 
     public void setImgFile(String imgFilePath) {
         putParam(KEY_IMG_FILE, imgFilePath);
+    }
+
+    public File getSmallImgFile() {
+        String imgPath = (String) mAdParams.get(KEY_SMALL_IMG_FILE);
+        if (imgPath != null) {
+            File smallImgFile = new File(imgPath);
+            if (smallImgFile.exists()) {
+                return smallImgFile;
+            }
+        }
+        return null;
+    }
+
+    public void setSmallImgFile(String smallImgFilePath) {
+        putParam(KEY_SMALL_IMG_FILE, smallImgFilePath);
     }
 
     public List<File> getImgFiles() {

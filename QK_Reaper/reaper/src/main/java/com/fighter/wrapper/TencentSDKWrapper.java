@@ -503,6 +503,9 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 adInfo.setActionType(actionType);
 
                 adInfo.setImgUrl(adInfoJson.getString("img"));
+                String smallImgUrl = adInfoJson.getString("img2");
+                if(!TextUtils.isEmpty(smallImgUrl))
+                    adInfo.setSmallImgUrl(smallImgUrl);
                 adInfo.setTitle(adInfoJson.getString("txt"));
                 adInfo.setDesc(adInfoJson.getString("desc"));
 
