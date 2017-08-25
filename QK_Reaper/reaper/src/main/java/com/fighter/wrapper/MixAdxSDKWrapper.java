@@ -281,7 +281,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
             Iterator<String> iterator = params.keySet().iterator();
             while (iterator.hasNext()) {
                 String key = iterator.next();
-                tempParams.append(pos == 0 ? "?" : "&");
+                tempParams.append(pos == 0 ? "" : "&");
                 tempParams.append(String.format("%s=%s", key, URLEncoder.encode(params.get(key), "utf-8")));
                 pos++;
             }
