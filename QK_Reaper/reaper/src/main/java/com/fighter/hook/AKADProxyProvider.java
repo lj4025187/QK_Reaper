@@ -117,23 +117,10 @@ public class AKADProxyProvider extends ContentProvider {
         ReaperLog.e(TAG, " file name " + filename);
         File file = new File(apkPath, filename);
         ReaperLog.e(TAG, " file " + file.getAbsolutePath());
-        if (!file.exists()) {
-            try {
-                InputStream in = mContext.getAssets().open(filename);
-                BufferedInputStream bis = new BufferedInputStream(in);
-                FileOutputStream fos = new FileOutputStream(file);
-                int len = 0;
-                byte[] b = new byte[1024];
-                while ((len = bis.read(b)) != -1) {
-                    fos.write(b, 0, len);
-                }
-                fos.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (file.exists()) {
+            pfd = ParcelFileDescriptor.open(file,
+                    ParcelFileDescriptor.MODE_READ_ONLY);
         }
-        pfd = ParcelFileDescriptor.open(file,
-                ParcelFileDescriptor.MODE_READ_ONLY);
         return pfd;
     }
 }

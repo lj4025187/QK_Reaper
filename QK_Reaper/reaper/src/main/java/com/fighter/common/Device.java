@@ -51,7 +51,7 @@ public final class Device {
     // ----------------------------------------------------
     // App 信息
     // ----------------------------------------------------
-    private static MacThread macThread;
+    private static MacThread sMacThread;
 
     public static String getApplicationName(Context context) {
         PackageManager pm = context.getPackageManager();
@@ -195,7 +195,7 @@ public final class Device {
      * @param context the context
      * @return wifi mac address
      */
-    public static String getMacStable(Context context) {
+    public synchronized static String getMacStable(Context context) {
         if (context == null)
             return null;
 
@@ -217,12 +217,12 @@ public final class Device {
                 /* fix api init have no permission enable wifi,cause ui lock.
                 * mac address maybe not have in never open wifi */
                 if (macAddress == null) {
-                    if (macThread == null)
-                        macThread = new MacThread();
-                    macThread.setContext(context.getApplicationContext());
-                    macThread.setWifiManager(wifiManager);
-                    if (!macThread.isAlive())
-                        macThread.start();
+                    if (sMacThread == null)
+                        sMacThread = new MacThread();
+                    sMacThread.setContext(context.getApplicationContext());
+                    sMacThread.setWifiManager(wifiManager);
+                    if (!sMacThread.isAlive())
+                        sMacThread.start();
                 }
             }
         } else {
@@ -937,6 +937,7 @@ public final class Device {
     }
 
     private static class MacThread extends Thread {
+        private final static int MAX_TRY = 3;
         private Context mContext;
         private WifiManager mWifiManager;
 
@@ -971,7 +972,7 @@ public final class Device {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            } while (macAddress == null || tryCount < 2);
+            } while (macAddress == null && tryCount <= MAX_TRY);
 
             mWifiManager.setWifiEnabled(wifiOriginState);
 
