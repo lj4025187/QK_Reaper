@@ -34,7 +34,6 @@ import com.fighter.reaper.ContextProxy;
 import com.fighter.reaper.ReaperEnv;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -729,7 +728,6 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         private void startSilentInstall(String key, String apkPath, Uri apkURI, PackageInfo packageInfo) {
             if (mPackageManager == null)
                 mPackageManager = mContext.getPackageManager();
-            boolean installSucceed = true;
             int installFlags = 0;
             try {
                 installFlags |= 0x00000002; /*PackageManager.INSTALL_REPLACE_EXISTING*/
@@ -737,28 +735,14 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                         Uri.class, IPackageInstallObserver.class, int.class, String.class);
                 installPackage.invoke(mPackageManager, apkURI,
                         new InstallObserver(), installFlags, mContext.getPackageName());
-            } catch (NoSuchMethodException e) {
-                installSucceed = false;
+            } catch (Exception e) {
                 ReaperLog.e(TAG, "silent install package " + packageInfo.packageName
                         + " has exception " + e.toString());
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                installSucceed = false;
-                ReaperLog.e(TAG, "silent install package " + packageInfo.packageName
-                        + " has exception " + e.toString());
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                installSucceed = false;
-                ReaperLog.e(TAG, "silent install package " + packageInfo.packageName
-                        + " has exception " + e.toString());
-                e.printStackTrace();
-            }
-            if(!installSucceed) {
                 AppInfo remove = mDownloadApk.remove(packageInfo.packageName);
                 ReaperLog.e(TAG, "remove in map " + remove + " will call package installer");
                 notifySilentInstallFailed(key, apkPath, packageInfo.packageName);
+                e.printStackTrace();
             }
-
         }
     }
 
