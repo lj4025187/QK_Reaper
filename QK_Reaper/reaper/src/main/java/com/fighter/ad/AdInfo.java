@@ -1,11 +1,11 @@
 package com.fighter.ad;
 
 import android.text.TextUtils;
-import android.util.ArrayMap;
 
 import com.alibaba.fastjson.JSONObject;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -205,7 +205,7 @@ public class AdInfo {
     private Map<String, Object> mAdParams;
 
     public AdInfo() {
-        mAdParams = new ArrayMap<>();
+        mAdParams = new HashMap<>();
         setConstructTime(System.currentTimeMillis());
     }
 

@@ -2,7 +2,6 @@ package com.fighter.wrapper;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.ArrayMap;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -18,6 +17,7 @@ import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ReaperLog;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -82,7 +82,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
      * 广告类型对应表。<br></br>
      * 腾讯广点通原生广告，不填宽高
      */
-    private static final Map<String, Integer> TYPE_REF_MAP = new ArrayMap<>();
+    private static final Map<String, Integer> TYPE_REF_MAP = new HashMap<>();
 
     // 1:banner 2:插屏 3:应用墙 4:开屏 5:feed 8:原生
     static {
@@ -283,7 +283,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
     private String spliceAdRequestExt(AdRequest adRequest) {
         Map<String, Object> allParams = adRequest.getAdAllParams();
         if (allParams == null) {
-            allParams = new ArrayMap<>();
+            allParams = new HashMap<>();
         }
         String strImei = Device.getM1(mContext);
         String strMac = Device.getMac(mContext);

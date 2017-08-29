@@ -1,10 +1,10 @@
 package com.fighter.wrapper;
 
 import android.text.TextUtils;
-import android.util.ArrayMap;
 
 import com.fighter.ad.AdInfo;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class AdResponse {
@@ -46,7 +46,7 @@ public class AdResponse {
     // ----------------------------------------------------
 
     private AdResponse() {
-        mAdParams = new ArrayMap<>();
+        mAdParams = new HashMap<>();
     }
 
     // ----------------------------------------------------
@@ -120,7 +120,7 @@ public class AdResponse {
         private Map<String, Object> mAdParams;
 
         Builder() {
-            mAdParams = new ArrayMap<>();
+            mAdParams = new HashMap<>();
         }
 
         Builder isSucceed(boolean isSucceed) {

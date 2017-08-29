@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.text.TextUtils;
-import android.util.ArrayMap;
 import android.util.LruCache;
 import android.view.View;
 
@@ -25,13 +24,13 @@ import com.ak.android.engine.navvideo.NativeVideoAdLoaderListener;
 import com.ak.android.other.news.DownloadUtil;
 import com.ak.android.shell.AKAD;
 import com.alibaba.fastjson.JSONObject;
-import com.fighter.common.GlobalThreadPool;
-import com.fighter.reaper.ContextProxy;
 import com.fighter.ad.AdEvent;
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
+import com.fighter.common.GlobalThreadPool;
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.reaper.ContextProxy;
 import com.fighter.reaper.ReaperEnv;
 
 import java.io.File;
@@ -64,7 +63,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
     private static final String EXTRA_EVENT_NATIVE_AD = "akad_event_native_ad";
     private static final String EXTRA_EVENT_NATIVE_VIDEO_AD = "akad_event_native_video_ad";
 
-    private static final Map<Integer, Integer> VIDEO_STATUS_MAP = new ArrayMap<>();
+    private static final Map<Integer, Integer> VIDEO_STATUS_MAP = new HashMap<>();
 
     static {
         VIDEO_STATUS_MAP.put(AdEvent.EVENT_VIDEO_START_PLAY, NativeVideoAd.VIDEO_START);
@@ -703,7 +702,12 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                 return;
             }
             mDownloadApk.put(packageInfo.packageName, new AppInfo(key, apkPath));
-            int permission = mContext.checkSelfPermission(Manifest.permission.INSTALL_PACKAGES);
+            int permission;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                permission = mContext.checkSelfPermission(Manifest.permission.INSTALL_PACKAGES);
+            } else {
+                permission = packageManager.checkPermission(Manifest.permission.INSTALL_PACKAGES, mContext.getPackageName());
+            }
             ReaperLog.i(TAG, " package name " + mContext.getPackageName()
                     + " permission is " + permission
                     + " 0 granted -1 denied");
@@ -725,6 +729,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         private void startSilentInstall(String key, String apkPath, Uri apkURI, PackageInfo packageInfo) {
             if (mPackageManager == null)
                 mPackageManager = mContext.getPackageManager();
+            boolean installSucceed = true;
             int installFlags = 0;
             try {
                 installFlags |= 0x00000002; /*PackageManager.INSTALL_REPLACE_EXISTING*/
@@ -732,14 +737,28 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                         Uri.class, IPackageInstallObserver.class, int.class, String.class);
                 installPackage.invoke(mPackageManager, apkURI,
                         new InstallObserver(), installFlags, mContext.getPackageName());
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                AppInfo remove = mDownloadApk.remove(packageInfo.packageName);
+            } catch (NoSuchMethodException e) {
+                installSucceed = false;
                 ReaperLog.e(TAG, "silent install package " + packageInfo.packageName
-                        + " has exception " + e.toString()
-                        + " and remove in map " + remove + " will call package installer");
-                notifySilentInstallFailed(key, apkPath, packageInfo.packageName);
+                        + " has exception " + e.toString());
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                installSucceed = false;
+                ReaperLog.e(TAG, "silent install package " + packageInfo.packageName
+                        + " has exception " + e.toString());
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                installSucceed = false;
+                ReaperLog.e(TAG, "silent install package " + packageInfo.packageName
+                        + " has exception " + e.toString());
                 e.printStackTrace();
             }
+            if(!installSucceed) {
+                AppInfo remove = mDownloadApk.remove(packageInfo.packageName);
+                ReaperLog.e(TAG, "remove in map " + remove + " will call package installer");
+                notifySilentInstallFailed(key, apkPath, packageInfo.packageName);
+            }
+
         }
     }
 

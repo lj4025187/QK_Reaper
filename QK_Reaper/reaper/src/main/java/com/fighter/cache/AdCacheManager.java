@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
-import android.util.ArrayMap;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 
@@ -60,9 +59,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 
 import static com.fighter.ad.AdEvent.EVENT_AD_DOWN_FAIL;
@@ -671,7 +673,7 @@ public class AdCacheManager implements DownloadCallback {
     /**
      * the memory cache object
      */
-    private static HashMap<String, ArrayMap<String, Object>> mAdCache = new HashMap<>();
+    private static HashMap<String, TreeMap<String, Object>> mAdCache = new HashMap<>();
 
     private PriorityTaskDaemon mWorkThread;
     private Context mContext;
@@ -731,7 +733,7 @@ public class AdCacheManager implements DownloadCallback {
         mSilentInstall = new HashMap<>();
         mInstallAppsPath = new HashMap<>();
         String cacheId = null;
-        ArrayMap<String, Object> adCacheObjects = new ArrayMap<>();
+        TreeMap<String, Object> adCacheObjects = new TreeMap<>();
         File adCacheDir = new File(context.getCacheDir(), "ac");
         if (!adCacheDir.exists())
             adCacheDir.mkdir();
@@ -752,12 +754,12 @@ public class AdCacheManager implements DownloadCallback {
     }
 
     /**
-     * judge the ad cache should clean or put ArrayMap
+     * judge the ad cache should clean or put HashMap
      *
      * @param adCacheObjects
      * @param dir
      */
-    private void judgeCleanOrPutCache(ArrayMap<String, Object> adCacheObjects, File dir) {
+    private void judgeCleanOrPutCache(TreeMap<String, Object> adCacheObjects, File dir) {
         File[] files = dir.listFiles();
         for (File file : files) {
             if (!file.isFile())
@@ -826,9 +828,11 @@ public class AdCacheManager implements DownloadCallback {
     private AdInfo generateHoldAd(String posId) {
         AdCacheInfo adCacheInfo;
         AdInfo info = null;
-        ArrayMap<String, Object> cacheObjects = mAdCache.get(posId);
+        TreeMap<String, Object> cacheObjects = mAdCache.get(posId);
         if (cacheObjects != null && cacheObjects.size() > 0) {
-            adCacheInfo = (AdCacheInfo) cacheObjects.get(cacheObjects.keyAt(0));
+            Map.Entry<String, Object> firstEntry = cacheObjects.firstEntry();
+            adCacheInfo = (AdCacheInfo) firstEntry.getValue();
+//            adCacheInfo = (AdCacheInfo) cacheObjects.get(cacheObjects.keyAt(0));
             if (adCacheInfo != null) {
                 Object object = adCacheInfo.getCache();
                 if (object instanceof String) {
@@ -896,7 +900,7 @@ public class AdCacheManager implements DownloadCallback {
         ReaperLog.i(TAG, "timeout ad cache: " + adCacheInfo.getUuid());
         adCacheInfo.setCacheState(AdCacheInfo.CACHE_IS_TIMEOUT);
         updateDiskCache(adCacheInfo);
-        ArrayMap<String, Object> cacheObjects = mAdCache.get(adCacheInfo.getAdCacheId());
+        TreeMap<String, Object> cacheObjects = mAdCache.get(adCacheInfo.getAdCacheId());
         if (cacheObjects == null)
             return;
         if (cacheObjects.size() > 1) {
@@ -917,7 +921,7 @@ public class AdCacheManager implements DownloadCallback {
     private void setCacheDisplayed(AdInfo adInfo) {
         if (adInfo == null)
             return;
-        ArrayMap<String, Object> cacheObjects = mAdCache.get(adInfo.getAdPosId());
+        TreeMap<String, Object> cacheObjects = mAdCache.get(adInfo.getAdPosId());
         if (cacheObjects == null)
             return;
         Object object = cacheObjects.get(adInfo.getUUID());
@@ -952,13 +956,13 @@ public class AdCacheManager implements DownloadCallback {
     private void cacheAdInfo(String cacheId, Object info) throws IOException {
         if (cacheId == null || info == null)
             return;
-        ArrayMap<String, Object> adCacheInfoObjects = null;
+        TreeMap<String, Object> adCacheInfoObjects = null;
         AdCacheInfo adCacheInfo = (AdCacheInfo) info;
         String cacheFileId = adCacheInfo.getUuid();
         if (mAdCache.containsKey(cacheId)) {
             adCacheInfoObjects = mAdCache.get(cacheId);
         } else {
-            adCacheInfoObjects = new ArrayMap<>();
+            adCacheInfoObjects = new TreeMap<>();
         }
         Object cache = adCacheInfo.getCache();
         if (cache instanceof String) {
@@ -1042,20 +1046,25 @@ public class AdCacheManager implements DownloadCallback {
             return null;
         /* 1. find ad cache in memory cache */
         Object adInfo = null;
-        ArrayMap<String, Object> adInfoObjects = mAdCache.get(cacheId);
+        TreeMap<String, Object> adInfoObjects = mAdCache.get(cacheId);
         if (adInfoObjects != null) {
-            for (int i = 0; i < adInfoObjects.size(); i++) {
-                adInfo = adInfoObjects.get(adInfoObjects.keyAt(i));
+            Set<Map.Entry<String, Object>> entries = adInfoObjects.entrySet();
+            Iterator<Map.Entry<String, Object>> iterator = entries.iterator();
+            while (iterator.hasNext()) {
+//                for (int i = 0; i < adInfoObjects.size(); i++) {
+//                    adInfo = adInfoObjects.get(adInfoObjects.keyAt(i));
+                Map.Entry<String, Object> next = iterator.next();
+                adInfo = next.getValue();
                 if (adInfo != null &&
-                        adInfo instanceof AdCacheInfo &&
-                        !((AdCacheInfo) adInfo).isCacheBackToUser() &&
+                            adInfo instanceof AdCacheInfo &&
+                            !((AdCacheInfo) adInfo).isCacheBackToUser() &&
                             !((AdCacheInfo) adInfo).isCacheDisPlayed() &&
-                                !((AdCacheInfo) adInfo).isHoldAd() &&
-                                    !((AdCacheInfo) adInfo).isCacheTimeOut()) {
-                    break;
-                } else {
-                    adInfo = null;
-                }
+                            !((AdCacheInfo) adInfo).isHoldAd() &&
+                            !((AdCacheInfo) adInfo).isCacheTimeOut()) {
+                        break;
+                    } else {
+                        adInfo = null;
+                    }
             }
         }
         /* 2. find ad cache in disk cache */
@@ -1079,11 +1088,16 @@ public class AdCacheManager implements DownloadCallback {
     public void collateAdCache(String cacheId) {
         if (cacheId == null)
             return;
-        ArrayMap<String, Object> cacheObjects = mAdCache.get(cacheId);
+        TreeMap<String, Object> cacheObjects = mAdCache.get(cacheId);
         AdCacheInfo cacheInfoInBottom = null;
         if (cacheObjects.size() > CACHE_MAX) {
-            for (int i = 0; i < cacheObjects.size(); i++) {
-            cacheInfoInBottom = (AdCacheInfo) cacheObjects.get(cacheObjects.keyAt(i));
+            Set<Map.Entry<String, Object>> entries = cacheObjects.entrySet();
+            Iterator<Map.Entry<String, Object>> iterator = entries.iterator();
+            while (iterator.hasNext()){
+                Map.Entry<String, Object> next = iterator.next();
+                cacheInfoInBottom = (AdCacheInfo) next.getValue();
+//            for (int i = 0; i < cacheObjects.size(); i++) {
+//            cacheInfoInBottom = (AdCacheInfo) cacheObjects.get(cacheObjects.keyAt(i));
                 if (cacheInfoInBottom != null && cacheObjects.size() > 1 &&
                         (cacheInfoInBottom.isCacheBackToUser() || cacheInfoInBottom.isCacheDisPlayed())) {
                     //TODO DELETE
@@ -1109,7 +1123,8 @@ public class AdCacheManager implements DownloadCallback {
                                 boolean delete = cacheFile.delete();
                             }
                         }
-                        cacheObjects.remove(cacheObjects.keyAt(i));
+//                        cacheObjects.remove(cacheObjects.keyAt(i));
+                        iterator.remove();
                     }
                 }
             }
@@ -1117,7 +1132,7 @@ public class AdCacheManager implements DownloadCallback {
     }
 
     public void onRequestAdError(Object receiver, String errMsg) {
-        ArrayMap<String, Object> params = new ArrayMap<>();
+        HashMap<String, Object> params = new HashMap<>();
         params.put("isSucceed", false);
         params.put("errMsg", errMsg);
         onRequestAd(receiver, params);
@@ -1127,7 +1142,7 @@ public class AdCacheManager implements DownloadCallback {
         if (adInfo == null)
             return;
         ReaperLog.i(TAG, "on success ad info: " + adInfo.getUUID());
-        ArrayMap<String, Object> params = new ArrayMap<>();
+        HashMap<String, Object> params = new HashMap<>();
         params.put("isSucceed", true);
         params.put("adInfo", adInfo.getAdAllParams());
         onRequestAd(receiver, params);
@@ -1778,7 +1793,7 @@ public class AdCacheManager implements DownloadCallback {
                 e.printStackTrace();
             }
             if (methodOnResponse != null) {
-                mMethodCall = new ArrayMap<>();
+                mMethodCall = new HashMap<>();
                 mMethodCall.put(METHOD_ON_RESPONSE, methodOnResponse);
             }
         }

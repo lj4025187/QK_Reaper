@@ -1,10 +1,10 @@
 package com.fighter.wrapper;
 
 import android.text.TextUtils;
-import android.util.ArrayMap;
 
 import com.fighter.ad.AdType;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +65,7 @@ public class AdRequest {
     // ----------------------------------------------------
 
     private AdRequest() {
-        mAdParams = new ArrayMap<>();
+        mAdParams = new HashMap<>();
     }
 
     // ----------------------------------------------------
@@ -144,7 +144,7 @@ public class AdRequest {
         private Map<String, Object> mAdParams;
 
         public Builder() {
-            mAdParams = new ArrayMap<>();
+            mAdParams = new HashMap<>();
         }
 
         /**

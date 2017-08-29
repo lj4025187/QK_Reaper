@@ -3,13 +3,13 @@ package com.fighter.loader;
 import android.app.Activity;
 import android.media.MediaPlayer;
 import android.support.annotation.Keep;
-import android.util.ArrayMap;
 import android.view.View;
 
 import com.fighter.utils.LoaderLog;
 import com.qiku.proguard.annotations.KeepAll;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -71,7 +71,7 @@ public class AdInfo {
      * @param v 展示广告所使用的view (不传时聚效广告源将无法上报)
      */
     public void onAdShow(View v) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         ReaperApi.putParam(params, "view", v);
         onEvent(v == null ? AdEvent.EVENT_VIEW_FAIL : AdEvent.EVENT_VIEW_SUCCESS, params);
     }
@@ -94,7 +94,7 @@ public class AdInfo {
                             "downX: " + downX + " downY: " + downY + " upX: " + upX + " upY: " + upY);
             return;
         }
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         ReaperApi.putParam(params, "activity", activity);
         ReaperApi.putParam(params, "view", v);
         ReaperApi.putParam(params, "downX", downX);
@@ -118,7 +118,7 @@ public class AdInfo {
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
     public void onVideoAdCardClick(int position) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         ReaperApi.putParam(params, "position", position);
         onEvent(AdEvent.EVENT_VIDEO_CARD_CLICK, params);
     }
@@ -129,7 +129,7 @@ public class AdInfo {
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
     public void onVideoAdStartPlay(int position) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         ReaperApi.putParam(params, "position", position);
         onEvent(AdEvent.EVENT_VIDEO_START_PLAY, params);
     }
@@ -140,7 +140,7 @@ public class AdInfo {
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
     public void onVideoAdPause(int position) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         ReaperApi.putParam(params, "position", position);
         onEvent(AdEvent.EVENT_VIDEO_PAUSE, params);
     }
@@ -151,7 +151,7 @@ public class AdInfo {
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
     public void onVideoAdContinue(int position) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         ReaperApi.putParam(params, "position", position);
         onEvent(AdEvent.EVENT_VIDEO_CONTINUE, params);
     }
@@ -162,7 +162,7 @@ public class AdInfo {
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
     public void onVideoAdPlayComplete(int position) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         ReaperApi.putParam(params, "position", position);
         onEvent(AdEvent.EVENT_VIDEO_PLAY_COMPLETE, params);
     }
@@ -173,7 +173,7 @@ public class AdInfo {
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
     public void onVideoAdFullScreen(int position) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         ReaperApi.putParam(params, "position", position);
         onEvent(AdEvent.EVENT_VIDEO_FULLSCREEN, params);
     }
@@ -184,7 +184,7 @@ public class AdInfo {
      * @param position 视频播放器当前播放位置 {@link MediaPlayer#getCurrentPosition()}
      */
     public void onVideoAdExit(int position) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         ReaperApi.putParam(params, "position", position);
         ReaperApi.putParam(params, mParams);
         onEvent(AdEvent.EVENT_VIDEO_EXIT, params);
@@ -377,7 +377,7 @@ public class AdInfo {
     // ----------------------------------------------------
 
     private void onEvent(int event, Map<String, Object> extras) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         ReaperApi.putParam(params, "event", event);
         ReaperApi.putParam(params, extras);
         ReaperApi.putParam(params, mParams);

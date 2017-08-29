@@ -1,5 +1,5 @@
 # Reaper API开发文档
-`Version 1.0.6`
+`Version 1.0.7`
 `Created By wanghaiteng@360.cn`
 `Published by FighterTeam`
 `Android Studio`
@@ -14,6 +14,7 @@
 1.0.4|刘佳|添加混淆问题注意|初版功能（aar:1.0.3,rr:1.0.6)|2017.08.15
 1.0.5|刘佳|新增多图接口|添加华屹（aar:1.0.3,rr:1.0.7)|2017.08.23
 1.0.6|刘佳|补充initConfigValue|新增调试值(aar:1.0.3,rr:[>=]1.0.6)|2017.08.24
+1.0.7|刘佳|获取聚效原生广告img2|聚效img2(aar:1.0.3,rr:1.0.9)|2017.08.25
 ### Reaper SDK集成方式
 > Reaper SDK需要如下权限
 
@@ -592,6 +593,8 @@ adName  |String|jx/gdt/baidu|对应的广告源|jx / baidu / gdt
 btnText |String||预留按钮文字|jx
 download_app_pkg|String||下载app包名|jx / baidu
 download_app_name|String||下载应用名称|jx / baidu / gdt
+smallImgUrl|String||广告小图url|gdt
+smallImgFile|String||广告小图缓存文件路径|gdt
 ### 混淆问题
 如果您需要使用proguard混淆代码，需确保不要混淆SDK的代码，请在集成模块的proguard-rules.pro文件尾部添加如下配置：
 > ```xml

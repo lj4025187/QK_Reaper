@@ -103,50 +103,50 @@ public class ReaperFile {
         return mFile;
     }
 
-    public StructStat getStat() {
-        StructStat stat = null;
-        try {
-            if (hasFD()) {
-                stat = Os.fstat(mAfd.getFileDescriptor());
-            } else if(mFile != null) {
-                stat = Os.stat(mFile.getAbsolutePath());
-            }
-        } catch (ErrnoException e) {
-            e.printStackTrace();
-        } finally {
-            return stat;
-        }
-    }
-
-    public long getSize() {
-        StructStat stat = getStat();
-        return stat != null ? stat.st_size : -1;
-    }
-
-    public ByteBuffer readFully() {
-        FileInputStream fis = openFileInputStream();
-        if (fis == null)
-            return null;
-        ByteBuffer buffer = null;
-        try {
-            StructStat stat = Os.fstat(fis.getFD());
-            buffer = ByteBuffer.allocate((int) stat.st_size);
-            fis.read(buffer.array(), 0, buffer.capacity());
-        } catch (ErrnoException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return buffer;
-        }
-    }
+//    public StructStat getStat() {
+//        StructStat stat = null;
+//        try {
+//            if (hasFD()) {
+//                stat = Os.fstat(mAfd.getFileDescriptor());
+//            } else if(mFile != null) {
+//                stat = Os.stat(mFile.getAbsolutePath());
+//            }
+//        } catch (ErrnoException e) {
+//            e.printStackTrace();
+//        } finally {
+//            return stat;
+//        }
+//    }
+//
+//    public long getSize() {
+//        StructStat stat = getStat();
+//        return stat != null ? stat.st_size : -1;
+//    }
+//
+//    public ByteBuffer readFully() {
+//        FileInputStream fis = openFileInputStream();
+//        if (fis == null)
+//            return null;
+//        ByteBuffer buffer = null;
+//        try {
+//            StructStat stat = Os.fstat(fis.getFD());
+//            buffer = ByteBuffer.allocate((int) stat.st_size);
+//            fis.read(buffer.array(), 0, buffer.capacity());
+//        } catch (ErrnoException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } finally {
+//            if (fis != null) {
+//                try {
+//                    fis.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            return buffer;
+//        }
+//    }
 
     @Override
     public String toString() {

@@ -131,6 +131,8 @@ public class AdFragment extends Fragment implements Handler.Callback,
         mAdAdapter = new AdAdapter(getActivity());
         mAdAdapter.setData(mListData);
         mAdAdapter.setAttachView(mListView);
+        mListView.addFooterView(mFooterView);
+        mFooterView.setVisibility(View.GONE);
         mListView.setAdapter(mAdAdapter);
         mCalculator = new SingleListViewItemActiveCalculator(mAdAdapter, new ListViewItemPositionGetter(mListView));
         mListView.setOnScrollListener(this);
@@ -153,10 +155,12 @@ public class AdFragment extends Fragment implements Handler.Callback,
             return;
         if (show) {
             if (mListView.getFooterViewsCount() < 1) {
+                mFooterView.setVisibility(View.VISIBLE);
                 mListView.addFooterView(mFooterView);
             }
         } else {
             if (mListView.getFooterViewsCount() > 0) {
+                mFooterView.setVisibility(View.GONE);
                 mListView.removeFooterView(mFooterView);
             }
         }

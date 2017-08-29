@@ -2,13 +2,12 @@ package com.fighter.loader;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.ArrayMap;
 
 import com.fighter.utils.LoaderLog;
 import com.qiku.proguard.annotations.NoProguard;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -29,7 +28,7 @@ public class ReaperApi {
     public ReaperApi(Object instance, String version) {
         LoaderLog.e(TAG, "mInstance : " + instance);
         mInstance = instance;
-        mMethodCache = new ArrayMap<>();
+        mMethodCache = new HashMap<>();
     }
 
     @NoProguard
@@ -50,7 +49,7 @@ public class ReaperApi {
     @NoProguard
     public void init(Context appContext, String appId,
                      String appKey, boolean testMode) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
 
         if (appContext != null) {
             putParam(params, "appContext", appContext.getApplicationContext());
@@ -68,7 +67,7 @@ public class ReaperApi {
      */
     @NoProguard
     public void setTargetConfig(String configJson) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         putParam(params, "config", configJson);
         invokeReaperApi("setTargetConfig", params);
     }
@@ -97,7 +96,7 @@ public class ReaperApi {
     @NoProguard
     public AdRequester getAdRequester(String adPositionId,
                                       AdRequester.AdRequestCallback adRequestCallback, boolean needHoldAd) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         putParam(params, "adPositionId", adPositionId);
         putParam(params, "adRequestCallback", new AdResponse(adRequestCallback));
         putParam(params, "needHoldAd", needHoldAd);
@@ -116,7 +115,7 @@ public class ReaperApi {
      */
     @NoProguard
     public String getMacAddress(Context context) {
-        Map<String, Object> params = new ArrayMap<>();
+        Map<String, Object> params = new HashMap<>();
         putParam(params, "appContext", context);
         return (String)invokeReaperApi("getMacAddress", params);
     }

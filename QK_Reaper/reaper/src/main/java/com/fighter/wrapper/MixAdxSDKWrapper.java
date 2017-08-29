@@ -7,7 +7,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.text.TextUtils;
-import android.util.ArrayMap;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -98,7 +97,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
     /**
      * 广告类型对应表
      */
-    private static final Map<String, Integer> TYPE_REF_MAP = new ArrayMap<>();
+    private static final Map<String, Integer> TYPE_REF_MAP = new HashMap<>();
 
     // 1:banner 2:插屏 4:开屏
     static {
@@ -303,7 +302,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
     private HashMap<String, String> generatePostParams(AdRequest adRequest) {
         Map<String, Object> allParams = adRequest.getAdAllParams();
         if (allParams == null) {
-            allParams = new ArrayMap<>();
+            allParams = new HashMap<>();
         }
 
         HashMap<String, String> params = new HashMap<>();
