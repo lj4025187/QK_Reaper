@@ -13,6 +13,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -35,6 +36,8 @@ import android.widget.RelativeLayout;
 import com.ak.android.base.landingpage.ILandingPageListener;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.wrapper.AKAdLandingPage;
+import com.fighter.common.utils.RefInvoker;
+import com.fighter.reaper.webview.IWebViewCallback;
 import com.qiku.proguard.annotations.NoProguard;
 
 
@@ -47,6 +50,8 @@ import com.qiku.proguard.annotations.NoProguard;
 public class ReaperWebViewActivity extends Activity {
 
     private final static String TAG = "ReaperWebViewActivity";
+
+    public final static String EXTRA_WEBVIEW_CALLBACK = "WebViewCallBack";
 
     private Context mContext;
     private RelativeLayout mRootView;
@@ -62,8 +67,13 @@ public class ReaperWebViewActivity extends Activity {
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             Uri uri = request.getUrl();
             loadUrl(view, uri.toString());
-            if(mIsAKAD && mLandingListener != null)
-                mLandingListener.shouldOverrideUrlLoading(uri.toString());
+            if(mWebViewCallBack != null) {
+                try {
+                    mWebViewCallBack.shouldOverrideUrlLoading(uri.toString());
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
             return true;
         }
 
@@ -89,8 +99,13 @@ public class ReaperWebViewActivity extends Activity {
             super.onPageStarted(view, url, favicon);
             ReaperLog.i(TAG, "onPageStarted");
             view.setVisibility(View.INVISIBLE);
-            if(mIsAKAD && mLandingListener != null)
-                mLandingListener.onPageStarted(url, favicon);
+            if(mWebViewCallBack != null) {
+                try {
+                    mWebViewCallBack.onPageStarted(url, favicon);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         @Override
@@ -105,8 +120,13 @@ public class ReaperWebViewActivity extends Activity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             ReaperLog.i(TAG, "onPageFinished");
-            if(mIsAKAD && mLandingListener != null)
-                mLandingListener.onPageFinished(url);
+            if(mWebViewCallBack != null) {
+                try {
+                    mWebViewCallBack.onPageFinished(url);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
             if(visible) {
                 view.setVisibility(View.VISIBLE);
             } else {
@@ -119,10 +139,15 @@ public class ReaperWebViewActivity extends Activity {
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             super.onReceivedError(view, request, error);
-            if(mIsAKAD && mLandingListener != null)
-                mLandingListener.onReceivedError(error.getErrorCode(),
-                        error.getDescription().toString(),
-                        request.getUrl().toString());
+            if(mWebViewCallBack != null) {
+                try {
+                    mWebViewCallBack.onReceivedError(error.getErrorCode(),
+                            error.getDescription().toString(),
+                            request.getUrl().toString());
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
             if(!visible) return;
             ReaperLog.i(TAG, "receive err not visible open in browser");
             Uri uri = request.getUrl();
@@ -194,8 +219,7 @@ public class ReaperWebViewActivity extends Activity {
 
     private WebSettings mSettings;
     private String mUrl;
-    private boolean mIsAKAD = false;
-    private ILandingPageListener mLandingListener;
+    private IWebViewCallback mWebViewCallBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -215,16 +239,24 @@ public class ReaperWebViewActivity extends Activity {
 
     private void handleIntent(Intent intent) {
         String url = intent.getStringExtra("url");
-        if (!TextUtils.isEmpty(url)) {
-            mUrl = url;
-            initWebRootView();
+        if (TextUtils.isEmpty(url)) return;
+        mUrl = url;
+        initWebRootView();
+        Bundle extras = intent.getExtras();
+        if(extras != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                mWebViewCallBack = (IWebViewCallback) extras.getBinder(EXTRA_WEBVIEW_CALLBACK);
+            } else {
+                mWebViewCallBack = (IWebViewCallback) RefInvoker.invokeMethod(extras, Bundle.class,
+                        "getIBinder", new Class[]{String.class},
+                        new Object[]{EXTRA_WEBVIEW_CALLBACK});
+            }
+        } else {
+            ReaperLog.e(TAG, " getExtras == NULL");
         }
-        int requestCode = intent.getIntExtra("requestCode", -1);
-        mIsAKAD = requestCode == 8888;
-        if(mIsAKAD)
-            mLandingListener = AKAdLandingPage.newInstance().getPageListener();
+        ReaperLog.e(TAG, " mWebViewCallBack " + mWebViewCallBack);
         reloadUrl();
-    }
+     }
 
     private void initWebRootView() {
         setTheme(android.R.style.Theme_Black_NoTitleBar);
@@ -408,8 +440,14 @@ public class ReaperWebViewActivity extends Activity {
     @Override
     public void finish() {
         super.finish();
-        if(mIsAKAD && mLandingListener != null)
-            mLandingListener.onPageExit();
+        if(mWebViewCallBack != null) {
+            try {
+                mWebViewCallBack.onPageExit();
+            } catch (RemoteException e) {
+                ReaperLog.e(TAG, " e to string " + e.toString());
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
