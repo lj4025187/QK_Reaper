@@ -32,7 +32,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import com.ak.android.base.landingpage.ILandingPageListener;
 import com.fighter.common.utils.ReaperLog;
+import com.fighter.wrapper.AKAdLandingPage;
 import com.qiku.proguard.annotations.NoProguard;
 
 
@@ -60,6 +62,8 @@ public class ReaperWebViewActivity extends Activity {
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             Uri uri = request.getUrl();
             loadUrl(view, uri.toString());
+            if(mIsAKAD && mLandingListener != null)
+                mLandingListener.shouldOverrideUrlLoading(uri.toString());
             return true;
         }
 
@@ -85,6 +89,8 @@ public class ReaperWebViewActivity extends Activity {
             super.onPageStarted(view, url, favicon);
             ReaperLog.i(TAG, "onPageStarted");
             view.setVisibility(View.INVISIBLE);
+            if(mIsAKAD && mLandingListener != null)
+                mLandingListener.onPageStarted(url, favicon);
         }
 
         @Override
@@ -99,6 +105,8 @@ public class ReaperWebViewActivity extends Activity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             ReaperLog.i(TAG, "onPageFinished");
+            if(mIsAKAD && mLandingListener != null)
+                mLandingListener.onPageFinished(url);
             if(visible) {
                 view.setVisibility(View.VISIBLE);
             } else {
@@ -107,10 +115,14 @@ public class ReaperWebViewActivity extends Activity {
             }
         }
 
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @TargetApi(Build.VERSION_CODES.M)
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             super.onReceivedError(view, request, error);
+            if(mIsAKAD && mLandingListener != null)
+                mLandingListener.onReceivedError(error.getErrorCode(),
+                        error.getDescription().toString(),
+                        request.getUrl().toString());
             if(!visible) return;
             ReaperLog.i(TAG, "receive err not visible open in browser");
             Uri uri = request.getUrl();
@@ -182,6 +194,8 @@ public class ReaperWebViewActivity extends Activity {
 
     private WebSettings mSettings;
     private String mUrl;
+    private boolean mIsAKAD = false;
+    private ILandingPageListener mLandingListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,6 +219,10 @@ public class ReaperWebViewActivity extends Activity {
             mUrl = url;
             initWebRootView();
         }
+        int requestCode = intent.getIntExtra("requestCode", -1);
+        mIsAKAD = requestCode == 8888;
+        if(mIsAKAD)
+            mLandingListener = AKAdLandingPage.newInstance().getPageListener();
         reloadUrl();
     }
 
@@ -385,6 +403,13 @@ public class ReaperWebViewActivity extends Activity {
         ((ViewGroup) mWebView.getParent()).removeView(mWebView);
         mWebView.destroy();
         mWebView = null;
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        if(mIsAKAD && mLandingListener != null)
+            mLandingListener.onPageExit();
     }
 
     @Override

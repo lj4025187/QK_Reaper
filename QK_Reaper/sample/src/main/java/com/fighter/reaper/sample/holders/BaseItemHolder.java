@@ -96,12 +96,14 @@ public class BaseItemHolder<T extends BaseItem> {
             adDesParent.setBackgroundColor(Color.parseColor("#FFFBFBFC"));
         }
         final AdInfo adInfo = iItem.getAdInfo();
+        String adSrcName = SampleConfig.getAdSrcName(context, adInfo);
         viewType.setText(SampleConfig.getViewTypeString(context, iItem.getViewType()));
         detailType.setText((String) adInfo.getExtra(DETAIL_TYPE_KEY));
-        srcName.setText(SampleConfig.getAdSrcName(context, adInfo));
+        srcName.setText(adSrcName);
         uuid.setText("uuid:" + adInfo.getUuid());
+        boolean isBaxin = TextUtils.equals(SampleConfig.BAXIN_SRC_NAME, adSrcName);
 
-        String title = adInfo.getTitle();
+        String title = isBaxin ? getBullEyeValue(adInfo, SampleConfig.BullsEyeKey.KEY_TITLE) : adInfo.getTitle();
         if (TextUtils.isEmpty(title)) {
             ViewUtils.setViewVisibility(adTitle, View.GONE);
         } else {
@@ -286,5 +288,76 @@ public class BaseItemHolder<T extends BaseItem> {
         }
 
         imageSize.setText((isGif ? "gif-" : "jpg-") + "W:H---" + imageWidth + "*" + imageHeight + "\n" + localId);
+    }
+
+    private String getBullEyeValue(AdInfo adInfo, String key) {
+        String detailType = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.ADV_TYPE);
+        boolean isMovie = false;
+        boolean isCate = false;
+        if (TextUtils.equals("2", detailType)) {
+            isMovie = true;
+        } else if (TextUtils.equals("3", detailType)) {
+            isCate = true;
+        }
+        String result = "";
+        String adv_source = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.ADV_SOURCE);
+        String adv_type = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.ADV_TYPE);
+        switch (key) {
+            case SampleConfig.BullsEyeKey.KEY_TITLE:
+                if (isMovie) {
+                    result = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.MOVIE_NAME);
+                    String movie_name = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.MOVIE_NAME);
+                    String movie_rate = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.MOVIE_RATE);
+                    String movie_show = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.MOVIE_SHOW);
+                    String movie_dir = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.MOVIE_DIRECTOR);
+                    String movie_star = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.MOVIE_STAR);
+                    String movie_dur = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.MOVIE_DURATION);
+                    String movie_ver = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.MOVIE_VERSION);
+                    String movie_state = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.MOVIE_STATE);
+                    SampleLog.i(TAG, " adv_source = " + adv_source + ";" +
+                            "adv_type = " + adv_type + ";" +
+                            "movie_name = " + movie_name + ";" +
+                            "movie_rate = " + movie_rate + ";" +
+                            "movie_show = " + movie_show + ";" +
+                            "movie_dir = " + movie_dir + ";" +
+                            "movie_star = " + movie_star + ";" +
+                            "movie_dur = " + movie_dur + ";" +
+                            "movie_ver = " + movie_ver + ";" +
+                            "movie_state = " + movie_state + "(1=即将上映;3=正在热映;4=预售)");
+                }
+                if (isCate) {
+                    result = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_SHOP);
+                    String cate_city = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_CITY);
+                    String cate_shop = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_SHOP);
+                    String cate_class_name = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_CLASS_NAME);
+                    String cate_type_name = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_TYPE_NAME);
+                    String cate_type = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_TYPE);
+                    String cate_area = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_AREA);
+                    String cate_dist = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_DISTRICT);
+                    String cate_lat = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_LATITUDE);
+                    String cate_lon = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_LONGITUDE);
+                    String cate_distance = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_DISTANCE);
+                    String cate_adr = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_ADDRESS);
+                    String cate_phone = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_PHONE);
+                    String cate_rate = (String) adInfo.getExtra(SampleConfig.BullsEyeKey.CATE_RATE);
+                    SampleLog.i(TAG, " adv_source = " + adv_source + ";" +
+                            "adv_type = " + adv_type + ";" +
+                            "cate_city = " + cate_city + ";" +
+                            "cate_shop = " + cate_shop + ";" +
+                            "cate_class_name = " + cate_class_name + ";" +
+                            "cate_type_name = " + cate_type_name + ";" +
+                            "cate_type = " + cate_type + ";" +
+                            "cate_area = " + cate_area + ";" +
+                            "cate_dist = " + cate_dist + ";" +
+                            "cate_lat = " + cate_lat + ";" +
+                            "cate_lon = " + cate_lon + ";" +
+                            "cate_distance = " + cate_distance + ";" +
+                            "cate_adr = " + cate_adr + ";" +
+                            "cate_phone = " + cate_phone + ";" +
+                            "cate_rate = " + cate_rate);
+                }
+                break;
+        }
+        return result;
     }
 }

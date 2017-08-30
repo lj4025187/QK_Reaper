@@ -8,6 +8,7 @@ public final class SdkName {
     public static final String MIX_ADX = "baidu";
     public static final String AKAD = "jx";
     public static final String QIKU_HUA_YI = "huayi";
+    public static final String BA_XIN = "baxin";
     // ----------------------------------------------------
 
     private SdkName() {

@@ -1,5 +1,6 @@
 package com.fighter.common;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -8,15 +9,23 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.hardware.SensorManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoLte;
 import android.telephony.CellLocation;
+import android.telephony.CellSignalStrengthLte;
+import android.telephony.NeighboringCellInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
@@ -33,7 +42,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.NetworkInterface;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -48,6 +60,8 @@ import java.util.TimeZone;
  */
 
 public final class Device {
+
+    private static final String TAG = "Device";
     // ----------------------------------------------------
     // App 信息
     // ----------------------------------------------------
@@ -119,6 +133,10 @@ public final class Device {
      */
     public static String getBuildProduct() {
         return Build.PRODUCT;
+    }
+
+    public static String getBuildSDKVersion() {
+        return String.valueOf(Build.VERSION.SDK_INT);
     }
 
     /**
@@ -691,6 +709,52 @@ public final class Device {
         return null;
     }
 
+    public static String getQDASM2(Context context) {
+        try {
+            TelephonyManager tm = (TelephonyManager) (context
+                    .getSystemService(Context.TELEPHONY_SERVICE));
+            String imei = tm == null ? "" : (tm.getDeviceId() == null ? "" : tm.getDeviceId());
+            String androidId = Settings.System.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+            String serialNo = getSerialNo();
+            String sImei2 = md5("" + imei + androidId + serialNo);
+            return sImei2;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    public static String getSerialNo() {
+        String serial = null;
+        try {
+            Class<?> c = Class.forName("android.os.SystemProperties");
+            Method get = c.getMethod("get", String.class);
+            serial = (String) get.invoke(c, "ro.serialno");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return serial;
+    }
+
+    public static String md5(String str) {
+        try {
+            MessageDigest localMessageDigest = MessageDigest.getInstance("MD5");
+            localMessageDigest.update(str.getBytes());
+            byte[] arrayOfByte = localMessageDigest.digest();
+            StringBuffer localStringBuffer = new StringBuffer(64);
+            for (int i = 0; i < arrayOfByte.length; i++) {
+                int j = 0xFF & arrayOfByte[i];
+                if (j < 16)
+                    localStringBuffer.append("0");
+                localStringBuffer.append(Integer.toHexString(j));
+            }
+            return localStringBuffer.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     /**
      * 获取Sim卡运营商名称
      * <p>中国移动、如中国联通、中国电信</p>
@@ -871,6 +935,173 @@ public final class Device {
         return providers.contains(LocationManager.GPS_PROVIDER);
     }
 
+    /*********************************** Add for BullsEyeSDKWrapper **************************************************/
+    public static boolean isLocationEnabled(LocationManager locationManager) {
+        if (locationManager == null) return false;
+        return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    /**
+     * 注册位置监听
+     *
+     * @return
+     */
+    public static boolean registerLocListener(Context context, LocationListener listener) {
+        if (context == null || listener == null) return false;
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        if (!isLocationEnabled(locationManager)) {
+            ReaperLog.i(TAG, " location manager is not available");
+            return false;
+        }
+        String provider = locationManager.getBestProvider(getCriteria(), true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ReaperLog.e("Device has no ACCESS_COARSE_LOCATION");
+                return false;
+            }
+        }
+        if (TextUtils.isEmpty(provider)) {
+            ReaperLog.i(TAG, " location get provider is null");
+            return false;
+        }
+        locationManager.requestLocationUpdates(provider, 10 * 60 * 1000, 1000, listener);
+        Location location = locationManager.getLastKnownLocation(provider);
+        if (location == null) {
+            ReaperLog.e(TAG, " location last know location is null");
+            return false;
+        }
+        listener.onLocationChanged(location);
+        ReaperLog.i(TAG, " register location listener success");
+        return true;
+    }
+
+    public static void unregisterLocListener(Context context, LocationListener listener) {
+        if (context == null || listener == null) return;
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        if (!isLocationEnabled(locationManager)) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ReaperLog.e("Device has no ACCESS_COARSE_LOCATION");
+                return;
+            }
+        }
+        locationManager.removeUpdates(listener);
+    }
+
+    /**
+     * 设置定位参数
+     *
+     * @return {@link Criteria}
+     */
+    private static Criteria getCriteria() {
+        Criteria criteria = new Criteria();
+        //设置定位精确度 Criteria.ACCURACY_COARSE比较粗略，Criteria.ACCURACY_FINE则比较精细
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        //设置是否要求速度
+        criteria.setSpeedRequired(false);
+        // 设置是否允许运营商收费
+        criteria.setCostAllowed(false);
+        //设置是否需要方位信息
+        criteria.setBearingRequired(false);
+        //设置是否需要海拔信息
+        criteria.setAltitudeRequired(false);
+        // 设置对电源的需求
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+        return criteria;
+    }
+
+    public static String getBullsEyeCurrentWifi(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo connectionInfo = wifiManager.getConnectionInfo();
+        if (connectionInfo != null) {
+            String bssid = generateBssid(connectionInfo.getBSSID());
+            int rssi = connectionInfo.getRssi();
+            String result = bssid + -1 * rssi;
+            return result;
+        }
+        return "";
+    }
+
+    public static String getBullsEyeWifiList(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        List<ScanResult> scanResults = wifiManager.getScanResults();
+        int size = scanResults.size();
+        if (size == 0) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            ScanResult scanResult = scanResults.get(i);
+            String bssid = generateBssid(scanResult.BSSID);
+            int rssi = -1 * scanResult.level;
+            builder.append(bssid + "" + rssi + ((i != size - 1) ? "+" : ""));
+        }
+        return builder.toString();
+    }
+
+    public static String generateBssid(String bssid) {
+        if (TextUtils.isEmpty(bssid)) return "";
+        return bssid.replace(":", "");
+    }
+
+    public static String getBullsEyeStationInfo(Context context) {
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (telephonyManager == null) return "";
+        String operator = telephonyManager.getNetworkOperator();
+        if (operator == null || operator.length() == 0) return "";
+        int mcc = Integer.parseInt(operator.substring(0, 3));
+        int mnc = Integer.parseInt(operator.substring(3));
+
+        List<CellInfo> allCellInfo = telephonyManager.getAllCellInfo();
+        List<NeighboringCellInfo> neighboringCellInfo = telephonyManager.getNeighboringCellInfo();
+
+        int rssi = 30;
+        if (allCellInfo != null && !allCellInfo.isEmpty()) {
+            for (int i = 0; i < allCellInfo.size(); i++) {
+                CellInfo info = allCellInfo.get(i);
+                if (info instanceof CellInfoLte) {
+                    CellInfoLte cellInfoLte = (CellInfoLte) info;
+                    CellSignalStrengthLte cellSignalStrength = cellInfoLte.getCellSignalStrength();
+                    rssi = -1 * cellSignalStrength.getDbm();
+                }
+            }
+        } else if (neighboringCellInfo != null && neighboringCellInfo.isEmpty()) {
+            for (int i = 0; i < neighboringCellInfo.size(); i++) {
+                NeighboringCellInfo info = neighboringCellInfo.get(i);
+                rssi = -1 * info.getRssi();
+            }
+        }
+
+        String result = "";
+        int phoneType = telephonyManager.getPhoneType();
+        if (phoneType == TelephonyManager.PHONE_TYPE_GSM) {
+            GsmCellLocation location = (GsmCellLocation) telephonyManager.getCellLocation();
+            if (location == null) return "";
+            int lac = location.getLac();
+            int cid = location.getCid();
+            result = mcc + "," + mnc + "," + lac + "," + cid + "," + rssi;
+        } else if (phoneType == TelephonyManager.PHONE_TYPE_CDMA) {
+            CdmaCellLocation location = (CdmaCellLocation) telephonyManager.getCellLocation();
+            if (location == null) return "";
+            int sid = location.getSystemId();
+            int nid = location.getNetworkId();
+            int bid = location.getBaseStationId();
+            int lat = location.getBaseStationLatitude();
+            int lng = location.getBaseStationLongitude();
+            result = mcc + "," + mnc + "," +
+                    sid + "," + nid + "," +
+                    bid + "," + rssi + "," +
+                    lat + "," + lng;
+        }
+        return result;
+    }
+
+    /***********************************end for BullsEyeSDKWrapper**************************************************/
+
+
     /**
      * 判断是否支持某类型传感器
      *
@@ -899,8 +1130,7 @@ public final class Device {
     public static String getCurrentLocalTime() {
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddhhmmss", Locale.CHINA);
-        String result = formatter.format(date);
-        return result;
+        return formatter.format(date);
     }
 
     /**
@@ -933,7 +1163,7 @@ public final class Device {
         if (result.result == 0) {
             return result.successMsg;
         }
-        return null;
+        return "no channel number";
     }
 
     private static class MacThread extends Thread {

@@ -66,6 +66,7 @@ public class TabMainActivity extends BaseActivity {
         mTabList.add(new TabItem(getString(R.string.baidu_ad_src_name), R.mipmap.baidu, TabFragment.newInstance()));
         mTabList.add(new TabItem(getString(R.string.qihoo_ad_src_name), R.mipmap.qihoo, TabFragment.newInstance()));
         mTabList.add(new TabItem(getString(R.string.qk_hy_src_name), R.mipmap.huayi, TabFragment.newInstance()));
+        mTabList.add(new TabItem(getString(R.string.baxin_ad_src_name), R.mipmap.ic_bull_eye, TabFragment.newInstance()));
 
         mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
             @Override
@@ -98,6 +99,9 @@ public class TabMainActivity extends BaseActivity {
                     break;
                 case 3:
                     value = SampleConfig.QK_HY_SRC_NAME;
+                    break;
+                case 4:
+                    value = SampleConfig.BAXIN_SRC_NAME;
                     break;
                 default:
                     value = SampleConfig.UNKNOWN_SRC_NAME;

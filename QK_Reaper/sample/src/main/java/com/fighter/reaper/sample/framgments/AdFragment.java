@@ -192,7 +192,9 @@ public class AdFragment extends Fragment implements Handler.Callback,
                     || TextUtils.equals(SampleConfig.BAIDU_BANNER_ADV/*"14"*/, posId)     //Baidu banner
                     || TextUtils.equals(SampleConfig.BAIDU_OPEN_ADV/*"15"*/, posId)    //Baidu openapp
                     || TextUtils.equals(SampleConfig.HUA_YI_OPEN_ADV, posId)           //Huayi openapp
-                    || TextUtils.equals(SampleConfig.HUA_YI_ORIGINAL_ADV, posId);      //Huayi original
+                    || TextUtils.equals(SampleConfig.HUA_YI_ORIGINAL_ADV, posId)      //Huayi original
+                    || TextUtils.equals(SampleConfig.BA_XIN_MOVIE_ADV, posId)    //baxin movie
+                    || TextUtils.equals(SampleConfig.BA_XIN_CATE_ADV, posId);    //baxin cate
         } else {
             isSupport = TextUtils.equals(SampleConfig.QIHOO_VIDEO_ADV/*"5"*/, posId)    //Qihoo video
                     || TextUtils.equals(SampleConfig.QIHOO_ORIGINAL_ADV/*"6"*/, posId)    //Qihoo original
@@ -200,7 +202,9 @@ public class AdFragment extends Fragment implements Handler.Callback,
                     || TextUtils.equals(SampleConfig.TENCENT_BANNER_ADV/*"8"*/, posId)      //Tencent banner
                     || TextUtils.equals(SampleConfig.BAIDU_BANNER_ADV/*"14"*/, posId)     //Baidu banner
                     || TextUtils.equals(SampleConfig.HUA_YI_OPEN_ADV, posId)           //Huayi openapp
-                    || TextUtils.equals(SampleConfig.HUA_YI_ORIGINAL_ADV, posId);      //Huayi original
+                    || TextUtils.equals(SampleConfig.HUA_YI_ORIGINAL_ADV, posId)      //Huayi original
+                    || TextUtils.equals(SampleConfig.BA_XIN_MOVIE_ADV, posId)    //baxin movie
+                    || TextUtils.equals(SampleConfig.BA_XIN_CATE_ADV, posId);    //baxin cate
         }
 
 
@@ -228,6 +232,8 @@ public class AdFragment extends Fragment implements Handler.Callback,
                     posId = SampleConfig.TENCENT_INSERT_ADV/*"7"*/;
                 if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME))
                     posId = SampleConfig.BAIDU_INSERT_ADV/*"13"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.BAXIN_SRC_NAME))
+                    posId = SampleConfig.BA_XIN_MOVIE_ADV;
                 break;
             case SampleConfig.TYPE_BANNER:
                 if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "2";
@@ -235,6 +241,8 @@ public class AdFragment extends Fragment implements Handler.Callback,
                     posId = SampleConfig.TENCENT_BANNER_ADV/*"8"*/;
                 if (TextUtils.equals(mSrcName, SampleConfig.BAIDU_SRC_NAME))
                     posId = SampleConfig.BAIDU_BANNER_ADV/*"14"*/;
+                if (TextUtils.equals(mSrcName, SampleConfig.BAXIN_SRC_NAME))
+                    posId = SampleConfig.BA_XIN_CATE_ADV;
                 break;
             case SampleConfig.TYPE_FULL_SCREEN:
                 if (TextUtils.equals(mSrcName, SampleConfig.QIHOO_SRC_NAME)) posId = "3";

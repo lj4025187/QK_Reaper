@@ -105,6 +105,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         ApkDownloadListener apkDownloadListener = new ApkDownloadListener();
         AKAD.setApkListener(mContext, apkDownloadListener);
         HookInstaller.setSilentListener(apkDownloadListener);
+        AKAD.setLandingPageView(mContext, AKAdLandingPage.newInstance());
     }
 
     @Override
