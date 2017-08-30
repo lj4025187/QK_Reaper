@@ -34,6 +34,7 @@ import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ReaperLog;
 
@@ -69,9 +70,13 @@ public final class Device {
 
     public static String getApplicationName(Context context) {
         PackageManager pm = context.getPackageManager();
-        ApplicationInfo applicationInfo = getApplicationInfo(context, pm, PackageManager.GET_ACTIVITIES);
-        String appName = (String) pm.getApplicationLabel(applicationInfo);
-        return appName;
+        ApplicationInfo applicationInfo =
+                getApplicationInfo(context, pm, PackageManager.GET_UNINSTALLED_PACKAGES);
+        if (applicationInfo == null) {
+            return "";
+        } else {
+            return (String) pm.getApplicationLabel(applicationInfo);
+        }
     }
 
     public static ApplicationInfo getApplicationInfo(Context context, PackageManager pm, int flags) {
@@ -161,6 +166,9 @@ public final class Device {
         return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
+    // be the same with WifiInfo.java
+    private static final String DEFAULT_MAC_ADDRESS = "02:00:00:00:00:00";
+
     /**
      * 获取设备MAC地址
      * <p>
@@ -173,15 +181,15 @@ public final class Device {
      */
     public static String getMac(Context context) {
         String macAddress = getMacAddressByWifiInfo(context);
-        if (!"02:00:00:00:00:00".equals(macAddress)) {
+        if (!DEFAULT_MAC_ADDRESS.equals(macAddress)) {
             return macAddress;
         }
         macAddress = getMacAddressByNetworkInterface();
-        if (!"02:00:00:00:00:00".equals(macAddress)) {
+        if (!DEFAULT_MAC_ADDRESS.equals(macAddress)) {
             return macAddress;
         }
         macAddress = getMacAddressByFile();
-        if (!"02:00:00:00:00:00".equals(macAddress)) {
+        if (!DEFAULT_MAC_ADDRESS.equals(macAddress)) {
             return macAddress;
         }
         return null;
@@ -224,7 +232,8 @@ public final class Device {
 
         macAddress = getMac(context);
         if (macAddress == null) {
-            WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifiManager = (WifiManager) context.getApplicationContext()
+                    .getSystemService(Context.WIFI_SERVICE);
             if (wifiManager != null) {
                 boolean wifiOriginState = wifiManager.isWifiEnabled();
 
@@ -266,38 +275,26 @@ public final class Device {
             try {
                 outputStream = new FileOutputStream(macFile);
                 outputStream.write(macAddress.getBytes());
+                outputStream.flush();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                try {
-                    if (outputStream != null) {
-                        outputStream.flush();
-                        outputStream.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                CloseUtils.closeIOQuietly(outputStream);
             }
         }
         if (!cacheMacFile.exists()) {
             try {
                 outputStream = new FileOutputStream(cacheMacFile);
                 outputStream.write(macAddress.getBytes());
+                outputStream.flush();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                try {
-                    if (outputStream != null) {
-                        outputStream.flush();
-                        outputStream.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                CloseUtils.closeIOQuietly(outputStream);
             }
         }
     }
@@ -308,56 +305,44 @@ public final class Device {
      * @return wifi mac address
      */
     public static String getCacheMac(Context context) {
-        File sdcardFile = Environment.getExternalStorageDirectory();
-        File dataFile = context.getCacheDir();
+        File sdcardDir = Environment.getExternalStorageDirectory();
+        File dataCacheDir = context.getCacheDir();
+
         String fileName = EncryptUtils.encryptMD5ToString("mac_address");
-        File macFile = new File(sdcardFile, "." + fileName);
-        File dataMacFile = new File(dataFile, "." + fileName);
-        byte[] data = new byte[17];
-        String sdcardRootMac = null;
-        String dataMac = null;
+
+        File sdMacFile = new File(sdcardDir, "." + fileName);
+        File dataMacFile = new File(dataCacheDir, "." + fileName);
+
         if (dataMacFile.exists()) {
             FileInputStream inputStream = null;
             try {
-                inputStream = new FileInputStream(macFile);
+                byte[] data = new byte[17];
+                inputStream = new FileInputStream(sdMacFile);
                 inputStream.read(data);
+                return new String(data);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+                CloseUtils.closeIOQuietly(inputStream);
             }
-            dataMac = new String(data);
         }
-        if (macFile.exists()) {
+        if (sdMacFile.exists()) {
             FileInputStream inputStream = null;
             try {
-                inputStream = new FileInputStream(macFile);
+                byte[] data = new byte[17];
+                inputStream = new FileInputStream(sdMacFile);
                 inputStream.read(data);
+                return new String(data);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+                CloseUtils.closeIOQuietly(inputStream);
             }
-            sdcardRootMac = new String(data);
         }
-        if (dataMac != null)
-            return dataMac.equals(sdcardRootMac) ? sdcardRootMac : null;
         return null;
     }
 
@@ -381,7 +366,7 @@ public final class Device {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "02:00:00:00:00:00";
+        return DEFAULT_MAC_ADDRESS;
     }
 
     /**
@@ -407,7 +392,7 @@ public final class Device {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "02:00:00:00:00:00";
+        return DEFAULT_MAC_ADDRESS;
     }
 
     /**
@@ -426,7 +411,7 @@ public final class Device {
                 }
             }
         }
-        return "02:00:00:00:00:00";
+        return DEFAULT_MAC_ADDRESS;
     }
 
     // ----------------------------------------------------
@@ -441,8 +426,8 @@ public final class Device {
     public static int getScreenWidth(Context context) {
         WindowManager windowManager =
                 (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics dm = new DisplayMetrics();// 创建了一张白纸
-        windowManager.getDefaultDisplay().getMetrics(dm);// 给白纸设置宽高
+        DisplayMetrics dm = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(dm);
         return dm.widthPixels;
     }
 
@@ -454,8 +439,8 @@ public final class Device {
     public static int getScreenHeight(Context context) {
         WindowManager windowManager =
                 (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics dm = new DisplayMetrics();// 创建了一张白纸
-        windowManager.getDefaultDisplay().getMetrics(dm);// 给白纸设置宽高
+        DisplayMetrics dm = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(dm);
         return dm.heightPixels;
     }
 
@@ -595,9 +580,9 @@ public final class Device {
                     default:
 
                         String subtypeName = info.getSubtypeName();
-                        if (subtypeName.equalsIgnoreCase("TD-SCDMA")
-                                || subtypeName.equalsIgnoreCase("WCDMA")
-                                || subtypeName.equalsIgnoreCase("CDMA2000")) {
+                        if ("TD-SCDMA".equalsIgnoreCase(subtypeName)
+                                || "WCDMA".equalsIgnoreCase(subtypeName)
+                                || "CDMA2000".equalsIgnoreCase(subtypeName)) {
                             netType = NetworkType.NETWORK_3G;
                         } else {
                             netType = NetworkType.NETWORK_UNKNOWN;
@@ -791,7 +776,7 @@ public final class Device {
         TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         if (tm != null) {
             operator = tm.getSimOperator();
-            if (operator != null && operator.length() != 0) {
+            if (operator != null && operator.length() >= 3) {
                 mcc = operator.substring(0, 3);
             }
         }
@@ -823,15 +808,12 @@ public final class Device {
                 (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         try {
             CellLocation cellLocation = telephonyManager.getCellLocation();
-            int phoneType = telephonyManager.getPhoneType();
-            if (phoneType == 2) {
-                if (cellLocation instanceof GsmCellLocation) {
-                    GsmCellLocation gsmCellLocation = (GsmCellLocation) cellLocation;
-                    return gsmCellLocation.getCid();
-                } else if (cellLocation instanceof CdmaCellLocation) {
-                    CdmaCellLocation cdmaCellLocation = (CdmaCellLocation) cellLocation;
-                    return cdmaCellLocation.getBaseStationId();
-                }
+            if (cellLocation instanceof GsmCellLocation) {
+                GsmCellLocation gsmCellLocation = (GsmCellLocation) cellLocation;
+                return gsmCellLocation.getCid();
+            } else if (cellLocation instanceof CdmaCellLocation) {
+                CdmaCellLocation cdmaCellLocation = (CdmaCellLocation) cellLocation;
+                return cdmaCellLocation.getBaseStationId();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -850,12 +832,9 @@ public final class Device {
                 (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         try {
             CellLocation cellLocation = telephonyManager.getCellLocation();
-            int phoneType = telephonyManager.getPhoneType();
-            if (phoneType == 2) {
-                if (cellLocation instanceof GsmCellLocation) {
-                    GsmCellLocation gsmCellLocation = (GsmCellLocation) cellLocation;
-                    return gsmCellLocation.getLac();
-                }
+            if (cellLocation instanceof GsmCellLocation) {
+                GsmCellLocation gsmCellLocation = (GsmCellLocation) cellLocation;
+                return gsmCellLocation.getLac();
             }
         } catch (Exception e) {
             e.printStackTrace();

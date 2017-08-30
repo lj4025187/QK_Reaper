@@ -25,7 +25,7 @@ public class ReaperLog {
     private static final int FILES_LENGTH = 5;
     private static long sStartTime = 0;
     private static ExecutorService sExecutor;
-    private static SimpleDateFormat sMillionsFormat, sCurrentFormat;
+    private static SimpleDateFormat sMillisFormat, sCurrentFormat;
 
     public static void i(String msg) {
         if (!LOG_SWITCH)
@@ -42,20 +42,20 @@ public class ReaperLog {
     public static void e(String msg) {
         Log.e(TAG, msg);
         if (RECORD_LOG)
-            writeLocalLog(getCurrentMillions() + " : E ", msg);
+            writeLocalLog(getCurrentMillis() + " : E ", msg);
     }
 
     public static void e(String subTag, String msg) {
         Log.e(TAG, "[" + subTag + "] ==> " + msg);
         if (RECORD_LOG)
-            writeLocalLog(getCurrentMillions() + " : E ", msg);
+            writeLocalLog(getCurrentMillis() + " : E ", msg);
     }
 
-    private static String getCurrentMillions() {
-        if(sMillionsFormat == null)
-            sMillionsFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:", Locale.getDefault());
-        Date curMillion = new Date(System.currentTimeMillis());//获取当前时间
-        return sMillionsFormat.format(curMillion);
+    private static String getCurrentMillis() {
+        if(sMillisFormat == null)
+            sMillisFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:", Locale.getDefault());
+        Date curMillis = new Date(System.currentTimeMillis());//获取当前时间
+        return sMillisFormat.format(curMillis);
     }
 
     private static String getCurrentDate() {
@@ -74,7 +74,8 @@ public class ReaperLog {
             @Override
             public void run() {
                 String currentDate = getCurrentDate();
-                File file = new File(LOCAL_LOG_DIR + File.separator + "ReaperLog-" + currentDate + ".txt");
+                File file = new File(LOCAL_LOG_DIR + File.separator + "ReaperLog-" +
+                        currentDate + ".txt");
                 if (!file.exists()) {
                     if (createLocalLogFile(file.toString())) {
                         writeLocalLog(file, type, msg);
@@ -128,53 +129,24 @@ public class ReaperLog {
             }
         });
         for (int i = 0; i < length - FILES_LENGTH + 1; i++) {
-            boolean delete = files[i].delete();
+            files[i].delete();
         }
     }
 
     private static void writeLocalLog(File file, String type, String msg) {
-        BufferedWriter bufferedWriter;
+        BufferedWriter bufferedWriter = null;
         try {
-            bufferedWriter = new BufferedWriter(new FileWriter(file, true), type.length() + msg.length() + 1);
+            bufferedWriter = new BufferedWriter(new FileWriter(file, true),
+                    type.length() + msg.length() + 1);
             bufferedWriter.write(type);
             bufferedWriter.write(msg);
             bufferedWriter.write('\n');
             bufferedWriter.flush();
-            bufferedWriter.close();
+
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            CloseUtils.closeIOQuietly(bufferedWriter);
         }
-    }
-
-    public static void printStackTrace() {
-        if (LOG_SWITCH) {
-            try {
-                StackTraceElement[] sts = Thread.currentThread().getStackTrace();
-                for (StackTraceElement stackTraceElement : sts) {
-                    DEFAULT_LOGHANDLER.publish("Log_StackTrace", Log.ERROR, stackTraceElement.toString());
-                }
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            }
-        }
-    }
-
-    public static void printException(String msg, Throwable e) {
-        if (LOG_SWITCH) {
-            DEFAULT_LOGHANDLER.publish("Log_StackTrace", Log.ERROR, msg + '\n' + Log.getStackTraceString(e));
-        }
-    }
-
-    public static LogHandler DEFAULT_LOGHANDLER = new LogHandler() {
-        @Override
-        public void publish(String tag, int level, String message) {
-            Log.println(level, tag, message);
-        }
-    };
-
-    public static interface LogHandler {
-
-        void publish(String tag, int level, String message);
-
     }
 }
