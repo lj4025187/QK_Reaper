@@ -33,9 +33,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import com.ak.android.base.landingpage.ILandingPageListener;
 import com.fighter.common.utils.ReaperLog;
-import com.fighter.wrapper.AKAdLandingPage;
 import com.fighter.common.utils.RefInvoker;
 import com.fighter.reaper.webview.IWebViewCallback;
 import com.qiku.proguard.annotations.NoProguard;
@@ -254,7 +252,6 @@ public class ReaperWebViewActivity extends Activity {
         } else {
             ReaperLog.e(TAG, " getExtras == NULL");
         }
-        ReaperLog.e(TAG, " mWebViewCallBack " + mWebViewCallBack);
         reloadUrl();
      }
 
