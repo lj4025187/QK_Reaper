@@ -9,6 +9,7 @@ import java.util.HashMap;
  */
 
 public class EventClickParam extends AdParam {
+
     /** tracker click event click position */
     public String click_pos;
 

@@ -4,10 +4,9 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.fighter.common.utils.ReaperLog;
-import com.fighter.download.HttpsManager;
-import com.fighter.download.NetworkUtil;
+//import com.fighter.download.HttpsManager;
+import com.fighter.common.utils.NetworkUtil;
 import com.qiku.serversdk.custom.AppConf;
-import com.qiku.serversdk.custom.RestClientResponseCallback;
 
 import org.json.JSONObject;
 import org.junit.Test;
@@ -18,7 +17,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Map;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -56,18 +54,18 @@ public class HttpsTest {
     @Test
     public void testHttps() {
 
-        HttpsManager manager = new HttpsManager(CERT12306);
-        Response response = manager.requestSync(URL_REAPER_DOWNLOAD);
-        if (response == null) {
-            ReaperLog.e(TAG, "response == null.");
-            return;
-        }
-        try {
-            String s = response.body().string();
-            ReaperLog.e(TAG, "body : " + s);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        HttpsManager manager = new HttpsManager(CERT12306);
+//        Response response = manager.requestSync(URL_REAPER_DOWNLOAD);
+//        if (response == null) {
+//            ReaperLog.e(TAG, "response == null.");
+//            return;
+//        }
+//        try {
+//            String s = response.body().string();
+//            ReaperLog.e(TAG, "body : " + s);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
     }
 

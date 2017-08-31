@@ -9,6 +9,7 @@ import java.util.HashMap;
  */
 
 public class EventDownLoadParam extends AdParam {
+
     /** ad download failed reason */
     public String reason;
 

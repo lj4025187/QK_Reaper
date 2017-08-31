@@ -11,7 +11,8 @@ import java.io.File;
 public class ReaperNWConstants {
 
     //ServerSdk request params
-    public static final String SERVER_SDK_CONF = "{'baseUrl':'https://api.os.qiku.com','resourceUrl':'api/list'}";
+    public static final String SERVER_SDK_CONF =
+            "{'baseUrl':'https://api.os.qiku.com','resourceUrl':'api/list'}";
     public static final String SERVER_SDK_APP = "Reaper";
     public static final String SERVER_SDK_VERSION = "1.0.0";
     public static final String SERVER_SDK_API = "version";

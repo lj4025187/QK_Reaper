@@ -11,14 +11,16 @@ import com.qiku.proguard.annotations.NoProguard;
 import java.util.HashMap;
 
 /**
- * Device param is alwaps common.
+ * Device param is always common.
  *
  * Created by lichen on 17-5-10.
  */
 @NoProguard
 final class CommonParam {
-    private static final String TAG = CommonParam.class.getSimpleName();
-    private static Context mContext;
+    private static final String TAG = "CommonParam";
+
+    private static Context sContext;
+
     /*================invariable param==============*/
     /** wifi mac */
     private static String mac;
@@ -43,6 +45,7 @@ final class CommonParam {
 
     /** Phone language */
     private static String lang;
+
     /*================instant param==============*/
     /** ad sdk version */
     private static String ad_sdk_v;
@@ -58,6 +61,7 @@ final class CommonParam {
 
     private CommonParam() {
     }
+
     @NoProguard
     static void init(Context context) {
         if (context == null)
@@ -69,20 +73,19 @@ final class CommonParam {
             if(!TextUtils.isEmpty(m1_sum))
                 m1 = m1_sum.toLowerCase();
         }
-        brand = Device.getBuildBrand();
+        brand    = Device.getBuildBrand();
         solution = Device.getBuildManufacturer();
-        d_model = Device.getBuildModel();
-        screen = Device.getScreenWidth(context) + "*" +
-                Device.getScreenHeight(context);
-        channel = Device.getDeviceChannel();
-        lang = Device.getLocalLanguage();
-        mContext = context;
+        d_model  = Device.getBuildModel();
+        screen   = Device.getScreenWidth(context) + "*" + Device.getScreenHeight(context);
+        channel  = Device.getDeviceChannel();
+        lang     = Device.getLocalLanguage();
+        sContext = context;
     }
 
     static HashMap<String, String> generateMap() {
         HashMap<String, String> map = new HashMap<>();
         if (mac == null) {
-            mac = Device.getFormatMac(mContext);
+            mac = Device.getFormatMac(sContext);
         }
         map.put("mac", mac == null? "" : mac);
         map.put("m1", m1);
@@ -92,7 +95,7 @@ final class CommonParam {
         map.put("screen", screen);
         map.put("channel", channel);
         map.put("lang", lang);
-        appendInstant(mContext, map);
+        appendInstant(sContext, map);
         return map;
     }
 
@@ -108,5 +111,4 @@ final class CommonParam {
         c_time = Device.getCurrentLocalTime();
         map.put("c_time", c_time);
     }
-
 }

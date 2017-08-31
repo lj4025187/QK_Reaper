@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 
+import com.fighter.common.utils.CloseUtils;
+import com.fighter.common.utils.NetworkUtil;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.reaper.ReaperEnv;
 import com.qiku.proguard.annotations.NoProguard;
@@ -34,21 +36,23 @@ import okhttp3.ResponseBody;
 
 @NoProguard
 public class ReaperNetwork {
+
+    private static final String TAG = "ReaperNetwork";
+
     private static final boolean DEBUG_DOWNLOAD = true;
     private static final boolean TEST = false;
-    private static final String TAG = ReaperNetwork.class.getSimpleName();
 
-    private static final int REAPER_VERSION_CHECK_NEW_VERSION = 1;
+    private static final int REAPER_VERSION_CHECK_NEW_VERSION    = 1;
     private static final int REAPER_VERSION_CHECK_NO_NEW_VERSION = 0;
-    private static final int REAPER_VERSION_CHECK_FAILED = -1;
+    private static final int REAPER_VERSION_CHECK_FAILED         = -1;
 
-    private static final int COMPARE_SERVER_HIGHER = 1;
+    private static final int COMPARE_SERVER_HIGHER  = 1;
     private static final int COMPARE_CURRENT_HIGHER = -1;
-    private static final int COMPARE_EQUALS = 0;
-    private static final int COMPARE_FAILED = -10;
+    private static final int COMPARE_EQUALS         = 0;
+    private static final int COMPARE_FAILED         = -10;
 
     private static final int CHECK_HAS_NEW_VERSION = 10;
-    private static final int CHECK_NO_NEW_VERSION = -10;
+    private static final int CHECK_NO_NEW_VERSION  = -10;
 
     private static final String RR_SUFFIX = ".rr";
 
@@ -97,11 +101,11 @@ public class ReaperNetwork {
         } else {
             int netType = NetworkUtil.getNetWorkType(ReaperEnv.sContextProxy);
             boolean download = false;
-            if (netType == NetworkUtil.NETWORN_NONE) {
+            if (netType == NetworkUtil.NETWORK_NONE) {
                 ReaperLog.e(TAG, "current dont have network to download rr !");
                 return REAPER_VERSION_CHECK_FAILED;
             }
-            if (netType == NetworkUtil.NETWORN_WIFI) {
+            if (netType == NetworkUtil.NETWORK_WIFI) {
                 if ((TextUtils.equals(piece.updateType, ReaperNWConstants.DOWNLOAD_BOTH)
                         || TextUtils.equals(piece.updateType, ReaperNWConstants.DOWNLOAD_WIFI)
                         || TextUtils.equals(piece.updateType, ReaperNWConstants.DOWNLOAD_MOBILE))) {
@@ -114,22 +118,23 @@ public class ReaperNetwork {
             }
 
             if (!download) {
-                ReaperLog.e(TAG, "Network problems ! updateType : " + piece.updateType + "; network : " + netType);
+                ReaperLog.e(TAG, "Network problems ! updateType : " + piece.updateType +
+                        "; network : " + netType);
                 return REAPER_VERSION_CHECK_FAILED;
             }
 
             boolean success = downloadHigherVersionReaper(piece);
             if (success) {
                 SharedPreferences sp = ReaperEnv.sContextProxy
-                        .getSharedPreferences(ReaperNWConstants.SP_REAPER_NETWORK, Context.MODE_PRIVATE);
+                        .getSharedPreferences(ReaperNWConstants.SP_REAPER_NETWORK,
+                                Context.MODE_PRIVATE);
                 sp.edit().putString(ReaperNWConstants.KEY_TIME, piece.time).apply();
             }
             return success ? REAPER_VERSION_CHECK_NEW_VERSION : REAPER_VERSION_CHECK_FAILED;
         }
     }
 
-    private static VersionRelationShip
-        queryHighestCompatibleVersion(String currentSdkVersion) {
+    private static VersionRelationShip queryHighestCompatibleVersion(String currentSdkVersion) {
         try {
             AppConf ac = new AppConf(ReaperNWConstants.SERVER_SDK_CONF);
             HashMap<String, String> params = new HashMap<String, String>();
@@ -197,8 +202,7 @@ public class ReaperNetwork {
      * @param piece
      * @return true if download success
      */
-    private static boolean
-        downloadHigherVersionReaper(VersionPiece piece) {
+    private static boolean downloadHigherVersionReaper(VersionPiece piece) {
         if (DEBUG_DOWNLOAD) {
             ReaperLog.e(TAG, "start download ... " + piece.url);
         }
@@ -207,10 +211,11 @@ public class ReaperNetwork {
                 .url(piece.url)
                 .build();
 
+        Response response = null;
         InputStream is = null;
         FileOutputStream fos = null;
         try {
-            Response response = client.newCall(request).execute();
+            response = client.newCall(request).execute();
             if (response == null) {
                 ReaperLog.e(TAG, "response == null");
                 return false;
@@ -245,20 +250,7 @@ public class ReaperNetwork {
             e.printStackTrace();
             ReaperLog.e(TAG, "download error : " + e.getMessage());
         } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            CloseUtils.closeIO(response, is, fos);
         }
 
         return false;
@@ -355,13 +347,10 @@ public class ReaperNetwork {
         return null;
     }
 
-    private static VersionRelationShip
-        getHighestVersionRelationship(List<VersionRelationShip> relationShips) {
+    private static VersionRelationShip getHighestVersionRelationship(
+            List<VersionRelationShip> relationShips) {
         if (relationShips == null || relationShips.size() <= 0)
             return null;
-        for (VersionRelationShip ship : relationShips) {
-            ReaperLog.e(TAG, "before ship : " + ship);
-        }
 
         Iterator<VersionRelationShip> it = relationShips.iterator();
         while (it.hasNext()) {
@@ -379,29 +368,7 @@ public class ReaperNetwork {
             }
         });
 
-        for (VersionRelationShip ship : relationShips) {
-            ReaperLog.e(TAG, "ship : " + ship);
-        }
-
-        return relationShips.get(0);
-    }
-
-    private static VersionPiece getHighestVersion(List<VersionPiece> pieces) {
-        if (pieces == null || pieces.size() <= 0)
-            return null;
-        Collections.sort(pieces, new Comparator<VersionPiece>() {
-            @Override
-            public int compare(VersionPiece left, VersionPiece right) {
-                return compareVersion(left.version, right.version);
-            }
-        });
-
-        if (DEBUG_DOWNLOAD)
-        for (VersionPiece piece : pieces) {
-            ReaperLog.e(TAG, "piece : " + piece);
-        }
-
-        return pieces.get(0);
+        return relationShips.size() > 0 ? relationShips.get(0) : null;
     }
 
     /**
@@ -519,14 +486,6 @@ public class ReaperNetwork {
         }
 
         return split;
-    }
-
-    private static String getSplitString(String[] split) {
-        StringBuilder sb = new StringBuilder();
-        for (String s : split) {
-            sb.append(s).append(".");
-        }
-        return sb.toString();
     }
 
     @NoProguard

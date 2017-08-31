@@ -13,10 +13,12 @@ import java.util.HashMap;
 public class EventActionParam extends AdParam {
     /** tracker event action type**/
     public String act_type;
+
     /** tracker app down fail reason**/
     public String reason;
 
     public String down_app_url;
+
     @Override
     HashMap<String, String> generateMap() {
         HashMap<String, String> map = super.generateMap();

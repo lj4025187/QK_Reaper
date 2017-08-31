@@ -6,7 +6,7 @@ package com.fighter.tracker;
  */
 
 public class TrackerEventType {
-    private static String TAG = TrackerEventType.class.getSimpleName();
+    private static String TAG = "TrackerEventType";
 
     static final String AD_DISPLAY_EVENT = "ad_display";
     static final String AD_CLICK_EVENT= "ad_click";

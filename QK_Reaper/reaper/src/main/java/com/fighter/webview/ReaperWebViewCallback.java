@@ -28,7 +28,8 @@ public class ReaperWebViewCallback extends IWebViewCallback.Stub {
     }
 
     @Override
-    public void onReceivedError(int errorCode, String description, String failingUrl) throws RemoteException {
+    public void onReceivedError(int errorCode, String description, String failingUrl)
+            throws RemoteException {
 
     }
 

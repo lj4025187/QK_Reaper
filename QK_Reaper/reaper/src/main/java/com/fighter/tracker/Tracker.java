@@ -90,7 +90,8 @@ public class Tracker {
      * @param param the download event param
      */
     public void trackDownloadEvent(Context context, EventDownLoadParam param) {
-        ReaperLog.i(TAG, "tracker event: " + TrackerEventType.AD_DOWNLOAD_FAILED_EVENT + ",param: " + param);
+        ReaperLog.i(TAG, "tracker event: " + TrackerEventType.AD_DOWNLOAD_FAILED_EVENT +
+                ",param: " + param);
         onEvent(context, TrackerEventType.AD_DOWNLOAD_FAILED_EVENT, param);
     }
 }
