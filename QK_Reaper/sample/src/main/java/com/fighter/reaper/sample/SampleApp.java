@@ -56,6 +56,7 @@ public class SampleApp extends Application {
         config.put("LOG_SWITCH", true);
         config.put("SERVER_TEST", BuildConfig.DEBUG);
         config.put("AKAD_TEST", true);
+        config.put("BULL_EYE_TEST", true);
         mReaperApi.initConfigValue(config);
         //模拟负一屏
         Context context = getApplicationContext();

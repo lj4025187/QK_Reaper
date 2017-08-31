@@ -8,10 +8,12 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTabHost;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fighter.reaper.sample.R;
 import com.fighter.reaper.sample.config.SampleConfig;
@@ -31,6 +33,7 @@ public class TabMainActivity extends BaseActivity {
     private FragmentTabHost mTabHost;
     private List<TabItem> mTabList;
     private TextView mVersionName;
+    private long mLastPress;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -111,6 +114,26 @@ public class TabMainActivity extends BaseActivity {
             mTabHost.addTab(tabSpec, item.fragment.getClass(), bundle);
             if (TextUtils.equals(getString(R.string.tencent_ad_src_name), item.getTitleString()))
                 item.setChecked(true);
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            exit();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void exit() {
+        if ((System.currentTimeMillis() - mLastPress) > 2000) {
+            Toast.makeText(this, "再按一次退出", Toast.LENGTH_SHORT).show();
+            mLastPress = System.currentTimeMillis();
+        } else {
+            finish();
+            System.exit(0);
         }
     }
 

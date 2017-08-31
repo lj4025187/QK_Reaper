@@ -1227,6 +1227,7 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
                 > (adInfo.getExpireTime() * 1000);
         //jump to webView and download app here
         if (actionEvent == EVENT_CLICK && checkCoordinateValid(adInfo)) {
+
             handleClickAction(adInfo);
             //expired AdInfo click or down for jx
             if(hasExpired) postTrackerTask(adInfo, actionEvent);
@@ -1481,6 +1482,8 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
             DisplayMetrics displayMetrics = mContext.getResources().getDisplayMetrics();
             int maxX = displayMetrics.widthPixels;
             int maxY = displayMetrics.heightPixels;
+            ReaperLog.i(TAG, "checkCoordinateValid downX : " + downX + " downY : " + downY
+                            +" upX: " + upX + " upY: " + upY + " maxX " + maxX + " maxY " + maxY);
             return !(downX > maxX || upX > maxX || downY > maxY || upY > maxY);
         }
     }

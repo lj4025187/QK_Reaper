@@ -21,7 +21,6 @@ import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.EmptyUtils;
 import com.fighter.common.utils.EncryptUtils;
 import com.fighter.common.utils.ReaperLog;
-import com.fighter.reaper.BuildConfig;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -43,12 +42,13 @@ import okhttp3.ResponseBody;
 
 /**
  * 靶心广告 wrapper
- *
+ * <p>
  * Created by jia on 7/14/17.
  */
 public class BullsEyeSDKWrapper extends ISDKWrapper {
 
     private static final String TAG = "BullsEyeSDKWrapper";
+    public static boolean BETA_SERVER = false;
 
     public static final String EXTRA_GPS_SPEED = "bx_gps_speed";
     public static final String EXTRA_GPS_ACCURACY = "bx_gps_accuracy";
@@ -67,6 +67,8 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
     private static final String URL_AIM_HOST = "10.139.232.146";
     private static final int AD_PORT = 5001;
     private static final int TRACK_PORT = 5002;
+    private static final String URL_REQUEST_AIM_HOST = "bxe.comp.360os.com";
+    private static final String URL_TRACK_AIM_HOST = "bxt.comp.360os.com";
     private static final String SSP_MEDIA_TYPE = "application/json; charset=utf-8";
 
     private static final String URL_REQUEST_AD_SCHEME = "http";
@@ -138,8 +140,8 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
         if (app_key != null && app_key instanceof String)
             sAppKey = (String) app_key;
         sIrc4 = RC4Factory.create(sAppKey);
-        //打点Kye值固定不变，测试环境(12345-qwert)正式环境(待定)
-        sTrackIrc4 = RC4Factory.create(BuildConfig.DEBUG ? "12345-qwert" : sAppKey);
+        //打点Kye值固定不变，测试环境(12345-qwert)正式环境(cda4bd24af9551ae)
+        sTrackIrc4 = RC4Factory.create(BETA_SERVER ? "12345-qwert" : "cda4bd24af9551ae");
         sDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.CHINA);
     }
 
@@ -260,10 +262,14 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
 
     private HttpUrl spliceRequestAdUrl(AdRequest adRequest) {
         HttpUrl.Builder builder = new HttpUrl.Builder()
-                .scheme(URL_REQUEST_AD_SCHEME)
-                .host(URL_AIM_HOST)
-                .port(AD_PORT)
-                .addPathSegments(URL_REQUEST_AD_PATH)
+                .scheme(URL_REQUEST_AD_SCHEME);
+        if (BETA_SERVER) {
+            builder.host(URL_AIM_HOST)
+                    .port(AD_PORT);
+        } else {
+            builder.host(URL_REQUEST_AIM_HOST);
+        }
+        builder.addPathSegments(URL_REQUEST_AD_PATH)
                 .addQueryParameter("aid", sAppId)
                 .addQueryParameter("pid", adRequest.getAdLocalPositionId())
                 .addQueryParameter("sv", VERSION_CODE);
@@ -325,19 +331,19 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
         //lbs
         JSONObject libs = new JSONObject();
         try {
-            if(adAllParams.containsKey(EXTRA_GPS_SPEED)) {
+            if (adAllParams.containsKey(EXTRA_GPS_SPEED)) {
                 libs.put("gps_s", adAllParams.get(EXTRA_GPS_SPEED));          //gps速度
             }
-            if(adAllParams.containsKey(EXTRA_GPS_ACCURACY)) {
+            if (adAllParams.containsKey(EXTRA_GPS_ACCURACY)) {
                 libs.put("gps_r", adAllParams.get(EXTRA_GPS_ACCURACY));       //gps定位半径
             }
-            if(adAllParams.containsKey(EXTRA_GPS_LAT)) {
+            if (adAllParams.containsKey(EXTRA_GPS_LAT)) {
                 libs.put("lat", adAllParams.get(EXTRA_GPS_LAT));              //纬度39.9811016777
             }
-            if(adAllParams.containsKey(EXTRA_GPS_LON)) {
+            if (adAllParams.containsKey(EXTRA_GPS_LON)) {
                 libs.put("lon", adAllParams.get(EXTRA_GPS_LON));              //经度116.4883012203
             }
-            if(adAllParams.containsKey(EXTRA_CURRENT_MILLIS)) {
+            if (adAllParams.containsKey(EXTRA_CURRENT_MILLIS)) {
                 libs.put("gps_t", adAllParams.get(EXTRA_CURRENT_MILLIS));              //gps时间戳
             }
 
@@ -579,12 +585,14 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
                     String cate_adv_source = jsonObject.getString("adv_source");    //广告源
                     putExtraValue(adInfo, BullsEyeKey.ADV_SOURCE, cate_adv_source);
                     String shopid = jsonObject.getString("shopid");                 //门店唯一id
-                    if(!TextUtils.isEmpty(shopid)) adInfo.setExtra(KEY_CATE_SHOP_ID, shopid);
+                    if (!TextUtils.isEmpty(shopid)) adInfo.setExtra(KEY_CATE_SHOP_ID, shopid);
                     String shop_name = jsonObject.getString("shop_name");           //门店名称
-                    if(!TextUtils.isEmpty(shop_name)) adInfo.setExtra(KEY_CATE_SHOP_NAME, shop_name);
+                    if (!TextUtils.isEmpty(shop_name))
+                        adInfo.setExtra(KEY_CATE_SHOP_NAME, shop_name);
                     putExtraValue(adInfo, BullsEyeKey.CATE_SHOP, shop_name);
                     String class_name = jsonObject.getString("class_name");         //一级品类名称
-                    if(!TextUtils.isEmpty(class_name)) adInfo.setExtra(KEY_CATE_CLASS_NAME, class_name);
+                    if (!TextUtils.isEmpty(class_name))
+                        adInfo.setExtra(KEY_CATE_CLASS_NAME, class_name);
                     putExtraValue(adInfo, BullsEyeKey.CATE_CLASS_NAME, class_name);
                     String type_name = jsonObject.getString("type_name");           //二级品类名称
                     putExtraValue(adInfo, BullsEyeKey.CATE_TYPE_NAME, type_name);
@@ -844,10 +852,14 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
      */
     private HttpUrl spliceTrackRequestAdUrl(int adEvent) {
         HttpUrl.Builder builder = new HttpUrl.Builder()
-                .scheme(URL_TRACK_REQUEST_AD_SCHEME)
-                .host(URL_AIM_HOST)
-                .port(TRACK_PORT)
-                .addPathSegments(URL_TRACK_REQUEST_AD_PATH)
+                .scheme(URL_TRACK_REQUEST_AD_SCHEME);
+        if (BETA_SERVER) {
+            builder.host(URL_AIM_HOST)
+                    .port(TRACK_PORT);
+        } else {
+            builder.host(URL_TRACK_AIM_HOST);
+        }
+        builder.addPathSegments(URL_TRACK_REQUEST_AD_PATH)
                 .addQueryParameter("aid", sAppId)
                 .addQueryParameter("sv", VERSION_CODE)
                 .addQueryParameter("at", getTrackPathSegments(adEvent));
@@ -1006,7 +1018,7 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
         String advDetailType = (String) adInfo.getExtra(KEY_DETAIL_TYPE);
         String adv_source = adInfo.getAdName();
         Object advSource = adInfo.getExtra(BullsEyeKey.ADV_SOURCE);
-        if(advSource != null && advSource instanceof String) {
+        if (advSource != null && advSource instanceof String) {
             adv_source = (String) advSource;
         }
         JSONObject jsonObject = new JSONObject();
@@ -1058,7 +1070,7 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
         String advDetailType = (String) adInfo.getExtra(KEY_DETAIL_TYPE);
         String adv_source = adInfo.getAdName();
         Object advSource = adInfo.getExtra(BullsEyeKey.ADV_SOURCE);
-        if(advSource != null && advSource instanceof String) {
+        if (advSource != null && advSource instanceof String) {
             adv_source = (String) advSource;
         }
         String url_type = (String) adInfo.getExtra(KEY_TRACK_URL_TYPE);
@@ -1120,7 +1132,7 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
         if (!TextUtils.equals(advDetailType, TYPE_APP_DL)) return jsonObject;
         String adv_source = adInfo.getAdName();
         Object advSource = adInfo.getExtra(BullsEyeKey.ADV_SOURCE);
-        if(advSource != null && advSource instanceof String) {
+        if (advSource != null && advSource instanceof String) {
             adv_source = (String) advSource;
         }
         putJSONValue(jsonObject, "adv_source", adv_source);

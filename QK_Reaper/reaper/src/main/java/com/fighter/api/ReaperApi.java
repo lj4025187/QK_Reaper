@@ -20,6 +20,7 @@ import com.fighter.hook.ReaperHookProvider;
 import com.fighter.reaper.R;
 import com.fighter.reaper.ReaperEnv;
 import com.fighter.wrapper.AKAdSDKWrapper;
+import com.fighter.wrapper.BullsEyeSDKWrapper;
 import com.qiku.proguard.annotations.KeepAll;
 import com.qiku.proguard.annotations.NoProguard;
 
@@ -166,6 +167,12 @@ public class ReaperApi {
             AKAdSDKWrapper.AKAD_TEST_MODE = (boolean) akadMode;
         }
         ReaperLog.i(TAG, "AKAdSDKWrapper.AKAD_TEST_MODE " + AKAdSDKWrapper.AKAD_TEST_MODE);
+
+        Object bullEyeMode = params.get("BULL_EYE_TEST");
+        if (bullEyeMode != null && bullEyeMode instanceof Boolean) {
+            BullsEyeSDKWrapper.BETA_SERVER = (boolean) bullEyeMode;
+        }
+        ReaperLog.i(TAG, "BullsEyeSDKWrapper.BETA_SERVER " + BullsEyeSDKWrapper.BETA_SERVER);
     }
 
     @NoProguard

@@ -107,12 +107,12 @@ public class AdAdapter extends BaseAdapter implements ItemsProvider {
                 int downX = 0, downY = 0, upX = 0, upY = 0;
                 long downtime = 0, uptime = 0;
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
-                    downX = (int) event.getX();
-                    downY = (int) event.getY();
+                    downX = (int) event.getRawX();
+                    downY = (int) event.getRawY();
                     downtime = event.getEventTime();
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    upX = (int) event.getX();
-                    upY = (int) event.getY();
+                    upX = (int) event.getRawX();
+                    upY = (int) event.getRawY();
                     uptime = event.getEventTime();
                 }
                 if (adInfo.getActionType() == 2) {

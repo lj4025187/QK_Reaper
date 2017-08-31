@@ -1,5 +1,5 @@
 # Reaper API开发文档
-`Version 1.0.7`
+`Version 1.0.8`
 `Created By wanghaiteng@360.cn`
 `Published by FighterTeam`
 `Android Studio`
@@ -15,6 +15,7 @@
 1.0.5|刘佳|新增多图接口|添加华屹（aar:1.0.3,rr:1.0.7)|2017.08.23
 1.0.6|刘佳|补充initConfigValue|新增调试值(aar:1.0.3,rr:[>=]1.0.6)|2017.08.24
 1.0.7|刘佳|获取聚效原生广告img2|聚效img2(aar:1.0.3,rr:1.0.9)|2017.08.25
+1.0.8|刘佳|添加靶心模块|靶心信息(aar:1.0.4,rr:1.0.11)|2017.08.30
 ### Reaper SDK集成方式
 > Reaper SDK需要如下权限
 
@@ -177,6 +178,7 @@ adInfo.onAdShow(v);
 // @param downY    按下广告所在view时手指所在的纵坐标，若填写负值或超过屏幕纵坐标最大值，点击事件、打点事件会出现问题
 // @param upX      离开广告所在view时手指所在的横坐标，若填写负值或超过屏幕横坐标最大值，点击事件、打点事件会出现问题
 // @param upY      离开广告所在view时手指所在的纵坐标，若填写负值或超过屏幕纵坐标最大值，点击事件、打点事件会出现问题
+// 以上四个值，建议使用MotionEvent的getRawX(),getRawY()获取
 adInfo.onAdClicked(activity, v, downX, downY, upX, upY)
 ```
 
@@ -580,21 +582,50 @@ public Object getExtra(String key);
 - 聚效：jx
 - 百度联盟：baidu
 - 广点通：gdt
+- 华屹：huayi
 
 key|返回值类型 | 返回值 | 描述 | 有效广告商
 ---|---|---|---|---
-adPosId |String||超盟分配的广告位|jx / baidu / gdt
-adLocalAppId|String||对应广告商的真实AppId|jx / baidu / gdt
-adPosId |String||“超盟”分配广告位|jx / baidu / gdt 
-adLocalPosId|String||真实广告商分配广告位|jx / baidu / gdt
-expire_time|Long||广告有效时间(单位：秒)|jx / baidu / gdt
+adPosId |String||超盟分配的广告位|jx/baidu/gdt/huayi/baxin
+adLocalAppId|String||对应广告商的真实AppId|jx/baidu/gdt/huayi/baxin
+adPosId |String||“超盟”分配广告位|jx/baidu/gdt/huayi/baxin
+adLocalPosId|String||真实广告商分配广告位|jx/baidu/gdt/huayi/baxin
+expire_time|Long||广告有效时间(单位：秒)|jx/baidu/gdt/huayi/baxin
 text    |String||扩展字段(副标题)|jx
-adName  |String|jx/gdt/baidu|对应的广告源|jx / baidu / gdt
-btnText |String||预留按钮文字|jx
-download_app_pkg|String||下载app包名|jx / baidu
-download_app_name|String||下载应用名称|jx / baidu / gdt
+adName  |String|jx/gdt/baidu|对应的广告源|jx/baidu/gdt/huayi/baxin
+btnText |String||预留按钮文字|jx/huayi
+download_app_pkg|String||下载app包名|jx/baidu
+download_app_name|String||下载应用名称|jx/baidu/gdt
 smallImgUrl|String||广告小图url|gdt
 smallImgFile|String||广告小图缓存文件路径|gdt
+
+
+- 靶心：baxin
+
+key|返回值类型 | 返回值 | 描述 | 有效广告商
+---|---|---|---|---
+bx_adv_source|String|maoyan(电影)/meituan（美食）|靶心对应的真实广告源|baxin
+bx_adv_type|String|2=电影;3=美食|广告的真实类型|baxin
+bx_movie_name|String||电影名称|baxin
+bx_movie_rate|String||电影评分|baxin
+bx_movie_show|String||电影上映时间|baxin
+bx_movie_dir|String||电影导演|baxin
+bx_movie_star|String||电影演员|baxin
+bx_movie_dur|String||电影时长|baxin
+bx_movie_ver|String|“/”分隔（3D/中国巨幕）|电影版本|baxin
+bx_movie_state|String|1=即将上映;3=正在热映;4=预售|电影上映情况|baxin
+bx_cate_city|String||美食所在城市|baxin
+bx_cate_shop|String||美食商铺名称|baxin
+bx_cate_type|String||美食品类|baxin
+bx_cate_area|String||美食商圈|baxin
+bx_cate_dis|String||美食行政区|baxin
+bx_cat_lat|String||美食纬度|baxin
+bx_cate_lon|String||美食经度|baxin
+bx_cate_distance|String||美食距离|baxin
+bx_cate_adr|String||美食地址|baxin
+bx_cate_phone|String||美食电话|baxin
+bx_cate_rate|String||美食评分|baxin
+
 ### 混淆问题
 如果您需要使用proguard混淆代码，需确保不要混淆SDK的代码，请在集成模块的proguard-rules.pro文件尾部添加如下配置：
 > ```xml
