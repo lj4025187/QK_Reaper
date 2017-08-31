@@ -32,12 +32,12 @@ public class AKAdLandingPage implements ILandingPageView {
 
     @Override
     public void open(Context context, String url, ILandingPageListener iLandingPageListener) {
-        ReaperLog.i(TAG, "open web view " + context.getPackageName() + " URL " + url);
+        ReaperLog.i(TAG, "open web view " + ReaperGlobal.getContext().getPackageName() + " URL " + url);
         try {
             Class<?> reaperClass =
                     Class.forName(ComponentProxyMap.PROXY_WEB_VIEW_ACTIVITY, true,
                             ReaperGlobal.getContext().getClassLoader());
-            Intent intent = new Intent(context, reaperClass);
+            Intent intent = new Intent(ReaperGlobal.getContext(), reaperClass);
             intent.putExtra("url", url);
             Bundle extras = (Bundle) RefInvoker.getField(intent, Intent.class, "mExtras");
             if(extras != null) {
