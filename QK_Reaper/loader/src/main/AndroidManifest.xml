@@ -31,7 +31,6 @@
             android:exported="true"/>
         <activity
             android:name="com.fighter.proxy.ReaperProxyActivity"
-            android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@android:style/Theme.Black.NoTitleBar"/>
         <service android:name="com.fighter.proxy.ReaperService" />

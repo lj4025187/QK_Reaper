@@ -13,6 +13,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -242,12 +243,16 @@ public class ReaperWebViewActivity extends Activity {
         initWebRootView();
         Bundle extras = intent.getExtras();
         if(extras != null) {
+            IBinder binder;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                mWebViewCallBack = (IWebViewCallback) extras.getBinder(EXTRA_WEBVIEW_CALLBACK);
+                binder = extras.getBinder(EXTRA_WEBVIEW_CALLBACK);
             } else {
-                mWebViewCallBack = (IWebViewCallback) RefInvoker.invokeMethod(extras, Bundle.class,
+                binder = (IBinder) RefInvoker.invokeMethod(extras, Bundle.class,
                         "getIBinder", new Class[]{String.class},
                         new Object[]{EXTRA_WEBVIEW_CALLBACK});
+            }
+            if(binder != null) {
+                mWebViewCallBack = IWebViewCallback.Stub.asInterface(binder);
             }
         } else {
             ReaperLog.e(TAG, " getExtras == NULL");

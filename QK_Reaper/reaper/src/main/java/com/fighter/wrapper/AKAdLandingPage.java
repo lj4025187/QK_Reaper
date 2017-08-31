@@ -14,6 +14,7 @@ import android.os.IBinder;
 import com.fighter.activities.ReaperWebViewActivity;
 import com.fighter.common.utils.RefInvoker;
 import com.fighter.hook.ComponentProxyMap;
+import com.fighter.hook.ReaperGlobal;
 
 /**
  * Created by jia on 8/29/17.
@@ -35,7 +36,7 @@ public class AKAdLandingPage implements ILandingPageView {
         try {
             Class<?> reaperClass =
                     Class.forName(ComponentProxyMap.PROXY_WEB_VIEW_ACTIVITY, true,
-                            context.getClassLoader());
+                            ReaperGlobal.getContext().getClassLoader());
             Intent intent = new Intent(context, reaperClass);
             intent.putExtra("url", url);
             Bundle extras = (Bundle) RefInvoker.getField(intent, Intent.class, "mExtras");
