@@ -118,8 +118,8 @@ public class TencentSDKWrapper extends ISDKWrapper {
     }
 
     @Override
-    public void uninit() {
-        ReaperLog.i(TAG, "[uninit]");
+    public void release() {
+        ReaperLog.i(TAG, "[release]");
     }
 
     @Override
@@ -165,7 +165,8 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 } else {
                     JSONObject errJson = new JSONObject();
                     errJson.put("httpResponseCode", response.code());
-                    ReaperLog.e(TAG, "ad request failed, errCode: " + response.code() + ", errMsg: " + errJson.toString());
+                    ReaperLog.e(TAG, "ad request failed, errCode: " + response.code() +
+                            ", errMsg: " + errJson.toString());
                     return new AdResponse
                             .Builder()
                             .adName(SdkName.GUANG_DIAN_TONG)
@@ -271,10 +272,8 @@ public class TencentSDKWrapper extends ISDKWrapper {
 
         // 原生广告不填写宽高
         if (localAdType != TYPE_REF_MAP.get(AdType.TYPE_NATIVE)) {
-            builder.addQueryParameter("posw", String.valueOf(
-                    adRequest.getAdWidth()))                    // 广告位宽
-                    .addQueryParameter("posh", String.valueOf(
-                            adRequest.getAdHeight()));          // 广告位高
+            builder.addQueryParameter("posw", String.valueOf(adRequest.getAdWidth()))  // 广告位宽
+                    .addQueryParameter("posh", String.valueOf(adRequest.getAdHeight()));  // 广告位高
         }
 
         return builder.build();
@@ -553,13 +552,16 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 .url(httpUrl)
                 .build();
 
+        Response response = null;
         try {
-            Response response = mClient.newCall(request).execute();
+            response = mClient.newCall(request).execute();
             if (response != null && response.code() == 204) {
                 ReaperLog.i(TAG, "tencent event view report succeed");
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            CloseUtils.closeIO(response);
         }
     }
 

@@ -176,7 +176,8 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
                 } else {
                     JSONObject errJson = new JSONObject();
                     errJson.put("httpResponseCode", response.code());
-                    ReaperLog.e(TAG, "ad request failed, errCode: " + response.code() + ", errMsg: " + errJson.toString());
+                    ReaperLog.e(TAG, "ad request failed, errCode: " + response.code() +
+                            ", errMsg: " + errJson.toString());
                     return new AdResponse.Builder()
                             .adName(SdkName.MIX_ADX)
                             .adPosId(adRequest.getAdPosId())
@@ -206,11 +207,13 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
     @Override
     public void requestAdAsync(AdRequest adRequest, AdResponseListener adResponseListener) {
         if (adRequest == null) {
-            throw new NullPointerException("AdRequest is null");
+            ReaperLog.e(TAG, "requestAdAsync. adRequest == null");
+            return;
         }
 
         if (adResponseListener == null) {
-            throw new NullPointerException("AdResponse is null");
+            ReaperLog.e(TAG, "requestAdAsync. adResponseListener == null");
+            return;
         }
 
         mThreadPool.execute(new AdRequestRunnable(adRequest, adResponseListener));
@@ -281,15 +284,11 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
             while (iterator.hasNext()) {
                 String key = iterator.next();
                 tempParams.append(pos == 0 ? "" : "&");
-                tempParams.append(String.format("%s=%s", key, URLEncoder.encode(params.get(key), "utf-8")));
+                tempParams.append(String.format("%s=%s", key, URLEncoder.encode(params.get(key),
+                        "utf-8")));
                 pos++;
             }
-//            for (String key : params.keySet()) {
-//                ReaperLog.i(TAG, "key " + params.get(key));
-//                tempParams.append(pos == 0 ? "?" : "&");
-//                tempParams.append(String.format("%s=%s", key, URLEncoder.encode(params.get(key), "utf-8")));
-//                pos++;
-//            }
+
             String bodyString = tempParams.toString();
             MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
             requestBody = RequestBody.create(mediaType, bodyString);
@@ -340,7 +339,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
         result.put("app_package", mContext.getPackageName());                 // package name
         PackageInfo packageInfo =
                 Device.getPackageInfo(mContext, mContext.getPackageName(),
-                        PackageManager.GET_ACTIVITIES);
+                        PackageManager.GET_UNINSTALLED_PACKAGES);
         if (packageInfo != null) {
             result.put("app_version", packageInfo.versionName);               // app 完整版本名
         }

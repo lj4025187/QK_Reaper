@@ -10,7 +10,8 @@ import com.fighter.common.utils.ReaperLog;
 import java.util.Map;
 
 public abstract class ISDKWrapper {
-    private static final String TAG = ISDKWrapper.class.getSimpleName();
+
+    private static final String TAG = "ISDKWrapper";
 
     // ----------------------------------------------------
 
@@ -39,7 +40,7 @@ public abstract class ISDKWrapper {
     /**
      * 销毁wrapper
      */
-    public void uninit() {
+    public void release() {
 
     }
 

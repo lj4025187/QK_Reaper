@@ -36,9 +36,9 @@ public class QKHuaYiWrapper extends ISDKWrapper {
     private static final String VERSION_CODE = "1.0";
     private static final String KEY_ACTUAL_SOURCE = "hy_actual_source";
 
-    private static final String EXTRA_EVENT_SCAN_URL = "hua_yi_scan_url";
+    private static final String EXTRA_EVENT_SCAN_URL     = "hua_yi_scan_url";
     private static final String EXTRA_EVENT_VIEW_SUCCESS = "hua_yi_show_urls";
-    private static final String EXTRA_EVENT_VIEW_CLICK = "hua_yi_click_urls";
+    private static final String EXTRA_EVENT_VIEW_CLICK   = "hua_yi_click_urls";
 
     private static String sAppId;
     private Context mContext;
@@ -165,7 +165,8 @@ public class QKHuaYiWrapper extends ISDKWrapper {
                 @Override
                 public void onAdPresent(String s, NativeAdBean nativeAdBean) {
                     if (!TextUtils.isEmpty(s))
-                        ReaperLog.i(TAG, "onAdPresent request ad " + Device.getCurrentLocalTime() + " s " + s);
+                        ReaperLog.i(TAG, "onAdPresent request ad " +
+                                Device.getCurrentLocalTime() + " s " + s);
 
                     AdInfo adInfo = generateAdInfo(mAdRequest);
                     // 广告类型 INFOFLOW_ONEPIC(11)大图广告;INFOFLOW_THREEPIC(12)三图广告
@@ -226,7 +227,8 @@ public class QKHuaYiWrapper extends ISDKWrapper {
                 @Override
                 public void onAdFailed(String s, String s1) {
                     ReaperLog.e(TAG, "onAdFailed request ad " + Device.getCurrentLocalTime());
-                    String errMsg = ("on ad present fail local pos id is " + (TextUtils.isEmpty(s) ? "unKnown" : s) +
+                    String errMsg = ("on ad present fail local pos id is " +
+                            (TextUtils.isEmpty(s) ? "unKnown" : s) +
                             " errMsg " + (TextUtils.isEmpty(s1) ? "unKnown" : s1));
                     ReaperLog.e(TAG, errMsg);
                     mAdResponseListener.onAdResponse(

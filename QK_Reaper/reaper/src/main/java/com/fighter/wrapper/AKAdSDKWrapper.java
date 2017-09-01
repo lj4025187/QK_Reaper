@@ -47,6 +47,7 @@ import java.util.concurrent.ExecutorService;
  */
 public class AKAdSDKWrapper extends ISDKWrapper {
     private static final String TAG = "AKAdSDKWrapper";
+
     public static boolean AKAD_TEST_MODE = false;
 
     public static final String PARAMS_KEY_VIEW = "view";
@@ -72,6 +73,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         VIDEO_STATUS_MAP.put(AdEvent.EVENT_VIDEO_PLAY_COMPLETE, NativeVideoAd.VIDEO_COMPLETE);
     }
 
+    private static final int DOWNLOAD_LRU_CACHE_MAX_SIZE = 200;
+
     // ----------------------------------------------------
 
     private Context mContext;
@@ -95,9 +98,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
 
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
-        ReaperEnv.sContextProxy = new ContextProxy(appContext);
-        mContext = ReaperEnv.sContextProxy;
-        mDownloadMap = new LruCache<>(200);
+        mContext = new ContextProxy(appContext);
+        mDownloadMap = new LruCache<>(DOWNLOAD_LRU_CACHE_MAX_SIZE);
         mDownloadApk = new HashMap<>();
         //if second param set true should see "AKAD" tag
         ReaperLog.i(TAG, "[init] in AKAd " + mContext.getPackageName());
@@ -156,35 +158,30 @@ public class AKAdSDKWrapper extends ISDKWrapper {
             case AdEvent.EVENT_CLICK: {
                 if (eventParams != null && eventParams.containsKey(PARAMS_KEY_ACTIVITY) &&
                         eventParams.containsKey(PARAMS_KEY_ACTIVITY)) {
-                    eventAdClick(adInfo,
-                            nativeAd,
-                            (Activity) eventParams.get(PARAMS_KEY_ACTIVITY),
+                    eventAdClick(adInfo, nativeAd, (Activity) eventParams.get(PARAMS_KEY_ACTIVITY),
                             (View) eventParams.get(PARAMS_KEY_VIEW));
                 }
                 break;
             }
             case AdEvent.EVENT_CLOSE: {
                 eventAdClose(nativeAd);
+                break;
             }
             case AdEvent.EVENT_VIDEO_START_PLAY:
             case AdEvent.EVENT_VIDEO_PAUSE:
             case AdEvent.EVENT_VIDEO_CONTINUE:
             case AdEvent.EVENT_VIDEO_EXIT:
             case AdEvent.EVENT_VIDEO_PLAY_COMPLETE: {
-                if (nativeAd instanceof NativeVideoAd) {
-                    int position = 0;
-                    if (eventParams.containsKey(EVENT_POSITION)) {
-                        position = (int) eventParams.get(EVENT_POSITION);
-                    }
-
-                    int status = VIDEO_STATUS_MAP.get(adEvent);
-                    ReaperLog.i("ForTest", " video status comment START = 81,PAUSE = 82,CONTINUE = 83,EXIT = 84,COMPLETE = 85");
-                    ReaperLog.i("ForTest", "srcName: " + adInfo.getExtra("adName") + " posId: " + adInfo.getAdPosId() + " localPosId: " + adInfo.getExtra("adLocalPosId")
-                            + " uuid: " + adInfo.getUUID().substring(30) + " status " + status);
-                    eventAdVideoChanged((NativeVideoAd) nativeAd,
-                            status,
-                            position);
+                if (!(nativeAd instanceof NativeVideoAd)) {
+                    break;
                 }
+                int position = 0;
+                if (eventParams.containsKey(EVENT_POSITION)) {
+                    position = (int) eventParams.get(EVENT_POSITION);
+                }
+
+                int status = VIDEO_STATUS_MAP.get(adEvent);
+                eventAdVideoChanged((NativeVideoAd) nativeAd, status, position);
                 break;
             }
         }
@@ -264,22 +261,29 @@ public class AKAdSDKWrapper extends ISDKWrapper {
                     requestNativeVideoAd();
                     break;
                 }
-                default:
-                    JSONObject errJson = new JSONObject();
-                    errJson.put("httpResponseCode", 1);
-                    errJson.put("akAdErrCode", 1);
-                    errJson.put("akAdErrMsg", "the AKAD source not suppoort ad type [" + mAdRequest.getAdType() + "]");
-                    AdResponse adResponse = new AdResponse.Builder()
-                            .adName(SdkName.AKAD)
-                            .adPosId(mAdRequest.getAdPosId())
-                            .adLocalPositionAd(mAdRequest.getAdLocalPositionId())
-                            .adType(mAdRequest.getAdType())
-                            .errMsg(errJson.toString())
-                            .create();
+                default: {
+                    notifyNotSupportAdType();
+                    break;
+                }
+            }
+        }
 
-                    if (mAdResponseListener != null) {
-                        mAdResponseListener.onAdResponse(adResponse);
-                    }
+        private void notifyNotSupportAdType() {
+            JSONObject errJson = new JSONObject();
+            errJson.put("httpResponseCode", 1);
+            errJson.put("akAdErrCode", 1);
+            errJson.put("akAdErrMsg",
+                    "the AKAD source not support ad type [" + mAdRequest.getAdType() + "]");
+            AdResponse adResponse = new AdResponse.Builder()
+                    .adName(SdkName.AKAD)
+                    .adPosId(mAdRequest.getAdPosId())
+                    .adLocalPositionAd(mAdRequest.getAdLocalPositionId())
+                    .adType(mAdRequest.getAdType())
+                    .errMsg(errJson.toString())
+                    .create();
+
+            if (mAdResponseListener != null) {
+                mAdResponseListener.onAdResponse(adResponse);
             }
         }
 
@@ -644,46 +648,47 @@ public class AKAdSDKWrapper extends ISDKWrapper {
         }
     }
 
-    private class ApkDownloadListener implements ApkListener, HookInstaller.AKAdSilentInstallCallBack {
+    private class ApkDownloadListener implements ApkListener,
+            HookInstaller.AKAdSilentInstallCallBack {
 
         @Override
-        public void onApkDownloadStart(String s) {
-            notifyDownloadCallback(s, AdEvent.EVENT_APP_START_DOWNLOAD);
+        public void onApkDownloadStart(String key) {
+            notifyDownloadCallback(key, AdEvent.EVENT_APP_START_DOWNLOAD);
         }
 
         @Override
-        public void onApkDownloadProgress(String s, int i) {
-
-        }
-
-        @Override
-        public void onApkDownloadCompleted(String s) {
-            notifyDownloadCallback(s, AdEvent.EVENT_APP_DOWNLOAD_COMPLETE);
-        }
-
-        @Override
-        public void onApkDownloadFailed(String s) {
-            notifyDownloadCallback(s, AdEvent.EVENT_APP_DOWNLOAD_FAILED);
-        }
-
-        @Override
-        public void onApkDownloadCanceled(String s) {
-            notifyDownloadCallback(s, AdEvent.EVENT_APP_DOWNLOAD_CANCELED);
-        }
-
-        @Override
-        public void onApkDownloadPaused(String s) {
+        public void onApkDownloadProgress(String key, int progress) {
 
         }
 
         @Override
-        public void onApkDownloadContinued(String s) {
+        public void onApkDownloadCompleted(String key) {
+            notifyDownloadCallback(key, AdEvent.EVENT_APP_DOWNLOAD_COMPLETE);
+        }
+
+        @Override
+        public void onApkDownloadFailed(String key) {
+            notifyDownloadCallback(key, AdEvent.EVENT_APP_DOWNLOAD_FAILED);
+        }
+
+        @Override
+        public void onApkDownloadCanceled(String key) {
+            notifyDownloadCallback(key, AdEvent.EVENT_APP_DOWNLOAD_CANCELED);
+        }
+
+        @Override
+        public void onApkDownloadPaused(String key) {
 
         }
 
         @Override
-        public void onApkInstallCompleted(String s, String s1) {
-            notifyDownloadCallback(s, AdEvent.EVENT_APP_INSTALL);
+        public void onApkDownloadContinued(String key) {
+
+        }
+
+        @Override
+        public void onApkInstallCompleted(String key, String pkg) {
+            notifyDownloadCallback(key, AdEvent.EVENT_APP_INSTALL);
         }
 
         @Override
@@ -696,7 +701,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
             }
             Uri apkURI = Uri.fromFile(apkFile);
             PackageManager packageManager = mContext.getPackageManager();
-            PackageInfo packageInfo = packageManager.getPackageArchiveInfo(apkPath, PackageManager.GET_ACTIVITIES);
+            PackageInfo packageInfo = packageManager.getPackageArchiveInfo(apkPath,
+                    PackageManager.GET_UNINSTALLED_PACKAGES);
             if (packageInfo == null) {
                 ReaperLog.e(TAG, " silent install apk file is invalid ");
                 return;
@@ -706,7 +712,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                 permission = mContext.checkSelfPermission(Manifest.permission.INSTALL_PACKAGES);
             } else {
-                permission = packageManager.checkPermission(Manifest.permission.INSTALL_PACKAGES, mContext.getPackageName());
+                permission = packageManager.checkPermission(Manifest.permission.INSTALL_PACKAGES,
+                        mContext.getPackageName());
             }
             ReaperLog.i(TAG, " package name " + mContext.getPackageName()
                     + " permission is " + permission
@@ -726,7 +733,8 @@ public class AKAdSDKWrapper extends ISDKWrapper {
          * @param apkURI
          * @param packageInfo
          */
-        private void startSilentInstall(String key, String apkPath, Uri apkURI, PackageInfo packageInfo) {
+        private void startSilentInstall(String key, String apkPath, Uri apkURI,
+                                        PackageInfo packageInfo) {
             if (mPackageManager == null)
                 mPackageManager = mContext.getPackageManager();
             int installFlags = 0;

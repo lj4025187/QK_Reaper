@@ -33,7 +33,7 @@ public class ReaperEnv {
     public static ClassLoader sClassLoader;
 
     @NoProguard
-    private static Context sContext;
+    public static Context sContext;
 
     @NoProguard
     public static ContextProxy sContextProxy;

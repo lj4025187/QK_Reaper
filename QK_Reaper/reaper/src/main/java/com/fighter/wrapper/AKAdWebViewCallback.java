@@ -42,7 +42,8 @@ public class AKAdWebViewCallback extends ReaperWebViewCallback {
     }
 
     @Override
-    public void onReceivedError(int errorCode, String description, String failingUrl) throws RemoteException {
+    public void onReceivedError(int errorCode, String description, String failingUrl)
+            throws RemoteException {
         ReaperLog.i(TAG, "onReceivedError errorCode " + errorCode
                 + " description " + description
                 + " failingUrl " + failingUrl);

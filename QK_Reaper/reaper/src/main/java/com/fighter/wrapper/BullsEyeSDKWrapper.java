@@ -169,11 +169,13 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
     @Override
     public void requestAdAsync(AdRequest adRequest, AdResponseListener adResponseListener) {
         if (adRequest == null) {
-            throw new NullPointerException("AdRequest is null");
+            ReaperLog.e(TAG, "requestAdAsync , adRequest == null");
+            return;
         }
 
         if (adResponseListener == null) {
-            throw new NullPointerException("AdResponse is null");
+            ReaperLog.e(TAG, "requestAdAsync , adResponseListener == null");
+            return;
         }
 
         mThreadPool.execute(new AdRequestRunnable(adRequest, adResponseListener));
@@ -196,7 +198,8 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
                 .url(spliceRequestAdUrl(adRequest))
                 .post(spliceRequestAdBody(adRequest))
                 .build();
-        ReaperLog.e(TAG, "requestAdSync url " + request.url().toString() + " start " + new Date(System.currentTimeMillis()));
+        ReaperLog.e(TAG, "requestAdSync url " + request.url().toString() +
+                " start " + new Date(System.currentTimeMillis()));
         AdResponse adResponse = null;
         Response response = null;
         try {
@@ -204,14 +207,12 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
             if (response != null) {
                 ReaperLog.e(TAG, "get response " + new Date(System.currentTimeMillis()));
                 if (response.isSuccessful()) {
-                    adResponse = convertResponse(
-                            adRequest,
-                            response);
+                    adResponse = convertResponse(adRequest, response);
                 } else {
                     int code = response.code();
                     String message = response.message();
-                    String result = "ad request failed, errCode: "
-                            + code + ", errMsg: " + (TextUtils.isEmpty(message) ? "not define" : message);
+                    String result = "ad request failed, errCode: " + code +
+                            ", errMsg: " + (TextUtils.isEmpty(message) ? "not define" : message);
                     boolean reportSuccess = reportFailEvent(AdEvent.EVENT_AD_DOWN_FAIL, result);
                     ReaperLog.e(TAG, result + " report to server " + reportSuccess);
 
@@ -231,8 +232,7 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
             ReaperLog.e(TAG, e.toString() + " fail " + new Date(System.currentTimeMillis()));
             e.printStackTrace();
         } finally {
-            if (response != null)
-                CloseUtils.closeIOQuietly(response);
+            CloseUtils.closeIOQuietly(response);
         }
         return adResponse == null ?
                 new AdResponse.Builder()
@@ -718,7 +718,8 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
             response = mClient.newCall(request).execute();
             if (response != null) {
                 if (response.isSuccessful()) {
-                    ReaperLog.i(TAG, "uuid: " + adInfo.getUUID() + " event report succeed : " + adEvent);
+                    ReaperLog.i(TAG, "uuid: " + adInfo.getUUID() + " event report succeed : " +
+                            adEvent);
                 } else {
                     int code = response.code();
                     String message = response.message();
@@ -729,8 +730,7 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (response != null)
-                CloseUtils.closeIOQuietly(response);
+            CloseUtils.closeIOQuietly(response);
         }
     }
 
@@ -799,8 +799,7 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                if (response != null)
-                    CloseUtils.closeIOQuietly(response);
+                CloseUtils.closeIOQuietly(response);
             }
         }
     }
@@ -838,8 +837,7 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
             e.printStackTrace();
             report = false;
         } finally {
-            if (response != null)
-                CloseUtils.closeIOQuietly(response);
+            CloseUtils.closeIOQuietly(response);
         }
         return report;
     }
