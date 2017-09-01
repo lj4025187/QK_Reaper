@@ -107,7 +107,9 @@ public class ReaperConfigDB {
         if (db == null) {
             return null;
         }
-        String[] columns = new String[] {POS_COLUMN_POS_ID, POS_COLUMN_ADV_TYPE, POS_COLUMN_ADV_EXPOSURE};
+        String[] columns = new String[] {POS_COLUMN_POS_ID,
+                POS_COLUMN_ADV_TYPE,
+                POS_COLUMN_ADV_EXPOSURE};
 
         Cursor cursor = db.query(TABLE_POS, columns, null, null, null, null, null);
         try {

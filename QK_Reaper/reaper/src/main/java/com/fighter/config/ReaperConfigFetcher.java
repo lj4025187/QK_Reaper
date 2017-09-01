@@ -2,6 +2,7 @@ package com.fighter.config;
 
 import android.content.Context;
 
+import com.fighter.common.utils.CloseUtils;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.config.db.ReaperConfigDB;
 import com.fighter.reaper.BumpVersion;
@@ -80,16 +81,19 @@ public class ReaperConfigFetcher {
         String url = baseUrl +
                 "?" + ReaperConfig.KEY_URL_PARAM_SDK_VERSION + "=" + sdkVersion +
                 "&" + ReaperConfig.KEY_URL_PARAM_ID + "=" + appId;
-
         ReaperLog.i(TAG, "fetch . url is : " + url);
+
         byte[] reqBodyData =
                 ReaperConfigHttpHelper.getConfigRequestBody(context, pkg, salt, appKey);
+        if (reqBodyData == null) {
+            ReaperLog.e(TAG, "fetch error, request body is null");
+            return false;
+        }
 
         OkHttpClient okHttpClient = ReaperConfigHttpHelper.getHttpsClient();
         if (okHttpClient == null) {
             okHttpClient = ReaperConfigHttpHelper.getHttpClient();
         }
-
         if (okHttpClient == null) {
             ReaperLog.i(TAG, "fetch error, http client init fail");
             return false;
@@ -102,7 +106,10 @@ public class ReaperConfigFetcher {
                 .url(url)
                 .post(requestBody)
                 .build();
-        try (Response response = okHttpClient.newCall(request).execute()) {
+
+        Response response = null;
+        try {
+            response = okHttpClient.newCall(request).execute();
             ReaperLog.i(TAG, "fetch . after execute. Response : " + response);
             if (response == null) {
                 return false;
@@ -119,6 +126,8 @@ public class ReaperConfigFetcher {
             return true;
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            CloseUtils.closeIO(response);
         }
 
         return false;

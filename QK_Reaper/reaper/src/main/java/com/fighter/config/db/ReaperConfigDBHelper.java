@@ -89,21 +89,46 @@ public class ReaperConfigDBHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_SENSE);
     }
 
+
+    /*****************************************************************************
+     *  Database upgrade history :
+     *    1 -> 2 : add SENSE_COLUMN_SILENT_INSTALL column for TABLE_SENSE
+     *
+     *
+     *
+     *
+     * ***************************************************************************/
+
+    /**
+     * @param db
+     * @param oldVersion
+     * @param newVersion
+     */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        ReaperLog.i(TAG, "onUpgrade, start create table");
+        ReaperLog.i(TAG, "onUpgrade");
         if (oldVersion >= newVersion) {
             return;
         }
         int updateVersion = oldVersion;
-        if (updateVersion == 1) {//新增静默安装关键字
-            String silent_install_column = "ALTER TABLE " + TABLE_SENSE + " ADD " + SENSE_COLUMN_SILENT_INSTALL + " varchar(20);";
-            db.execSQL(silent_install_column);
+        if (updateVersion == 1) { //新增静默安装关键字
+            String addSilentInstallColumn = "ALTER TABLE " + TABLE_SENSE + " ADD " +
+                    SENSE_COLUMN_SILENT_INSTALL + " varchar(20);";
+            db.execSQL(addSilentInstallColumn);
             updateVersion = 2;
         }
 
         if (updateVersion == 2) {
             //TODO next version update
         }
+    }
+
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        ReaperLog.i(TAG, "onDowngrade");
+        // drop all tables and re-create for current version
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_POS + ";");
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SENSE + ";");
+        onCreate(db);
     }
 }

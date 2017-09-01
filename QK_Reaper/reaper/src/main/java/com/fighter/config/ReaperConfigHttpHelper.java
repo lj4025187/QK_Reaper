@@ -58,7 +58,8 @@ public final class ReaperConfigHttpHelper {
      */
     public static OkHttpClient getHttpsClient() {
         try {
-            String[] certs = ReaperConfigFetcher.SERVER_TEST_MODE ? new String[] {TEST_CERT} : CERTS;
+            String[] certs = ReaperConfigFetcher.SERVER_TEST_MODE ?
+                    new String[] {TEST_CERT} : CERTS;
             X509TrustManager tm = trustManagerForCertificates(certs);
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{tm}, null);
@@ -66,9 +67,7 @@ public final class ReaperConfigHttpHelper {
             if (tm == null || sf == null) {
                 return null;
             }
-            return new OkHttpClient.Builder()
-                    .sslSocketFactory(sf, tm)
-                    .build();
+            return new OkHttpClient.Builder().sslSocketFactory(sf, tm).build();
         } catch (Exception e) {
             ReaperLog.e(TAG, "exception when getHttpsClient : " + e.getClass().getName());
             e.printStackTrace();
@@ -85,12 +84,15 @@ public final class ReaperConfigHttpHelper {
      * @param appKey it is allocated by config server for every app
      * @return encrypt json string used as post body
      */
-    public static String getConfigRequestBodyAsBase64(Context context, String pkg, String salt, String appKey) {
+    public static String getConfigRequestBodyAsBase64(Context context, String pkg,
+                                                      String salt, String appKey) {
         if (context == null) {
-            throw new IllegalArgumentException("context is null !!!");
+            ReaperLog.e(TAG, "getConfigRequestBodyAsBase64, context == null !!!");
+            return null;
         }
         if (TextUtils.isEmpty(pkg)) {
-            throw new IllegalArgumentException("package is empty !!!");
+            ReaperLog.e(TAG, "getConfigRequestBody, TextUtils.isEmpty(pkg)");
+            return null;
         }
         ReaperConfigRequestBody body = ReaperConfigRequestBody.create(context, pkg);
         String oriJson = body.toJson();
@@ -109,12 +111,15 @@ public final class ReaperConfigHttpHelper {
      * @param appKey it is allocated by config server for every app
      * @return encrypt json byte array used as post body
      */
-    public static byte[] getConfigRequestBody(Context context, String pkg, String salt, String appKey) {
+    public static byte[] getConfigRequestBody(Context context, String pkg, String salt,
+                                              String appKey) {
         if (context == null) {
-            throw new IllegalArgumentException("context is null !!!");
+            ReaperLog.e(TAG, "getConfigRequestBody, context == null !!!");
+            return null;
         }
         if (TextUtils.isEmpty(pkg)) {
-            throw new IllegalArgumentException("package is empty !!!");
+            ReaperLog.e(TAG, "getConfigRequestBody, TextUtils.isEmpty(pkg)");
+            return null;
         }
         ReaperConfigRequestBody body = ReaperConfigRequestBody.create(context, pkg);
         String oriJson = body.toJson();
@@ -130,7 +135,8 @@ public final class ReaperConfigHttpHelper {
      * @param responseBody rc4 encrypted byte array
      * @return
      */
-    public static List<ReaperAdvPos> parseResponseBody (Context context, byte[] responseBody, String key) {
+    public static List<ReaperAdvPos> parseResponseBody (Context context, byte[] responseBody,
+                                                        String key) {
 
         if (context == null || responseBody == null || TextUtils.isEmpty(key)) {
             return null;
