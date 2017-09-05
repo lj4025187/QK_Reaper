@@ -34,6 +34,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import com.fighter.common.utils.OpenUtils;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.common.utils.RefInvoker;
 import com.fighter.reaper.webview.IWebViewCallback;
@@ -402,7 +403,7 @@ public class ReaperWebViewActivity extends Activity {
 
     private void startInBrowser(Uri uri) {
         if (!TextUtils.isEmpty(uri.toString())) {
-            openWebUrl(uri);
+            OpenUtils.open(this, uri.toString());
         }
         finish();
     }
@@ -461,22 +462,5 @@ public class ReaperWebViewActivity extends Activity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    public boolean openWebUrl(Uri uri) {
-        boolean startSuccess = false;
-        try {
-            Intent intent = new Intent();
-            intent.setAction("android.intent.action.VIEW");
-            intent.addCategory("android.intent.category.BROWSABLE");
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.setData(uri);
-            startActivity(intent);
-            startSuccess = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return startSuccess;
     }
 }

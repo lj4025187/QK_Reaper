@@ -128,6 +128,7 @@ public class BaseItemHolder<T extends BaseItem> {
             }
             ViewUtils.setViewVisibility(adViewFront, View.VISIBLE);
             ViewUtils.setViewVisibility(adViewBehind, View.VISIBLE);
+            setImageSize(null, false, localId);
             bindViewImage(imgUrls, imgFiles);
         } else {//单图
             final File imageFile = adInfo.getImgFile();

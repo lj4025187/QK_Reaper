@@ -32,15 +32,14 @@ import okhttp3.Response;
 public class QKHuaYiWrapper extends ISDKWrapper {
 
     private static final String TAG = "QKHuaYiWrapper";
-
+    public static boolean QK_HUA_YI_TEST = false;
     private static final String VERSION_CODE = "1.0";
     private static final String KEY_ACTUAL_SOURCE = "hy_actual_source";
 
-    private static final String EXTRA_EVENT_SCAN_URL     = "hua_yi_scan_url";
+    private static final String EXTRA_EVENT_SCAN_URL = "hua_yi_scan_url";
     private static final String EXTRA_EVENT_VIEW_SUCCESS = "hua_yi_show_urls";
-    private static final String EXTRA_EVENT_VIEW_CLICK   = "hua_yi_click_urls";
+    private static final String EXTRA_EVENT_VIEW_CLICK = "hua_yi_click_urls";
 
-    private static String sAppId;
     private Context mContext;
     private OkHttpClient mClient = AdOkHttpClient.INSTANCE.getOkHttpClient();
     private NativeAdManager mNativeAdManager;
@@ -58,9 +57,10 @@ public class QKHuaYiWrapper extends ISDKWrapper {
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
         if (appContext == null) return;
+        QK_HUA_YI_TEST |= Device.checkSDKMode(SdkName.QIKU_HUA_YI);
         mContext = appContext;
         MainSDK.init(mContext.getApplicationContext());
-        MainSDK.setShowLog(true);
+        MainSDK.setShowLog(mContext, QK_HUA_YI_TEST);
         mNativeAdManager = NativeAdManager.getInstance();
     }
 
@@ -152,22 +152,19 @@ public class QKHuaYiWrapper extends ISDKWrapper {
             HashMap<String, String> configMap = new HashMap<>();
             configMap.put(MainSDK.KEY_QK_APPID, mAdRequest.getAdLocalAppId());     //应用ID
             configMap.put(MainSDK.KEY_QK_ADID, mAdRequest.getAdLocalPositionId()); //广告位ID
-            mNativeAdManager.initContext(mContext.getApplicationContext())
-                    .init(configMap);
+            mNativeAdManager.initContext(mContext.getApplicationContext());
             final AdResponse.Builder builder = new AdResponse.Builder();
             builder.adName(SdkName.QIKU_HUA_YI)
                     .adPosId(mAdRequest.getAdPosId())
                     .adType(mAdRequest.getAdType())
                     .adLocalAppId(mAdRequest.getAdLocalAppId())
                     .adLocalPositionAd(mAdRequest.getAdLocalPositionId());
-            ReaperLog.e(TAG, "start request ad " + Device.getCurrentLocalTime());
-            mNativeAdManager.setAdLoadCallBack(new NativeAdViewCallBack() {
+            mNativeAdManager.requestNative(configMap, new NativeAdViewCallBack() {
                 @Override
-                public void onAdPresent(String s, NativeAdBean nativeAdBean) {
-                    if (!TextUtils.isEmpty(s))
+                public void onAdPresent(String localPosId, NativeAdBean nativeAdBean) {
+                    if (!TextUtils.isEmpty(localPosId))
                         ReaperLog.i(TAG, "onAdPresent request ad " +
-                                Device.getCurrentLocalTime() + " s " + s);
-
+                                Device.getCurrentLocalTime() + " localPosId " + localPosId);
                     AdInfo adInfo = generateAdInfo(mAdRequest);
                     // 广告类型 INFOFLOW_ONEPIC(11)大图广告;INFOFLOW_THREEPIC(12)三图广告
                     int adType = nativeAdBean.getAdType();
@@ -225,11 +222,11 @@ public class QKHuaYiWrapper extends ISDKWrapper {
                 }
 
                 @Override
-                public void onAdFailed(String s, String s1) {
+                public void onAdFailed(String localPosId, String msg) {
                     ReaperLog.e(TAG, "onAdFailed request ad " + Device.getCurrentLocalTime());
                     String errMsg = ("on ad present fail local pos id is " +
-                            (TextUtils.isEmpty(s) ? "unKnown" : s) +
-                            " errMsg " + (TextUtils.isEmpty(s1) ? "unKnown" : s1));
+                            (TextUtils.isEmpty(localPosId) ? "unKnown" : localPosId) +
+                            " errMsg " + (TextUtils.isEmpty(msg) ? "unKnown" : msg));
                     ReaperLog.e(TAG, errMsg);
                     mAdResponseListener.onAdResponse(
                             builder.isSucceed(false)
