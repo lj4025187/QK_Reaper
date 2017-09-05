@@ -55,6 +55,12 @@ public class DeviceTest {
     }
 
     @Test
+    public void useGetReaperSwitch() throws Exception {
+        boolean reaperSwitch = Device.getLogProperty();
+        ReaperLog.i(TAG, "reaperSwitch = " + reaperSwitch);
+    }
+
+    @Test
     public void useNetworkString() throws Exception {
         Context context = InstrumentationRegistry.getTargetContext();
         String netTypeString = Device.getNetworkTypeString(context);

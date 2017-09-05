@@ -28,6 +28,7 @@ import com.fighter.ad.AdEvent;
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
+import com.fighter.common.Device;
 import com.fighter.common.GlobalThreadPool;
 import com.fighter.common.utils.ReaperLog;
 import com.fighter.reaper.ContextProxy;
@@ -98,6 +99,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
 
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
+        AKAD_TEST_MODE |= Device.checkSDKMode(SdkName.AKAD);
         mContext = new ContextProxy(appContext);
         mDownloadMap = new LruCache<>(DOWNLOAD_LRU_CACHE_MAX_SIZE);
         mDownloadApk = new HashMap<>();

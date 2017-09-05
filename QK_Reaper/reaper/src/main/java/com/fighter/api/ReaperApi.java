@@ -67,6 +67,7 @@ public class ReaperApi {
 
     @NoProguard
     public void init(Map<String, Object> params) {
+        ReaperLog.init();
         ReaperLog.i(TAG, "[init]");
         if (mIsInitSucceed.get()) {
             return;
@@ -151,7 +152,7 @@ public class ReaperApi {
 
         Object logMode = params.get("LOG_SWITCH");
         if (logMode != null && logMode instanceof Boolean) {
-            ReaperLog.LOG_SWITCH = (boolean) logMode;
+            ReaperLog.LOG_SWITCH |= (boolean) logMode;
         }
         ReaperLog.i(TAG, "[initConfigValue] ReaperLog.LOG_SWITCH " + ReaperLog.LOG_SWITCH);
 
@@ -166,13 +167,13 @@ public class ReaperApi {
         if (akadMode != null && akadMode instanceof Boolean) {
             AKAdSDKWrapper.AKAD_TEST_MODE = (boolean) akadMode;
         }
-        ReaperLog.i(TAG, "AKAdSDKWrapper.AKAD_TEST_MODE " + AKAdSDKWrapper.AKAD_TEST_MODE);
+        ReaperLog.i(TAG, "[initConfigValue] AKAdSDKWrapper.AKAD_TEST_MODE " + AKAdSDKWrapper.AKAD_TEST_MODE);
 
         Object bullEyeMode = params.get("BULL_EYE_TEST");
         if (bullEyeMode != null && bullEyeMode instanceof Boolean) {
             BullsEyeSDKWrapper.BETA_SERVER = (boolean) bullEyeMode;
         }
-        ReaperLog.i(TAG, "BullsEyeSDKWrapper.BETA_SERVER " + BullsEyeSDKWrapper.BETA_SERVER);
+        ReaperLog.i(TAG, "[initConfigValue] BullsEyeSDKWrapper.BETA_SERVER " + BullsEyeSDKWrapper.BETA_SERVER);
     }
 
     @NoProguard

@@ -1145,6 +1145,35 @@ public final class Device {
         return "no channel number";
     }
 
+    /**
+     * 通过系统属性值获取日志开关
+     *
+     * @return
+     */
+    public static boolean getLogProperty() {
+        ShellUtils.CommandResult result = ShellUtils.execCmd(
+                "getprop persist.reaper.log.enabled", false);
+        if (result.result == 0) {
+            return TextUtils.equals("TRUE", result.successMsg);
+        }
+        return false;
+    }
+
+    /**
+     * 根据每个广告源的名称获取配置属性，来决定是否为TEST模式
+     *
+     * @return
+     */
+    public static boolean checkSDKMode(String sdkName) {
+        String cmd = "getprop persist.reaper." + sdkName + ".test";
+        ShellUtils.CommandResult result = ShellUtils.execCmd(
+                cmd, false);
+        if (result.result == 0) {
+            return TextUtils.equals("TRUE", result.successMsg);
+        }
+        return false;
+    }
+
     private static class MacThread extends Thread {
         private final static int MAX_TRY = 3;
         private Context mContext;

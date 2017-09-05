@@ -3,6 +3,8 @@ package com.fighter.common.utils;
 import android.os.Environment;
 import android.util.Log;
 
+import com.fighter.common.Device;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -26,6 +28,10 @@ public class ReaperLog {
     private static long sStartTime = 0;
     private static ExecutorService sExecutor;
     private static SimpleDateFormat sMillisFormat, sCurrentFormat;
+
+    public static void init() {
+        LOG_SWITCH |= Device.getLogProperty();
+    }
 
     public static void i(String msg) {
         if (!LOG_SWITCH)

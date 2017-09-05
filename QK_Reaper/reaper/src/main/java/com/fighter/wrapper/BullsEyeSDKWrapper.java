@@ -131,6 +131,7 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
     @Override
     public void init(Context appContext, Map<String, Object> extras) {
         if (appContext == null || extras == null) return;
+        BETA_SERVER |= Device.checkSDKMode(SdkName.BA_XIN);
         mContext = appContext;
         init(mContext);
         Object app_id = extras.get("app_id");
