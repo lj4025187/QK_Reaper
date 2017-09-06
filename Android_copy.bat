@@ -46,9 +46,9 @@ echo md bin
 rem set OUTPATH = %CODE_PATH%bin
 rem echo OUTPATH:%OUTPATH%
 
-copy /s /y /e /i  %CODE_PATH%\QK_Reaper\bin\reaper.aar %CODE_PATH%\bin\reaper.aar
-copy /s /y /e /i  %CODE_PATH%\QK_Reaper\bin\reaper.rr  %CODE_PATH%\bin\reaper.rr
-copy /s /y /e /i  %CODE_PATH%\QK_Reaper\bin\sample.apk %CODE_PATH%\bin\sample.apk
+copy /s /y /e /i  %CODE_PATH%\QK_Reaper\QK_Reaper\bin\reaper.aar %CODE_PATH%\bin\reaper.aar
+copy /s /y /e /i  %CODE_PATH%\QK_Reaper\QK_Reaper\bin\reaper.rr  %CODE_PATH%\bin\reaper.rr
+copy /s /y /e /i  %CODE_PATH%\QK_Reaper\QK_Reaper\bin\sample.apk %CODE_PATH%\bin\sample.apk
 
 echo ==============%PROJECT% copy finish!!!==============
 
