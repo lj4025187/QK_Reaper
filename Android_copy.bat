@@ -1,29 +1,11 @@
 
 @echo off
 
-set PROJECT=ReaperSDK
-echo ===============================================
-echo ===================ReaperSDK===================
-echo       ..######..########..##....##
-echo       .##....##.##.....##.##...##.
-echo       .##.......##.....##.##..##..
-echo       ..######..##.....##.#####...
-echo       .......##.##.....##.##..##..
-echo       .##....##.##.....##.##...##.
-echo       ..######..########..##....##
-echo ==================ReaperSDK====================
-echo ===============================================
-
-
-echo %PROJECT% will be build
-set LOCAL_FILE_PATH=%~dp0
-set welcome=%PROJECT% File-Path=%LOCAL_FILE_PATH%
-echo %welcome%
+set CODE_PATH=%1
 
 ::%SystemRoot%\system32\ping.exe -n 1 10.18.49.11
 
 
-echo now environment path is %Path% 
 
 cd QK_Reaper
 echo Gradle info:
@@ -50,23 +32,23 @@ echo ==============finish sample task==============================
 echo ==============build assembleDebug task finish==============
 cd ..
 echo ==============%PROJECT% build finish!!!==============
-echo bin:%LOCAL_FILE_PATH%bin
 
-if exist %LOCAL_FILE_PATH%bin (
+
+if exist %CODE_PATH%bin (
 	echo clear cache
-	rd /s /q %LOCAL_FILE_PATH%bin
+	rd /s /q %CODE_PATH%bin
 )
-echo rd bin
-if not exist %LOCAL_FILE_PATH%bin (
-	md %LOCAL_FILE_PATH%bin
+
+if not exist %CODE_PATH%bin (
+	md %CODE_PATH%bin
 )
 echo md bin
-rem set OUTPATH = %LOCAL_FILE_PATH%bin
+rem set OUTPATH = %CODE_PATH%bin
 rem echo OUTPATH:%OUTPATH%
 
-copy /y QK_Reaper\bin\reaper.aar %LOCAL_FILE_PATH%bin\reaper.aar
-copy /y QK_Reaper\bin\reaper.rr %LOCAL_FILE_PATH%bin\reaper.rr
-copy /y QK_Reaper\bin\sample.apk %LOCAL_FILE_PATH%bin\sample.apk
+copy /y QK_Reaper\bin\reaper.aar %CODE_PATH%bin\reaper.aar
+copy /y QK_Reaper\bin\reaper.rr %CODE_PATH%bin\reaper.rr
+copy /y QK_Reaper\bin\sample.apk %CODE_PATH%bin\sample.apk
 
 echo ==============%PROJECT% copy finish!!!==============
 
