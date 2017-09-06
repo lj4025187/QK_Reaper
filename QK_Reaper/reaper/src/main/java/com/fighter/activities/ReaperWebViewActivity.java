@@ -402,8 +402,13 @@ public class ReaperWebViewActivity extends Activity {
     }
 
     private void startInBrowser(Uri uri) {
-        if (!TextUtils.isEmpty(uri.toString())) {
-            OpenUtils.open(this, uri.toString());
+        String url = uri.toString();
+        if(!TextUtils.isEmpty(url)) {
+            if(url.startsWith("http") || url.startsWith("https")) {
+                OpenUtils.open(this, url);
+            } else {
+                OpenUtils.open(this, mUrl);
+            }
         }
         finish();
     }
