@@ -43,8 +43,9 @@ if not exist %CODE_PATH%bin (
 	md %CODE_PATH%bin
 )
 echo md bin
-rem set OUTPATH = %CODE_PATH%bin
-rem echo OUTPATH:%OUTPATH%
+set OUTPATH = %CODE_PATH%\bin
+echo OUTPATH:%OUTPATH%
+echo CODE_PATH:%CODE_PATH%
 
 copy /s /y /e /i  %CODE_PATH%\QK_Reaper\QK_Reaper\bin\reaper.aar %CODE_PATH%\bin\reaper.aar
 copy /s /y /e /i  %CODE_PATH%\QK_Reaper\QK_Reaper\bin\reaper.rr  %CODE_PATH%\bin\reaper.rr
