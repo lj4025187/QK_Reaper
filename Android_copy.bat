@@ -48,8 +48,8 @@ echo OUTPATH:%OUTPATH%
 echo CODE_PATH:%CODE_PATH%
 
 copy /y QK_Reaper\bin\reaper.aar %CODE_PATH%\bin\reaper.aar
-copy /y QK_Reaper\QK_Reaper\bin\reaper.rr  %CODE_PATH%\bin\reaper.rr
-copy /y QK_Reaper\QK_Reaper\bin\sample.apk %CODE_PATH%\bin\sample.apk
+copy /y QK_Reaper\bin\reaper.rr  %CODE_PATH%\bin\reaper.rr
+copy /y QK_Reaper\bin\sample.apk %CODE_PATH%\bin\sample.apk
 
 echo ==============%PROJECT% copy finish!!!==============
 
