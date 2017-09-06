@@ -57,11 +57,11 @@ public class OpenUtils {
                 openWebUrlWithApp(context, url,
                         "com.qihoo.browser", null)) {
             startSuccess = true;
-        } else if (isAppInstalled(context, "com.android.browser") &&
+        } /*else if (isAppInstalled(context, "com.android.browser") &&
                 openWebUrlWithApp(context, url,
                         "com.android.browser", "com.android.browser.BrowserActivity")) {
             startSuccess = true;
-        } else {
+        }*/ else {
             startSuccess = openWebUrlNormal(context, url);
         }
 
