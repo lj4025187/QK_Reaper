@@ -76,7 +76,7 @@ public class AdRequest {
 
     public long getExpireTime() {
         Object o = mAdParams.get(KEY_EXPIRE_TIME);
-        return o == null ? 0 : (long) o;
+        return o == null ? 0L : (long) o;
     }
 
     public boolean getSilentInstall() {

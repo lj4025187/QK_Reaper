@@ -221,7 +221,7 @@ public class AdInfo {
 
     public long getExpireTime() {
         Object o = mAdParams.get(KEY_EXPIRE_TIME);
-        return o == null ? 0 : Long.valueOf(o.toString());
+        return o == null ? 0L : Long.valueOf(o.toString());
     }
 
     public void setExpireTime(long expireTime) {

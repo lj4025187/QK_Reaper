@@ -49,7 +49,7 @@ import com.fighter.wrapper.BullsEyeSDKWrapper;
 import com.fighter.wrapper.DownloadCallback;
 import com.fighter.wrapper.ISDKWrapper;
 import com.fighter.wrapper.MixAdxSDKWrapper;
-import com.fighter.wrapper.QKHuaYiWrapper;
+import com.fighter.wrapper.QKHuaYiSDKWrapper;
 import com.fighter.wrapper.TencentSDKWrapper;
 import com.qiku.proguard.annotations.NoProguard;
 
@@ -230,55 +230,6 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
     private TrackerTask mTrackerTask = new TrackerTask(
             PriorityTaskDaemon.PriorityTask.PRI_FIRST, mTrackerRunner, mTrackerNotify);
     /****************************************************Tracker Task end**************************************************************************/
-    /****************************************************update config Task start**************************************************************************/
-    private PriorityTaskDaemon.TaskRunnable mUpdateConfigRunner = new PriorityTaskDaemon.TaskRunnable() {
-        @Override
-        public Object doSomething() {
-            // 1.fetch update config.
-            boolean success = updateConfig();
-            // 2. update ad wrapper.
-            updateWrapper(mContext, mCacheId);
-            return success;
-        }
-    };
-
-    private PriorityTaskDaemon.TaskNotify mUpdateConfigNotify = new PriorityTaskDaemon.TaskNotify() {
-        @Override
-        public void onResult(PriorityTaskDaemon.NotifyPriorityTask task, Object result, PriorityTaskDaemon.TaskTiming timing) {
-            int requestNum = 0;
-            if (task instanceof UpdateConfigTask) {
-                requestNum = ((UpdateConfigTask) task).getRequestNum();
-            }
-            if (result instanceof Boolean) {
-                if (!(boolean)result && !needHoldAd) {
-                    while (requestNum > 0) {
-                        onRequestAdError(mCallBack, "update config failed");
-                        requestNum --;
-                    }
-                }
-            }
-        }
-    };
-    private class UpdateConfigTask extends PriorityTaskDaemon.NotifyPriorityTask {
-        private int mRequestNum;
-
-        public int getRequestNum() {
-            return mRequestNum;
-        }
-
-        public void setRequestNum(int requestNum) {
-            this.mRequestNum = requestNum;
-        }
-
-        public UpdateConfigTask(int priority, PriorityTaskDaemon.TaskRunnable runnable, PriorityTaskDaemon.TaskNotify notify) {
-            super(priority, runnable, notify);
-        }
-    }
-    private UpdateConfigTask mUpdateConfigTask = new UpdateConfigTask(PriorityTaskDaemon.PriorityTask.PRI_FIRST,
-            mUpdateConfigRunner, mUpdateConfigNotify);
-//    private PriorityTaskDaemon.NotifyPriorityTask mUpdateConfigTask = new PriorityTaskDaemon.NotifyPriorityTask(
-//            PriorityTaskDaemon.PriorityTask.PRI_FIRST, mUpdateConfigRunner, mUpdateConfigNotify);
-    /****************************************************update config Task start**************************************************************************/
     /****************************************************AdRequestWrapper Task start**************************************************************************/
     /**
      * request wrapper task for callback cache and notify user
@@ -582,7 +533,7 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
             // 1.fetch update config.
             boolean success = updateConfig();
             // 2. update ad wrapper.
-            updateWrapper(mContext, mCacheId);
+            updateWrapper(mContext, mPosId);
 
             if (!success && !needHoldAd) {
                 return "update config failed";
@@ -684,10 +635,8 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
     private PriorityTaskDaemon mWorkThread;
     private Context mContext;
 
-    private String mCacheId;
     private String mAppId;
     private String mAppKey;
-    private Object mCallBack;
 
     private boolean needHoldAd;
     private AdCacheFileDownloadManager mAdFileManager;
@@ -709,15 +658,6 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
      */
     private void postInitCacheTask(Context context) {
         mWorkThread.postTaskInFront(mInitTask);
-    }
-
-    /**
-     * update config from server
-     *
-     */
-    private void postUpdateConfigTask(int adRequestNum) {
-        mUpdateConfigTask.setRequestNum(adRequestNum);
-        mWorkThread.postTaskInFront(mUpdateConfigTask);
     }
 
     /**
@@ -835,11 +775,9 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
      * request the ad cache to get the Ad information.
      */
     public void requestAdCache(int adRequestNum, String cacheId, Object callBack) {
-        mCacheId = cacheId;
-        mCallBack = callBack;
         int requestNum = adRequestNum > MAX_REQUEST_AD_COUNT ? MAX_REQUEST_AD_COUNT : adRequestNum;
 //        postUpdateConfigTask(requestNum);
-        postAdRequestTask(mCacheId, mCallBack, requestNum);
+        postAdRequestTask(cacheId, callBack, requestNum);
     }
 
     /**
@@ -1912,7 +1850,7 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
                         mSdkWrapperSupport.put(SdkName.AKAD, akAdWrapper);
                         break;
                     case SdkName.QIKU_HUA_YI:
-                        ISDKWrapper qkHuaYiWrapper = new QKHuaYiWrapper();
+                        ISDKWrapper qkHuaYiWrapper = new QKHuaYiSDKWrapper();
                         qkHuaYiWrapper.init(mContext, null);
                         mSdkWrapperSupport.put(SdkName.QIKU_HUA_YI, qkHuaYiWrapper);
                         break;
@@ -1937,12 +1875,16 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
             return null;
         String adsName = reaperAdSense.ads_name;
         ISDKWrapper sdkWrapper = null;
-        ReaperLog.i(TAG, "requset ad source: " + adsName);
+        ReaperLog.i(TAG, "request ad source: " + adsName);
         if (mSdkWrapperSupport != null)
             sdkWrapper = mSdkWrapperSupport.get(adsName);
         if (sdkWrapper == null) {
             ReaperLog.e(TAG, "Can not find " + adsName + "'s sdk implements, may need " +
-                    "upgrade reaper jar, current version " + BumpVersion.value());
+                    "upgrade reaper jar, current version " + BumpVersion.value() +
+                    " support size is " +
+                    (mSdkWrapperSupport != null ?
+                            mSdkWrapperSupport.size() + mSdkWrapperSupport.keySet().toString()
+                            : "null"));
             return null;
         }
 
@@ -1960,7 +1902,7 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
                 .adLocalAppId(reaperAdSense.ads_appid)
                 .adLocalPositionId(reaperAdSense.ads_posid)
                 .adType(adType)
-                .adExpireTime(Long.parseLong(reaperAdSense.expire_time))
+                .adExpireTime(Long.valueOf(reaperAdSense.expire_time))
                 .adSilentInstall(TextUtils.equals(reaperAdSense.silent_install, "1"))
                 .adCount(1);
 
