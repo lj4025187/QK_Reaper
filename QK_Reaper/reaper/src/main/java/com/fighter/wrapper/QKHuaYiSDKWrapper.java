@@ -29,9 +29,9 @@ import okhttp3.Response;
 /**
  * Created by jia on 8/21/17.
  */
-public class QKHuaYiWrapper extends ISDKWrapper {
+public class QKHuaYiSDKWrapper extends ISDKWrapper {
 
-    private static final String TAG = "QKHuaYiWrapper";
+    private static final String TAG = "QKHuaYiSDKWrapper";
     public static boolean QK_HUA_YI_TEST = false;
     private static final String VERSION_CODE = "1.0";
     private static final String KEY_ACTUAL_SOURCE = "hy_actual_source";

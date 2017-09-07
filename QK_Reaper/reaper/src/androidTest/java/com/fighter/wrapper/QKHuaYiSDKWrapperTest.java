@@ -16,9 +16,9 @@ import org.junit.runner.RunWith;
  * Created by jia on 8/21/17.
  */
 @RunWith(AndroidJUnit4.class)
-public class QKHuaYiWrapperTest {
+public class QKHuaYiSDKWrapperTest {
 
-    private static final String TAG = "QKHuaYiWrapperTest";
+    private static final String TAG = "QKHuaYiSDKWrapperTest";
 
     @Test
     public void testHuaYiNativeAd() {
@@ -40,7 +40,7 @@ public class QKHuaYiWrapperTest {
         ReaperLog.i(TAG, "request " + adRequest);
 
         Context context = InstrumentationRegistry.getTargetContext();
-        final ISDKWrapper sdkWrapper = new QKHuaYiWrapper();
+        final ISDKWrapper sdkWrapper = new QKHuaYiSDKWrapper();
         sdkWrapper.init(context, null);
         sdkWrapper.requestAdAsync(adRequest, new AdResponseListener() {
             @Override
