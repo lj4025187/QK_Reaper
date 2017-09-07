@@ -212,8 +212,10 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
                 } else {
                     int code = response.code();
                     String message = response.message();
+                    String body = response.body().string();
                     String result = "ad request failed, errCode: " + code +
-                            ", errMsg: " + (TextUtils.isEmpty(message) ? "not define" : message);
+                            ", errMsg: " + (TextUtils.isEmpty(message) ? "not define" : message +
+                            ", body: " + body);
                     boolean reportSuccess = reportFailEvent(AdEvent.EVENT_AD_DOWN_FAIL, result);
                     ReaperLog.e(TAG, result + " report to server " + reportSuccess);
 
@@ -724,8 +726,9 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
                 } else {
                     int code = response.code();
                     String message = response.message();
+                    String body = response.body().string();
                     ReaperLog.e(TAG, "Event report failed : code : " + code
-                            + "error message : " + message);
+                            + "error message : " + message + " body " + body);
                 }
             }
         } catch (IOException e) {
@@ -829,8 +832,10 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
                     ReaperLog.i(TAG, "report down ad fail success");
                     report = true;
                 } else {
+                    String body = response.body().string();
                     ReaperLog.e(TAG, "report down ad fail code : " + code
-                            + " msg : " + (TextUtils.isEmpty(message) ? "null" : message));
+                            + " msg : " + (TextUtils.isEmpty(message) ? "null" : message)
+                            + " body : " + body);
                     report = false;
                 }
             }
