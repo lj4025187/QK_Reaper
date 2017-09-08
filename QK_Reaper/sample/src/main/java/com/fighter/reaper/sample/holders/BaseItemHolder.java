@@ -99,7 +99,7 @@ public class BaseItemHolder<T extends BaseItem> {
         String adSrcName = SampleConfig.getAdSrcName(context, adInfo);
         viewType.setText(SampleConfig.getViewTypeString(context, iItem.getViewType()));
         detailType.setText((String) adInfo.getExtra(DETAIL_TYPE_KEY));
-        srcName.setText(adSrcName);
+        srcName.setText(adSrcName + " expire-" + adInfo.getExtra("expire_time"));
         uuid.setText("uuid:" + adInfo.getUuid());
         boolean isBaxin = TextUtils.equals(SampleConfig.BAXIN_SRC_NAME, adSrcName);
 

@@ -422,7 +422,7 @@ public class BullsEyeSDKWrapper extends ISDKWrapper {
 
             if (adInfo != null) {
                 adInfo.generateUUID();
-                adInfo.setExpireTime(expireTime);
+                adInfo.setExpireTime(String.valueOf(expireTime));
                 adInfo.setCanCache(true);
                 adInfo.setAdName(SdkName.BA_XIN);
                 adInfo.setAdPosId(adPosId);

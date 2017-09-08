@@ -219,12 +219,12 @@ public class AdInfo {
         }
     }
 
-    public long getExpireTime() {
+    public String getExpireTime() {
         Object o = mAdParams.get(KEY_EXPIRE_TIME);
-        return o == null ? 0L : Long.valueOf(o.toString());
+        return o == null ? "0" : o.toString();
     }
 
-    public void setExpireTime(long expireTime) {
+    public void setExpireTime(String expireTime) {
         mAdParams.put(KEY_EXPIRE_TIME, expireTime);
     }
 

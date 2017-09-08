@@ -19,6 +19,7 @@ import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 
 import com.ak.android.other.news.DownloadUtil;
+import com.fighter.ad.AdEvent;
 import com.fighter.ad.AdInfo;
 import com.fighter.ad.AdType;
 import com.fighter.ad.SdkName;
@@ -1159,15 +1160,17 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
         }
         long adConstructTime = adInfo.getConstructTime();
         boolean adInfoAvailable = adInfo.getAdInfoAvailable();
-        ReaperLog.i(TAG, " ad info " + adInfo.getUUID() + " is adInfoAvailable " + adInfoAvailable);
+        ReaperLog.i(TAG, " ad info " + adInfo.getUUID() +
+                " adEvent " + actionEvent +
+                " is adInfoAvailable " + adInfoAvailable);
         boolean hasExpired = System.currentTimeMillis()
                 - adConstructTime
-                > (adInfo.getExpireTime() * 1000);
+                > (Long.valueOf(adInfo.getExpireTime()) * 1000);
         //jump to webView and download app here
         if (actionEvent == EVENT_CLICK && checkCoordinateValid(adInfo)) {
 
             handleClickAction(adInfo);
-            //expired AdInfo click or down for jx
+            //过期广告expired AdInfo click or down for jx
             if(hasExpired) postTrackerTask(adInfo, actionEvent);
         }
 
@@ -1283,6 +1286,7 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
                 } else {
                     mThreadPool.execute(new RequestAppUrlTask(iSdkWrapper, adInfo));
                 }
+                onEvent(AdEvent.EVENT_APP_START_DOWNLOAD, adInfo);
                 break;
             case AdInfo.ActionType.BROWSER:
                 if(iSdkWrapper.isOpenWebOwn()) {
@@ -1463,7 +1467,7 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
         adInfo.setDownPkgName(packageInfo.packageName);
         mInstallApps.put(packageInfo.packageName, System.currentTimeMillis());//通过包名记录应用下载完成的时间
         mInstallAds.put(packageInfo.packageName, adInfo);
-        trackActionEvent(EVENT_APP_DOWNLOAD_COMPLETE, adInfo);//下载完成的打点
+        onEvent(EVENT_APP_DOWNLOAD_COMPLETE, adInfo);//下载完成的打点
         installApk(packageInfo.packageName, resultFile.getAbsolutePath());
         //down complete should remove this adInfo
         mDownloadApps.remove(reference);
@@ -1598,7 +1602,7 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
             String errMsg = "download app own does not return fail reason";
             trackActionEvent(apkDownloadEvent, adInfo, errMsg);
         } else {
-            trackActionEvent(apkDownloadEvent, adInfo, null);
+            onEvent(apkDownloadEvent, adInfo);
         }
     }
 
@@ -1631,9 +1635,9 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
                 long start = mInstallApps.get(packageName);
                 if (System.currentTimeMillis() - start < EFFECTIVE_TIME) {
                     AdInfo adInfo = mInstallAds.get(packageName);
-                    trackActionEvent(EVENT_APP_INSTALL, adInfo);
+                    onEvent(EVENT_APP_INSTALL, adInfo);
                     activeAppByPackageName(context, packageName);
-                    trackActionEvent(EVENT_APP_ACTIVE, adInfo);
+                    onEvent(EVENT_APP_ACTIVE, adInfo);
                 }
                 mInstallApps.remove(packageName);
                 mInstallAds.remove(packageName);
@@ -1687,7 +1691,6 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
             }
             long id = mAdFileManager.requestDownload(actionUrl, adInfo.getDownAppName(), null);
             ReaperLog.i(TAG, "start download app " + id);
-            trackActionEvent(EVENT_APP_START_DOWNLOAD, adInfo, null);
             mDownloadApps.put(id, adInfo);
         }
     }
@@ -2013,7 +2016,8 @@ public class AdCacheManager implements DownloadCallback, LocationListener{
             info.setCache(adInfo);
         }
         // the config expire time is second
-        info.setExpireTime(String.valueOf(adInfo.getExpireTime() * 1000));
+        long expire_time = Long.valueOf(adInfo.getExpireTime()) * 1000;
+        info.setExpireTime(String.valueOf(expire_time));
         info.setUuid(adInfo.getUUID());
         info.setAdCacheId(adInfo.getAdPosId());
         ReaperLog.i(TAG, "cache ad info: " + adInfo.getUUID());

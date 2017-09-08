@@ -468,7 +468,7 @@ public class MixAdxSDKWrapper extends ISDKWrapper {
 
                     adInfo = new AdInfo();
                     adInfo.generateUUID();
-                    adInfo.setExpireTime(expireTime);
+                    adInfo.setExpireTime(String.valueOf(expireTime));
                     adInfo.setSilentInstall(silentInstall);
                     adInfo.setCanCache(true);
                     adInfo.setAdName(SdkName.MIX_ADX);

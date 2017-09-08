@@ -221,6 +221,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
 
     @Override
     public void onEvent(int adEvent, AdInfo adInfo) {
+        ReaperLog.i(TAG, "adEvent " + adEvent + " adInfo " + adInfo.getUUID());
         switch (adEvent) {
             case AdEvent.EVENT_VIEW_SUCCESS: {
                 eventView(adInfo);
@@ -461,7 +462,7 @@ public class TencentSDKWrapper extends ISDKWrapper {
                 }
                 adInfo = new AdInfo();
                 adInfo.generateUUID();
-                adInfo.setExpireTime(expireTime);
+                adInfo.setExpireTime(String.valueOf(expireTime));
                 adInfo.setSilentInstall(silentInstall);
                 adInfo.setCanCache(true);
                 adInfo.setAdName(SdkName.GUANG_DIAN_TONG);

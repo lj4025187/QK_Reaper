@@ -31,17 +31,17 @@ public final class ReaperConfig {
      * 3.修改bug，增加小功能后递增该值
      * {@link com.fighter.reaper.BumpVersion#REVISION}
      */
-    /*------------------------------1.1.0-beta----------------------------------------*/
-    public static final String TEST_SDK_VERSION = "1.1.0-beta";//需要修改
-    public static final String TEST_SALT = "2c8a25314209c6eeb74af63e3cc00a17";//需要修改
+    /*------------------------------1.1.1-beta----------------------------------------*/
+    public static final String TEST_SDK_VERSION = "1.1.1-beta";//需要修改
+    public static final String TEST_SALT = "2cd9597892343f0335bf122499d088ad";//需要修改
 
     /**
      * For release
      */
     public final static String RELEASE_APP_KEY = "65ac3c48b74a729c6c2e2987a3e788fa";
     public final static String RELEASE_APP_ID = "100000";
-    /*------------------------------1.1.0----------------------------------------*/
-    public static final String RELEASE_SALT = "333be7b80209ce82480d";//需要修改
+    /*------------------------------1.1.1----------------------------------------*/
+    public static final String RELEASE_SALT = "ef110c78f539804831f7";//需要修改
 
 
     /**

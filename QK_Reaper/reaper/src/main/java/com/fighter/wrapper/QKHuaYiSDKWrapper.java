@@ -239,7 +239,7 @@ public class QKHuaYiSDKWrapper extends ISDKWrapper {
         private AdInfo generateAdInfo(AdRequest adRequest) {
             AdInfo adInfo = new AdInfo();
             adInfo.generateUUID();
-            adInfo.setExpireTime(adRequest.getExpireTime());
+            adInfo.setExpireTime(String.valueOf(adRequest.getExpireTime()));
             adInfo.setSilentInstall(adRequest.getSilentInstall());
             adInfo.setCanCache(true);
             adInfo.setAdName(SdkName.QIKU_HUA_YI);

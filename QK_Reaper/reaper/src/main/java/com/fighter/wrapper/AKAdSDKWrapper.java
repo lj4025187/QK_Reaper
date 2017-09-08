@@ -474,7 +474,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
 
                     adInfo = new AdInfo();
                     adInfo.generateUUID();
-                    adInfo.setExpireTime(mAdRequest.getExpireTime());
+                    adInfo.setExpireTime(String.valueOf(mAdRequest.getExpireTime()));
                     adInfo.setSilentInstall(mAdRequest.getSilentInstall());
                     adInfo.setCanCache(false);
                     adInfo.setAdName(SdkName.AKAD);
@@ -581,7 +581,7 @@ public class AKAdSDKWrapper extends ISDKWrapper {
 
                     adInfo = new AdInfo();
                     adInfo.generateUUID();
-                    adInfo.setExpireTime(mAdRequest.getExpireTime());
+                    adInfo.setExpireTime(String.valueOf(mAdRequest.getExpireTime()));
                     adInfo.setSilentInstall(mAdRequest.getSilentInstall());
                     adInfo.setCanCache(true);
                     adInfo.setAdName(SdkName.AKAD);
